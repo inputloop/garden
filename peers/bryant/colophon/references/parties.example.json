@@ -1,0 +1,20 @@
+{
+ "_comment": "Who may hold a share of the work, and the terms each has offered, in their own word. Copy this to .colophon-parties.json at the root of the tree colophon reads, and change _keeper to whose garden it is. colophon carries no one's terms in its code; it reads them here. The selftest reads this file too.",
+ "_keeper": "bryant",
+ "bryant": {
+  "line": "Bryant Frankford <nathanielfrankford@gmail.com> and Contributors",
+  "names": ["Bryant Frankford", "Bryant"],
+  "emails": ["nathanielfrankford@gmail.com"],
+  "agents": ["Alfred", "bryant-claude"],
+  "terms": {"code": ["GPL-3.0-or-later", "LGPL-3.0-or-later"], "prose": ["CC-BY-SA-4.0"], "art": ["CC-BY-SA-4.0"]},
+  "said": "the keeper's word, 2026-10-05: \"we are shipping it all together as GGPLv3+ / CC-BY-SA (4) / LGPLv3+\""
+ },
+ "corwin": {
+  "line": "Corwin Brust <corwin@bru.st> and Contributors",
+  "names": ["Corwin Brust", "Corwin"],
+  "emails": ["corwin@bru.st"],
+  "agents": ["Claudewin", "corwin-claude"],
+  "terms": {"code": ["GPL-3.0-or-later"], "prose": ["CC-BY-SA-4.0"]},
+  "said": "his terms (c4 man/licensing-defaults.md, TERMS v1, 2026-09-25; CC BY-SA 4.0 for what he releases from 2026-10-04). LGPL-3.0-or-later he offers only for parts meant to be linked or embedded, work by work, so it is not listed here."
+ }
+}

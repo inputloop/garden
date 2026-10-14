@@ -1,0 +1,7 @@
+# .nongnu-steward -- the steward's preferences for this tree (SOFT-SKILLS/nongnu-steward reads it).
+# key value, last wins.  steward.ignore: path fragments the audit skips, matched as /segment/.
+steward.holder Corwin Brust <corwin@bru.st>
+steward.name polygram
+steward.license GPL-3.0-or-later
+steward.byline Authored by Mentat (for Corwin).
+steward.ignore /tests/fixtures/ /fixtures/ /assets/ /skills/foaf/ /.door/ /releases/ /CONSENT-RECORD-TEMPLATE.md/ /attestations.txt/ /h/ /claud-qa-hold/ /gated/ /.synth-drafts/ /Inbox/ /archive/ /outputs/ /Claude outputs/ /mainmem/ /metrics/ /wire/ /tools/ /site/ /doc/ /book/ /journal/ /models/

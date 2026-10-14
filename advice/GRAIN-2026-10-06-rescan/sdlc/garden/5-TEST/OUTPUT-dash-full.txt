@@ -1,0 +1,90 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+# all checks, run by dash (the shell Debian uses as sh)
+# saved 2026-10-06T08:51Z by the garden team; the command and the exit status are shown.
+$ dash ./lr1ck
+
+lr1ck on /home/claude/rescan/sdlc/garden/4-BUILD
+tools: sh=dash awk=mawk 1.3.4 20240123 emacs=GNU Emacs 29.3 node=v22.22.0 gpg=yes
+
+  ok    A1   47 files, each with one SPDX line of the right kind
+  ok    A2   all four tools refuse an unknown option loudly
+  ok    A3   every tool in bin/ is executable and says how to run it (5 files; the .awk program is read by its wrapper)
+  ok    B1   reader one tangled 16 files
+  ok    B2   every reference has exactly one name (68 references, 20 names)
+  ok    B3   reader two (Emacs 29.3, Org 9.6.15) tangled 16 files
+  ok    B4   the two readers agree on every byte of 16 files (sha256 of all: 64a7a1fb382c)
+  ok    B5   a new line in g-core appeared in 5 lists from both readers, which still agree (they read the file, not a cache)
+  ok    B6   committed out/ equals a fresh tangle
+  ok    B7   lists hold only plain names, once each, nothing live-build would run
+  ok    B8   no package is in two groups
+  ok    B9   all 113 distinct names exist in Debian 13.7 in the component the profile claims; main and non-free-firmware do not overlap
+  ok    B10  minimal, desktop, homelab and hardened are main-only with firmware off; fullsink names its extra component
+  ok    B11  every flag is a real lb config option (from live-build's own option list), none repeated, trixie pinned, amd64 only
+  ok    B12  five profiles in order, each with a list and flags; all share the 33-package base; fullsink holds everything (minimal is NOT inside desktop: it has the console mouse daemon, they do not)
+  ok    B13  the table of groups in the prose matches the five profile blocks (fullsink = every group)
+  ok    B14  mesh add-on rows are complete, each says free or restricted, dependencies resolve, only fullsink carries them
+  ok    B15  "for whom" is the same text in the prose table and in profiles.txt
+  ok    B16  graphical profiles have a desktop and browser for the HTML page; console profiles have emacs-nox and gpm for the Emacs frame
+  ok    B17  the 5 programs the choices start (the rest are larder-* or lr1st, not built or ours) are files in the package each choice needs, per Debian's own file lists
+  ok    C1   choices.txt: 11 rows, seven fields each, known profiles, unique ids
+  ok    C2   every choice's package is in every profile that offers the choice (author choices may use author.packages)
+  ok    C3   the page lists the same 11 choices as choices.txt: ids, order, editions, profiles, labels and words
+  ok    C4   no outside address, script, stylesheet, font or image; a locked-down CSP; 7222 bytes (cap 17408 = the house number 17 KiB, invented)
+  ok    C5   11 choices are links, 3 colour controls are buttons, all targets at least 3rem tall (48px at the usual size), no key-only handler (a real mouse was not used)
+  ok    C6   complete light default; dark by system unless light was chosen; explicit dark; explicit body background; three controls
+  ok    C7   the dark palette in the media query and in the explicit override match token for token (7 tokens)
+  ok    C8   30 pairs measured (WCAG 2.x formula) in light, dark-by-system and dark-by-choice: text 7:1, secondary text and links 4.5:1, borders and focus ring 3:1; thinnest margin: light muted on card: 7.08:1 (floor 4.5); node, computing the same 30 ratios separately, agrees to two decimals
+          ok light     fg     on bg    21.00 : 1  (floor 7)
+          ok light     fg     on card  18.43 : 1  (floor 7)
+          ok light     muted  on bg     8.06 : 1  (floor 4.5)
+          ok light     muted  on card   7.08 : 1  (floor 4.5)
+          ok light     accent on bg    10.44 : 1  (floor 4.5)
+          ok light     accent on card   9.16 : 1  (floor 4.5)
+          ok light     line   on bg     7.05 : 1  (floor 3)
+          ok light     line   on card   6.18 : 1  (floor 3)
+          ok light     focus  on bg    10.44 : 1  (floor 3)
+          ok light     focus  on card   9.16 : 1  (floor 3)
+          ok darkmedia fg     on bg    21.00 : 1  (floor 7)
+          ok darkmedia fg     on card  17.43 : 1  (floor 7)
+          ok darkmedia muted  on bg     8.83 : 1  (floor 4.5)
+          ok darkmedia muted  on card   7.33 : 1  (floor 4.5)
+          ok darkmedia accent on bg     8.70 : 1  (floor 4.5)
+          ok darkmedia accent on card   7.22 : 1  (floor 4.5)
+          ok darkmedia line   on bg     7.01 : 1  (floor 3)
+          ok darkmedia line   on card   5.82 : 1  (floor 3)
+          ok darkmedia focus  on bg     8.70 : 1  (floor 3)
+          ok darkmedia focus  on card   7.22 : 1  (floor 3)
+          ok darkattr  fg     on bg    21.00 : 1  (floor 7)
+          ok darkattr  fg     on card  17.43 : 1  (floor 7)
+          ok darkattr  muted  on bg     8.83 : 1  (floor 4.5)
+          ok darkattr  muted  on card   7.33 : 1  (floor 4.5)
+          ok darkattr  accent on bg     8.70 : 1  (floor 4.5)
+          ok darkattr  accent on card   7.22 : 1  (floor 4.5)
+          ok darkattr  line   on bg     7.01 : 1  (floor 3)
+          ok darkattr  line   on card   5.82 : 1  (floor 3)
+          ok darkattr  focus  on bg     8.70 : 1  (floor 3)
+          ok darkattr  focus  on card   7.22 : 1  (floor 3)
+  ok    C9   all 21 tagged colours equal the values in Emacs' own Modus themes (second source)
+  ok    C10  the page script runs on a stand-in DOM (not a browser): dark and light overrides set, 'follow my computer' clears them
+  ok    C11  every opened tag is closed, in order
+  ok    C12  compiles with warnings as errors; 6 ERT tests pass, including pressing a button and reading what the dispatcher was handed
+  ok    C13  lr1op (sh), an awk statement of the rule, the Emacs shell and the page's own script offer the same choices on all 10 profile and edition pairs
+  ok    D1   the shipped notice is a draft, unsigned, grants nothing, and its mark says the author has not read the work
+  ok    D2   the shipped book list lets nothing through (2 rows, 0 may go on the stick)
+  ok    D3   the gate refuses unknown, sold, unattended, undated, odd-right and duplicate rows, and passes one good row
+  ok    D4   no stamp for a draft; a stamp only when 'IN FORCE' AND the author's signature verifies; edited-after-signing, unsigned and wrong-key all refused
+  ok    D5   author/ holds only the notice and the book list (4845 bytes); no e-book, audio or document file anywhere in 4-BUILD
+  ok    E1   README names what was not checked: boot, ISO build, a real browser, an apt install, other awks
+  ok    E2   the profile table in 3-DESIGN (for whom, shell, groups, package count, firmware) equals profiles.txt, the recipe table and the line counts of out/
+  ok    E3   the stage documents have what the brief asks: five or more approaches and a pick, the LENS head line pinned to its subject, every risk with an owner, what was observed and a falsifier, the architecture and profile and flow sections, and the four review parts
+  ok    E4   the dagger counts stated in 6-REVIEW (daggers: 1-IDEATION=16 2-ANALYSIS=11 3-DESIGN=1 6-REVIEW=0) are what grep counts in each document
+
+42 passed, 0 FAILED, 0 not checked
+RESULT: PASS (exit 0)
+
+Not checked by this script, by design: that anything boots; that an ISO builds; that the lists install (apt resolves
+dependencies, runs maintainer scripts); a real browser, screen or mouse, or the larder: link handler; awk other than
+the one on this machine; any Org version other than the one run; whether the Reticulum licence text still reads the
+same upstream today.
+
+[exit status 0]

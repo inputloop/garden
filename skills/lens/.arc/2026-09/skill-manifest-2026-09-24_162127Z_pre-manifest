@@ -1,0 +1,5 @@
+b87217a432db808c029d05794e3751f749c563da01ce2673c052a8ebb9a1096d  ./.arc/2026-09/signature-2026-09-23_pre-header-pass.asc
+e6a8d3ed1db194bb21e049284f747d2edf171c3b3fa94cc56ebfe62d10120720  ./.arc/2026-09/skill-manifest-2026-09-23_pre-header-pass
+961c5b51b4ba5309721b0039cbd710149fd195166c3e820d033dde7d46da51c6  ./SKILL.md
+163507a10d5d3411c18387bd19e9c5676f818aafa9cd3ae63ab1c98db70dbdf9  ./scripts/ferry_core.py
+8ae75e34a3a6cdbdbb4a9f6e42ac8d4b4b28ece5696917bb84e3faf1aee8bcb4  ./scripts/lens.py

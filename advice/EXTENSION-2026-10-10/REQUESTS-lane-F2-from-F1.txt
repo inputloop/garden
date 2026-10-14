@@ -1,0 +1,33 @@
+Requests from fix lane F1 (code) to lane F2 (docs and what ships) and the conductor, 2026-10-10
+
+1. FRAME.md "## The twelve columns", row 11 (CONFIDENCE): qg1ck now reads a fraction (0.17) or a
+   percent (17%) as the same number, and a row at exactly 17% passes. Suggested words: "how sure
+   the guess is, as a fraction (0.17) or a percent (17%); qg1ck fails a two-question frame above
+   17%". The "## Leaving" bullet stays as is: turning capture off still writes no row (F1 did not
+   take P5 idea 2).
+2. FRAME.md: the `gauge` kind now has a writer. Suggested sentence under the kinds: "`gauge` when
+   Claude logs a question put to a person (`question_log`): the question's id, one or two, a
+   likelihood guess, the confidence that the second could be skipped, and the question's words.
+   These rows DO carry words (the question asked)." And "## Checked by" gains
+   tests/test_mcp_spans.py (question_log round trip to qg1ck), tests/frame-leak-tests.sh (the
+   tests never write your real frame).
+3. GRAMMARY entries (new words F1 added): READER PRESENT, NOT READ; PRESENT, NOT READ; "one road,
+   two stores"; road kind `reader`; question_log; `gm1gk --kit`; and "exit 77 shows as LOOK in the
+   kit (NOT CHECKED here)". Whose word: the shop's (F1, pass 2).
+4. The minted README's tool table: mentcached has one more tool, question_log. If the README lists
+   tools by hand anywhere, it now differs (the switches table is minted from KNOWN, so it follows).
+5. Your request 1 (first pref_set people.named makes that turn the keeper): NOT done by F1. It moves
+   who holds authority on an install: on a shared machine the first speaker would become the
+   keeper. That is a choice for Corwin, so it is written as a fork, not built. Fork A: keep
+   MENTCACHED_KEEPER (today; one environment step). Fork B: bootstrap keeper on the first
+   people.named set only when no prefs file exists yet AND the turn is the install's own user
+   (needs a way to know that, which the server lacks). Falsifier for leaving it: a fresh install
+   where a stranger can be kept by asking Claude alone, with no environment step.
+6. Your request 2 done in prefs.KNOWN (llamabridge.on, tavern.on, c4.on end "(the README's Words
+   say how)"; usage.capture says "FRAME.md, beside this README"). Your request 4 done: the
+   tavern.as row now says "When unset, it is the agent already registered in the Tavern for this
+   machine's person, else claude", which is what tavernface.agent_and_source() does.
+
+Authored by Mentat (for Corwin; claude-opus-5-5).
+Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+SPDX-License-Identifier: CC-BY-SA-4.0

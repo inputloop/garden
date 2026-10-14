@@ -1,0 +1,142 @@
+#!/bin/sh
+# sb1aw -- SECRETS BOUNDARY 1, AWK. Reads files and reports lines shaped like a secret (a private key,
+#   a GitHub/AWS/Slack/AI-API token, a bearer header, a long value assigned to a *password/*token name,
+#   a NickServ identify line).
+#   One of TWO checkers written apart from each other (its twin is sb1pl, in Perl); both answer to
+#   h/DESIGN-2026-09-26-secrets-at-the-boundary.md byte for byte. Run them through sb1rn.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st>.  Authored by Mentat (for Corwin).
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU
+# General Public License as published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.  SPDX-License-Identifier: GPL-3.0-or-later
+#
+# usage: sb1aw [--] PATH...     files or folders (walked; .git not entered; links not followed)
+#   stdout: "HIT path:line kind" per hit, then one "sb: ..." summary line.  Never prints the secret.
+#   exit:   0 clean - 1 hits - 2 usage, or a file could not be read and nothing was found
+#   A file that cannot be read prints "UNREAD path" and is counted: ", unread N" ends the summary
+#   (only when N > 0). Hits still exit 1; unread files with no hit exit 2 (not checked is not clean).
+#   A folder in a walk that cannot be both listed and entered (no r or no x) prints "UNREAD path/"
+#   (the slash marks a folder), in path order, and counts in the same N (AMENDED 2026-09-27, later).
+# A line holding the marker sb:allow is not checked (documentation that must show an example).
+# JOURNEY: a pattern list, not understanding. Clean means none of eight shapes, never "no secrets".
+set -u
+LC_ALL=C; export LC_ALL
+[ "${1:-}" = -- ] && shift
+case ${1:-} in ''|-h|--help) sed -n '2,/^set -u/p' "$0" | sed '$d; s/^# \{0,1\}//' >&2; exit 2 ;; esac
+
+list=$(mktemp) || exit 2; text=$(mktemp) || exit 2
+trap 'rm -f "$list" "$text"' EXIT INT TERM
+for p in "$@"; do
+  while :; do case $p in ?*/) p=${p%/} ;; *) break ;; esac; done
+  if [ -L "$p" ]; then continue
+  elif [ -f "$p" ]; then printf '%s\n' "$p" >> "$list"
+  elif [ -d "$p" ]; then   # a folder it cannot list and enter goes on the list as "path/" (said UNREAD)
+    find "$p" -name .git -type d -prune -o -type d -exec sh -c 'for d do [ -r "$d" ] && [ -x "$d" ] || printf "%s/\n" "$d"; done' sh {} + \
+      -o -type f -print >> "$list"
+  else printf 'sb1aw: no such file or folder: %s\n' "$p" >&2; exit 2
+  fi
+done
+binary=0; under=
+# sorted, a folder "d/" comes just before anything find still named inside it (readable, not enterable):
+# those are not listed; the folder alone is said UNREAD, as sb1pl says it
+sort -u "$list" | while IFS= read -r f; do
+  if [ -n "$under" ]; then case $f in "$under"*) continue ;; esac; fi
+  case $f in */) under=$f; printf 'U%s\n' "$f"; continue ;; esac
+  all=$(head -c 8192 -- "$f" 2>/dev/null | wc -c); nonul=$(head -c 8192 -- "$f" 2>/dev/null | tr -d '\000' | wc -c)
+  if [ "$all" -ne "$nonul" ]; then printf 'B\n'; else printf 'T%s\n' "$f"; fi
+done > "$text"
+binary=$(grep -c '^B$' "$text")
+
+awk -v binary="$binary" -v listfile="$text" '
+function word(c) { return c != "" && c ~ /[A-Za-z0-9_]/ }
+function start(s, i) { return i == 1 || !word(substr(s, i - 1, 1)) }
+function run(s, i, cls,   n) { n = 0; while (i + n <= length(s) && substr(s, i + n, 1) ~ cls) n++; return n }
+function sp(s, i) { while (substr(s, i, 1) == " " || substr(s, i, 1) == "\t") i++; return i }
+# every position of needle in s, starting at 1, written into pos[1..n]; returns n
+function where(s, needle, pos,   n, off, k) {
+  n = 0; off = 0
+  while ((k = index(substr(s, off + 1), needle)) > 0) { pos[++n] = off + k; off = off + k }
+  return n
+}
+function k_private(s,   pos, n, j) {
+  n = where(s, "-----BEGIN ", pos)
+  for (j = 1; j <= n; j++) if (substr(s, pos[j] + 11) ~ /^[A-Z ]*PRIVATE KEY( BLOCK)?-----/) return 1
+  return 0
+}
+function k_github(s,   pos, n, j, i, c) {
+  n = where(s, "gh", pos)
+  for (j = 1; j <= n; j++) { i = pos[j]; c = substr(s, i + 2, 1)
+    if (start(s, i) && index("pousr", c) && c != "" && substr(s, i + 3, 1) == "_" && run(s, i + 4, "[A-Za-z0-9]") >= 36) return 1 }
+  n = where(s, "github_pat_", pos)
+  for (j = 1; j <= n; j++) { i = pos[j]; if (start(s, i) && run(s, i + 11, "[A-Za-z0-9_]") >= 22) return 1 }
+  return 0
+}
+function k_aws(s,   pos, n, j, i, pre, p) {
+  split("AKIA ASIA", pre, " ")
+  for (p = 1; p <= 2; p++) { n = where(s, pre[p], pos)
+    for (j = 1; j <= n; j++) { i = pos[j]; if (start(s, i) && run(s, i + 4, "[A-Z0-9]") == 16) return 1 } }
+  return 0
+}
+function k_slack(s,   pos, n, j, i, c) {
+  n = where(s, "xox", pos)
+  for (j = 1; j <= n; j++) { i = pos[j]; c = substr(s, i + 3, 1)
+    if (start(s, i) && c != "" && index("abprs", c) && substr(s, i + 4, 1) == "-" && run(s, i + 5, "[A-Za-z0-9-]") >= 10) return 1 }
+  return 0
+}
+function k_ai(s,   pos, n, j, i) {
+  n = where(s, "sk-", pos)
+  for (j = 1; j <= n; j++) { i = pos[j]; if (!start(s, i)) continue
+    if (substr(s, i, 7) == "sk-ant-" && run(s, i + 7, "[A-Za-z0-9_-]") >= 20) return 1
+    if (substr(s, i, 8) == "sk-proj-" && run(s, i + 8, "[A-Za-z0-9_-]") >= 20) return 1
+    if (run(s, i + 3, "[A-Za-z0-9]") >= 20) return 1 }
+  return 0
+}
+function k_bearer(s,   low, pos, n, j, i) {
+  low = tolower(s); n = where(low, "authorization:", pos)
+  for (j = 1; j <= n; j++) { i = sp(low, pos[j] + 14)
+    if (substr(low, i, 6) == "bearer") i += 6; else if (substr(low, i, 5) == "token") i += 5; else continue
+    if (substr(low, i, 1) != " " && substr(low, i, 1) != "\t") continue
+    i = sp(low, i); if (run(s, i, "[A-Za-z0-9._~+/=-]") >= 20) return 1 }
+  return 0
+}
+function k_assigned(s,   low, suf, m, q, pos, n, j, i, c) {
+  low = tolower(s); m = split("password passwd secret token api_key apikey access_key private_key secret_key api-key", suf, " ")
+  for (q = 1; q <= m; q++) { n = where(low, suf[q], pos)
+    for (j = 1; j <= n; j++) { i = pos[j] + length(suf[q])
+      if (substr(s, i, 1) ~ /[A-Za-z0-9_.-]/) continue
+      c = substr(s, i, 1); if (c == "\"" || c == "\047") i++
+      i = sp(s, i); c = substr(s, i, 1); if (c != "=" && c != ":") continue
+      i = sp(s, i + 1); c = substr(s, i, 1); if (c == "\"" || c == "\047") i++
+      if (run(s, i, "[A-Za-z0-9_./+=-]") >= 12) return 1 } }
+  return 0
+}
+function k_irc(s,   low) {   # rule 8 (2026-09-26): a NickServ identify/register/ghost with something after it
+  low = tolower(s)
+  if (low ~ /(\/msg|privmsg)[ \t]+nickserv[ \t]+:?(identify|register|ghost)[ \t]+[^ \t]/) return 1
+  if (low ~ /^[ \t]*\/(ns|nickserv)[ \t]+(identify|register|ghost)[ \t]+[^ \t]/) return 1
+  return 0
+}
+BEGIN {
+  split("private-key github-token aws-key-id slack-token ai-api-key bearer-header assigned-secret irc-credential", kind, " ")
+  read = 0; hits = 0; files = 0; allowed = 0; unread = 0
+  while ((getline rec < listfile) > 0) {
+    if (rec == "B") continue
+    if (substr(rec, 1, 1) == "U") { printf "UNREAD %s\n", substr(rec, 2); unread++; continue }
+    f = substr(rec, 2); nl = 0; fh = 0
+    # an unreadable file is said, counted, and never read as clean (AMENDED 2026-09-27)
+    if ((r = (getline line < f)) < 0) { printf "UNREAD %s\n", f; unread++; close(f); continue }
+    read++
+    for (; r > 0; r = (getline line < f)) {
+      nl++; sub(/\r$/, "", line)
+      if (index(line, "sb:allow")) { allowed++; continue }
+      got[1] = k_private(line); got[2] = k_github(line); got[3] = k_aws(line); got[4] = k_slack(line)
+      got[5] = k_ai(line); got[6] = k_bearer(line); got[7] = k_assigned(line); got[8] = k_irc(line)
+      for (k = 1; k <= 8; k++) if (got[k]) { printf "HIT %s:%d %s\n", f, nl, kind[k]; hits++; fh = 1 }
+    }
+    close(f); files += fh
+  }
+  tail = unread ? sprintf(", unread %d", unread) : ""
+  if (hits) printf "sb: %d hit(s) in %d file(s); read %d, binary skipped %d, allowed %d%s\n", hits, files, read, binary, allowed, tail
+  else printf "sb: clean; read %d, binary skipped %d, allowed %d%s\n", read, binary, allowed, tail
+  exit(hits ? 1 : (unread ? 2 : 0))
+}'

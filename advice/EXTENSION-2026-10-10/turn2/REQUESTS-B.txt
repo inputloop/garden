@@ -1,0 +1,29 @@
+REQUESTS-B.txt -- what lane B needs from files outside its lane (turn 2).
+
+To lane D (conventions/FOOTERS.org, via bin/ft1mt):
+  1. Add "verbatim" rows for SOFT-SKILLS/omni-tool and SOFT-SKILLS/frugal-offload (Bryant's bytes;
+     their NOTICEs govern).  Without them tests/test_ft1mt.py test_every_skill_has_a_row goes red
+     once it gets past depth-overlap.  SKILL.md sha256 prefixes: omni-tool d6fc0216fff7,
+     frugal-offload 8ecda65de33c.
+  2. The gauntlet row's body field reads 44900b8f15c6, the sha prefix of v1.4; the SKILL.md on disk is
+     v1.5 (sha256 prefix 478bfe6b6383).  The test only checks "mint" rows, so it stays green.
+  3. depth-overlap (the other session's, untracked) has no row either; that is today's red.
+
+To lane T (GRAMMARY.md): three new terms, each used in conventions/C4QL-TAG.md.
+  - C4QL tag: a bracket [PERSONA (CAST)FACT] that points at one table row and names who shaped it.
+  - cast table: conventions/c4ql-casts.tsv; says which table a cast word points at.
+  - tg1rs (tag 1 resolve): reads a tag and answers LINKED, FORWARD-ONLY, BACK-ONLY, GAP or WORD.
+
+To the conductor (files in no lane's list):
+  4. conventions/bryant-counterparts.tsv, the omni-tool row: "none" is out of date; suggest
+     "omni-tool  omni-tool  SOFT-SKILLS  same-origin  turn 2 lane B: byte-for-byte soft copy with NOTICE"
+     and a frugal-offload same-origin row.  Lane G reads this table for the garden view.
+  5. skills/llama-bridge/SKILL.md, in our vb.1 section (outside Bryant's markers): one paragraph, "In
+     this garden the offload decision is frugal-offload's (SOFT-SKILLS), with skilltank; his
+     omni-tool v1.11 moved it there."  His manual v1.4 still calls omni-tool canonical for it.  The
+     skill is signed, so this is a re-sign.
+  6. bin/ss1ls (the awk soft-skill lister) still prints gauntlet's and parallax's descriptions with
+     their YAML quotes; the python loader no longer does.  ss1ls-tests compares names only, so it
+     stays green.  The same _unquote rule in awk would match.
+
+Mentat (for Corwin; claude-opus-5-5)

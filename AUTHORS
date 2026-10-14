@@ -1,0 +1,15 @@
+polygram — authors and maintainers
+
+Corwin Brust <corwin@bru.st>                       maintainer, design, curation
+Bryant Frankford <nathanielfrankford@gmail.com>    co-author; maker of Llama Bridge and Tavern
+                                                   (servers), and of aethernet-relay, foaf,
+                                                   token-optimizer, and the gauntlet and parallax
+                                                   soft skills (see conventions/MAKERS.org)
+Mentat (Claude, in Cowork)                         co-author of code and documentation
+
+Corwin and Bryant pool their work into one shared collection and offer it together, under
+the terms in TERMS-OF-SERVICE.md.
+
+polygram is developed with Anthropic's Claude in Cowork mode. Authorship of
+upstream "externs" cloned into the workspace remains with their respective
+upstreams and is not claimed here.

@@ -1,0 +1,10 @@
+97d3a0198cd1123cffa9fe4018191c94162ea2411861b42a8a6cb65b882f136d  ./.arc/2026-09/SKILL-2026-09-11_Archived-by-rcw-01dwoah4hj9uxpj4dacwrb2p.md
+e6f38ea6dadc4a0cd147927a7431d65e7e4fcc8399d4ce593b854dde313ee45f  ./.arc/2026-09/signature-2026-09-23_pre-header-pass.asc
+2ccf8be6c8a637129346d04dbe7093ee6eb4a01e498df46991e540aedc1e04d5  ./.arc/2026-09/skill-manifest-2026-09-23_pre-header-pass
+261832416d723c38ef9e989fd8801641718d982a94eecc6c226b521e07802178  ./.arc/receipts/aw2ri-2026-09.log
+7a3794a7983acb93d62a55dbc4b390d8ff5a23d0579ece3ed90accadec10e17b  ./SKILL.md
+d3e8151eecb12201421a36053196580009a260a046bcf426795a23223f24adeb  ./assets/POCKET-MENTAT.md
+7910d6deee652ff15e81422655c0d192f940cbdbe16ec528fec96852f78cf6c3  ./fixtures/expected.tsv
+5e5c7654d7c4b858420ba265a000af325a674ce43cf0698f7e5a62874cc54d00  ./fixtures/notes.md
+0addfca18df736dc5af5288c4986f2b1dc9a260561b7ee376d6e8d232ad0ce76  ./scripts/pmnotes.sh
+abb562f303038993ed84961aab83f0328ecbcd3eafd0c4ee79be10ed8e92fcd9  ./tests.sh

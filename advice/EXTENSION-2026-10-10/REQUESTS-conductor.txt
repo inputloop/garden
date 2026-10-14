@@ -1,0 +1,25 @@
+# From lane A, 2026-10-10.
+# 1. Fold R17 and R18 from R-ROWS-lane-A.txt (checked green and planted-red in a scratch harness).
+# 2. seat_mode (polygram/mcp/mentcached.py, no lane owns it) should add prefs.quote() to its status
+#    line, so person./room. rows and seatkeeper "no"s are quoted at session open (card 06). Until then
+#    pref_list is the only reader that says them.
+# 3. FRAME.md sits at the AS4CE0001 root; decide whether make dist ships it beside the plugin README.
+
+# From lane C, 2026-10-10.
+# 1. Fold R21 and R22 from R-ROWS-lane-C.txt (green and planted-red in a scratch harness).
+# 2. Makefile (dist): run `sh bin/release --gauge` (the NEWS-lag gauge; it never fails) and
+#    `sh bin/lc1ck dist/vibrobeast` (report only, or as a gate: your call) after the mint.
+#    The live mint today: lc1ck 52 faults (49 SKILL.md footers carry an SPDX GPL line in prose;
+#    TERMS-OF-SERVICE.md line 52 and PRIVACY.md, both from the v1 block); 4 bare retired tags
+#    (build-loop SKILL.md:132, writing-forms SKILL.md:83-85).  So `bin/release` will refuse until
+#    those are fixed or a --news-reason line is given.  A re-mint picks up TERMS v1.1 for the ToS.
+# 3. bin/tp2mt (no lane owns it): PRIVACY.md names no licence, so lc1ck faults it ("terms without
+#    BY-SA").  Suggested: one line at its end, "This policy is writing, under CC-BY-SA-4.0 (see
+#    TERMS-OF-SERVICE.md)."  tests/tp2mt-tests.sh is green today.
+# 4. labels.tsv (no lane owns it): GRAMMARY's NO4C entry now says the 2026-07-08 ruling and where it
+#    lives (models/SEMAPHORES.md, Avalon bin/lift.sh); the tsv row says "SEMAPHORES.md registry
+#    governs" without a path.  models/SEMAPHORES.md row 44 still says "provisional".
+# 5. c4/man/attribution-ladder.md line 80 and attribution-and-licensing.md line 16 still say TERMS v1
+#    writing is CC BY 4.0; with v1.1 they are stale (C4 files, outside lane C).
+# 6. The 49 GPL-on-prose SKILL.md footers: the design's later task 8 (the footer re-mint) should
+#    cover these as well as the CC-BY-SA4 spelling; lc1ck gives the count.

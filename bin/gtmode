@@ -1,0 +1,72 @@
+# gtmode - GIT TRANSPORT MODE.  Source it (. bin/gtmode); it sets how git reaches upstream.
+#
+# Copyright (C) 2026 Corwin.  SPDX-License-Identifier: GPL-3.0-or-later
+# This program is free software: you can redistribute it and/or modify it under the terms
+# of the GNU General Public License as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
+#
+# FORGEJO_TOKEN unset  ->  GT_MODE=SSH    nothing changes; git uses the remote as configured.
+# FORGEJO_TOKEN set    ->  GT_MODE=TOKEN  for this process only (environment, never git config):
+#   * the upstream's ssh:// or user@host: URL is rewritten to https://host/ (url.insteadOf);
+#   * the token rides as an HTTP Basic header for that host only (http.<url>.extraHeader);
+#   * SSH is switched off (GIT_SSH_COMMAND=false), so nothing can quietly fall back to it;
+#   * git never stops to ask for a password (GIT_TERMINAL_PROMPT=0).
+# The token is never written to a file, a URL, or git's argument list.  Needs git 2.31+.
+# FORGEJO_USER (default: the owner in the upstream path) names the account the token belongs to.
+# GT_DIR (default .) is the work tree whose upstream is meant.
+# Sets GT_MODE, GT_URL (where git will actually go), GT_WHY (one line: why this mode).
+
+GT_REMOTE=${RELEASE_REMOTE:-upstream}
+# Sourced again by a child (the card sources this, then bin/release and gt1sp do): keep the parent's
+# settings.  Found 2026-09-25: re-deriving in the child read the ALREADY-rewritten URL, dropped the
+# rewrite, and git went back to ssh:// -- the very thing token mode exists to stop.
+if [ "${GT_ACTIVE:-}" = 1 ]; then :; else
+# GIT_CONFIG_COUNT=0: read the remote as configured, never as some inherited rewrite shows it.
+GT_RAW=$(GIT_CONFIG_COUNT=0 git -C "${GT_DIR:-.}" remote get-url "$GT_REMOTE" 2>/dev/null)
+if [ -n "${FORGEJO_TOKEN:-}" ] && [ -n "$GT_RAW" ]; then
+  case $GT_RAW in
+    ssh://*)   GT_FROM=$(printf '%s' "$GT_RAW" | sed 's|^\(ssh://[^/]*/\).*|\1|')
+               GT_HOST=$(printf '%s' "$GT_FROM" | sed 's|^ssh://\([^@]*@\)\{0,1\}\([^:/]*\).*|\2|') ;;
+    *@*:*)     GT_FROM=$(printf '%s' "$GT_RAW" | sed 's|^\([^:]*:\).*|\1|')
+               GT_HOST=$(printf '%s' "$GT_FROM" | sed 's|^[^@]*@\([^:]*\):$|\1|') ;;
+    http://*|https://*) GT_FROM=; GT_HOST=$(printf '%s' "$GT_RAW" | sed 's|^https*://\([^/]*\).*|\1|') ;;
+    *)         GT_FROM=; GT_HOST= ;;
+  esac
+  if [ -n "$GT_HOST" ]; then
+    GT_TO=${GT_BASE:-https://$GT_HOST/}   # GT_BASE: tests only (a local http stand-in)
+    GT_PATH=$(printf '%s' "$GT_RAW" | sed "s|^$GT_FROM||; s|^https*://[^/]*/||")
+    : "${FORGEJO_USER:=${GT_PATH%%/*}}"
+    GT_AUTH=$(printf '%s:%s' "$FORGEJO_USER" "$FORGEJO_TOKEN" | base64 | tr -d '\n')
+    n=0
+    if [ -n "$GT_FROM" ]; then
+      export GIT_CONFIG_KEY_0="url.$GT_TO.insteadOf" GIT_CONFIG_VALUE_0="$GT_FROM"; n=1
+    fi
+    eval "export GIT_CONFIG_KEY_$n=\"http.$GT_TO.extraHeader\" GIT_CONFIG_VALUE_$n=\"Authorization: Basic \$GT_AUTH\""
+    export GIT_CONFIG_COUNT=$((n+1)) GIT_SSH_COMMAND=false GIT_TERMINAL_PROMPT=0
+    GT_MODE=TOKEN GT_URL="$GT_TO$GT_PATH"
+    GT_WHY="FORGEJO_TOKEN is set: HTTPS as $FORGEJO_USER, SSH switched off"
+    unset GT_AUTH n
+  else
+    GT_MODE=SSH GT_URL=$GT_RAW GT_WHY="FORGEJO_TOKEN is set but the upstream URL is not one I can rewrite; using it as is"
+  fi
+else
+  GT_MODE=SSH GT_URL=$GT_RAW GT_WHY='FORGEJO_TOKEN is not set: SSH with your key (to use a token: export it, or put FORGEJO_TOKEN=... in front of the command -- a plain (X=...; cmd) does not reach cmd)'
+fi
+GT_ACTIVE=1; export GT_ACTIVE GT_MODE GT_URL GT_WHY
+fi
+
+# gt_git: git exactly as the push will run it.  SSH mode adds only a connect timeout, and only when
+# neither GIT_SSH_COMMAND nor core.sshCommand is already set -- never BatchMode, never over your
+# own ssh setup.  (Found 2026-09-25: the old check forced 'ssh -o BatchMode=yes' over whatever git
+# normally uses, and said "no" on a host where the real push works.)
+gt_git() {
+  if [ "$GT_MODE" = SSH ] && [ -z "${GIT_SSH_COMMAND:-}" ] \
+     && ! git -C "${GT_DIR:-.}" config --get core.sshCommand >/dev/null 2>&1; then
+    GIT_SSH_COMMAND='ssh -o ConnectTimeout=10' git -C "${GT_DIR:-.}" "$@"
+  else git -C "${GT_DIR:-.}" "$@"; fi
+}
+# gt_probe: "yes", or "no: <git's last complaint>" -- does upstream answer by this mode?
+gt_probe() {
+  _e=$(gt_git ls-remote "$GT_REMOTE" HEAD 2>&1 >/dev/null)
+  if [ $? -eq 0 ]; then echo yes; else echo "no: $(printf '%s\n' "$_e" | grep -v '^$' | tail -1)"; fi
+}

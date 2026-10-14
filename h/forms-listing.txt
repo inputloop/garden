@@ -1,0 +1,85 @@
+# forms listing 2026-09-11: filename prefixes in c4/h and AS4CE0001/h (count, first/last date, one example path)
+mnt/c4/h NOTE 27 NOTE-2026-08-09-fn.md
+mnt/c4/h DIAGRAM 24 DIAGRAM-2026-09-05-enhance-tree.json
+mnt/c4/h CARD 22 CARD-20260910T1740Z-parents-c4-actual-brief.md
+mnt/c4/h LENS 20 LENS-2026-08-25-full-measure.md
+mnt/c4/h PAPER 16 PAPER-2026-08-10-invent-computing-procedure-v2.md
+mnt/c4/h MODEL 13 MODEL-2026-09-04-experiment-seat-contact-sheet.md
+mnt/c4/h VIEW 11 VIEW-2026-09-11-on1gw.html
+mnt/c4/h DIFF 8 DIFF-2026-09-09-slice-A-frontmatter.md
+mnt/c4/h DESIGN 8 DESIGN-2026-08-10-judge-persona.md
+mnt/c4/h REPROMPT 7 REPROMPT-2026-08-29-lens-drift-unit01.model.md
+mnt/c4/h REFORMAT 6 REFORMAT-2026-08-05-final-countdown.md
+mnt/c4/h PLAN 6 PLAN-2026-08-05-longturns.md
+mnt/c4/h WAVE1 5 WAVE1-20260910T1013Z-apprentice-c4-actual-brief.md
+mnt/c4/h WAVE0 5 WAVE0-20260910T1004Z-archivist-c4-actual-brief.md
+mnt/c4/h ARCHIVE 5 ARCHIVE-2026-08-05-CLAUDE.md-pre-door
+mnt/c4/h READ 4 READ-2026-09-09-reader-A.md
+mnt/c4/h DELTAS 4 DELTAS-2026-09-05-mentat-modeling.md
+mnt/c4/h CHARACTER 4 CHARACTER-2026-09-05-shopgarden.md
+mnt/c4/h HYPOTHESIS 3 HYPOTHESIS-2026-09-04-csspt-prompt-by-model.md
+mnt/c4/h HANDOFF 3 HANDOFF-2026-08-05-new-global-session.md
+mnt/c4/h STAGE 2 STAGE-2026-08-30-c4prime-guard-signage
+mnt/c4/h SITTING 2 SITTING-2026-08-05-aethernet-dialect.md
+mnt/c4/h RESEARCH 2 RESEARCH-2026-09-10-E8-dynamics-rule.md
+mnt/c4/h REPASS 2 REPASS-2026-09-09-exec-summary.md
+mnt/c4/h PROMPT 2 PROMPT-2026-08-10-synthesis-kickoff.md
+mnt/c4/h PROJ 2 PROJ-2026-09-07
+mnt/c4/h INGEST 2 INGEST-2026-08-05-bryant-drop.md
+mnt/c4/h FOLD 2 FOLD-2026-09-11-memory-seat-into-model-v8.md
+mnt/c4/h ENHANCE 2 ENHANCE-2026-09-04-queue.md
+mnt/c4/h DRAFT 2 DRAFT-2026-08-16-corwin.txt
+mnt/c4/h WORKSHEET 1 WORKSHEET-2026-08-06-terms-pins.md
+mnt/c4/h WAVE2 1 
+mnt/c4/h WALKTHROUGH 1 WALKTHROUGH-2026-08-05-kimi-k3-ollama-ghostwheel.md
+mnt/c4/h TRYON 1 TRYON-2026-08-05-wire-wardrobe.md
+mnt/c4/h TERMS 1 TERMS-2026-08-08-collision-anchors.md
+mnt/c4/h SWING 1 SWING-2026-09-10-toward-ON.md
+mnt/c4/h SHOP 1 
+mnt/c4/h SHIP 1 
+mnt/c4/h SHARE 1 SHARE-2026-09-01-invent-computing
+mnt/c4/h REVIEW 1 REVIEW-2026-09-08-dissertation-pass-1.md
+mnt/c4/h READING 1 READING-2026-08-05-big-review.md
+mnt/c4/h QA 1 QA-2026-09-06-persona-grid.md
+mnt/c4/h PREP 1 PREP-2026-08-29-editor-credit.md
+mnt/c4/h PREFER 1 PREFER-2026-08-29-column-headers.md
+mnt/c4/h PASS 1 PASS-2026-08-16-principle-removal.md
+mnt/c4/h LEDGER 1 LEDGER-2026-09-07-what-corwin-learned.md
+mnt/c4/h HANDBACK 1 HANDBACK-2026-09-02-emacs-recipe-pilot.md
+mnt/c4/h GRIND 1 
+mnt/c4/h FIX 1 FIX-2026-09-10-dr1aw-branch-parsing.md
+mnt/c4/h DISS 1 DISS-2026-09-08-ai-diligence-sysops.md
+mnt/c4/h DATA 1 DATA-2026-08-30-sign-provenance.tsv
+mnt/c4/h CLOSE 1 
+mnt/c4/h CITY 1 
+mnt/c4/h CITATIONS 1 CITATIONS-2026-09-10-readme-palace.md
+mnt/c4/h CHECKPOINT 1 CHECKPOINT-2026-08-30-movement02.md
+mnt/c4/h CAMPAIGN 1 CAMPAIGN-2026-08-29-wide-signing.assy
+mnt/c4/h BUILD 1 BUILD-2026-09-10-E5-assy-tool-emulation.md
+mnt/c4/h BANK 1 
+mnt/c4/h ACCESSIBILITY 1 
+mnt/AS4CE0001/h DIAGRAM 24 DIAGRAM-2026-09-05-enhance-tree.json
+mnt/AS4CE0001/h LENS 14 LENS-2026-09-02-pref-cards-fantasy-operational.md
+mnt/AS4CE0001/h PROMPT 7 PROMPT-2026-09-04-csspt-lens-selfcheck--fable-S3.md
+mnt/AS4CE0001/h MODEL 7 MODEL-2026-09-04-experiment-seat-contact-sheet.md
+mnt/AS4CE0001/h QA 4 QA-2026-09-04-csspt-prompt-S2-opus-vs-corwin.md
+mnt/AS4CE0001/h CHARACTER 4 CHARACTER-2026-09-05-shopgarden.md
+mnt/AS4CE0001/h CARD 4 CARD-2026-09-05-desktop-commander-config-route.md
+mnt/AS4CE0001/h HYPOTHESIS 3 HYPOTHESIS-2026-09-04-csspt-prompt-by-model.md
+mnt/AS4CE0001/h SEAL 2 SEAL-2026-09-09-hypothesis-c4actual.sha256
+mnt/AS4CE0001/h PUB 2 
+mnt/AS4CE0001/h ENHANCE 2 ENHANCE-2026-09-04-queue.md
+mnt/AS4CE0001/h DESIGN 2 DESIGN-2026-09-02-LC-learning-companion.md
+mnt/AS4CE0001/h DELTAS 2 DELTAS-2026-09-05-mentat-modeling.md
+mnt/AS4CE0001/h SCORE 1 SCORE-2026-09-11-sealed-hypotheses.md
+mnt/AS4CE0001/h PATCH 1 PATCH-2026-09-11-rolls-report-card-kind.diff
+mnt/AS4CE0001/h MEMORY 1 
+
+# facts/ shape
+README.md
+a-plural-is-an-affinity-edge-and-the-gauge-catches-the-fakes
+a-scope-handle-not-an-owner-and-plurals-resolve-addresses
+# decks/ shape
+accountability-first.deck.md
+accountability-first.deck.md.asc
+brown-ancestry-rediscovered.deck.md

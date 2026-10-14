@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+# program|package|path in that package (Debian 13.7 trixie main). From Contents-amd64.gz and Contents-all.gz,
+# each sha256-matched to the signed InRelease of 2026-09-12; see PROVENANCE.txt item 3 for the command.
+kiwix-desktop|kiwix|usr/bin/kiwix-desktop
+foliate|foliate|usr/bin/foliate
+lowriter|libreoffice-writer|usr/bin/lowriter
+libreoffice|libreoffice-common|usr/bin/libreoffice
+mpv|mpv|usr/bin/mpv
+mousepad|mousepad|usr/bin/mousepad
+emacs-nox|emacs-nox|usr/bin/emacs-nox
+firefox-esr|firefox-esr|usr/bin/firefox-esr
+gpm|gpm|usr/sbin/gpm
+xdg-open|xdg-utils|usr/bin/xdg-open

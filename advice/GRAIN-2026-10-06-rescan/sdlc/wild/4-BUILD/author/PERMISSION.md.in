@@ -1,0 +1,43 @@
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+<!-- TEMPLATE NOTE (removed when rendered)
+This text is a template by non-lawyers, CC BY-SA 4.0. The books it names are NOT
+covered by that licence. It is not legal advice. Before an author uses it:
+  1. have a lawyer in your jurisdiction read it, and your publisher contract
+     (does the publisher hold electronic or derivative rights?);
+  2. decide the choices marked in edition.conf notes: money, AI training,
+     content limits, and whether a withdrawal reaches works already marked;
+  3. only then set LEGAL_REVIEW=yes, which removes the DRAFT banner.
+-->
+# Fan Works Permission Notice, version {{VERSION}}
+
+From {{AUTHOR}}, about {{TITLES}} ("the Books").
+
+**In short:** you may write and share fan works about the Books, free of charge, if you keep the mark below on them. I will not read them and I will not approve them.
+
+## Grant
+
+I give everyone permission to make and share fan works that use the characters, places and events of the Books, in any form, anywhere, free of charge. This permission is not exclusive, and I keep every other right in the Books.
+
+## Mark
+
+Every copy of a fan work must open with this mark, unchanged. The tool `fanmark` fills in the id, which is the first 12 characters of the SHA-256 of this notice, so that anyone can check which notice a work relied on.
+
+> **FAN WORK — published by permission of {{AUTHOR}}** under the Fan Works Permission Notice v{{VERSION}} (id {ID}). Not official, not endorsed, not read by the author.
+
+A copy without the mark is not covered by this permission.
+
+## Not read
+
+I do not read fan works and I do not accept them. Please do not send them to me. If one reaches me anyway, I may delete it unread, and you give me permission to use any idea in it without credit or payment.
+
+## No money
+
+Do not sell fan works, put them behind a paywall, or earn money from them in any other way. Do not use them to train an AI model.
+
+## Yours and mine
+
+You keep the rights in what you add. You get no rights in the Books, and you may not use their titles, covers or my name as a brand, or to suggest that I wrote or approved your work.
+
+## Changes
+
+I may change or withdraw this notice for works made after the change. Works already marked with an earlier id keep that permission. The current notice is at {{CONTACT}}.

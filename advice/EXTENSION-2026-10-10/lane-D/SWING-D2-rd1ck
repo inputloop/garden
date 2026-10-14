@@ -1,0 +1,21 @@
+# SWING -- one build task's loop (sw1ng v3), written down so it does not have to be remembered.
+# Read it with: sh /sessions/rcw-01kr4zwy9ba6fvw5z6kd8cei/mnt/c4/bin/sw1ng state     Ask it what to do with: sh /sessions/rcw-01kr4zwy9ba6fvw5z6kd8cei/mnt/c4/bin/sw1ng next
+task: D2-rd1ck
+design: advice/EXTENSION-2026-10-10/lane-D/DESIGN-lane-D.md
+qaplan: advice/EXTENSION-2026-10-10/lane-D/QAPLAN-lane-D.md
+qaplan-sha: 53c66fa18b14478f4886b039c2995dd637fcfffcd1aadc794e7ba585cc40b0e0
+qa-max: 3
+cycle: 1
+swing: 1
+corrections: 0
+opportunity-used: no
+qa-redesign-indicator: NO
+redesigns: 0
+last-issues: 0
+last-warnings: 0
+final: not-taken
+baseline: -
+state: DONE
+# 2026-10-10T08:43Z  opened; design and QA plan named before any build; QA counter 0; redesign indicator NO; max 3
+# 2026-10-10T09:20Z  QA pass 1 of 3 in cycle 1: 0 issue(s), 0 warning(s)
+# 2026-10-10T09:20Z  closed on a clean pass 1 of 3, cycle 1

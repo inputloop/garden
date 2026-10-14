@@ -1,0 +1,131 @@
+#!/usr/bin/env python3
+# pk1tv -- PERSONA KIT 1 TABLE VIEW. Renders the usage-sketch table for the persona kits from a TSV record:
+#          one row per (kit, step); three columns -- Kit/variant (task/step) · tabletop · iT assisted --
+#          reused for every kit; rows grouped by kit; each cell may carry a disclosure triangle (<details>)
+#          with an accessible insight (a keyboard-reachable <summary>; the words carry the meaning, never a
+#          hue). The TSV is the record; the table is the courtesy.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st>
+# This program is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.  See <https://www.gnu.org/licenses/>.
+# Marked, as the kits are marked: *for fiction or analysis -- no ship dates or licensing or publication
+# dates specifically defined.*
+#
+# THE NAME (the AS4CE pattern, run-level in the slot): P PERSONA · K KIT · 1 reads one record, writes one
+#   view · T TABLE · V VIEW.
+#
+# usage: pk1tv --html  KITS.tsv [--body]      the table as a page (--body: body-only fragment for a widget/artifact)
+#        pk1tv --text  KITS.tsv               the same table as indented text (a screen reader's view; also the diff-able one)
+#        pk1tv --lint  KITS.tsv               constraints: 3 columns filled on every row, kits in record order, >=3 steps per kit
+#        pk1tv --prove-red                    a record with an empty tabletop cell must FAULT
+#   KITS.tsv columns: kit  step  tabletop  itassisted  insight_tabletop  insight_it   (insights optional; " · " joins items)
+# Authored by Fable (Mentat/Vibrobeast) 2026-09-12 for the persona-kits planning turn.
+import sys, html
+
+def die(m, c=2): sys.stderr.write("pk1tv: %s\n" % m); sys.exit(c)
+
+COLS = ["kit", "step", "tabletop", "itassisted", "insight_tabletop", "insight_it"]
+
+def read(path):
+    rows = []; hdr = None
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.rstrip("\n")
+            if not line or line.startswith("#"): continue
+            parts = line.split("\t")
+            if hdr is None:
+                hdr = parts
+                if hdr[:4] != COLS[:4]: die("header must start %s" % "\t".join(COLS[:4]))
+                continue
+            parts += [""] * (len(COLS) - len(parts))
+            rows.append(dict(zip(COLS, parts[:len(COLS)])))
+    return rows
+
+def lint(rows):
+    f = []
+    if not rows: f.append("no rows")
+    order = []
+    for i, r in enumerate(rows, 1):
+        for c in ("kit", "step", "tabletop", "itassisted"):
+            if not r[c].strip(): f.append("row %d: empty %s" % (i, c))
+        if r["kit"] not in order: order.append(r["kit"])
+        elif order[-1] != r["kit"]: f.append("row %d: kit %s appears out of its group" % (i, r["kit"]))
+    for k in order:
+        n = sum(1 for r in rows if r["kit"] == k)
+        if n < 3: f.append("kit %s has %d step(s); need >= 3" % (k, n))
+    for i, r in enumerate(rows, 1):
+        for c in ("insight_tabletop", "insight_it"):
+            items = [x.strip() for x in r.get(c, "").split(" \u00b7 ") if x.strip()]
+            if len(items) >= 3:
+                for x in items:
+                    if len(x) < 12 and " " not in x and not x.endswith("."):
+                        f.append("row %d: %s item %r reads as a fragment (separator collision? use commas inside an item)" % (i, c, x))
+    return f
+
+def cell(text, insight):
+    out = html.escape(text)
+    if insight.strip():
+        items = [html.escape(x.strip()) for x in insight.split(" · ") if x.strip()]
+        out += '<details class="ins"><summary>insight</summary><ul>' + "".join("<li>%s</li>" % x for x in items) + "</ul></details>"
+    return out
+
+def html_table(rows, body_only=False):
+    kits = []
+    for r in rows:
+        if r["kit"] not in kits: kits.append(r["kit"])
+    css = """
+.pkt{border-collapse:collapse;width:100%;font-size:14px;line-height:1.45}
+.pkt th,.pkt td{border:1px solid #b4b2a9;padding:6px 8px;vertical-align:top;text-align:left}
+.pkt thead th{background:#efe9dc;color:#1f2a33;font-weight:600}
+.pkt tbody tr.grp th{background:#e6eef5;color:#0c447c;font-weight:700;text-align:left}
+.pkt td:first-child{font-weight:500;white-space:nowrap}
+.pkt details.ins{margin-top:4px;font-size:13px}.pkt details.ins summary{cursor:pointer;color:#534ab7;font-weight:600}
+.pkt details.ins summary:focus-visible{outline:2px solid #2f6fd6;outline-offset:2px}
+.pkt details.ins ul{margin:4px 0 0 18px;padding:0}.pkt details.ins li{margin:2px 0}
+.pkt-wrap{overflow-x:auto}.pkt-note{font-size:12px;color:#4b5865;margin:6px 0 0}
+@media (prefers-color-scheme: dark){.pkt th,.pkt td{border-color:#4a4f58}.pkt thead th{background:#262931;color:#ece6da}.pkt tbody tr.grp th{background:#1f2a33;color:#b5d4f4}.pkt details.ins summary{color:#cecbf6}.pkt-note{color:#b5ad9f}}
+"""
+    parts = ['<div class="pkt-wrap"><table class="pkt"><caption>Persona kits — usage sketches (rows grouped by kit; the same three columns for every kit; open a triangle for the insight)</caption>',
+             '<thead><tr><th scope="col">Kit / variant (task · step)</th><th scope="col">tabletop</th><th scope="col">iT assisted</th></tr></thead>']
+    for k in kits:
+        parts.append('<tbody><tr class="grp"><th scope="rowgroup" colspan="3">%s</th></tr>' % html.escape(k))
+        for r in rows:
+            if r["kit"] != k: continue
+            parts.append("<tr><td>%s</td><td>%s</td><td>%s</td></tr>" % (html.escape(r["step"]), cell(r["tabletop"], r["insight_tabletop"]), cell(r["itassisted"], r["insight_it"])))
+        parts.append("</tbody>")
+    parts.append('</table></div><p class="pkt-note">Marked: for fiction or analysis — no ship dates or licensing or publication dates specifically defined. Rendered by pk1tv from the TSV record; the record is canonical.</p>')
+    body = "<style>%s</style>%s" % (css, "".join(parts))
+    if body_only: return body
+    return "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width'><title>Persona kits — usage sketches</title></head><body style='font-family:system-ui,sans-serif;margin:18px'>%s</body></html>" % body
+
+def text_table(rows):
+    out = []; cur = None
+    for r in rows:
+        if r["kit"] != cur: cur = r["kit"]; out.append("== %s ==" % cur)
+        out.append("  %s" % r["step"])
+        out.append("    tabletop:    %s" % r["tabletop"])
+        if r["insight_tabletop"].strip(): out.append("      insight: %s" % r["insight_tabletop"])
+        out.append("    iT assisted: %s" % r["itassisted"])
+        if r["insight_it"].strip(): out.append("      insight: %s" % r["insight_it"])
+    return "\n".join(out) + "\n"
+
+def main(argv):
+    if not argv or argv[0] in ("-h", "--help"): die("usage: pk1tv --html KITS.tsv [--body] | --text KITS.tsv | --lint KITS.tsv | --prove-red")
+    if argv[0] == "--prove-red":
+        f = lint([{"kit": "K", "step": "s", "tabletop": "", "itassisted": "x", "insight_tabletop": "", "insight_it": ""}])
+        print("PASS: pk1tv FAULTs an empty tabletop cell (%s)" % f[0] if f else "FAIL: no fault"); sys.exit(0 if f else 1)
+    if len(argv) < 2: die("need KITS.tsv")
+    rows = read(argv[1])
+    if argv[0] == "--lint":
+        f = lint(rows)
+        for x in f: print("FAULT  %s" % x)
+        print("pk1tv lint: %d row(s), %d kit(s) -- %s" % (len(rows), len({r["kit"] for r in rows}), "FAULT %d" % len(f) if f else "OK"))
+        sys.exit(1 if f else 0)
+    if lint(rows): die("record has FAULTs; run --lint", 1)
+    if argv[0] == "--html": sys.stdout.write(html_table(rows, body_only="--body" in argv[2:])); return
+    if argv[0] == "--text": sys.stdout.write(text_table(rows)); return
+    die("unknown command %s" % argv[0])
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

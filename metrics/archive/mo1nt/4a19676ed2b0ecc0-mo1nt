@@ -1,0 +1,176 @@
+#!/bin/sh
+# mo1nt -- MOUNT: is this path BACKED, and where does its disc begin?
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st>
+# This program is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.  See <https://www.gnu.org/licenses/>.
+#
+# ---------------------------------------------------------------------------------------------
+# THE NAME (AS4CE pattern, run-level in the middle) -- guessed freely, marked provisional:
+#   M  MAP       -- it answers where a path sits, not what is in it
+#   O  OBJECT    -- the subject is one path, treated as an object with a backing
+#   1  run-level -- reads the live mount table and stats paths; writes nothing
+#   N  NODE      -- a mount root is a node the walk stops at
+#   T  TEST      -- the output is a verdict a harness can act on
+#
+# WHY THIS EXISTS.  On 2026-09-17 this shop reported an absence that was not one.  `~/mnt/pub`
+# listed clean and empty, so a session wrote down that the open essay shelf was empty.  It was
+# not: `F:\claude\pub` had twenty entries and still does.  `~/mnt/pub` is a STUB -- an ordinary
+# empty directory left behind on the session's own filesystem where a mount used to be or was
+# never made.  A stub has a parent, lists clean, and answers `ls` forever.
+#
+# The shop door already carried the rule that would have caught it -- MOUNTS ARE AUTHORITATIVE,
+# the live mount table is the truth of what Claude can reach -- and ASK-FOR-iT's mechanical
+# companion says to list the PARENT before calling a named path absent.  Both were obeyed.  The
+# parent listed.  Neither asks the question that matters, which is not "what is in this
+# directory" but "IS THIS DIRECTORY BACKED BY ANYTHING".  Eighth sighting of the defect class:
+# a check asking a question adjacent to the one that matters.
+#
+# THE RULE THIS SHIPS: before reporting a path absent, empty or unreachable, prove it is BACKED.
+#
+# VERDICTS
+#   BACKED    the path lives on a different disc from this session's own -- an absence here is real
+#   STUB      the path exists, is an EMPTY directory, and is on this session's own disc where a
+#             far disc was expected.  An absence reported from here is evidence of nothing. ASK.
+#   OWN       the path exists and is this session's own storage, not the far disc.  Fine to use,
+#             invisible to him -- never report a finding about his estate from here.
+#   ABSENT    the path does not exist and its parent IS on the far disc -- a real absence
+#   UNBACKED  the path does not exist and its parent is not on the far disc either -- ask
+#
+# TWO DECLARATIONS, because an undeclared check reads as MUST:
+#
+#   MUST     the live mount table; each path's existence; its device number and the reference
+#            device's; whether a directory holds any entry at all; the verdict printed and the
+#            exit status that follows from it.  Every one of those is a stat or a table read.
+#
+#   JOURNEY  THE FIVE NAMES, AND WHERE THEIR BOUNDARIES FALL, ARE THIS TOOL'S DEFINITIONS -- not
+#            facts of the filesystem:
+#            BACKED means "on a different device from the reference", which answers "could an
+#            absence reported here be real".  It does NOT verify that the far disc is HIS: a
+#            second mount of any other filesystem reads BACKED exactly the same.
+#            STUB IS A HEURISTIC.  An EMPTY directory on the reference disc is called a stub
+#            because that is the shape the 2026-09-17 fault had.  A genuinely empty directory of
+#            this session's own is called a stub and is not one; a stub with one stray file in it
+#            reads OWN and escapes the warning.  Emptiness is a PROXY for "a mount was expected
+#            here", and a proxy is a judgement wearing a verdict's clothes.
+#            STUB vs UNBACKED carry the same counsel -- ASK -- split only on whether the path
+#            exists.  Two names for one instruction, kept apart because the two look different to
+#            a reader who is standing in one of them.
+#            THE REFERENCE IS $HOME BY DEFAULT: that "my own disc" is the disc $HOME sits on is an
+#            assumption about how a session is laid out.  MO1NT_REF states another.
+#            THE RULE ITSELF -- prove a place is backed before reporting an absence from it -- is
+#            the shop's law written down here.  This tool measures conformance to it, never worth.
+#
+# Depends on: sh, awk, sed, stat, mount (or /proc/mounts).  Nothing else.
+set -eu
+
+usage() {
+  cat <<'USAGE'
+usage:
+  mo1nt PATH...            verdict per path: BACKED | STUB | OWN | ABSENT | UNBACKED
+  mo1nt root PATH          print the mount root the path sits on (the top of its context)
+  mo1nt table              the live mount table this tool believes, one root per line
+  mo1nt --prove-red        plant every fault; show them all red
+  mo1nt -h                 this header
+
+Exit 0 when every path named is BACKED.  Non-zero when any is not, so a harness can gate on it.
+An absence is only evidence when the place it was looked for is backed.
+USAGE
+}
+
+mtab() {                       # every mount point, longest first, so the deepest wins
+  if [ -r /proc/self/mounts ]; then awk '{print $2}' /proc/self/mounts
+  else mount | sed -n 's/^.* on \(.*\) type .*$/\1/p'; fi \
+  | awk '{print length($0)"\t"$0}' | sort -rn | cut -f2-
+}
+
+root_of() {                    # root_of PATH -- the deepest mount point at or above PATH
+  p=$1
+  case "$p" in /*) ;; *) p=$(cd "$(dirname -- "$p")" 2>/dev/null && pwd)/$(basename -- "$1") || p=$1 ;; esac
+  mtab | while IFS= read -r m; do
+    case "$p" in "$m") echo "$m"; break ;; "$m"/*) echo "$m"; break ;; esac
+  done | head -1
+}
+
+on_own_mount() {               # true when PATH is itself a mount point in the table
+  p=$1; mtab | while IFS= read -r m; do [ "$m" = "$p" ] && { echo yes; break; }; done | grep -q yes
+}
+
+# THE DISCRIMINATOR, and the bug this tool had for nine minutes on the day it was written.
+# A first cut asked "is this path under SOME mount".  Every path in a session is under some
+# mount -- the session's own root is one -- so the very stub that caused this tool to exist
+# read BACKED.  Ninth sighting of the defect class, in the tool built to catch the eighth.
+# The question that matters is not "is it mounted" but "IS IT ON A DIFFERENT DISC FROM MINE".
+# So: a path is BACKED when its device differs from the REFERENCE device -- the filesystem the
+# session's own scratch lives on.  Default reference is $HOME; MO1NT_REF overrides it.
+REF=${MO1NT_REF:-$HOME}
+devof() { stat -c %d -- "$1" 2>/dev/null || echo NONE; }
+refdev() { devof "$REF"; }
+
+verdict() {
+  p=$1
+  ap=$(cd "$(dirname -- "$p")" 2>/dev/null && pwd)/$(basename -- "$p") 2>/dev/null || ap=$p
+  if [ ! -e "$ap" ]; then
+    par=$(dirname -- "$ap")
+    if [ -e "$par" ] && [ "$(devof "$par")" != "$(refdev)" ]; then echo "ABSENT"; else echo "UNBACKED"; fi
+    return
+  fi
+  if [ "$(devof "$ap")" != "$(refdev)" ]; then echo "BACKED"; return; fi
+  if [ -d "$ap" ] && [ -z "$(ls -A "$ap" 2>/dev/null)" ]; then echo "STUB"; return; fi
+  echo "OWN"
+}
+
+prove_red() {
+  d=$(mktemp -d) || exit 1
+  trap 'rm -rf "$d"' EXIT INT TERM
+  fails=0
+  chk() { if [ "$2" = "$3" ]; then printf '  ok    %s\n' "$1"
+          else printf '  FAIL  %s  want %s got %s\n' "$1" "$2" "$3"; fails=$((fails+1)); fi }
+
+  far=$(mtab | while IFS= read -r m; do
+          [ "$m" = "/" ] && continue
+          [ "$(devof "$m")" != "$(refdev)" ] && { echo "$m"; break; }
+        done | head -1)
+
+  echo "GREEN -- what must hold:"
+  if [ -n "$far" ]; then chk "a mount on another disc reads BACKED" "BACKED" "$(verdict "$far")"
+  else echo "  ABSENT  no second disc is mounted here, so BACKED cannot be shown -- said, not assumed"; fi
+  chk "a live tool on this tree reads BACKED or OWN" "yes" \
+      "$(case $(verdict "$0") in BACKED|OWN) echo yes ;; *) echo no ;; esac)"
+
+  echo "RED -- five planted faults, every one must fire:"
+  mkdir -p "$d/stub"
+  chk "an empty directory on the reference disc reads STUB" "STUB" "$(MO1NT_REF=$d verdict "$d/stub")"
+  printf 'x' > "$d/stub/x"
+  chk "a directory with content is never a stub"            "OWN"  "$(MO1NT_REF=$d verdict "$d/stub")"
+  chk "a missing path beside a reference dir reads UNBACKED" "UNBACKED" "$(MO1NT_REF=$d verdict "$d/nope")"
+  if [ -n "$far" ]; then
+    chk "a missing path on ANOTHER disc reads ABSENT"       "ABSENT" "$(verdict "$far/nope-$$")"
+    chk "the same-disc reading is refused as BACKED"        "OWN"    "$(MO1NT_REF=$d verdict "$d")"
+  else
+    echo "  ABSENT  two faults need a second disc; not planted, and not claimed"
+  fi
+
+  echo
+  if [ "$fails" -eq 0 ]; then echo "mo1nt: all held, all fired."; else echo "mo1nt: $fails FAILED"; fi
+  [ "$fails" -eq 0 ]
+}
+
+case "${1:-}" in
+  -h|--help|"") usage; exit 0 ;;
+  --prove-red)  prove_red; exit $? ;;
+  table)        mtab; exit 0 ;;
+  root)         shift; r=$(root_of "${1:?usage: mo1nt root PATH}")
+                [ -n "$r" ] && { echo "$r"; exit 0; } || { echo "NO MOUNT AT OR ABOVE: $1" >&2; exit 1; } ;;
+esac
+
+rc=0
+for p in "$@"; do
+  v=$(verdict "$p"); r=$(root_of "$p")
+  printf '%-9s %s' "$v" "$p"
+  [ -n "$r" ] && printf '   (disc begins at %s)' "$r"
+  echo
+  case "$v" in BACKED) ;; *) rc=1 ;; esac
+done
+exit $rc

@@ -1,0 +1,22 @@
+# CHARACTER TSV — Kirra Vanth (author, The Commons at the Table); dungeon-mode shape; double-entry: every row names its source
+table	key	count	value	treatment	source
+cs-intrinsics	name		Kirra Vanth	identity	book/VANTH.md s0
+cs-intrinsics	shortname		K. V. in signatures	lineage	book/games/BOOK-1 back matter
+cs-intrinsics	class		author (ex-licensing counsel)	tier	book/VANTH.md s0
+cs-intrinsics	actor		fiction	kind	book/VANTH.md header
+cs-intrinsics	gold		eleven years of letters that worked; she will not say the figure	economy	book/VANTH.md s0
+cs-intrinsics	special		reads a licence before she has an opinion about the game	specialness	book/VANTH.md s3
+cs-intrinsics	need-for-cognition	5	seeks hard puzzles (BACKGROUND, low-first seven)	trait	pg1rl roll seed 4
+cs-intrinsics	loyalty	1	switches sides freely	trait	pg1rl roll seed 4
+cs-intrinsics	vulnerable-narcissism	2	shrugs off criticism	trait	pg1rl roll seed 4
+cs-intrinsics	warmth	1	cold, formal	trait	pg1rl roll seed 4
+cs-intrinsics	benevolence	2	helps when convenient	trait	pg1rl roll seed 4
+cs-intrinsics	news-bias		Wall Street Journal (least-biased); fate die: villain	stripe	pg1rl roll seed 4
+cs-skills	licence-reading	1	every word, including what nobody reads	practice	book/VANTH.md s3
+cs-skills	enumerate-before-print	1	counted, never estimated	practice	book/VANTH.md s6b
+cs-skills	disclose-then-argue	1	interest stated before the case	practice	book/VANTH.md s2
+cs-skills	footing-check	1	acquired gen 1; does the model measure rent or only grip	practice	book/VANTH.md s9 gen 1
+cs-posessions	the-deposition-question	1	define a game rule	burden	book/VANTH.md s5 founding
+cs-posessions	the-orc-text	1	irrevocable, because a promise proved not to be	reference	book/VANTH.md s3
+cs-posessions	the-inversion-tic	1	short sentences that turn; trained, not chosen	habit	book/VANTH.md s2
+cs-posessions	a-second-number	1	Footing, beside Standing	mechanic	book/games/BOOK-1 part four

@@ -1,0 +1,37 @@
+polygram 0.8.50: release pipeline, persona shelf, terms per build
+
+Folds 0.7.1 through 0.7.14 into one cut, and makes the cut itself work.
+
+Releasing
+- make dist RELEASE=X.Y.Z names the version (bin/rl2bp start --to);
+  anything below the current version is refused; the current, untagged
+  version re-mints in place.
+- bin/release: a content gate replaces the "artifacts postdate HEAD"
+  timestamp gate (it could never pass: make dist writes tracked files);
+  --push resumes after --apply instead of dying on "tag exists", and
+  publishes by pushing the signed tag: SSH, or HTTPS when FORGEJO_TOKEN is
+  set (bin/gtmode; then SSH is not tried at all). tests/gtmode-tests.sh.
+  The test gate names what failed and keeps its output; --accept-red="why"
+  releases over red tests with the reason in the tag.
+- Terms of Service and Privacy reach the installed plugin (tp2mt enters them
+  in the MANIFEST and the .plugin).
+- make dist mints a named edition (persona, standard or pet names) beside the
+  signed one when that is your preference (C4 bin/nm1fl).
+  tests/release-gates-tests.sh.
+- polygram dist moves bundles of skills no longer in the rack to
+  dist/.retired-bundles/ instead of leaving them installable.
+
+Servers and skills
+- persona: serves the sheets already written, by one rule (with an awk
+  second reader); a name: line renames without moving a file (gw7 is
+  now gh7); SPLIT is reported when a stale twin serves an old name.
+- plugin_freshness reads its preference; PMO roster gains homes;
+  eclipse-pass reads the roster.
+- Terms of Service and Privacy Policy minted per build (bin/tp2mt) from
+  claims checked against the server source; every filter named.
+- session-rotate: whole-token version bump, no clobber on repeated
+  rolls, --no-bump for c4. tests/session-rotate-tests.sh.
+- shell-tooling and project-memory stubs retired (removal pass D-1,
+  D-2) with REJECT rows; synth no longer writes "Draft ... Edit me".
+- GPL notices in the standard "(at your option) any later version"
+  wording throughout.

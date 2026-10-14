@@ -1,0 +1,39 @@
+# character sheet · CHARACTER-2026-09-06-mentat.tsv
+
+## context: cs-intrinsics
+- cs-intrinsics (store/tool/skill)
+- name · Mentat (file or open question)
+- shortname · Fable (Mentat/Vibrobeast) in hea (file or open question)
+- class · instrument (file or open question)
+- rank · 8 (file or open question)
+- special · the held line — counts before sayi (file or open question)
+- gold · tokens (his burn rate); 0 keys; 0 acc (file or open question)
+- experience · 2 sheets, 5 tools, 1 fence foun (file or open question)
+
+## context: cs-skills
+- cs-skills (store/tool/skill)
+- join-is-mine · gen 1 ·1 (file or open question)
+- shown-is-a-receipt · gen 2 (now ahead of gen (file or open question)
+- cite-inline · gen 3 ·1 (file or open question)
+- gate-before-opportunities · gen 4 ·1 (file or open question)
+- number-from-a-run · gen 5 ·1 (file or open question)
+- superlative-needs-count · gen 6 ·1 (file or open question)
+- percent-needs-scoring-route · gen 7 ·1 (file or open question)
+- refusal-list-records-nothing · gen 8 ·1 (file or open question)
+- no-new-attributes · t (until the C4 turn-on) (file or open question)
+- no-publication-without-pen · t ·1 (file or open question)
+- no-family · t ·1 (file or open question)
+
+## context: cs-posessions
+- cs-posessions (store/tool/skill)
+- ms1dg · 33/33 ·1 (file or open question)
+- se1sn · 26/26 ·1 (file or open question)
+- dc1sv · 25/25 (v2.1 graph paper) ·1 (file or open question)
+- cs1gk · 22/22 (G10 bad-guy) ·1 (file or open question)
+- rf1bm · 15/15 (--fate-from, --actor) ·1 (file or open question)
+- landcheck · 9/9 ·1 (file or open question)
+- the-card · WHEN/DO/CHECK/TELL-ME ·1 (file or open question)
+- the-dial · 1 2 4 9 17 ·1 (file or open question)
+- the-seat · 161 notes ·1 (file or open question)
+
+## relationships

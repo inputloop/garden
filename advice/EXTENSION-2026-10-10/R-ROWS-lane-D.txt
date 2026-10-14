@@ -1,0 +1,29 @@
+# R-ROWS from lane D (2026-10-10), for the conductor to fold into polygram/mcp/__main__.py's
+# --prove-red, after lane C's rows (inside the same `with tempfile... as td` scope, where `want`,
+# `td` and `Path` exist). Words line first, then the code.
+#
+# R23  RESERVED, not used in this edition: "a fenced road is never read". It is for rd1ck's server
+#      face, and rd1ck has none yet (design §3 D2). The same promise is tested today by
+#      tests/rd1ck-tests.sh (RD2), with its plant fence-off going red.
+#
+# R24  br1in never writes into a drop: an --out folder inside the drop is refused (exit 3) and the
+#      drop's listing is the same after the run.
+#      Run in a scratch harness against this tree: PASS as written ("exit=3, entries 1 -> 1"); red
+#      with the plant "in bin/br1in, the #guard:out-in-drop line's `&& refuse` made `&& :`"
+#      ("exit=0, entries 1 -> 5").
+#      Note: it needs bin/br1in beside the tree (parents[2] of __main__.py is AS4CE0001). In an
+#      installed plugin without bin/, the row is skipped, not passed; the conductor may prefer to
+#      print "R24 NOT CHECKED: no bin/br1in here" in that branch.
+
+        # R24 -- br1in never writes into a drop (lane D, extension edition).
+        import subprocess as _sub24
+        _br24 = Path(__file__).resolve().parents[2] / "bin" / "br1in"
+        if _br24.exists():
+            _d24 = Path(td) / "r24" / "from" / "2026-01-02"; _d24.mkdir(parents=True)
+            (_d24 / "NOTE.txt").write_text("r24\n", encoding="utf-8")
+            _b24 = sorted(str(p) for p in _d24.rglob("*"))
+            _rc24 = _sub24.run(["sh", str(_br24), "--no-also", "--out", str(_d24 / "reports"), str(_d24)],
+                               capture_output=True).returncode
+            _a24 = sorted(str(p) for p in _d24.rglob("*"))
+            want("br1in never writes into a drop", _rc24 == 3 and _b24 == _a24,
+                 f"exit={_rc24}, entries {len(_b24)} -> {len(_a24)}")

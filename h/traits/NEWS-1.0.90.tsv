@@ -1,0 +1,40 @@
+# news bias generator, carried forward as-is from AGENT-roll-for-bias 1.0.90 (signed, Corwin/Gemini 2026-08); n	item	side (1-18 biased, 19-36 least biased)
+n	item	side
+1	Breitbart News	biased
+2	AlterNet	biased
+3	One America News Network (OANN)	biased
+4	The Palmer Report	biased
+5	InfoWars	biased
+6	Jacobin	biased
+7	Newsmax	biased
+8	Mother Jones	biased
+9	The Daily Caller	biased
+10	Daily Kos	biased
+11	The Federalist	biased
+12	HuffPost	biased
+13	The Blaze	biased
+14	MSNBC	biased
+15	Fox News	biased
+16	The Nation	biased
+17	New York Post	biased
+18	CNN	biased
+19	The Washington Post	least-biased
+20	The Epoch Times	least-biased
+21	The New York Times	least-biased
+22	The Wall Street Journal (News Division)	least-biased
+23	USA Today	least-biased
+24	The Hill	least-biased
+25	Newsweek	least-biased
+26	Axios	least-biased
+27	Forbes	least-biased
+28	Bloomberg News	least-biased
+29	Financial Times	least-biased
+30	C-SPAN	least-biased
+31	The Christian Science Monitor	least-biased
+32	Straight Arrow News	least-biased
+33	BBC News	least-biased
+34	NPR (News Reporting)	least-biased
+35	Associated Press (AP)	least-biased
+36	Reuters	least-biased
+
+# randomized matrix rows (1.0.90): 17 3 29 12 34 5;22 11 8 31 2 26;14 25 7 36 19 10;1 33 20 9 27 15;30 4 18 23 13 35;6 28 21 32 24 16

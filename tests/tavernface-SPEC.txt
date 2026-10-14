@@ -1,0 +1,57 @@
+tavernface-SPEC.txt -- what tests/tavernface-tests.sh checks, in sentences.  Written before the
+runner, in words, so a reader can check the runner against it.  Item name for gd1ck: tavernface.
+Copyright 2026 Corwin Brust <corwin@bru.st> and Contributors.  CC-BY-SA-4.0.
+Written by Mentat (for Corwin; claude-opus-5-5), 2026-10-08.
+
+The thing under test: polygram/mcp/tavernface.py (Python), which serves Bryant's Tavern
+(polygram/mcp/tavern_upstream.py, his bytes) from the vibrobeast plugin.  The runner is POSIX sh
+and awk, a language other than the code it tests.  Exit 0 all green, 1 any red, 2 kit broken.
+
+V1  The vendored file's sha256 is 6ffaa56681406aa55073cb9c5ae296edd6659730ff8d73793c5655a77483e78c,
+    and NOTICE-tavern records exactly that hash.  (Bryant's 2.3.1, not one byte changed.)
+F1  Off by default.  With an empty home and no TAVERN_* variables, the server lists exactly one
+    tool, tavern_status; calling it says OFF, says posts are copied to every member machine's
+    disk, and says how to turn it on by asking Claude.  No Tavern data folder is created.
+    It also says which Tavern this is (QA1 row 18): Bryant's stock Tavern 2.3.1, with no tool
+    registry, and that the patched build (named 2.3.1+gp.1, as garden-pony tavern.py VERSION says) lives in projects/garden-pony and, once published, at
+    github.com/inputloop/tavern.
+F2  Turned on by asking Claude, never by editing JSON.  The mentcached server's pref_set tool sets
+    tavern.on to on; after that, with no Tavern anywhere, the server still lists only
+    tavern_status, and it says NO TAVERN FOUND and to start Tavern.
+F3  Found by itself.  With tavern.on on and a Tavern data folder (holding agent.json) at
+    ~/Tavern/tavern-data -- where Tavern's installer falls back to -- the server is Tavern's own
+    face: it lists tavern_say and tavern_read, and a call while no node answers comes back as a
+    plain error, not a crash.
+F4  The tavern.data preference wins over the guesses, and the tavern.as preference is the name
+    the face would use (read back through tavern_status's code path, via find_data/agent_name).
+F5  Which Tavern, by name first (lane B, 2026-10-10; agreements 2-3, card 02).  With tavern.on on
+    and a Tavern data folder found, tavern_status says the build of the tavern.py beside that
+    folder in words: "stock 2.3.1" when its sha256 is the pin above, "2.3.1+gp.1" when its VERSION
+    line names gp.1, else what its VERSION line says, else that no tavern.py was found beside it.
+    It names the Tavern by its own name (config.json tavern_name, e.g. "Genesis") BEFORE its
+    address (the data folder and API port), and says in words which roads need gp.1 (the room
+    road for Wire acts, the tool registry, Tavern-written receipts) and that Wire acts go direct
+    meanwhile.  The roads sentence is in the OFF answer too.  It never prints config.json's
+    join_code, tavern_id or ip, nor agent.json's token.
+F6  tavern.as falls back to an agent already there (lane B, 2026-10-10; S5c J-B2).  When TAVERN_AS
+    is unset and the tavern.as preference was never set (only its default), the name is the
+    first agent, by name, in config.json "agents" whose owner is this machine's first person
+    (config.json "humans"[0], the owner Tavern's own register_agent uses) and whose model is
+    claude; else "claude".  The answer says where the name came from.  A planted agent under a
+    second owner, sorted first, must not be picked, nor an agent of the same owner whose model
+    is not claude.  A tavern.as the person set still wins (F4).
+M1  A real mint (polygram.plugin.mint_plugin into a scratch folder) ships tavernface.py,
+    tavern_upstream.py and NOTICE-tavern; the shipped tavern_upstream.py has the pinned hash;
+    .mcp.json names a "tavernface" server off by default through servers/launch.py with
+    ${CLAUDE_PLUGIN_ROOT}; the shipped check.sh passes; servers/launch.py --list names tavernface;
+    no __pycache__ appears in the minted tree.  The minted README's tavernface row says
+    "stock Tavern 2.3.1" and names garden-pony and inputloop/tavern.
+S1  make dist's secrets scan: bin/pn1ck check passes (the pin in NOTICE-tavern matches), and
+    bin/pn1ck unpinned polygram lists tavernface.py and NOTICE-tavern but not tavern_upstream.py.
+    (Bryant's file holds variable names like agent_token that the scanner reads as secrets; his
+    published bytes cannot hold a secret of ours, so a matching pin is the check for that file.)
+R   Prove-red (--prove-red): (a) one byte planted in a copy of the vendored file turns V1 red;
+    (b) a switch planted always-on (is_on returns True) turns F1 red; (d) an owner check
+    planted away (any claude agent picked) turns F6 red; (e) a status planted to print the
+    join_code turns F5 red; (c) the same planted byte makes pn1ck refuse the scan list.  All must go red, or the
+    kit reports itself broken.

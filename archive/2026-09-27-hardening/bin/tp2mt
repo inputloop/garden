@@ -1,0 +1,166 @@
+#!/bin/sh
+# tp2mt -- TERMS & PRIVACY 2 MINT: mint the plugin's Terms of Service and Privacy Policy anew for THIS
+#          build, from claims the build itself checks against the source -- so they cannot drift.
+#
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st>.  Authored by Mentat (for Corwin).
+# This program is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.  See <https://www.gnu.org/licenses/>.
+# SPDX-License-Identifier: GPL-3.0-or-later
+# ##  PROVISIONAL name (T TERMS · P PRIVACY · 2 writes · M MINT · T each Turn).                    ##
+#
+# usage:  tp2mt [--out DIR] [--also DIR ...] [--check]
+#   Writes DIR/TERMS-OF-SERVICE.md and DIR/PRIVACY.md (DIR default: dist/vibrobeast), each stamped with
+#   the version in polygram/__init__.py and today's date; --also copies both to more places (the pub
+#   shelf, <H>:/pub/persona/). `make dist` runs it, so every build mints its own pair.
+#   --check: verify the claims only, write nothing.
+# Every claim the two documents make about what the servers do is a CLAIM row below, checked by grep
+# against the shipped server source before anything is written. A claim that no longer holds refuses
+# the mint (exit 1) and names itself: the documents are never minted around a false sentence.
+# The Words section is ONE block, written identically into both documents, so a word means the same
+# thing in the tooltip, the consent, the terms, the privacy policy and the source.
+set -u
+S=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd); OUT="$S/dist/vibrobeast"; ALSO=""; CHECK=0
+die() { printf 'tp2mt: %s\n' "$*" >&2; exit 2; }
+while [ $# -gt 0 ]; do case $1 in --out) OUT=$2; shift 2 ;; --also) ALSO="$ALSO $2"; shift 2 ;; --check) CHECK=1; shift ;;
+  -h|--help) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;; *) die "unknown argument $1" ;; esac; done
+MCP="$S/polygram/mcp"; VER=$(sed -n 's/^__version__ = "\([0-9.]*\)".*/\1/p' "$S/polygram/__init__.py" | head -1)
+[ -n "$VER" ] || die "no __version__ in polygram/__init__.py"
+DAY=$(date -u +%Y-%m-%d); bad=0
+# CLAIM <expect: has|none> <file(s)> <ERE> <what the documents say, if it holds>
+claim() { want=$1; f=$2; re=$3; say=$4
+  n=$(cat $f 2>/dev/null | grep -cE "$re"); [ -n "$n" ] || n=0
+  if { [ "$want" = has ] && [ "$n" -gt 0 ]; } || { [ "$want" = none ] && [ "$n" -eq 0 ]; }; then echo "held   $say"
+  else echo "BROKEN $say  [$want /$re/ in $(printf '%s' "$f" | sed "s#$S/##g"): $n]"; bad=1; fi; }
+claims=$( {
+claim none "$MCP/*.py" '^[[:space:]]*(import|from)[[:space:]]+(urllib|http|requests|ftplib|smtplib|asyncio|ssl)\b' "no server opens a network connection: none imports a network library"
+claim none "$MCP/*.py" 'socket\.(socket|create_connection)|getaddrinfo' "no server makes a socket; socket is used only to read this machine's name"
+claim has  "$MCP/mentcached.py" '"\.mentcached" / "seat"' "the seat defaults to ~/.mentcached/seat (MENTCACHED_SEAT moves it)"
+claim has  "$MCP/prefs.py" '"prefs\.tsv"' "preferences are kept in ~/.mentcached/prefs.tsv (MENTCACHED_PREFS moves it)"
+claim has  "$MCP/spans.py" '"spans\.tsv"' "timings are kept in ~/.mentcached/stats/spans.tsv (MENTCACHED_STATS moves it)"
+claim has  "$MCP/softskills.py" '"softskills-usage\.tsv"' "soft-skill use is counted in ~/.mentcached/softskills-usage.tsv"
+claim has  "$MCP/store.py" 'host=\{socket\.gethostname\(\)\}' "journal lines record this machine's name, the time, and who wrote them"
+claim has  "$MCP/persona.py" 'SECRET. in path\.name\.upper\(\)' "the persona server never opens a file whose name says SECRET"
+claim has  "$MCP/skillx.py" 'A server that refuses' "skillx exchanges nothing: every tool refuses and says what is missing"
+} 2>&1 )
+printf '%s\n' "$claims" | sed 's/^/   /'
+printf "%s\n" "$claims" | grep -q "^BROKEN" && bad=1  # set inside $( ) never reaches here: read the verdict from the text
+[ $bad = 0 ] || { echo "tp2mt: REFUSED -- a claim no longer holds; fix the source or the claim, then mint"; exit 1; }
+[ $CHECK = 1 ] && { echo "tp2mt: $VER -- every claim holds (--check: nothing written)"; exit 0; }
+words() { cat <<'W'
+## Words we use (the same block in the Terms and in the Privacy Policy)
+
+- **plugin** -- vibrobeast, the bundle you install into Claude Desktop or Claude Code.
+- **server** -- one of its three programs that answer Claude's tool calls on your computer: mentcached, persona, skillx.
+- **seat** -- the folder where mentcached keeps notes it writes for you (default `~/.mentcached/seat`).
+- **journal** -- the append-only record beside each note: what changed, when, on which machine, by whom.
+- **shelf** -- folders of finished work the persona server reads but never writes, and the publication shelf (`<H>:/pub`).
+- **persona** -- a sheet that says what a character, place, or person-model is, by its own first lines.
+- **filter** -- anything that keeps something from being read, written, or shown. Every filter is named in the Privacy Policy; one that is not named does not exist.
+- **you** -- the person running the plugin on their own computer.
+W
+}
+mkdir -p "$OUT"
+{ printf '# Terms of Service -- vibrobeast %s\n\n*Minted %s by `bin/tp2mt` for this build and no other. The next build mints its own.*\n\n' "$VER" "$DAY"
+  cat <<'T'
+## What you get
+
+A plugin that runs on your computer. It helps Claude keep notes, read persona sheets, and report on the
+work. It does not run a service anywhere else, and nobody else operates it for you.
+
+## Using it
+
+- Use it for anything the licenses allow. Using the plugin is not publishing it: running it at your
+  desk (or at an ATM, or a ticket reader) asks nothing of you. If you *give copies* to others, the
+  licenses below say what goes with them.
+- The plugin writes only in the places the Privacy Policy lists. You can move or delete them.
+- No warranty. The software is provided as is; see the GNU GPL, sections 15 and 16.
+
+## Licenses
+
+- The software: the GNU General Public License as published by the Free Software Foundation,
+  either version 3 of the License, or (at your option) any later version (`COPYING` in the bundle).
+- Parts others link or copy into their own work: the GNU Lesser General Public License, version 3 or
+  (at your option) any later version.
+- Writing (books, sheets, notes): Creative Commons Attribution 4.0, with an additional permission from
+  the copyright holder to quote or recompose without credit.
+
+The whole statement of these defaults is the TERMS block below.
+
+## Changing these terms
+
+They change only when a build mints new ones. Each build's copy carries its version and date; an old
+copy stays true for the build it came with.
+
+T
+  words
+  printf '\n## Terms\n\n'
+  T4=""; for c in "$S/../c4" "$S/../../c4"; do [ -f "$c/man/licensing-defaults.md" ] && { T4=$c; break; }; done
+  if [ -n "$T4" ]; then awk '/TERMS:begin/{f=1; print; next} /TERMS:end/{print; f=0} f' "$T4/man/licensing-defaults.md"
+  else printf '(the TERMS block lives in c4/man/licensing-defaults.md, not reachable from this build)\n'; fi
+} > "$OUT/TERMS-OF-SERVICE.md"
+{ printf '# Privacy Policy -- vibrobeast %s\n\n*Minted %s by `bin/tp2mt` for this build and no other. Every sentence about what the servers\ndo was checked against their source when this was minted:*\n\n' "$VER" "$DAY"
+  printf '%s\n' "$claims" | sed 's/^held   /- /'
+  cat <<'P'
+
+## What leaves your computer
+
+Nothing, by the plugin's own doing. The servers make no network connections. What Claude itself sends
+to Anthropic when it calls a tool -- the tool's answer, as part of the conversation -- is governed by
+Anthropic's own terms and privacy policy, not by this one.
+
+## What is kept, and where
+
+| store | default place | moved by | what is in it |
+|---|---|---|---|
+| seat | `~/.mentcached/seat` | `MENTCACHED_SEAT` | notes written at your or Claude's request, each with its journal |
+| preferences | `~/.mentcached/prefs.tsv` | `MENTCACHED_PREFS` | settings you chose (`pref_set`) |
+| timings | `~/.mentcached/stats/spans.tsv` | `MENTCACHED_STATS` | how long marked pieces of work took |
+| soft-skill use | `~/.mentcached/softskills-usage.tsv` | `MENTCACHED_SOFTSKILLS_USAGE` | which soft skills were read, and when |
+| persona journal | `~/.mentcached/seat/persona` | `PERSONA_ROOT` | changes made through the persona server |
+
+Each journal line records the machine's name, the time, and who wrote it. That is how "who said what"
+is answered: by the record, not by marks in the text.
+
+## Filters -- every one, by name
+
+- **SECRET files.** The persona server never opens a file whose name contains SECRET.
+- **skillx.** Exchanges nothing with anyone; every call is refused, and the refusal says what is missing.
+- **The leak check** (`pb1ck`, a publishing tool beside the plugin, not a server). Before anything goes
+  on the publication shelf it looks for this machine's paths and the names you listed in
+  `.c4/leakwords`, reports each hit by line, and prints *(withheld)* instead of the name itself.
+- **No other filter.** Nothing rewrites, censors, or drops words in your notes, sheets, or books.
+
+## Your choices
+
+Move any store with its variable. Delete any of them; the plugin starts fresh. Read every one -- they
+are plain text.
+
+P
+  words
+} > "$OUT/PRIVACY.md"
+echo "tp2mt: $VER minted -> $(printf '%s' "$OUT" | sed "s#$S/##")/{TERMS-OF-SERVICE,PRIVACY}.md"
+# 2026-09-26: the pair was written AFTER polygram dist made the tree's MANIFEST and its .plugin, so the
+# installed plugin never carried them and the tree's own check.sh failed on two UNLISTED files. Enter
+# them in the MANIFEST (replacing any older lines for them) and add them to the .plugin beside the tree.
+if [ -f "$OUT/MANIFEST" ]; then
+  grep -v -e '  ./TERMS-OF-SERVICE.md$' -e '  ./PRIVACY.md$' "$OUT/MANIFEST" > "$OUT/MANIFEST.tp2mt"
+  for f in TERMS-OF-SERVICE.md PRIVACY.md; do
+    printf '%s  ./%s\n' "$(sha256sum < "$OUT/$f" | cut -d' ' -f1)" "$f" >> "$OUT/MANIFEST.tp2mt"; done
+  mv "$OUT/MANIFEST.tp2mt" "$OUT/MANIFEST" && echo "tp2mt: entered in $(printf '%s' "$OUT" | sed "s#$S/##")/MANIFEST"
+fi
+if [ -f "$OUT.plugin" ] && command -v python3 >/dev/null 2>&1; then
+  python3 - "$OUT" "$OUT.plugin" <<'ZIP' && echo "tp2mt: carried in $(basename "$OUT").plugin"
+import os, sys, zipfile
+root, plug = sys.argv[1], sys.argv[2]
+keep = [(i, zipfile.ZipFile(plug).read(i)) for i in zipfile.ZipFile(plug).infolist()
+        if i.filename not in ('TERMS-OF-SERVICE.md', 'PRIVACY.md', 'MANIFEST')]
+tmp = plug + '.tp2mt'
+with zipfile.ZipFile(tmp, 'w', zipfile.ZIP_DEFLATED) as z:
+    for info, data in keep: z.writestr(info, data)
+    for f in ('MANIFEST', 'TERMS-OF-SERVICE.md', 'PRIVACY.md'): z.write(os.path.join(root, f), f)
+os.replace(tmp, plug)
+ZIP
+fi
+for d in $ALSO; do [ -d "$d" ] && cp "$OUT/TERMS-OF-SERVICE.md" "$OUT/PRIVACY.md" "$d/" && echo "tp2mt: also -> $d" || echo "tp2mt: not reachable: $d (skipped, said)"; done
+exit 0

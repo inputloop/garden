@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+# name|licence|standing|needs|how installed (none of these is built here)
+rns|Reticulum License (MIT-style plus use conditions)|restricted||pip at provisioning, by the signed larder-setup
+lxmf|Reticulum License (MIT-style plus use conditions)|restricted|rns|pip at provisioning
+nomadnet|GPL-3.0|free|rns lxmf|pip at provisioning
+sideband|CC BY-NC-SA 4.0 (non-commercial)|restricted|rns lxmf|pip or a flatpak at provisioning

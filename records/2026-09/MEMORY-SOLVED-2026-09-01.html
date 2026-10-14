@@ -1,0 +1,52 @@
+<title>Memory — Solved</title>
+<style>
+ body{font:15px/1.55 -apple-system,Segoe UI,Roboto,sans-serif;color:#1f2937;background:#fff;max-width:900px;margin:1.2rem auto;padding:0 1rem}
+ h1{font-size:1.45rem} h2{font-size:1.1rem;margin-top:1.5rem}
+ svg{width:100%;height:auto;max-width:860px} code{background:#f3f4f6;padding:0 3px;border-radius:3px}
+ .k{font-size:13px;color:#475569}
+</style>
+<h1>Is it solved? Yes — here's exactly how.</h1>
+
+<h2>1 · What broke, and what changed</h2>
+<p class="k">Before: "save a memory" went to a hidden, per-session store — a black hole you were never given a path to.
+After: it goes to the <b>seat</b>, one known folder you can see, back up, and hand to any session.</p>
+<svg viewBox="0 0 860 260" role="img" aria-label="before and after">
+  <text x="10" y="24" font-weight="700" fill="#dc2626">BEFORE (broken)</text>
+  <rect x="10" y="36" width="150" height="40" rx="8" fill="#dbeafe" stroke="#2563eb"/><text x="85" y="60" text-anchor="middle">"save that memory"</text>
+  <rect x="200" y="30" width="180" height="52" rx="8" fill="#fee2e2" stroke="#dc2626"/><text x="290" y="50" text-anchor="middle" font-size="12">a file in a per-session,</text><text x="290" y="66" text-anchor="middle" font-size="12">fenced store — path never told</text>
+  <line x1="160" y1="56" x2="198" y2="56" stroke="#475569" marker-end="url(#a)"/>
+  <text x="470" y="60" font-size="34" fill="#dc2626">→ ✗</text>
+  <text x="520" y="50" font-size="13" fill="#dc2626">next session: gone.</text>
+  <text x="520" y="68" font-size="13" fill="#dc2626">you can't find it. it "worked" silently into nothing.</text>
+
+  <line x1="10" y1="110" x2="850" y2="110" stroke="#e5e7eb"/>
+  <text x="10" y="140" font-weight="700" fill="#16a34a">AFTER (fixed)</text>
+  <rect x="10" y="152" width="150" height="40" rx="8" fill="#dbeafe" stroke="#2563eb"/><text x="85" y="176" text-anchor="middle">"save that memory"</text>
+  <rect x="200" y="146" width="210" height="52" rx="8" fill="#dcfce7" stroke="#16a34a"/><text x="305" y="166" text-anchor="middle" font-size="12">the SEAT — one known folder</text><text x="305" y="182" text-anchor="middle" font-size="11"><tspan font-family="monospace">…\AS4CE0001\memory\</tspan></text>
+  <line x1="160" y1="172" x2="198" y2="172" stroke="#475569" marker-end="url(#a)"/>
+  <rect x="440" y="140" width="180" height="30" rx="6" fill="#fff7ed" stroke="#d97706"/><text x="530" y="159" text-anchor="middle" font-size="12">+ I tell you the path</text>
+  <rect x="440" y="176" width="180" height="30" rx="6" fill="#fff7ed" stroke="#d97706"/><text x="530" y="195" text-anchor="middle" font-size="12">+ your signed .tgz backup</text>
+  <line x1="410" y1="165" x2="438" y2="155" stroke="#475569" marker-end="url(#a)"/><line x1="410" y1="180" x2="438" y2="190" stroke="#475569" marker-end="url(#a)"/>
+  <text x="655" y="176" font-size="34" fill="#16a34a">→ ✓</text>
+  <text x="705" y="172" font-size="13" fill="#16a34a">next session</text><text x="705" y="190" font-size="13" fill="#16a34a">reads the seat.</text>
+  <defs><marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#475569"/></marker></defs>
+</svg>
+
+<h2>2 · How it works while you do your real work (e.g. the C4 release)</h2>
+<p class="k">You work on C4. The memory system runs <b>in the background</b> — it is not the work, it serves it. A memory
+only ever costs you one line: the path I tell you.</p>
+<svg viewBox="0 0 860 230" role="img" aria-label="during C4 work">
+  <rect x="20" y="80" width="180" height="60" rx="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="110" y="106" text-anchor="middle" font-weight="600">YOU work on C4</text><text x="110" y="124" text-anchor="middle" font-size="11" fill="#475569">the worksurface release</text>
+  <rect x="300" y="30" width="170" height="44" rx="8" fill="#f8fafc" stroke="#94a3b8"/><text x="385" y="50" text-anchor="middle" font-size="12">a memory arises</text><text x="385" y="65" text-anchor="middle" font-size="11" fill="#475569">(a decision, a fact)</text>
+  <rect x="300" y="150" width="170" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/><text x="385" y="170" text-anchor="middle" font-size="12">lands in the seat</text><text x="385" y="185" text-anchor="middle" font-size="11" fill="#475569">+ path told to you</text>
+  <line x1="200" y1="100" x2="298" y2="60" stroke="#475569" marker-end="url(#b)"/><text x="240" y="72" font-size="10">arises</text>
+  <line x1="385" y1="74" x2="385" y2="148" stroke="#475569" marker-end="url(#b)"/><text x="392" y="115" font-size="10">saved (background)</text>
+  <line x1="300" y1="172" x2="202" y2="128" stroke="#16a34a" marker-end="url(#b)"/><text x="230" y="160" font-size="10" fill="#16a34a">back to work</text>
+  <rect x="560" y="80" width="170" height="60" rx="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="645" y="106" text-anchor="middle" font-weight="600">next session</text><text x="645" y="124" text-anchor="middle" font-size="11" fill="#475569">opens cold</text>
+  <line x1="470" y1="172" x2="600" y2="140" stroke="#475569" marker-end="url(#b)"/><text x="520" y="168" font-size="10">reads the seat</text>
+  <text x="645" y="165" text-anchor="middle" font-size="12" fill="#16a34a">continuity — nothing lost</text>
+  <defs><marker id="b" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#475569"/></marker></defs>
+</svg>
+<p class="k">The skill (<code>seatkeeper</code>) would only automate the "lands in the seat" arrow so I don't do it by hand.
+Optional. The fix is the known home + the path told — that already stands.</p>
+<p style="text-align:center;color:#94a3b8;font-size:11px">sentinel: MEMORY-SOLVED-2026-09-01</p>

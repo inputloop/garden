@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+# the Emacs first-run frame's own ERT tests (also run inside check C12)
+# saved 2026-10-06T08:52Z by the garden team; the command and the exit status are shown.
+$ env LARDER_ROOT=/home/claude/rescan/sdlc/garden/4-BUILD emacs --batch -Q -l ert -l ./larder-first-run-test.el -f ert-run-tests-batch-and-exit
+
+Running 6 tests (2026-10-06 03:52:23-0500, selector `t')
+   passed  1/6  larder-test-click-starts-the-dispatcher (0.105191 sec)
+   passed  2/6  larder-test-colours-work-both-ways (0.072304 sec)
+   passed  3/6  larder-test-kiosk-frame (0.000500 sec)
+   passed  4/6  larder-test-offers-what-the-profile-has (0.000712 sec)
+   passed  5/6  larder-test-real-dispatcher-end-to-end (0.111964 sec)
+   passed  6/6  larder-test-refusal-is-shown-in-words (0.109730 sec)
+
+Ran 6 tests, 6 results as expected, 0 unexpected (2026-10-06 03:52:24-0500, 0.400934 sec)
+
+
+[exit status 0]

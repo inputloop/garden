@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" width="1309" height="514" viewBox="0 0 1309 514" font-family="var(--c4-font, monospace)" font-size="12">
+<title>character sheet · CHARACTER-2026-09-06-mentat.tsv</title><desc>Rendered by dc1sv from the canonical diagram document; 30 shapes, 0 edges, 3 systems. Groups are drawn as labelled rectangles; every status is a word, never a hue alone.</desc>
+<style>rect.box{fill:var(--c4-box,#fffdf5);stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}polygon.decision{fill:var(--c4-decision,#f1efe8);stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}circle.node{fill:var(--c4-node,#ffffff);stroke:var(--c4-ink,#1a1a1a);stroke-width:2}rect.note{fill:none;stroke:var(--c4-muted,#888780);stroke-dasharray:3 3;stroke-width:1}text{fill:var(--c4-ink,#1a1a1a)}text.note{fill:var(--c4-muted,#5f5e5a);font-style:italic}path.edge{fill:none;stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}path.dash{stroke-dasharray:6 4}rect.sys{fill:var(--c4-sys,rgba(120,120,200,0.06));stroke:var(--c4-sysline,#6a67b8);stroke-width:1.5;stroke-dasharray:8 4}rect.sys.core{fill:var(--c4-core,rgba(240,200,0,0.10));stroke:var(--c4-coreline,#b08800);stroke-dasharray:none}text.sys{fill:var(--c4-sysline,#6a67b8);font-size:11px;font-weight:bold}</style>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--c4-ink,#1a1a1a)"/></marker><marker id="open" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10" fill="none" stroke="var(--c4-ink,#1a1a1a)"/></marker><marker id="circle" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7"><circle cx="5" cy="5" r="4" fill="var(--c4-ink,#1a1a1a)"/></marker><marker id="diamond" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,5 L5,0 L10,5 L5,10 z" fill="var(--c4-ink,#1a1a1a)"/></marker><pattern id="graph" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20,0 L0,0 L0,20" fill="none" stroke="var(--c4-grid,#c9d6e2)" stroke-width="0.6"/></pattern><pattern id="graph5" width="100" height="100" patternUnits="userSpaceOnUse"><rect width="100" height="100" fill="url(#graph)"/><path d="M100,0 L0,0 L0,100" fill="none" stroke="var(--c4-grid5,#a9bccd)" stroke-width="1"/></pattern></defs>
+<rect class="paper" width="1309" height="514" fill="var(--c4-paper,#fbfdff)"/><rect class="paper grid" width="1309" height="514" fill="url(#graph5)"/><text class="note" x="1301" y="506" text-anchor="end" font-size="10">graph paper · 20px squares, 100px majors</text>
+<rect class="sys cs-skills" x="478" y="30" width="368" height="466" rx="6" style="stroke:var(--c4-sys-cs-skills,#185FA5);stroke-dasharray:2 4;fill:none"/>
+<text class="sys" x="486" y="44" style="fill:var(--c4-systext-cs-skills,#0C447C)">cs-skills</text>
+<rect class="sys cs-posessions" x="938" y="30" width="333" height="402" rx="6" style="stroke:var(--c4-sys-cs-posessions,#0F6E56);stroke-dasharray:2 4;fill:none"/>
+<text class="sys" x="946" y="44" style="fill:var(--c4-systext-cs-posessions,#085041)">cs-posessions</text>
+<rect class="sys cs-intrinsics" x="18" y="30" width="368" height="338" rx="6" style="stroke:var(--c4-sys-cs-intrinsics,#534AB7);stroke-dasharray:2 4;fill:none"/>
+<text class="sys" x="26" y="44" style="fill:var(--c4-systext-cs-intrinsics,#3C3489)">cs-intrinsics</text>
+<rect class="box" x="40" y="60" width="119" height="46" rx="3"/><text x="100" y="87" text-anchor="middle">cs-intrinsics</text>
+<rect class="note" x="44" y="130" width="103" height="24"/><text class="note" x="50" y="146">name · Mentat</text>
+<rect class="note" x="44" y="162" width="320" height="24"/><text class="note" x="50" y="178">shortname · Fable (Mentat/Vibrobeast) in hea</text>
+<rect class="note" x="44" y="194" width="138" height="24"/><text class="note" x="50" y="210">class · instrument</text>
+<rect class="note" x="44" y="226" width="68" height="24"/><text class="note" x="50" y="242">rank · 8</text>
+<rect class="note" x="44" y="258" width="320" height="24"/><text class="note" x="50" y="274">special · the held line — counts before sayi</text>
+<rect class="note" x="44" y="290" width="320" height="24"/><text class="note" x="50" y="306">gold · tokens (his burn rate); 0 keys; 0 acc</text>
+<rect class="note" x="44" y="322" width="320" height="24"/><text class="note" x="50" y="338">experience · 2 sheets, 5 tools, 1 fence foun</text>
+<rect class="box" x="500" y="60" width="91" height="46" rx="3"/><text x="546" y="87" text-anchor="middle">cs-skills</text>
+<rect class="note" x="504" y="130" width="173" height="24"/><text class="note" x="510" y="146">join-is-mine · gen 1 ·1</text>
+<rect class="note" x="504" y="162" width="320" height="24"/><text class="note" x="510" y="178">shown-is-a-receipt · gen 2 (now ahead of gen</text>
+<rect class="note" x="504" y="194" width="166" height="24"/><text class="note" x="510" y="210">cite-inline · gen 3 ·1</text>
+<rect class="note" x="504" y="226" width="264" height="24"/><text class="note" x="510" y="242">gate-before-opportunities · gen 4 ·1</text>
+<rect class="note" x="504" y="258" width="208" height="24"/><text class="note" x="510" y="274">number-from-a-run · gen 5 ·1</text>
+<rect class="note" x="504" y="290" width="250" height="24"/><text class="note" x="510" y="306">superlative-needs-count · gen 6 ·1</text>
+<rect class="note" x="504" y="322" width="278" height="24"/><text class="note" x="510" y="338">percent-needs-scoring-route · gen 7 ·1</text>
+<rect class="note" x="504" y="354" width="285" height="24"/><text class="note" x="510" y="370">refusal-list-records-nothing · gen 8 ·1</text>
+<rect class="note" x="504" y="386" width="320" height="24"/><text class="note" x="510" y="402">no-new-attributes · t (until the C4 turn-on)</text>
+<rect class="note" x="504" y="418" width="243" height="24"/><text class="note" x="510" y="434">no-publication-without-pen · t ·1</text>
+<rect class="note" x="504" y="450" width="124" height="24"/><text class="note" x="510" y="466">no-family · t ·1</text>
+<rect class="box" x="960" y="60" width="119" height="46" rx="3"/><text x="1020" y="87" text-anchor="middle">cs-posessions</text>
+<rect class="note" x="964" y="130" width="124" height="24"/><text class="note" x="970" y="146">ms1dg · 33/33 ·1</text>
+<rect class="note" x="964" y="162" width="124" height="24"/><text class="note" x="970" y="178">se1sn · 26/26 ·1</text>
+<rect class="note" x="964" y="194" width="257" height="24"/><text class="note" x="970" y="210">dc1sv · 25/25 (v2.1 graph paper) ·1</text>
+<rect class="note" x="964" y="226" width="222" height="24"/><text class="note" x="970" y="242">cs1gk · 22/22 (G10 bad-guy) ·1</text>
+<rect class="note" x="964" y="258" width="285" height="24"/><text class="note" x="970" y="274">rf1bm · 15/15 (--fate-from, --actor) ·1</text>
+<rect class="note" x="964" y="290" width="138" height="24"/><text class="note" x="970" y="306">landcheck · 9/9 ·1</text>
+<rect class="note" x="964" y="322" width="257" height="24"/><text class="note" x="970" y="338">the-card · WHEN/DO/CHECK/TELL-ME ·1</text>
+<rect class="note" x="964" y="354" width="180" height="24"/><text class="note" x="970" y="370">the-dial · 1 2 4 9 17 ·1</text>
+<rect class="note" x="964" y="386" width="173" height="24"/><text class="note" x="970" y="402">the-seat · 161 notes ·1</text>
+<!-- tally shapes 30 edges 0 groups 3 -->
+</svg>

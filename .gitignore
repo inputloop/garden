@@ -1,0 +1,52 @@
+__pycache__/
+*.pyc
+.DS_Store
+dist/
+.private
+externs/
+
+# --- 2026-09-12 (instrument; signature stale until re-signed) -------------
+# Added so a single `git add -A` in this folder is safe to run in one step.
+#
+# Claude Desktop's per-turn output spill.  Measured 2026-09-12: of 22 files,
+# 14 are byte-duplicates of h/CHANGES-2026-09-11-*.md and MICROSCOPE-*.md,
+# 5 are SKILL.md drafts (boundscheck/verify-say/writing-forms identical to
+# the garden copy; skilltank + sandboxer are the superseded pre-edit states
+# already archived under skills/*/.arc/2026-09/, sha16 df75d29e17bd6b40 =
+# SIGN-QUEUE row 30).  The 3 with no other home were copied into h/ first:
+# SEALED-2026-09-09-hypothesis-vibrobeast-arm.md (sha256 verified against
+# h/SEAL-2026-09-09-hypothesis-vibrobeast.sha256), PROMPT-2026-09-09-works-
+# wave0-wave1.md, and RECIPE.org (as h/RECIPE-2026-09-11-pub.org).
+# Nothing was deleted; the directory stays on disk, just untracked.
+Claude outputs/
+
+# pytest's own cache.
+.pytest_cache/
+
+# gt1sp appends its push receipt here AFTER the commit; tracked or untracked, it left the tree
+# dirty and bin/release refused ("work tree not clean"). Found 2026-09-25 rehearsing the release card.
+h/TRANSPORT.log
+
+# A saved Gemini share page (a private conversation, and Google's page script, which the secrets
+# checkers read as assigned secrets): kept on disk in .arc/, never in what a tag publishes (2026-10-04).
+.arc/corwin-wget-hardway---chrome-C-s/
+
+# The private list of host and user names pb1ck checks for (written by hand 2026-10-04). Its words
+# are exactly what must not travel, so the list itself never does.
+.c4/leakwords
+
+# pub/ is a detached clone of the public release shelf (code.bru.st/corwin/vibrobeast), staged here and
+# pushed by Corwin; it has its own history and never enters this repository (2026-10-04).
+/pub/
+
+# --- 2026-10-08 (FP2, FOLD-QA2 row 4) ------------------------------------
+# Pasted chat transcripts and paste-ins Corwin keeps at the tree root. They are private (chat text,
+# one holds a third party's contact details) and must never reach a `git add -A` or a push. Each was
+# read (first lines) before it was listed. Covered 2026-10-08: c.txt c2.txt c3.txt c4.txt c5.txt c6.txt
+# c7.txt c9.txt c10.txt c11.txt c12.txt c13.txt c14.txt c15.txt c17.txt c18.txt c19.txt c20.txt c22.txt
+# c24.txt c25.txt c27.txt 21.txt fix-comic-rewrite-session-improve-orgvm.txt (its tracked .REWRITE.txt
+# sibling is not matched and stays tracked). Nothing was moved or deleted. Anchored to the root only.
+/c.txt
+/c[0-9]*.txt
+/[0-9]*.txt
+/fix-comic-rewrite-session-improve-orgvm.txt

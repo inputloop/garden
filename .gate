@@ -1,0 +1,25 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+# .gate — access sign-post for this directory tree.
+# Convention: nearest .gate walking up from a path governs it.
+# policy is one of: read-write | read-only | write-only | none
+# Sign-post, not cathedral: this file states consent; guards check against it.
+policy: read-write
+reason: polygram workspace (AS4CE0001) — shared collaborative surface; Corwin + Mentat both write here
+since: 2026-07-02
+
+-----BEGIN PGP SIGNATURE-----
+
+iQGzBAEBCgAdFiEE7Od89BfHbBrPznwrW2E1URWA8AcFAmqDVRIACgkQW2E1URWA
+8AcBbwv+MrKWL/1noyWEEuX7fXPh1mX7AQlI4Byz8QtGPC7MOLJGFgSz9yRMmuuM
+xS0Mk8P2tixiydW2A30d/oWHBGOdZbOfJwyFciB9JfaExndmsgTqmdqeqViauGVM
+7jaC8pUjV1iGwcVY7bK0WmDN8VJSS18VemCQnkMRFhmOxOnJ7SHCNN6oUg1s7APw
+ALwP3NgfrqqOuMep6waoXa1apyHeFygiVIGa1Pbkv5/wlwZ8SSHWG08pNHqC4kIY
+u4S7zBlskFzoj7MGXCQPSCDj0P4YJbJWXIE83pqWeOAwZleJJ5i5xz3Ln36GJDlB
+Rr38g2p4xaMLNaBRIurke1IDFjOb/7BnLGX8f9qxcno5Z5/v8bUNr1YG5dIWuVAy
+IhvGcRh0yMzRTOeyCIpMFh342oeehWTHwasU/JHnH+w0c+WAXCSgKWCRxx4cN05+
+K4GJNsZOta/Zrrfl4AbMJaRLndWOmxsDOzgGPk0+lKvIgS6Xh+n1qwo9nnsa2lv4
+xaC4A5kZ
+=5bVe
+-----END PGP SIGNATURE-----

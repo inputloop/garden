@@ -1,0 +1,253 @@
+{
+ "v": 1,
+ "treatment": "blueprint",
+ "paradigm": "office",
+ "anchor": "points",
+ "_provenance": {
+  "title": "skills-focus floors — memory grains against the Planning Palace (2026-09-05)",
+  "source": "MODEL-2026-09-05-skills-focus.md references table",
+  "transcribed_by": "Fable as Mentat"
+ },
+ "shapes": [
+  {
+   "id": "heap",
+   "label": "MAIN MEMORY 144",
+   "kind": "node",
+   "x": 40,
+   "y": 60,
+   "face": "front",
+   "group": "memory"
+  },
+  {
+   "id": "win",
+   "label": "winners 14 (conduct+receipt)",
+   "kind": "box",
+   "x": 30,
+   "y": 140,
+   "face": "front",
+   "group": "memory"
+  },
+  {
+   "id": "less",
+   "label": "less-likely 130 (risk 6 · vendor 9)",
+   "kind": "box",
+   "x": 30,
+   "y": 230,
+   "face": "front",
+   "group": "memory"
+  },
+  {
+   "id": "fR",
+   "label": "Floor R — resurrection",
+   "kind": "box",
+   "x": 330,
+   "y": 40,
+   "face": "front",
+   "group": "model"
+  },
+  {
+   "id": "f1",
+   "label": "Floor 1 — composab (0/0): tiers",
+   "kind": "box",
+   "x": 330,
+   "y": 110,
+   "face": "front",
+   "group": "model"
+  },
+  {
+   "id": "f2",
+   "label": "Floor 2 — skill+apply: a rung",
+   "kind": "box",
+   "x": 330,
+   "y": 180,
+   "face": "front",
+   "group": "model"
+  },
+  {
+   "id": "f3",
+   "label": "Floor 3 — +users: the card",
+   "kind": "box",
+   "x": 330,
+   "y": 250,
+   "face": "front",
+   "group": "model"
+  },
+  {
+   "id": "f4",
+   "label": "Floor 4 — +ship: 0 of 58",
+   "kind": "box",
+   "x": 330,
+   "y": 320,
+   "face": "front",
+   "group": "model"
+  },
+  {
+   "id": "sr",
+   "label": "side rooms: risk · vendor",
+   "kind": "note",
+   "x": 330,
+   "y": 395,
+   "face": "front",
+   "group": "model"
+  },
+  {
+   "id": "gov",
+   "label": "GOV",
+   "kind": "decision",
+   "x": 690,
+   "y": 60,
+   "face": "front",
+   "group": "palace"
+  },
+  {
+   "id": "ship",
+   "label": "SHIP",
+   "kind": "decision",
+   "x": 690,
+   "y": 150,
+   "face": "front",
+   "group": "palace"
+  },
+  {
+   "id": "prove",
+   "label": "PROVE",
+   "kind": "decision",
+   "x": 690,
+   "y": 240,
+   "face": "front",
+   "group": "palace"
+  },
+  {
+   "id": "mission",
+   "label": "MISSION",
+   "kind": "decision",
+   "x": 690,
+   "y": 330,
+   "face": "front",
+   "group": "palace"
+  },
+  {
+   "id": "root",
+   "label": "README: no AI required",
+   "kind": "node",
+   "x": 800,
+   "y": 400,
+   "face": "front",
+   "group": "palace"
+  },
+  {
+   "id": "floor",
+   "label": "floor: governance-lineage-walk",
+   "kind": "note",
+   "x": 640,
+   "y": 10,
+   "face": "front",
+   "group": "palace"
+  }
+ ],
+ "edges": [
+  {
+   "from": "heap",
+   "to": "win",
+   "fromCP": "s",
+   "toCP": "n"
+  },
+  {
+   "from": "heap",
+   "to": "less",
+   "fromCP": "s",
+   "toCP": "n",
+   "style": {
+    "dash": true
+   }
+  },
+  {
+   "from": "win",
+   "to": "f2"
+  },
+  {
+   "from": "win",
+   "to": "f3"
+  },
+  {
+   "from": "less",
+   "to": "sr"
+  },
+  {
+   "from": "f2",
+   "to": "gov"
+  },
+  {
+   "from": "f4",
+   "to": "ship"
+  },
+  {
+   "from": "f4",
+   "to": "prove"
+  },
+  {
+   "from": "f3",
+   "to": "mission"
+  },
+  {
+   "from": "f1",
+   "to": "root",
+   "style": {
+    "dash": true
+   },
+   "nib": {
+    "b": "open"
+   }
+  },
+  {
+   "from": "fR",
+   "to": "f1",
+   "fromCP": "s",
+   "toCP": "n",
+   "nib": {
+    "b": "none"
+   }
+  },
+  {
+   "from": "f1",
+   "to": "f2",
+   "fromCP": "s",
+   "toCP": "n",
+   "nib": {
+    "b": "none"
+   }
+  },
+  {
+   "from": "f2",
+   "to": "f3",
+   "fromCP": "s",
+   "toCP": "n",
+   "nib": {
+    "b": "none"
+   }
+  },
+  {
+   "from": "f3",
+   "to": "f4",
+   "fromCP": "s",
+   "toCP": "n",
+   "nib": {
+    "b": "none"
+   }
+  }
+ ],
+ "systems": {
+  "memory": {
+   "pinned": false,
+   "_label": "the heap (seat, 144 notes)"
+  },
+  "model": {
+   "pinned": true,
+   "_label": "the model — floors stacked, finest at the bottom"
+  },
+  "palace": {
+   "pinned": false,
+   "_label": "the palace — forts"
+  }
+ }
+}

@@ -1,0 +1,12 @@
+148d770301ccb4a5a5c61f57cf525173f6bc396fc7d65b53018d27ea2cb26838  ./.arc/2026-09/SKILL-2026-09-11_Archived-by-rcw-01g98gsym4p1s3y94e1g4tcd.md
+8ee02b8eeaa558297ea056aeaddf4fb2472ff127df79a9f5ce9a006767be2959  ./.arc/2026-09/SKILL-2026-09-11_Archived-by-rcw-01g98gsym4p1s3y94e1g4tcd.md.asc
+4bb8c158bf59c6e15bcc54eddda57bad133334430600b279c26c781bd153c42d  ./.arc/2026-09/SKILL-2026-09-23_pre-header-pass.md.asc
+3cf70de6ee7025ed69e5b7bab1e160b6f11ccf75ea6ce3e64611eb958611aa37  ./.arc/2026-09/signature-2026-09-23_pre-header-pass.asc
+584fc2ca0a1a103b1df77a3a09d4ff68ba440cd7386181f2ced65ff579535637  ./.arc/2026-09/skill-manifest-2026-09-23_pre-header-pass
+f9f2e5f2b6b214f7f8cf9589ff6c20fc2a51544447921c5e31dc2c1c0497550c  ./.arc/receipts/aw2ri-2026-09.log
+5b09df3c3e762c39eff3905a274efaef88d95f52ed5f69826abdbbb7b9330675  ./SKILL.md
+9b2f1104fc83c6b238f549da2e165baff23ebca32f57f3751c15f90191a9e7d2  ./references/.arc/2026-09/attestations-2026-09-11_Archived-by-rcw-01g98gsym4p1s3y94e1g4tcd.txt
+b1b93acc62da3a6a95ad5b897d6850ae330318bae7acf9c25217478ee821c80c  ./references/.arc/receipts/aw2ri-2026-09.log
+dfb5dac0034199a93815a8d866b1545faaf3b48d64a0f22b8666c86040555b7d  ./references/AI_GUARD_PROVENANCE_CLAUDE.md
+f63552fc9f4206b07742e353df4c08e1af152b489aa4a7f6944cac2e04e89368  ./references/attestations.txt
+03e36919d1436a8777f2a304876dd9ffcdcfd0307429e90b151b541b998d2849  ./scripts/check_principles.py

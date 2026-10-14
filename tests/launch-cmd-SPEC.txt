@@ -1,0 +1,65 @@
+launch-cmd-SPEC.txt -- what tests/launch-cmd-tests.sh checks, in sentences.  Written before the
+runner, in words, so a reader can check the runner against it.  Item name for gd1ck: launch-cmd.
+Copyright 2026 Corwin Brust <corwin@bru.st> and Contributors.  CC-BY-SA-4.0.
+Written by Mentat (for Corwin; claude-opus-5-5), 2026-10-08.
+
+The thing under test: polygram/launch.cmd (a Windows batch file, shipped as servers/launch.cmd),
+and the part of polygram/plugin.py (Python) that names it in .mcp.json.  The runner is POSIX sh
+and awk.  Exit 0 all green, 1 any red, 2 kit broken.
+
+WHAT IS NOT TESTED HERE, said first: no cmd.exe runs on this bench, so nothing below watches the
+batch file RUN.  These are checks of its text and of the mint's JSON.  Whether it finds Python on a
+real Windows machine is CARD-giza-launch.md's question (advice/BUILD-LOOP-2026-10-08-ship/), and
+check-interpreter.sh's when it is run on Windows.
+
+L1  ASCII.  Every byte is a tab, CR, LF or printable ASCII (cmd reads a batch file in the console's
+    code page, so anything else can turn into a different command).
+L2  CRLF.  Every line ends CR LF, the last one too (cmd can miss a goto/call label in a file with
+    bare LF endings).
+L3  Quiet.  The first line is @echo off.  Every echo after it writes to stderr (">&2 echo"):
+    stdout is the JSON-RPC channel the app reads.  Every "where" and the version probe send their
+    own output to nul.
+L4  The order.  Outside comments, these appear in this order, each once, all before :VB_RUN:
+      1 VIBROBEAST_PYTHON, tried as named
+      2 py -3 (the :VB_TRY_PYLAUNCHER call)
+      3 every "where python3" match, then 4 every "where python" match
+      5 C:\msys64\<tree>\bin\python3.exe, then 6 ...\python.exe, trees ucrt64 mingw64 clang64
+      7 %LOCALAPPDATA%\Programs\Python\Python3*, then 8 %ProgramFiles%\Python3*
+      9 the not-found sentence on stderr, which names python.org and says restart Claude, then exit /b 1
+L5  Never the Store stub.  :VB_TRY_EXE skips a path containing \WindowsApps\ before it tests that
+    the file exists, before it probes, and before it sets VB_PY.  Only the VIBROBEAST_PYTHON call
+    passes "named" (which skips that test: the person chose it); no PATH or folder guess does.
+L6  New enough.  A candidate counts only when it runs and reports Python 3.10 or newer, in the
+    probe of :VB_TRY_EXE and in the py -3 capture.  One floor for every server: the Tavern the
+    plugin carries refuses anything older (2026-10-08, QA1 row 13; was 3.8).
+L7  Quoting.  The run line is exactly  "%VB_PY%" -B "%VB_HERE%launch.py" "%~1"  ; VB_HERE comes
+    from %~dp0 in a quoted set; every set is the set "NAME=value" form; every :VB_TRY_EXE argument
+    is quoted; %* appears nowhere outside comments.
+L8  Labels.  Every goto/call target is a label in the file.
+L9  Credit.  A comment names Bryant Frankford, Tavern-Setup, :TVL_FIND and :TVL_TRY, and the
+    copyright line names Bryant first:  rem Copyright 2026 Bryant Frankford
+    <nathanielfrankford@gmail.com> and Corwin Brust <corwin@bru.st>  (QA1 row 19: his lines).
+L10 Too old, said plainly.  An older Python that RUNS is remembered (the probe exits 3 for "too
+    old", and only exit 3 sets VB_OLD; any other failure is "not a Python").  When nothing new
+    enough is found and VB_OLD is set, the last words on stderr say "too old", name Python 3.10,
+    python.org, and "restart Claude", then exit /b 1.  No sentence on stderr asks the person to
+    re-mint the plugin or edit JSON (Corwin's D3).
+M1  The mint's JSON.  For the cmd shape, every server is "command": "cmd" with args exactly
+    "/d", "/c", "${CLAUDE_PLUGIN_ROOT}\\servers\\launch.cmd", NAME -- and no "/s" (with /s, cmd
+    strips the line's first and last quote, which cuts a quoted plugin path at its first space).
+M2  validate() refuses /s, refuses a launch.cmd with LF endings, and passes the real mint.
+M3  A real mint (launch "cmd") ships servers/launch.cmd byte for byte equal to polygram/launch.cmd,
+    and validates.  The default mint on this (Linux) host is still the python shape.
+M4  check-interpreter.sh in a cmd mint says NOT CHECKED and exits 2 where there is no cmd.exe
+    (it never claims a pass it could not run); where cmd.exe exists it runs the finder instead.
+M5  Windows-only, said where an installer reads it (QA1 row 15).  A cmd mint's plugin.json
+    description says "Windows build: its servers start through cmd.exe" and names
+    dist/posix/vibrobeast.plugin; its README has a line "**Made for Windows only.**".  A python
+    mint says neither.  The Makefile's dist recipe, after the main mint, mints --launch python
+    --out dist/posix when dist/vibrobeast/.mcp.json has "command": "cmd".
+R   --prove-red: each of these planted into a copy turns the text checks red, by its own rule:
+    py -3 moved above VIBROBEAST_PYTHON (L4); the WindowsApps line removed (L5); LF endings (L2);
+    a non-ASCII byte (L1); an unquoted %VB_PY% on the run line (L7); a bare echo to stdout (L3);
+    a %* (L7); a call to a label that does not exist (L8); the 3.10 probe put back to 3.8 (L6);
+    the too-old sentence told to re-mint (L10); the copyright line without Bryant first (L9);
+    and, on a copy of the Makefile, the dist/posix twin removed (M5).

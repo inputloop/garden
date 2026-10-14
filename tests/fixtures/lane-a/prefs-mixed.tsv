@@ -1,0 +1,8 @@
+ts	key	value	by	why
+2026-10-10T01:00:00Z	tavern.on	on	fixture	first
+2026-10-10T01:00:01Z	nobody.reads.this	x	fixture	a row with no reader
+
+2026-10-10T01:00:02Z	llamabridge.on	on	fixture	
+half a row
+2026-10-10T01:00:03Z	tavern.on	(unset)	fixture	taken back
+2026-10-10T01:00:04Z	answers.short	yes	fixture	no skill declares this

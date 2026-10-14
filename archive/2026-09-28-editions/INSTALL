@@ -1,0 +1,107 @@
+polygram — installation
+
+polygram is standard-library Python (3.8+) with a POSIX shell entry point.
+There is nothing to compile and no third-party dependencies.
+
+Get it
+------
+The public source is https://code.bru.st/corwin/vibrobeast (git clone, or a
+release archive from the same page).
+
+First run, in this order
+------------------------
+    sh bin/polygram doctor         # check the runtime and the workspace
+    UNSIGNED=1 make dist           # mint dist/: .skill bundles + the plugin
+                                   # (UNSIGNED=1: no signing key needed)
+    make check                     # the python test suite
+
+A build can carry a version and a word about it:
+
+    make dist RELEASE=0.8.90 NOTE="why this build"
+
+RELEASE names the version (it must be greater than the current one); NOTE goes
+into releases/0.8.90 as a `note` line and, when Mentat's seat can be reached,
+into the seat as well (seam polygram-releases). The seat is found the way the
+plugin's server finds it -- $MENTCACHED_SEAT, then ~/.mentcached/seat, then the
+desktop app's home seen from this shell ($USERPROFILE, for msys2) -- and is
+never created. To see which seat it would use, without writing:
+
+    python3 -m polygram.mcp.seatnote --where
+
+Every script is run through `sh` on purpose: a clone made by git on Windows
+leaves no execute bit, and `sh bin/polygram` works either way.
+`bin/polygram` locates the package from its own path and runs
+`python3 -m polygram`. Override the interpreter with PYTHON=python3.12.
+
+`doctor` notes, and does not fail on, an extern that is registered in
+externs.json but not fetched here (externs/ is not part of a clone); run
+`sh bin/polygram extern sync` to fetch the git ones.
+
+Without the author's C4 tree (C4_ROOT), `make dist` says what it leaves out:
+the canon skills and the publication read are each named as skipped, and
+`make garden` says it needs C4 and exits 0. The secrets scan is never
+skipped: it uses C4's checkers when present, else the copies in bin/
+(sb1aw, sb1pl, sb1rn; tests/sb-vendored-tests.sh keeps them equal to C4's),
+and with neither it refuses to mint.
+
+Verify
+------
+Signed skills are signed with Corwin Brust's OpenPGP key, fingerprint
+
+    ECE7 7CF4 17C7 6C1A CFCE  7C2B 5B61 3551 1580 F007
+
+The key is in this tree as skills/ECE77CF417C76C1ACFCE7C2B5B6135511580F007.asc
+and on keys.openpgp.org. Import it and check the fingerprint gpg prints:
+
+    gpg --import skills/ECE77CF417C76C1ACFCE7C2B5B6135511580F007.asc
+    gpg --fingerprint ECE77CF417C76C1ACFCE7C2B5B6135511580F007
+
+then verify a skill (tiered: "signature valid", UNVERIFIED-AUTHOR for a
+hash-only manifest, or TREE CHANGED / SIGNATURE FAILED):
+
+    sh skills/skill-sign/scripts/skill-sign.sh verify skills/NAME
+
+and, after a mint, the plugin's bytes against its MANIFEST:
+
+    sh dist/vibrobeast/check.sh
+
+A released plugin carries a detached signature over the whole .plugin file
+(servers and plugin.json included, not only the skills). Check it before
+installing:
+
+    gpg --verify vibrobeast.plugin.asc vibrobeast.plugin
+
+Put it on PATH (optional)
+-------------------------
+    export PATH="$PWD/bin:$PATH"
+
+Tests
+-----
+    make check                                  # = python3 -m unittest discover -s tests -v
+    for t in tests/*-tests.sh; do sh "$t"; done # the shell suites
+    sh bin/gd1ck --no-c4                        # everything, one verdict per item
+
+A suite that cannot run here (no dist/ yet, no C4 tree, no ruby >= 3) prints
+SKIP and exits 77; bin/gd1ck reports it as SKIPPED -- not a pass, not a failure.
+
+The Info manual
+---------------
+    make info                      # builds doc/polygram.info (needs makeinfo)
+    info -f doc/polygram.info
+
+Requirements
+------------
+    POSIX /bin/sh, Python 3.8+     everything
+    make                           make dist / check / garden / kit
+    sha256sum                      skill-sign.sh manifest/verify and check.sh
+                                   (both also take shasum -a 256);
+                                   tests/*-tests.sh (sha256sum itself)
+    zip, unzip                     skill-sign.sh bundle / unbundle
+    gpg                            signing (make dist without UNSIGNED=1) and
+                                   the signature tier of skill-sign.sh verify
+    perl                           tests/mcp-tests.sh, the Perl chain reader
+                                   (servers/bin/dl2-verify.pl), tests/*.pl
+    ruby >= 3                      tests only: tests/boundary-secrets-tests.sh
+                                   (SKIPs without it)
+    git                            polygram extern sync; bin/release
+    makeinfo (GNU Texinfo)         make info

@@ -1,0 +1,631 @@
+#!/usr/bin/env python3
+"""gb1md -- the game-book tool: render a book to plain text, and check the book's own claims.
+
+usage:
+  python3 h/gb1md --txt BOOK.md [--width N] [--ascii]   render to plain text (default 76 cols)
+  python3 h/gb1md --lint BOOK.md                check structure and every dice claim
+  python3 h/gb1md --stats BOOK.md               words, sections, tables, claims
+  python3 h/gb1md --voices A.md B.md ...        across a set: back-matter kinds must differ
+  python3 h/gb1md --prove-red                   self-test: a wrong odds claim must FAULT
+
+WHY THIS EXISTS.  We promised Markdown and plain text and said we would not claim a format we
+cannot test.  So this renders the text ourselves (no pandoc, no LaTeX, nothing the keeper has to
+install) and, more importantly, it CHECKS THE BOOK'S ARITHMETIC.  A game book whose odds column
+is wrong is worse than one with no odds column, and prose cannot be trusted to keep 36 cells
+straight across four books and several rewrites.
+
+MARKERS (HTML comments, invisible in rendered Markdown, in the C4 marker idiom):
+  <!-- GB:book title="..." author="..." -->      once, at the top
+  <!-- GB:table id=.. dice=2d6 kind=square -->   a table whose shape is asserted
+  <!-- GB:claim pattern="D+7" odds="12/36" -->   an odds claim, checked against a 2d6 enumeration
+  <!-- GB:box kind=rule|example|aside -->        a framed block, ends at <!-- GB:endbox -->
+  <!-- GB:pagebreak -->                          a page break hint for the text renderer
+  <!-- GB:backmatter kind="..." -->              the author's closing section, and its KIND
+
+THE PATTERN GRAMMAR is Corwin's own, from the dungeon repo's saving-throw table
+(Docs/saving-throw.org, src/dm-save.el):
+  D    doubles          HD   hi-doubles (5-5, 6-6)     LD  low doubles (1-1, 2-2)
+  SE   snake eyes (1-1) BX   boxcars (6-6)             N   the sum equals N
+  odd / even            X+Y  union (X or Y)            avd X  avoid: X does not happen
+Sequences (X&Y, two rolls) are out of scope for a static odds check and are reported, not scored.
+
+Copyright 2026 Corwin Brust <corwin@bru.st> -- GPLv3-or-later. Authored by Mentat (for Corwin).
+"""
+import sys, re, itertools
+
+# ---------------------------------------------------------------- the 2d6 universe
+ROLLS = [(a, b) for a in range(1, 7) for b in range(1, 7)]
+
+def atom_hits(atom, r):
+    a, b = r
+    s = a + b
+    atom = atom.strip()
+    if atom.startswith("avd "):
+        return not atom_hits(atom[4:], r)
+    if atom == "D":  return a == b
+    if atom == "HD": return a == b and a >= 5
+    if atom == "LD": return a == b and a <= 2
+    if atom == "SE": return a == b == 1
+    if atom == "BX": return a == b == 6
+    if atom == "odd":  return s % 2 == 1
+    if atom == "even": return s % 2 == 0
+    if re.fullmatch(r"\d+", atom): return s == int(atom)
+    raise ValueError("unknown atom: %r" % atom)
+
+def pattern_count(pat):
+    """Count the 2d6 outcomes (of 36) a pattern triggers on. 'avd' distributes over the union."""
+    pat = pat.strip()
+    if "&" in pat:
+        return None  # a sequence spans two rolls; not a 36-space question
+    neg = False
+    if pat.startswith("avd "):
+        neg, pat = True, pat[4:]
+    atoms = [p for p in pat.split("+") if p.strip()]
+    n = sum(1 for r in ROLLS if any(atom_hits(x, r) for x in atoms))
+    return 36 - n if neg else n
+
+# Other dice the books actually use. A claim may name its dice; 2d6 stays the default so the
+# pattern grammar above keeps working untouched.
+def space(dice):
+    d = dice.strip().lower()
+    m = re.fullmatch(r"(\d*)d(\d+)", d)
+    if not m: raise ValueError("unknown dice: %r" % dice)
+    n = int(m.group(1) or 1); sides = int(m.group(2))
+    return [sum(c) for c in itertools.product(range(1, sides + 1), repeat=n)]
+
+def threshold_count(dice, pat):
+    """Count outcomes of `dice` satisfying a comparison like '>=12', '<=4', '=7', 'even'."""
+    outs = space(dice)
+    p = pat.strip().replace(" ", "")
+    if p in ("odd", "even"):
+        want = 1 if p == "odd" else 0
+        return sum(1 for s in outs if s % 2 == want), len(outs)
+    m = re.fullmatch(r"(>=|<=|>|<|=)(\d+)", p)
+    if not m: raise ValueError("unknown threshold: %r (want >=N, <=N, >N, <N, =N, odd, even)" % pat)
+    op, v = m.group(1), int(m.group(2))
+    f = {">=": lambda s: s >= v, "<=": lambda s: s <= v, ">": lambda s: s > v,
+         "<": lambda s: s < v, "=": lambda s: s == v}[op]
+    return sum(1 for s in outs if f(s)), len(outs)
+
+# ---------------------------------------------------------------- parsing
+MARK = re.compile(r"<!--\s*GB:(\w+)(.*?)-->\s*$")
+ATTR = re.compile(r'(\w+)\s*=\s*"([^"]*)"|(\w+)\s*=\s*(\S+)')
+
+def attrs(s):
+    d = {}
+    for m in ATTR.finditer(s):
+        if m.group(1) is not None: d[m.group(1)] = m.group(2)
+        else: d[m.group(3)] = m.group(4)
+    return d
+
+def parse(text):
+    """Return (lines, marks) where marks is a list of (lineno, kind, attrs)."""
+    lines = text.split("\n")
+    marks = []
+    for i, ln in enumerate(lines):
+        m = MARK.match(ln.strip())
+        if m: marks.append((i, m.group(1), attrs(m.group(2))))
+    return lines, marks
+
+def md_tables(lines):
+    """Yield (start, end, rows) for each pipe table. rows are lists of cell strings.
+
+    Two things this has to get right, both learned the hard way:
+      - a fenced code block is not a table, even when it is full of pipes (a page of ASCII
+        cut-out flags parsed as a table and crashed the renderer);
+      - a 'table' whose header carries no word is not a table either."""
+    i, fenced = 0, False
+    while i < len(lines):
+        if lines[i].lstrip().startswith("```"):
+            fenced = not fenced; i += 1; continue
+        if (not fenced and lines[i].lstrip().startswith("|")
+                and re.search(r"\w", lines[i])
+                and i + 1 < len(lines) and re.match(r"^\s*\|[\s:|-]+\|\s*$", lines[i + 1])):
+            start = i
+            rows = []
+            while i < len(lines) and lines[i].lstrip().startswith("|"):
+                raw = lines[i].strip().strip("|")
+                if not re.match(r"^[\s:|-]+$", raw):
+                    rows.append([c.strip() for c in raw.split("|")])
+                i += 1
+            if rows: yield (start, i, rows)
+        else:
+            i += 1
+
+# ---------------------------------------------------------------- lint
+def render_report(paths, target=100, run_span=140):
+    """Print how wide every table renders -- counts and ratios, no verdict.
+
+    This exists because a reader graded a book 1/5 for clarity on tables the lint had already
+    warned about. The warning was right and too quiet, and it only ever saw tables carrying a
+    GB:table marker. This sees every table, and it reports the thing that actually separated the
+    unreadable book from the readable ones: not any single table's width, but a RUN of wide tables
+    in a stretch of book where the tables are the procedure.
+
+    It deliberately prints no threshold verdict. With four graded books there is no honest way to
+    validate one, and a threshold picked-not-validated is the fault the gauge exists to catch.
+    """
+    rc = 0
+    for path in paths:
+        lines, _ = parse(open(path, encoding="utf-8").read())
+        rows_of = [(t[0], t[2]) for t in md_tables(lines)]
+        heads = [i + 1 for i, l in enumerate(lines) if re.match(r"^#{1,4} ", l)]
+        def section_of(ln): return max([h for h in heads if h <= ln] or [0])
+        wide = []
+        print("%s" % path)
+        print("  %-6s %-5s %-9s %-8s %s" % ("line", "cols", "rendered", "squeeze", "note"))
+        for ln, rows in rows_of:
+            n = max(len(r) for r in rows)
+            widths = [max((len(r[i]) if i < len(r) else 0) for r in rows) for i in range(n)]
+            rendered = sum(widths) + 3 * n + 1
+            # longest single word per column: the narrowest a wrapping renderer can go
+            minwrap = sum(max(max((len(w) for w in (r[i] if i < len(r) else "").split()), default=0)
+                              for r in rows) for i in range(n)) + 3 * n + 1
+            sq = rendered / float(target)
+            note = ""
+            if rendered > target:
+                wide.append(ln)
+                note = "wraps" if minwrap <= target else "CANNOT fit at %d even wrapped" % target
+            print("  %-6d %-5d %-9d %-8.2f %s" % (ln, n, rendered, sq, note))
+        # A run is counted in SECTIONS, not tables. One grid printed as two halves sits under one
+        # heading and is one lookup to a reader -- counting it as a run made this report fire on its
+        # own remedy, about four minutes after the remedy shipped.
+        runs = []
+        for ln in wide:
+            grp = [x for x in wide if ln <= x <= ln + run_span]
+            if len({section_of(x) for x in grp}) >= 2 and (not runs or grp[0] > runs[-1][-1]):
+                runs.append(grp)
+        print("  -- %d table(s), %d over %d chars" % (len(rows_of), len(wide), target))
+        for grp in runs:
+            print("  -- RUN: %d wide tables across %d sections within %d lines (%s). In a table-driven "
+                  "book this is the shape a reader calls 'did not generate well'."
+                  % (len(grp), len({section_of(x) for x in grp}), run_span,
+                     ", ".join(str(g) for g in grp)))
+    return rc
+
+
+def thread_report(paths):
+    """Where in the book does a named person actually appear?
+
+    Bought with a reader's note that a book's 'narrative vibe feels broken throughout'. The book's
+    only named character first appeared at line 430 of 552: the narrative was not broken, it was
+    POCKETED -- present in one late section and absent from the rest. That is countable.
+    """
+    for path in paths:
+        text = open(path, encoding="utf-8").read()
+        lines = text.split("\n")
+        heads = [(i + 1, l) for i, l in enumerate(lines) if re.match(r"^#{1,3} ", l)]
+        stop = set("""The This That These Those There Then They Roll Throw Read Write Side Seam Hold
+                      Charter Price Standing Footing Aptitude Calling Competence Allegiance Part Flag
+                      Table Chance You Your It If And But For Not Now Go Every Each One Two Three Four
+                      Five Six Nothing Second First Where What Who When Why How Errata Books Book
+                      Nobody Somebody Someone Anyone Everyone Everything Anything Something People
+                      Note Between High Low Row Column Both Some Most Here There Only Without Under
+                      Over Above Below Add Miss Stop Keep Draw Down Across Walk Cut Tape General
+                      Public Licence License Number Her His Their Its Arriving Leaving Before After
+                      Ask Asked Take Taken Make Made Play Player Players Game Games Rule Rules""".split())
+        # A game term appears inside the tables; a person's name does not. And a word that only ever
+        # turns up starting a sentence is a sentence-opener, not a name. Both filters are cheap and
+        # both are needed: without them "Nobody", "Ask" and "Weight" read as characters.
+        in_tables = set()
+        fence = False
+        for l in lines:
+            if l.startswith("```"): fence = not fence; continue
+            if fence: continue
+            if l.startswith("|"):
+                for m in re.finditer(r"\b([A-Z][a-z]{2,})\b", l): in_tables.add(m.group(1))
+        # A book's own vocabulary gets DEFINED -- bolded on introduction, or set in a heading.
+        # A person is just named. That is the discriminator, and it is the book's own typography
+        # doing the work rather than a word list I would have to keep.
+        defined = set()
+        for l in lines:
+            for m in re.finditer(r"\*\*([^*]+)\*\*", l):
+                for w in re.findall(r"\b([A-Z][a-z]{2,})\b", m.group(1)): defined.add(w)
+            if l.startswith("#"):
+                for w in re.findall(r"\b([A-Z][a-z]{2,})\b", l): defined.add(w)
+        names = {}
+        fence = False
+        for i, l in enumerate(lines):
+            if l.startswith("```"): fence = not fence; continue
+            if fence or l.startswith("|") or l.startswith("<!--") or l.startswith("#"): continue
+            for m in re.finditer(r"\b([A-Z][a-z]{2,})\b", l):
+                w = m.group(1)
+                if w in stop or w in in_tables or w in defined: continue
+                names.setdefault(w, []).append(i + 1)
+        names = {w: at for w, at in names.items() if len(at) >= 2}
+        print("%s  (%d lines, %d headings)" % (path, len(lines), len(heads)))
+        ranked = sorted(names.items(), key=lambda kv: -len(kv[1]))[:6]
+        if not ranked:
+            print("  no recurring unbolded proper name. A book with no person in it is a fine thing "
+                  "to be; it is only a finding if the book promised one.")
+        for w, at in ranked:
+            secs = sorted({max([h for h, _ in heads if h <= a] or [0]) for a in at})
+            span = (at[-1] - at[0]) / float(len(lines))
+            print("  %-16s %3d mentions  first line %4d  in %d/%d sections  span %.0f%% of book%s"
+                  % (w, len(at), at[0], len(secs), len(heads), span * 100,
+                     "   <-- POCKETED" if len(secs) <= 2 else ""))
+        print("  -- counts, not a verdict. POCKETED means the name lives in two sections or fewer: "
+              "if the book's framing promised a thread, that is where a reader feels it break.")
+        # Show the work. A character whose name gets bolded as a recurring section marker looks like
+        # book vocabulary to the filter above, and a filter that hides its own misses is worse than a
+        # noisy one. Print what was set aside so a reader can overrule it in a glance.
+        filtered = {}
+        fence = False
+        for i, l in enumerate(lines):
+            if l.startswith("```"): fence = not fence; continue
+            if fence or l.startswith("|") or l.startswith("<!--") or l.startswith("#"): continue
+            for m in re.finditer(r"\b([A-Z][a-z]{2,})\b", l):
+                w = m.group(1)
+                if w in stop or w in names: continue
+                if w in defined or w in in_tables: filtered[w] = filtered.get(w, 0) + 1
+        top = sorted((w for w, c in filtered.items() if c >= 3), key=lambda w: -filtered[w])[:8]
+        if top:
+            print("  -- set aside as book vocabulary (bolded or in a table): %s"
+                  % ", ".join("%s x%d" % (w, filtered[w]) for w in top))
+    return 0
+
+
+def lint(path):
+    text = open(path, encoding="utf-8").read()
+    lines, marks = parse(text)
+    faults, warns, oks = [], [], []
+
+    book = [a for _, k, a in marks if k == "book"]
+    if not book: faults.append("no <!-- GB:book --> marker: the book does not name itself or its author")
+    else:
+        b = book[0]
+        for need in ("title", "author"):
+            if not b.get(need): faults.append("GB:book is missing %s=" % need)
+        oks.append('book "%s" by %s' % (b.get("title", "?"), b.get("author", "?")))
+
+    # every claim must match the enumeration
+    nclaim = 0
+    for ln, kind, a in marks:
+        if kind != "claim": continue
+        nclaim += 1
+        pat, odds, dice = a.get("pattern", ""), a.get("odds", ""), a.get("dice", "2d6")
+        try:
+            if dice.strip().lower() == "2d6" and not re.match(r"^\s*[<>=]", pat):
+                n, tot = pattern_count(pat), 36
+            else:
+                n, tot = threshold_count(dice, pat)
+        except ValueError as e:
+            faults.append("line %d: %s" % (ln + 1, e)); continue
+        if n is None:
+            warns.append("line %d: pattern %r spans two rolls; odds not scored here" % (ln + 1, pat)); continue
+        m = re.fullmatch(r"(\d+)/(\d+)", odds.strip())
+        if not m:
+            faults.append('line %d: odds=%r is not in N/M form' % (ln + 1, odds)); continue
+        num, den = int(m.group(1)), int(m.group(2))
+        if den != tot:
+            faults.append("line %d: %s has %d outcomes, the book divides by %d" % (ln + 1, dice, tot, den))
+        elif num != n:
+            faults.append("line %d: %s %r is %d/%d, the book says %s" % (ln + 1, dice, pat, n, tot, odds))
+    if nclaim and not any("is %d/36" in f for f in faults):
+        oks.append("%d odds claim(s) checked against a full enumeration of their dice" % nclaim)
+
+    # square tables really square
+    tabs = list(md_tables(lines))
+    for ln, kind, a in marks:
+        if kind != "table": continue
+        tab = next((t for t in tabs if t[0] > ln and t[0] - ln <= 4), None)
+        if tab is None:
+            faults.append("line %d: GB:table marker with no table under it" % (ln + 1)); continue
+        _, _, rows = tab
+        if a.get("kind") == "square":
+            body = rows[1:]
+            nr, nc = len(body), len(rows[0]) - 1
+            if nr != 6 or nc != 6:
+                faults.append("line %d: table %s is declared square but is %dx%d, not 6x6"
+                              % (ln + 1, a.get("id", "?"), nr, nc))
+        if a.get("kind") == "halved":
+            # A 6x6 grid printed as two 6x3 halves so it will hold its shape on a page.
+            # The halves are still one table and must still cover 1-6 exactly once.
+            pair = [t for t in tabs if t[0] > ln][:2]
+            tid = a.get("id", "?")
+            if len(pair) < 2:
+                faults.append("line %d: table %s is declared halved but only %d table(s) follow it"
+                              % (ln + 1, tid, len(pair)))
+            else:
+                seen, shapes = [], []
+                for _, _, prows in pair:
+                    body = prows[1:]
+                    shapes.append((len(body), len(prows[0]) - 1))
+                    seen += [c.strip() for c in prows[0][1:]]
+                if shapes != [(6, 3), (6, 3)]:
+                    faults.append("line %d: table %s is halved but its halves are %s, not two 6x3"
+                                  % (ln + 1, tid, " and ".join("%dx%d" % s for s in shapes)))
+                elif seen != ["1", "2", "3", "4", "5", "6"]:
+                    faults.append("line %d: table %s is halved but its halves read %s, not 1-6 once each"
+                                  % (ln + 1, tid, ", ".join(seen)))
+                else:
+                    oks.append("table %s is halved into two 6x3 that cover 1-6 exactly once" % tid)
+        widths = [max(len(r[i]) for r in rows if i < len(r)) for i in range(len(rows[0]))]
+        rendered = sum(widths) + 3 * len(widths)
+        if rendered > 100:
+            # The old wording named what --txt does about this and said nothing about the Markdown,
+            # which is the file a reader opens. A human graded a book 1/5 for clarity on tables this
+            # tool had already warned about, because the warning read as reassurance. It no longer does.
+            warns.append("line %d: table %s renders %d chars wide. Plain text degrades it to a keyed "
+                         "list (complete, not truncated); MARKDOWN DOES NOT -- it squeezes every column "
+                         "and the grid stops being readable. Split it or shorten the cells."
+                         % (ln + 1, a.get("id", "?"), rendered))
+    if tabs: oks.append("%d table(s) parsed" % len(tabs))
+
+    # Flag routing. A book that organises itself by "from X, to Y" headers has made a promise that
+    # those headers agree with the body -- and a stale header is exactly the failure such a book
+    # exists to prevent. Checked here because a cold reader caught it by hand once, which is once.
+    flags = {}
+    for ln in lines:
+        m = re.match(r"^#+\s*FLAG\s+(\d+)\s*.*?\bfrom\s+([^|]*?)\s*\u00b7\s*to\s+(.*?)\s*$", ln.strip())
+        if not m: continue
+        n = int(m.group(1))
+        nums = lambda t: sorted({int(x) for x in re.findall(r"\d+", t)})
+        f, t = flags.setdefault(n, (set(), set()))
+        f.update(nums(m.group(2))); t.update(nums(m.group(3)))
+    if flags:
+        bad = []
+        for n, (frm, to) in flags.items():
+            for d in to:
+                if d == n: continue          # "to 4b" is a sub-table of this flag, not a hop
+                if d in flags and n not in flags[d][0]:
+                    bad.append("flag %d says it goes to %d, but flag %d does not list %d as a source" % (n, d, d, n))
+            for srcn in frm:
+                if srcn == n: continue       # "from 3a" likewise
+                if srcn in flags and n not in flags[srcn][1]:
+                    bad.append("flag %d says it comes from %d, but flag %d does not list %d as a destination" % (n, srcn, srcn, n))
+        for b in sorted(set(bad)): faults.append("routing: " + b)
+        if not bad: oks.append("%d flag header(s); every from/to pair agrees both ways" % len(flags))
+
+    # boxes balance
+    depth = 0
+    for ln, kind, a in marks:
+        if kind == "box": depth += 1
+        elif kind == "endbox":
+            depth -= 1
+            if depth < 0: faults.append("line %d: GB:endbox with no open box" % (ln + 1))
+    if depth > 0: faults.append("%d GB:box never closed" % depth)
+    if depth == 0: oks.append("every box closed")
+
+    # Back matter. The house rule is that every book ends by speaking as its author -- and that the
+    # books in a set do NOT all do it the same way. A cold reader found four back-matters running one
+    # rhetorical move in one order, which let the persona absorb criticism the rules had earned. So the
+    # marker records the KIND, and --voices (below) refuses a set where the kinds repeat.
+    if "## " not in text: faults.append("the book has no sections")
+    bm = [a for _, k, a in marks if k == "backmatter"]
+    if not bm:
+        faults.append("no <!-- GB:backmatter kind=... --> marker: every book ends in the author's own voice")
+    else:
+        kind = bm[0].get("kind", "")
+        if not kind: faults.append("GB:backmatter is missing kind=")
+        else: oks.append("back matter present, kind=%s" % kind)
+        head = text.index("GB:backmatter")
+        if head < len(text) * 0.6:
+            warns.append("the back matter starts in the first 60%% of the book; it belongs at the back")
+
+    for o in oks:   print("[ OK ]    %s" % o)
+    for w in warns: print("[ WARN ]  %s" % w)
+    for f in faults: print("[ FAULT ] %s" % f)
+    print("gb1md lint: %s -- OK %d - WARN %d - FAULT %d" % (path, len(oks), len(warns), len(faults)))
+    return 1 if faults else 0
+
+# ---------------------------------------------------------------- text render
+def wrap(s, w, indent=""):
+    out, line = [], indent
+    for word in s.split():
+        if len(line) + len(word) + (0 if line.strip() == "" else 1) > w and line.strip():
+            out.append(line.rstrip()); line = indent + word
+        else:
+            line = (line + " " + word) if line.strip() else indent + word
+    if line.strip(): out.append(line.rstrip())
+    return out or [""]
+
+def render_table(rows, w):
+    if not rows: return []
+    """Draw a grid if it fits. If it does not, fall out to a keyed list rather than truncate a cell.
+
+    Truncating game-table content is data loss dressed as layout -- a reader with the plain-text
+    edition would be holding a different game. So a table too wide for the measure becomes
+    'row x column -- content', one entry per line, which is longer but complete."""
+    ncol = max(len(r) for r in rows)
+    rows = [r + [""] * (ncol - len(r)) for r in rows]
+    widths = [max(len(r[i]) for r in rows) for i in range(ncol)]
+    if sum(widths) + 3 * ncol + 1 <= w:
+        def row(cells):
+            return "| " + " | ".join(c.ljust(widths[i]) for i, c in enumerate(cells)) + " |"
+        sep = "+" + "+".join("-" * (x + 2) for x in widths) + "+"
+        out = [sep, row(rows[0]), sep]
+        for r in rows[1:]: out.append(row(r))
+        out.append(sep)
+        return out
+    head, body = rows[0], rows[1:]
+    out = []
+    corner = head[0].strip()
+    for r in body:
+        key = r[0].strip().strip("*")
+        for i in range(1, ncol):
+            cell = r[i].strip()
+            if not cell: continue
+            col = head[i].strip().strip("*")
+            lead = "  %s%s%s  " % (key, "-" if key and col else "", col)
+            wrapped = wrap(cell, max(20, w - len(lead)))
+            out.append(lead + wrapped[0])
+            out.extend(" " * len(lead) + x for x in wrapped[1:])
+    if corner: out.insert(0, "  (%s: row-column, then what it says)" % corner)
+    return out
+
+ASCII_FOLD = {"—": "--", "–": "-", "‘": "'", "’": "'",
+              "“": '"', "”": '"', "…": "...", "·": "*", " ": " ",
+              "→": "->", "←": "<-", "≤": "<=", "≥": ">=",
+              "×": "x", "−": "-", "•": "*", "«": '"', "»": '"',
+              "′": "'", "″": '"', "½": "1/2", "¼": "1/4", "¾": "3/4"}
+
+def fold_ascii(s):
+    for k, v in ASCII_FOLD.items(): s = s.replace(k, v)
+    return s
+
+def to_txt(path, w=76, ascii_only=False):
+    text = open(path, encoding="utf-8").read()
+    if ascii_only: text = fold_ascii(text)
+    lines, _ = parse(text)
+    tabs = {t[0]: t for t in md_tables(lines)}
+    out, i, boxdepth = [], 0, 0
+    while i < len(lines):
+        if i in tabs:
+            s, e, rows = tabs[i]
+            out.append("")
+            out.extend(("    " if boxdepth else "") + r for r in render_table(rows, w - (4 if boxdepth else 0)))
+            out.append("")
+            i = e; continue
+        ln = lines[i]
+        m = MARK.match(ln.strip())
+        if m:
+            kind, a = m.group(1), attrs(m.group(2))
+            if kind == "box":
+                boxdepth += 1
+                label = a.get("kind", "").upper()
+                out.append("")
+                out.append("  ." + "-" * (w - 6) + ".")
+                if label: out.append("  | " + label.ljust(w - 8) + " |")
+            elif kind == "endbox":
+                boxdepth = max(0, boxdepth - 1)
+                out.append("  '" + "-" * (w - 6) + "'")
+                out.append("")
+            elif kind == "pagebreak":
+                out.append(""); out.append("\f"); out.append("")
+            i += 1; continue
+        if ln.startswith("#"):
+            lvl = len(ln) - len(ln.lstrip("#"))
+            title = ln.lstrip("#").strip()
+            out.append("")
+            if lvl == 1:
+                bar = "=" * min(w, len(title))
+                out.extend([bar, title.upper(), bar])
+            elif lvl == 2:
+                out.extend([title, "-" * min(w, len(title))])
+            else:
+                out.append(title); out.append("~" * min(w, len(title)))
+            out.append("")
+            i += 1; continue
+        if ln.lstrip().startswith("```"):
+            i += 1
+            while i < len(lines) and not lines[i].lstrip().startswith("```"):
+                out.append(("    " if boxdepth else "") + lines[i].rstrip()); i += 1
+            i += 1; out.append(""); continue
+        if not ln.strip():
+            out.append(""); i += 1; continue
+        indent = "    " if boxdepth else ""
+        body = ln.strip()
+        bullet = re.match(r"^([-*]|\d+\.)\s+(.*)$", body)
+        if bullet:
+            first = indent + "  " + bullet.group(1) + " "
+            wrapped = wrap(bullet.group(2), w - len(first))
+            out.append(first + wrapped[0])
+            out.extend(" " * len(first) + x for x in wrapped[1:])
+        else:
+            # Gather the whole paragraph before wrapping. Markdown breaks a paragraph across source
+            # lines for the author's comfort; wrapping each source line separately reproduces the
+            # author's line breaks as ragged text, which is not what either format wants.
+            para = [body]
+            j = i + 1
+            while j < len(lines):
+                nxt = lines[j]
+                if (not nxt.strip() or nxt.startswith("#") or j in tabs
+                        or MARK.match(nxt.strip()) or re.match(r"^\s*([-*]|\d+\.)\s+", nxt)
+                        or nxt.lstrip().startswith("|") or nxt.strip() in ("---", "***")):
+                    break
+                para.append(nxt.strip()); j += 1
+            body = " ".join(para)
+            body = re.sub(r"\*\*(.+?)\*\*", lambda m: m.group(1).upper(), body)
+            body = re.sub(r"(?<!\*)\*([^*]+)\*(?!\*)", r"\1", body)
+            body = re.sub(r"`([^`]+)`", r"\1", body)
+            out.extend(wrap(body, w - len(indent), indent))
+            i = j; continue
+        i += 1
+    txt = "\n".join(out)
+    txt = re.sub(r"\n{4,}", "\n\n\n", txt)
+    return txt.strip() + "\n"
+
+def stats(path):
+    text = open(path, encoding="utf-8").read()
+    lines, marks = parse(text)
+    body = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+    words = len(body.split())
+    print("words        %d" % words)
+    print("sections     %d" % sum(1 for l in lines if l.startswith("## ")))
+    print("tables       %d" % len(list(md_tables(lines))))
+    print("odds claims  %d" % sum(1 for _, k, _ in marks if k == "claim"))
+    print("boxes        %d" % sum(1 for _, k, _ in marks if k == "box"))
+    return 0
+
+def prove_red():
+    import tempfile, os
+    d = tempfile.mkdtemp()
+    p = os.path.join(d, "red.md")
+    open(p, "w", encoding="utf-8").write(
+        '<!-- GB:book title="T" author="A" -->\n## s\n'
+        '<!-- GB:claim pattern="D+7" odds="99/36" -->\nabout the author\n')
+    import io, contextlib
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf): rc = lint(p)
+    ok = rc == 1 and "the book says 99/36" in buf.getvalue()
+    print("PASS: gb1md FAULTs a wrong odds claim (D+7 is 12/36, not 99/36)" if ok
+          else "FAIL: a wrong odds claim did not FAULT")
+    return 0 if ok else 1
+
+def voices(paths):
+    """Across a SET of books: the back-matter kinds must all differ, and no two books may open
+    their back matter with the same sentence shape. This is the gate a cold reader had to be
+    hired to apply once; now it runs."""
+    seen, faults, rows = {}, [], []
+    for path in paths:
+        text = open(path, encoding="utf-8").read()
+        _, marks = parse(text)
+        bm = [a for _, k, a in marks if k == "backmatter"]
+        kind = bm[0].get("kind", "?") if bm else "(none)"
+        b = [a for _, k, a in marks if k == "book"]
+        author = b[0].get("author", "?") if b else "?"
+        rows.append((path.split("/")[-1], author, kind))
+        if kind in seen:
+            faults.append("back-matter kind %r is used by both %s and %s -- a set whose authors all "
+                          "make the same move is one author in masks" % (kind, seen[kind], author))
+        seen[kind] = author
+    w = max(len(r[0]) for r in rows)
+    for f, a, k in rows: print("  %-*s  %-24s %s" % (w, f, a, k))
+    for f in faults: print("[ FAULT ] %s" % f)
+    print("gb1md voices: %d book(s) -- %d distinct back-matter kind(s) -- FAULT %d"
+          % (len(rows), len(set(k for _, _, k in rows)), len(faults)))
+    return 1 if faults else 0
+
+def main(argv):
+    if len(argv) < 2: print(__doc__); return 2
+    cmd = argv[1]
+    if cmd == "--render": return render_report(argv[2:])
+    if cmd == "--thread":  return thread_report(argv[2:])
+    if cmd == "--prove-red": return prove_red()
+    if cmd == "--voices": return voices(argv[2:])
+    if len(argv) < 3: print(__doc__); return 2
+    # The path is the first argument that is not a flag and is not a flag's value. Taking argv[2]
+    # blindly made "--txt --ascii BOOK.md" die with FileNotFoundError: '--ascii', which reads as a
+    # missing book rather than a misplaced flag. It cost four rendered files to a shell redirect
+    # before the error was even printed.
+    takes_value = {"--width"}
+    path, skip = None, False
+    for i, a in enumerate(argv[2:]):
+        if skip: skip = False; continue
+        if a.startswith("--"):
+            if a in takes_value: skip = True
+            continue
+        path = a; break
+    if path is None:
+        sys.stderr.write("gb1md: no book named. Flags may go before or after the path.\n"); return 2
+    if cmd == "--lint":  return lint(path)
+    if cmd == "--stats": return stats(path)
+    if cmd == "--txt":
+        w = 76
+        if "--width" in argv: w = int(argv[argv.index("--width") + 1])
+        sys.stdout.write(to_txt(path, w, ascii_only="--ascii" in argv)); return 0
+    print(__doc__); return 2
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

@@ -1,0 +1,68 @@
+#!/usr/bin/env perl
+# sb1pl -- SECRETS BOUNDARY 1, PERL. The twin of sb1aw, written apart from it (regular expressions
+#   here, a character walk there). Both answer to h/DESIGN-2026-09-26-secrets-at-the-boundary.md byte
+#   for byte; run them through sb1rn, which compares them when it matters.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st>.  Authored by Mentat (for Corwin).
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU
+# General Public License as published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.  SPDX-License-Identifier: GPL-3.0-or-later
+#
+# usage: sb1pl [--] PATH...   (same contract as sb1aw; exit 0 clean, 1 hits, 2 usage)
+#   A file that cannot be opened prints "UNREAD path", is counted, and ends the summary with
+#   ", unread N" (only when N > 0); with no hit that is exit 2, never clean (AMENDED 2026-09-27).
+#   A folder it cannot both list and enter is not walked: "UNREAD path/", counted the same way.
+use strict; use warnings; use File::Find ();
+
+shift @ARGV if @ARGV && $ARGV[0] eq '--';
+if (!@ARGV || $ARGV[0] =~ /^(-h|--help)$/) {
+  open my $me, '<', $0; while (<$me>) { last unless /^#/; next if $. == 1; s/^# ?//; print STDERR } exit 2;
+}
+
+my (%seen, @files);
+for my $p (@ARGV) {
+  $p =~ s{(?<=.)/+\z}{};
+  next if -l $p;
+  if (-f $p) { $seen{$p}++ or push @files, $p; next }
+  if (-d $p) {
+    File::Find::find({ no_chdir => 1, wanted => sub {
+      if (-d $_ && !-l $_ && (split m{/}, $_)[-1] eq '.git') { $File::Find::prune = 1; return }
+      if (-d $_ && !-l $_ && !(-r $_ && -x $_)) { $File::Find::prune = 1; $seen{"$_/"}++ or push @files, "$_/"; return }
+      return if -l $_; return unless -f _;
+      $seen{$_}++ or push @files, $_;
+    } }, $p);
+    next;
+  }
+  print STDERR "sb1pl: no such file or folder: $p\n"; exit 2;
+}
+
+my $W = qr/(?<![A-Za-z0-9_])/;
+my @rules = (
+  [ 'private-key',     qr/-----BEGIN [A-Z ]*PRIVATE KEY(?: BLOCK)?-----/ ],
+  [ 'github-token',    qr/${W}(?:gh[pousr]_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{22})/ ],
+  [ 'aws-key-id',      qr/${W}(?:AKIA|ASIA)[A-Z0-9]{16}(?![A-Z0-9])/ ],
+  [ 'slack-token',     qr/${W}xox[abprs]-[A-Za-z0-9-]{10}/ ],
+  [ 'ai-api-key',      qr/${W}(?:sk-ant-[A-Za-z0-9_-]{20}|sk-proj-[A-Za-z0-9_-]{20}|sk-[A-Za-z0-9]{20})/ ],
+  [ 'bearer-header',   qr/[Aa][Uu][Tt][Hh][Oo][Rr][Ii][Zz][Aa][Tt][Ii][Oo][Nn]:[ \t]*(?i:bearer|token)[ \t]+[A-Za-z0-9._~+\/=-]{20}/ ],
+  [ 'assigned-secret', qr/(?i:password|passwd|secret|token|api_key|apikey|access_key|private_key|secret_key|api-key)(?![A-Za-z0-9_.-])["']?[ \t]*[=:][ \t]*["']?[A-Za-z0-9_.\/+=-]{12}/ ],
+  [ 'irc-credential',  qr/(?i:(?:\/msg|privmsg)[ \t]+nickserv[ \t]+:?(?:identify|register|ghost)[ \t]+[^ \t]|^[ \t]*\/(?:ns|nickserv)[ \t]+(?:identify|register|ghost)[ \t]+[^ \t])/ ],
+);
+
+my ($read, $binary, $hits, $hitfiles, $allowed, $unread) = (0, 0, 0, 0, 0, 0);
+for my $f (sort @files) {
+  my $fh;
+  if ($f =~ m{/\z}) { print "UNREAD $f\n"; $unread++; next }   # a folder that could not be walked
+  unless (open $fh, '<:raw', $f) { print "UNREAD $f\n"; $unread++; next }
+  my $head = ''; read $fh, $head, 8192;
+  if (index($head, "\0") >= 0) { $binary++; close $fh; next }
+  seek $fh, 0, 0; $read++; my $any = 0;
+  while (my $line = <$fh>) {
+    chomp $line; $line =~ s/\r\z//;
+    if (index($line, 'sb:allow') >= 0) { $allowed++; next }
+    for my $r (@rules) { if ($line =~ $r->[1]) { print "HIT $f:$. $r->[0]\n"; $hits++; $any = 1 } }
+  }
+  close $fh; $hitfiles += $any;
+}
+my $tail = $unread ? ", unread $unread" : '';
+if ($hits) { print "sb: $hits hit(s) in $hitfiles file(s); read $read, binary skipped $binary, allowed $allowed$tail\n"; exit 1 }
+print "sb: clean; read $read, binary skipped $binary, allowed $allowed$tail\n"; exit($unread ? 2 : 0);

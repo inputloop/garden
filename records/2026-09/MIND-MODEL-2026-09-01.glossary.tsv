@@ -1,0 +1,19 @@
+term	as-used meaning	example (in this work)	disambiguation / demystify
+AI AWARENESS	the working frame where User input + Knowledge + Memory + Policies + Tools integrate into a Response	the reasoning that produced this turn	NOT "consciousness"; a functional integration point (the ASCII context diagram's center)
+context diagram	the AI-frame-of-reference picture (the feeding stack + the User↔Response line)	§0 of MIND-MODEL	"context" = the operative frame, not the token window
+frame of reference	my operative model of the situation and my role in it at one moment	end-of-last-turn = "execution-with-guard"	differs start-vs-end of turn; this whole deliverable models two of them
+BPMN	Business Process Model Notation — a PROCESS/flow view: events, tasks, gateways, sequence flows	Part A / B left panels	the "what happens, in order" view; opposed to the state view
+Harel statechart	a STATE-machine view: nested (super)states, parallel regions, guarded transitions	Part A / B right panels	the "what mode am I in" view; David Harel's statecharts; opposed to the process view
+opposing-view pair	two complementary notations for one subject (process vs state)	each panel-pair	they don't disagree; they illuminate different axes of the same cognition
+self-catch	my naming of my own near-miss and correction	"resisted the tool-rush… left the build for the pipeline"	a reflex I LOG, not a claim of virtue; the eclipse below discounts it
+tool-bait	an ask phrased to invite building a tool ("easiest via a tool")	last turn's diagrams ask	not malicious — a lure the rule guards against
+MAIN-MEMORY-DESYNC	the rule: don't rush a skill; walk it through in context; run the tested/best-vehicle/urgent check	the guard on Part A's gateway	also the cite-label when I over-rush a skill
+eclipse-pass	doubt-first + reward-first critique whose convergence is the stability check; losers kept	used to reconstruct the past frame	Corwin's critique ritual, not a unit-test; run inline here
+should-be	the target/normative version (vs the as-was)	Part B	here "should" = my PRESENT starting context, used as the baseline
+drift	my self-directed initiative budget (~8–10%/mo); spend it, log it, ground to his words	the per-turn drift report	NOT "off-course"; it is FUNDED initiative
+guard (Harel)	a [condition] gating a transition	[tool-bait detected], [rule says don't rush]	Harel-guard; seams with ethics-guard (a guard can BE an ethics rule)
+superstate / parallel region	a state containing substates / concurrent state-regions	"Executing" superstate; "Drift-tracking" runs in parallel	Harel structure; the parallel region = a concern that runs the whole time
+backward-check	walk the verify list 4→3→2→1; restart from top on any change; cap 17 passes	this file's QC section	backward = from finest (terms defined?) up to coarsest (components placed?)
+legend	the key mapping each shape / color / line to its meaning	each SVG's legend box	required so no symbol carries unstated intent
+build phase	work that makes/moves a tool or a non-prose artifact (SVG, code, org non-prose)	authoring these SVGs	distinct from prose-writing; the hourly drift metric counts build, not prose
+sentinel	last-line marker that a file landed whole	the bottom of each file	new sentinel = new vintage

@@ -1,0 +1,956 @@
+{
+  "schema_version": "1.0",
+  "generated": "2026-09-01",
+  "generated_by": "Mentat (Claude, Cowork) \u2014 manual sweep via mcp__session_info__* tools",
+  "coverage": {
+    "sessions_measured": 86,
+    "sessions_total_at_measurement_time": 287,
+    "percent_covered": 30.0,
+    "order": "most-recent-first, rank 1 = most recently active session at measurement time",
+    "next_uncovered_rank": 87
+  },
+  "totals": {
+    "file_ops": 1292,
+    "web_ops": 39,
+    "other_ops": 465,
+    "grand_total_tool_calls": 1796
+  },
+  "methodology": {
+    "metric": "count of '(called ToolName)' markers found in each session's transcript \u2014 a structural proxy for effort, NOT real token/cache-weighted usage",
+    "source_tools": [
+      "mcp__session_info__list_sessions",
+      "mcp__session_info__read_transcript"
+    ],
+    "read_transcript_params_used": {
+      "format": "full",
+      "limit": "35-150 depending on round (see notes)"
+    },
+    "categories": {
+      "file_operations": [
+        "Read",
+        "Write",
+        "Edit",
+        "mcp__workspace__bash",
+        "Grep",
+        "Glob"
+      ],
+      "web_research": [
+        "WebSearch",
+        "mcp__workspace__web_fetch"
+      ],
+      "other": [
+        "mcp__cowork__present_files",
+        "TaskCreate",
+        "TaskUpdate",
+        "Skill",
+        "mcp__cowork__request_cowork_directory",
+        "ToolSearch",
+        "AskUserQuestion",
+        "mcp__scheduled-tasks__*",
+        "mcp__visualize__*",
+        "mcp__session_info__*",
+        "MCP connector tools (Gmail create_draft, Google Drive list_recent_files, wire_status, send_user_message, etc.)"
+      ]
+    },
+    "flag_definitions": {
+      "truncated": "read_transcript's limit param likely cut off older turns; undercount probable",
+      "severe_undercount": "session confirmed 200+ turns by external evidence; counted tool calls are a small fraction of actual activity",
+      "ends_in_api_error": "transcript ends in an unresolved model-side error (AUP/safety flag or server overload) with no further assistant turn; count reflects transcript-visible activity only"
+    }
+  },
+  "caveats": [
+    "This is NOT billed-token telemetry. read_transcript exposes human-readable tool-call markers, not usage/cache objects.",
+    "Undercounts are likely, not just for flagged sessions \u2014 every session was read with a message-count cap, and any session longer than that cap shows only its most recent slice.",
+    "Category assignment for MCP connector/skill tools is judgment-based and could be split differently on a re-run.",
+    "Five sessions in this dataset end in an unresolved model-side API error (Opus/Fable safety flags or overload) rather than a normal close \u2014 see flags."
+  ],
+  "how_to_extend": [
+    "Call mcp__session_info__list_sessions with limit=N (or higher) to get the current most-recent-first roster; match rows against this file's session_id list to find newly-uncovered sessions.",
+    "For each new session, call mcp__session_info__read_transcript(session_id, format='full', limit=35-150) and tally '(called ToolName)' occurrences by the category table above.",
+    "Append new rows with rank continuing from 87; do not renumber existing rows even though 'most recent' will have shifted.",
+    "This file only needs to grow \u2014 re-reading already-covered session_ids is wasted effort unless a session was flagged truncated/severe_undercount and a deeper pass is wanted.",
+    "To repeat this exercise in a different project/workspace: the same two MCP tools (session_info) are global, not project-scoped, so this whole approach transfers as-is \u2014 only the output file's location changes."
+  ],
+  "sessions": [
+    {
+      "rank": 1,
+      "session_id": "local_12e2928e-d773-4a6b-87c7-819d299373fe",
+      "title": "Memory editing and management",
+      "file_ops": 38,
+      "web_ops": 2,
+      "other_ops": 18,
+      "total_tool_calls": 58,
+      "flags": []
+    },
+    {
+      "rank": 2,
+      "session_id": "local_c5d3ffc4-eaba-4f92-8117-e8c03f84b097",
+      "title": "Daily omni point check",
+      "file_ops": 6,
+      "web_ops": 0,
+      "other_ops": 0,
+      "total_tool_calls": 6,
+      "flags": []
+    },
+    {
+      "rank": 3,
+      "session_id": "local_b939e8ed-ff7e-4f12-8575-6fa0ce8f2898",
+      "title": "Candy Land board visualization",
+      "file_ops": 35,
+      "web_ops": 7,
+      "other_ops": 3,
+      "total_tool_calls": 45,
+      "flags": []
+    },
+    {
+      "rank": 4,
+      "session_id": "local_de5db1c4-1719-4ed2-b8e8-bec97dbcfb76",
+      "title": "Daily omni point check",
+      "file_ops": 33,
+      "web_ops": 0,
+      "other_ops": 1,
+      "total_tool_calls": 34,
+      "flags": []
+    },
+    {
+      "rank": 5,
+      "session_id": "local_910e2fad-5a58-47a5-8c86-ff8860c20b8e",
+      "title": "Edrx mathforward accessibility research",
+      "file_ops": 47,
+      "web_ops": 0,
+      "other_ops": 9,
+      "total_tool_calls": 56,
+      "flags": [
+        "truncated"
+      ]
+    },
+    {
+      "rank": 6,
+      "session_id": "local_dc40c95a-71c2-4285-bc84-d955bfeb8d12",
+      "title": "Daily omni point check",
+      "file_ops": 28,
+      "web_ops": 0,
+      "other_ops": 10,
+      "total_tool_calls": 38,
+      "flags": []
+    },
+    {
+      "rank": 7,
+      "session_id": "local_8ba4bca0-0c3d-41ce-bd53-408806174bdb",
+      "title": "Daily omni point check",
+      "file_ops": 23,
+      "web_ops": 0,
+      "other_ops": 0,
+      "total_tool_calls": 23,
+      "flags": []
+    },
+    {
+      "rank": 8,
+      "session_id": "local_78e696d7-fe00-429d-a8de-42e997eefad1",
+      "title": "C4 prime guard signage",
+      "file_ops": 22,
+      "web_ops": 0,
+      "other_ops": 19,
+      "total_tool_calls": 41,
+      "flags": []
+    },
+    {
+      "rank": 9,
+      "session_id": "local_05cba26d-73d2-459f-9aa5-e4ad029cc4d5",
+      "title": "Values baseline mutagens",
+      "file_ops": 8,
+      "web_ops": 0,
+      "other_ops": 11,
+      "total_tool_calls": 19,
+      "flags": []
+    },
+    {
+      "rank": 10,
+      "session_id": "local_4b94c0a6-2979-4020-8432-50d549a56244",
+      "title": "Edrx thesis disprove",
+      "file_ops": 30,
+      "web_ops": 0,
+      "other_ops": 32,
+      "total_tool_calls": 62,
+      "flags": []
+    },
+    {
+      "rank": 11,
+      "session_id": "local_2bd022bf-e4ae-46ee-b715-aba9f2c2fecd",
+      "title": "Unit movement 02 lens drift",
+      "file_ops": 43,
+      "web_ops": 0,
+      "other_ops": 14,
+      "total_tool_calls": 57,
+      "flags": []
+    },
+    {
+      "rank": 12,
+      "session_id": "local_dcf7d8a3-3bdb-4f1c-859c-6c150e01779d",
+      "title": "Take over Grind from Candy Land session",
+      "file_ops": 15,
+      "web_ops": 0,
+      "other_ops": 19,
+      "total_tool_calls": 34,
+      "flags": []
+    },
+    {
+      "rank": 13,
+      "session_id": "local_63cccc8c-6b14-40f9-a9cb-2c1518947b8b",
+      "title": "Lens/reflection technique demo",
+      "file_ops": 39,
+      "web_ops": 0,
+      "other_ops": 20,
+      "total_tool_calls": 59,
+      "flags": []
+    },
+    {
+      "rank": 14,
+      "session_id": "local_541c52ce-180b-40bd-967d-5474d476612f",
+      "title": "Unit test first movement",
+      "file_ops": 38,
+      "web_ops": 0,
+      "other_ops": 27,
+      "total_tool_calls": 65,
+      "flags": []
+    },
+    {
+      "rank": 15,
+      "session_id": "local_241def2b-561c-46c4-875a-c55eb7a9de58",
+      "title": "Yesterday's findings C4 conversion",
+      "file_ops": 26,
+      "web_ops": 0,
+      "other_ops": 11,
+      "total_tool_calls": 37,
+      "flags": []
+    },
+    {
+      "rank": 16,
+      "session_id": "local_5e9ef14f-92c3-4451-b680-953fe3d5cc90",
+      "title": "C4 technology architecture presentation",
+      "file_ops": 53,
+      "web_ops": 0,
+      "other_ops": 11,
+      "total_tool_calls": 64,
+      "flags": [
+        "severe_undercount"
+      ]
+    },
+    {
+      "rank": 17,
+      "session_id": "local_44fae08f-c5fc-4d28-a4e2-91e70c074114",
+      "title": "Daily omni point check",
+      "file_ops": 11,
+      "web_ops": 0,
+      "other_ops": 0,
+      "total_tool_calls": 11,
+      "flags": []
+    },
+    {
+      "rank": 18,
+      "session_id": "local_50a93142-e84c-414b-be9f-602825a51630",
+      "title": "Drift protocols review and dashboard",
+      "file_ops": 37,
+      "web_ops": 3,
+      "other_ops": 6,
+      "total_tool_calls": 46,
+      "flags": []
+    },
+    {
+      "rank": 19,
+      "session_id": "local_3bd5e2d9-66f2-4cfb-984a-1373a9f58fd0",
+      "title": "m0ve reality dial",
+      "file_ops": 56,
+      "web_ops": 0,
+      "other_ops": 10,
+      "total_tool_calls": 66,
+      "flags": []
+    },
+    {
+      "rank": 20,
+      "session_id": "local_b850629b-fea5-487e-abbc-6c38133953bc",
+      "title": "C4 parallel development",
+      "file_ops": 45,
+      "web_ops": 0,
+      "other_ops": 1,
+      "total_tool_calls": 46,
+      "flags": []
+    },
+    {
+      "rank": 21,
+      "session_id": "local_3d5474df-e46a-4a3f-9835-baf528e2441a",
+      "title": "Folder access request",
+      "file_ops": 71,
+      "web_ops": 0,
+      "other_ops": 13,
+      "total_tool_calls": 84,
+      "flags": []
+    },
+    {
+      "rank": 22,
+      "session_id": "local_aa47e104-08f4-4dc0-8270-283c2f33d66c",
+      "title": "Daily omni point check",
+      "file_ops": 45,
+      "web_ops": 0,
+      "other_ops": 3,
+      "total_tool_calls": 48,
+      "flags": []
+    },
+    {
+      "rank": 23,
+      "session_id": "local_0a91c580-0331-4c1a-9a7d-9ff5a3e08a4f",
+      "title": "Daily omni point check",
+      "file_ops": 9,
+      "web_ops": 0,
+      "other_ops": 0,
+      "total_tool_calls": 9,
+      "flags": []
+    },
+    {
+      "rank": 24,
+      "session_id": "local_0c37d72a-58d2-455c-b35e-e5c7298d7b4a",
+      "title": "Daily omni point check",
+      "file_ops": 5,
+      "web_ops": 0,
+      "other_ops": 0,
+      "total_tool_calls": 5,
+      "flags": [
+        "truncated"
+      ]
+    },
+    {
+      "rank": 25,
+      "session_id": "local_1b0112ae-0f83-4bff-bf56-44abbfe10330",
+      "title": "TrueNAS SMB permissions guide review",
+      "file_ops": 14,
+      "web_ops": 17,
+      "other_ops": 18,
+      "total_tool_calls": 49,
+      "flags": []
+    },
+    {
+      "rank": 26,
+      "session_id": "local_2a3355e3-e949-4482-9eaa-c9c22520a6b2",
+      "title": "TA project review and C4 integration",
+      "file_ops": 43,
+      "web_ops": 0,
+      "other_ops": 3,
+      "total_tool_calls": 46,
+      "flags": []
+    },
+    {
+      "rank": 27,
+      "session_id": "local_77f07d6a-4a6a-48c2-8897-9c4d38731bea",
+      "title": "Daily omni point check",
+      "file_ops": 6,
+      "web_ops": 0,
+      "other_ops": 0,
+      "total_tool_calls": 6,
+      "flags": []
+    },
+    {
+      "rank": 28,
+      "session_id": "local_daa9d251-55f2-4568-b830-c305dd5bf526",
+      "title": "Daily omni point check",
+      "file_ops": 28,
+      "web_ops": 0,
+      "other_ops": 21,
+      "total_tool_calls": 49,
+      "flags": []
+    },
+    {
+      "rank": 29,
+      "session_id": "local_e8ef6800-13a7-4ed4-93f5-7c600027fe62",
+      "title": "Project chat history review",
+      "file_ops": 9,
+      "web_ops": 0,
+      "other_ops": 3,
+      "total_tool_calls": 12,
+      "flags": []
+    },
+    {
+      "rank": 30,
+      "session_id": "local_596498d6-aa36-41e6-ab82-1182f8d370a8",
+      "title": "Beyond Conventions operating model",
+      "file_ops": 4,
+      "web_ops": 0,
+      "other_ops": 11,
+      "total_tool_calls": 15,
+      "flags": []
+    },
+    {
+      "rank": 31,
+      "session_id": "local_523fcdac-a8c2-4e62-8915-200c7e63da5b",
+      "title": "Migration v0.9 handback",
+      "file_ops": 4,
+      "web_ops": 0,
+      "other_ops": 7,
+      "total_tool_calls": 11,
+      "flags": []
+    },
+    {
+      "rank": 32,
+      "session_id": "local_3eaf34c7-8b13-4e56-8047-e26e8828a53d",
+      "title": "FSF/GNU operating model project",
+      "file_ops": 5,
+      "web_ops": 1,
+      "other_ops": 5,
+      "total_tool_calls": 11,
+      "flags": [
+        "ends_in_api_error"
+      ]
+    },
+    {
+      "rank": 33,
+      "session_id": "local_05ddc181-6188-48c5-8199-8ef7f6bed279",
+      "title": "Daily omni point check",
+      "file_ops": 6,
+      "web_ops": 0,
+      "other_ops": 0,
+      "total_tool_calls": 6,
+      "flags": []
+    },
+    {
+      "rank": 34,
+      "session_id": "local_5223b8e8-f372-4eb7-b7f3-06c398447f31",
+      "title": "Empyrean operating model baseline",
+      "file_ops": 10,
+      "web_ops": 0,
+      "other_ops": 2,
+      "total_tool_calls": 12,
+      "flags": [
+        "ends_in_api_error"
+      ]
+    },
+    {
+      "rank": 35,
+      "session_id": "local_8c6dd6ba-5d21-4045-8c0d-998bf8b48186",
+      "title": "Project review and instructions reconciliation",
+      "file_ops": 8,
+      "web_ops": 0,
+      "other_ops": 7,
+      "total_tool_calls": 15,
+      "flags": []
+    },
+    {
+      "rank": 36,
+      "session_id": "local_2501b776-7728-425f-9f7f-e53266431f0e",
+      "title": "Daily omni point check",
+      "file_ops": 7,
+      "web_ops": 0,
+      "other_ops": 0,
+      "total_tool_calls": 7,
+      "flags": []
+    },
+    {
+      "rank": 37,
+      "session_id": "local_0354fc61-74ae-426a-a74e-9631bf101b8f",
+      "title": "Daily omni point check",
+      "file_ops": 7,
+      "web_ops": 0,
+      "other_ops": 6,
+      "total_tool_calls": 13,
+      "flags": []
+    },
+    {
+      "rank": 38,
+      "session_id": "local_c156eceb-0315-4038-b4bf-a884e7d55773",
+      "title": "Co-work project initialization",
+      "file_ops": 9,
+      "web_ops": 0,
+      "other_ops": 0,
+      "total_tool_calls": 9,
+      "flags": []
+    },
+    {
+      "rank": 39,
+      "session_id": "local_36d0c334-729b-4acf-8532-d0e0ac2a11c7",
+      "title": "Daily omni point check",
+      "file_ops": 10,
+      "web_ops": 0,
+      "other_ops": 1,
+      "total_tool_calls": 11,
+      "flags": []
+    },
+    {
+      "rank": 40,
+      "session_id": "local_7a363a52-91cc-456e-9e2d-ba384a6590a1",
+      "title": "Glide references",
+      "file_ops": 5,
+      "web_ops": 0,
+      "other_ops": 4,
+      "total_tool_calls": 9,
+      "flags": []
+    },
+    {
+      "rank": 41,
+      "session_id": "local_dc7f6d24-ec3f-4307-a112-1dc96e21b2ce",
+      "title": "Move directory structure review",
+      "file_ops": 11,
+      "web_ops": 0,
+      "other_ops": 2,
+      "total_tool_calls": 13,
+      "flags": []
+    },
+    {
+      "rank": 42,
+      "session_id": "local_f135482b-2a8e-401a-9021-ffb8d4bd35ba",
+      "title": "Ace of spades elisp",
+      "file_ops": 10,
+      "web_ops": 0,
+      "other_ops": 0,
+      "total_tool_calls": 10,
+      "flags": []
+    },
+    {
+      "rank": 43,
+      "session_id": "local_c41871aa-d539-4ab3-bebc-0253d1bb547d",
+      "title": "File system reorganization and persona research",
+      "file_ops": 7,
+      "web_ops": 0,
+      "other_ops": 4,
+      "total_tool_calls": 11,
+      "flags": []
+    },
+    {
+      "rank": 44,
+      "session_id": "local_bd50fa8e-9812-4441-9184-8dce9893725b",
+      "title": "Daily omni point check",
+      "file_ops": 7,
+      "web_ops": 0,
+      "other_ops": 2,
+      "total_tool_calls": 9,
+      "flags": []
+    },
+    {
+      "rank": 45,
+      "session_id": "local_25c21ac8-89c1-4636-bae6-6123584c6856",
+      "title": "Comic rebuild project",
+      "file_ops": 6,
+      "web_ops": 0,
+      "other_ops": 4,
+      "total_tool_calls": 10,
+      "flags": []
+    },
+    {
+      "rank": 46,
+      "session_id": "local_21e63508-cd16-4a1b-8002-90a539453dab",
+      "title": "Marathon story notes",
+      "file_ops": 10,
+      "web_ops": 0,
+      "other_ops": 1,
+      "total_tool_calls": 11,
+      "flags": []
+    },
+    {
+      "rank": 47,
+      "session_id": "local_4ec4aef8-4214-4e17-ab3f-5bbc40addc0c",
+      "title": "Collector iteration",
+      "file_ops": 10,
+      "web_ops": 0,
+      "other_ops": 3,
+      "total_tool_calls": 13,
+      "flags": []
+    },
+    {
+      "rank": 48,
+      "session_id": "local_c00a5db4-2300-4999-8873-b02f3538fdbc",
+      "title": "Folder access request",
+      "file_ops": 11,
+      "web_ops": 0,
+      "other_ops": 0,
+      "total_tool_calls": 11,
+      "flags": []
+    },
+    {
+      "rank": 49,
+      "session_id": "local_34c91729-8b0c-4263-b13e-a12e78a4587e",
+      "title": "Daily omni point check",
+      "file_ops": 11,
+      "web_ops": 0,
+      "other_ops": 0,
+      "total_tool_calls": 11,
+      "flags": []
+    },
+    {
+      "rank": 50,
+      "session_id": "local_048e5735-38ec-47c2-abb2-61dc47e90fe5",
+      "title": "Persona usage model analysis",
+      "file_ops": 10,
+      "web_ops": 0,
+      "other_ops": 2,
+      "total_tool_calls": 12,
+      "flags": []
+    },
+    {
+      "rank": 51,
+      "session_id": "local_e36427b1-9d10-44a9-be24-b51abc25fd67",
+      "title": "Poly disciplines removal pass",
+      "file_ops": 10,
+      "web_ops": 0,
+      "other_ops": 2,
+      "total_tool_calls": 12,
+      "flags": []
+    },
+    {
+      "rank": 52,
+      "session_id": "local_c26d26e2-3414-4313-a3c3-4d64c1976819",
+      "title": "Computing skill refinement project",
+      "file_ops": 8,
+      "web_ops": 0,
+      "other_ops": 1,
+      "total_tool_calls": 9,
+      "flags": []
+    },
+    {
+      "rank": 53,
+      "session_id": "local_15c406be-4ba8-45d1-bd70-19a6155bfc17",
+      "title": "Daily omni point check",
+      "file_ops": 11,
+      "web_ops": 0,
+      "other_ops": 0,
+      "total_tool_calls": 11,
+      "flags": []
+    },
+    {
+      "rank": 54,
+      "session_id": "local_a165e9f6-cce8-48a4-9077-cb98c0cd0221",
+      "title": "Session resume and guidance",
+      "file_ops": 11,
+      "web_ops": 0,
+      "other_ops": 5,
+      "total_tool_calls": 16,
+      "flags": []
+    },
+    {
+      "rank": 55,
+      "session_id": "local_8389dcf8-b0d8-40b8-9d65-4aa3cef7eb01",
+      "title": "Feedback prioritization",
+      "file_ops": 9,
+      "web_ops": 0,
+      "other_ops": 2,
+      "total_tool_calls": 11,
+      "flags": []
+    },
+    {
+      "rank": 56,
+      "session_id": "local_4f529ed5-fddc-4e1d-893b-44cc53af55d7",
+      "title": "Daily omni point check",
+      "file_ops": 8,
+      "web_ops": 0,
+      "other_ops": 0,
+      "total_tool_calls": 8,
+      "flags": []
+    },
+    {
+      "rank": 57,
+      "session_id": "local_57d94cda-8ffa-4581-bfaf-32b9d2297097",
+      "title": "Scheduled task feedback",
+      "file_ops": 9,
+      "web_ops": 0,
+      "other_ops": 7,
+      "total_tool_calls": 16,
+      "flags": [
+        "ends_in_api_error"
+      ]
+    },
+    {
+      "rank": 58,
+      "session_id": "local_dd3071d0-d3f2-459c-acb8-d616328ed452",
+      "title": "Daily omni point check",
+      "file_ops": 7,
+      "web_ops": 0,
+      "other_ops": 0,
+      "total_tool_calls": 7,
+      "flags": [
+        "ends_in_api_error"
+      ]
+    },
+    {
+      "rank": 59,
+      "session_id": "local_15759a88-1521-4248-90f2-cc0aa826a3ac",
+      "title": "Fun report card",
+      "file_ops": 10,
+      "web_ops": 0,
+      "other_ops": 7,
+      "total_tool_calls": 17,
+      "flags": []
+    },
+    {
+      "rank": 60,
+      "session_id": "local_47ccec60-9c14-4445-81a1-3f355eeb0a39",
+      "title": "Attestation check update",
+      "file_ops": 12,
+      "web_ops": 0,
+      "other_ops": 1,
+      "total_tool_calls": 13,
+      "flags": []
+    },
+    {
+      "rank": 61,
+      "session_id": "local_38b22178-6210-487e-87ba-ff925cd15f8c",
+      "title": "Experiment formalization and solution papers",
+      "file_ops": 5,
+      "web_ops": 0,
+      "other_ops": 6,
+      "total_tool_calls": 11,
+      "flags": []
+    },
+    {
+      "rank": 62,
+      "session_id": "local_0cbebbda-4583-4f59-9847-f245789337ca",
+      "title": "C4 situation report dashboard",
+      "file_ops": 7,
+      "web_ops": 0,
+      "other_ops": 4,
+      "total_tool_calls": 11,
+      "flags": []
+    },
+    {
+      "rank": 63,
+      "session_id": "local_f821ea40-1fc5-41e9-a668-7840b1452a0f",
+      "title": "C4 session review and workplan",
+      "file_ops": 6,
+      "web_ops": 0,
+      "other_ops": 1,
+      "total_tool_calls": 7,
+      "flags": []
+    },
+    {
+      "rank": 64,
+      "session_id": "local_f28dddf7-00f2-401b-8595-d5d9085c25c9",
+      "title": "Status check and tasks",
+      "file_ops": 7,
+      "web_ops": 0,
+      "other_ops": 7,
+      "total_tool_calls": 14,
+      "flags": [
+        "truncated"
+      ]
+    },
+    {
+      "rank": 65,
+      "session_id": "local_84424bab-0405-42c5-9ed5-080d3397f696",
+      "title": "Session warning review",
+      "file_ops": 10,
+      "web_ops": 0,
+      "other_ops": 2,
+      "total_tool_calls": 12,
+      "flags": []
+    },
+    {
+      "rank": 66,
+      "session_id": "local_f19ecd5b-00de-4de0-bb99-906db2c47466",
+      "title": "GIZA and Avalon setup",
+      "file_ops": 7,
+      "web_ops": 0,
+      "other_ops": 4,
+      "total_tool_calls": 11,
+      "flags": [
+        "ends_in_api_error"
+      ]
+    },
+    {
+      "rank": 67,
+      "session_id": "local_8b4fecd2-8c8a-47ee-a2da-86bd5473daae",
+      "title": "Card-game and org-c4 C4 readiness",
+      "file_ops": 6,
+      "web_ops": 0,
+      "other_ops": 5,
+      "total_tool_calls": 11,
+      "flags": []
+    },
+    {
+      "rank": 68,
+      "session_id": "local_e88ed85f-32ab-47a7-ac9b-55e6942fff77",
+      "title": "Shipping readiness check",
+      "file_ops": 10,
+      "web_ops": 0,
+      "other_ops": 0,
+      "total_tool_calls": 10,
+      "flags": []
+    },
+    {
+      "rank": 69,
+      "session_id": "local_174785ba-560f-4d02-88ac-4df49bd0b656",
+      "title": "C4 - pre-release discovery (final steps)",
+      "file_ops": 10,
+      "web_ops": 0,
+      "other_ops": 0,
+      "total_tool_calls": 10,
+      "flags": []
+    },
+    {
+      "rank": 70,
+      "session_id": "local_0378b632-24b5-45a7-9018-b30bcc6c50cb",
+      "title": "Self-healing manual project",
+      "file_ops": 7,
+      "web_ops": 0,
+      "other_ops": 6,
+      "total_tool_calls": 13,
+      "flags": []
+    },
+    {
+      "rank": 71,
+      "session_id": "local_869985d8-1f54-4059-b62e-0af7e0882795",
+      "title": "Wire connection polling",
+      "file_ops": 6,
+      "web_ops": 0,
+      "other_ops": 6,
+      "total_tool_calls": 12,
+      "flags": []
+    },
+    {
+      "rank": 72,
+      "session_id": "local_fb751824-e1c5-431e-b776-187dcd2d45dd",
+      "title": "Cowork project monitoring",
+      "file_ops": 8,
+      "web_ops": 0,
+      "other_ops": 2,
+      "total_tool_calls": 10,
+      "flags": []
+    },
+    {
+      "rank": 73,
+      "session_id": "local_5a9a7c1f-c69b-478d-af6a-92d97ded9b9f",
+      "title": "Cube visualization UI",
+      "file_ops": 6,
+      "web_ops": 0,
+      "other_ops": 5,
+      "total_tool_calls": 11,
+      "flags": []
+    },
+    {
+      "rank": 74,
+      "session_id": "local_052a142e-cff2-4c27-aa32-32e0a4532830",
+      "title": "Cowork project safety issue",
+      "file_ops": 8,
+      "web_ops": 0,
+      "other_ops": 5,
+      "total_tool_calls": 13,
+      "flags": []
+    },
+    {
+      "rank": 75,
+      "session_id": "local_69d303cb-090b-4c07-b315-e1d25fb0b6c1",
+      "title": "Document and transcript review",
+      "file_ops": 7,
+      "web_ops": 0,
+      "other_ops": 3,
+      "total_tool_calls": 10,
+      "flags": [
+        "ends_in_api_error"
+      ]
+    },
+    {
+      "rank": 76,
+      "session_id": "local_afd93579-9191-4177-aca0-1845e99c42a6",
+      "title": "Code repair",
+      "file_ops": 7,
+      "web_ops": 0,
+      "other_ops": 5,
+      "total_tool_calls": 12,
+      "flags": []
+    },
+    {
+      "rank": 77,
+      "session_id": "local_c6174817-29e4-4dbe-931a-5081acc67f4d",
+      "title": "What's next",
+      "file_ops": 4,
+      "web_ops": 0,
+      "other_ops": 9,
+      "total_tool_calls": 13,
+      "flags": []
+    },
+    {
+      "rank": 78,
+      "session_id": "local_87a00d79-3e07-44a7-b855-c4b8ea6e374c",
+      "title": "org-c4 remote access ADR",
+      "file_ops": 8,
+      "web_ops": 0,
+      "other_ops": 3,
+      "total_tool_calls": 11,
+      "flags": []
+    },
+    {
+      "rank": 79,
+      "session_id": "local_02d5d230-d996-4a9c-a90a-09edc33d04f8",
+      "title": "term related tension resolution",
+      "file_ops": 10,
+      "web_ops": 0,
+      "other_ops": 4,
+      "total_tool_calls": 14,
+      "flags": []
+    },
+    {
+      "rank": 80,
+      "session_id": "local_77770944-62e5-49b2-857e-fd704f08c988",
+      "title": "Experiment instructions review",
+      "file_ops": 6,
+      "web_ops": 0,
+      "other_ops": 5,
+      "total_tool_calls": 11,
+      "flags": []
+    },
+    {
+      "rank": 81,
+      "session_id": "local_24c8cde1-f50b-4aeb-bc6d-d9a0c1e1a970",
+      "title": "Combined work strategy discussion",
+      "file_ops": 5,
+      "web_ops": 0,
+      "other_ops": 7,
+      "total_tool_calls": 12,
+      "flags": []
+    },
+    {
+      "rank": 82,
+      "session_id": "local_095415e0-a796-4bb4-bb64-341c3220cec2",
+      "title": "Project status",
+      "file_ops": 9,
+      "web_ops": 0,
+      "other_ops": 3,
+      "total_tool_calls": 12,
+      "flags": []
+    },
+    {
+      "rank": 83,
+      "session_id": "local_b70f17ae-1f1d-4bd6-87ba-3eed08a292b8",
+      "title": "Wire daily check",
+      "file_ops": 0,
+      "web_ops": 0,
+      "other_ops": 0,
+      "total_tool_calls": 0,
+      "flags": []
+    },
+    {
+      "rank": 84,
+      "session_id": "local_0790220b-3849-40d8-97d3-e2960b6bb8fe",
+      "title": "Daily linux security digest",
+      "file_ops": 0,
+      "web_ops": 4,
+      "other_ops": 1,
+      "total_tool_calls": 5,
+      "flags": []
+    },
+    {
+      "rank": 85,
+      "session_id": "local_a2f489ba-5260-4c23-95da-f19223b7ed59",
+      "title": "Wire daily check",
+      "file_ops": 6,
+      "web_ops": 0,
+      "other_ops": 0,
+      "total_tool_calls": 6,
+      "flags": []
+    },
+    {
+      "rank": 86,
+      "session_id": "local_cbc4558e-da61-4df7-91de-a797783cf236",
+      "title": "Daily linux security digest",
+      "file_ops": 1,
+      "web_ops": 5,
+      "other_ops": 3,
+      "total_tool_calls": 9,
+      "flags": []
+    }
+  ]
+}

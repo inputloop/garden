@@ -1,0 +1,29 @@
+polygram — installation
+
+polygram is standard-library Python (3.8+) with a POSIX shell entry point.
+There is nothing to compile and no third-party dependencies.
+
+Run in place
+------------
+    ./bin/polygram doctor          # check the runtime
+    ./bin/polygram --help
+
+`bin/polygram` locates the package from its own path and runs
+`python3 -m polygram`. Override the interpreter with PYTHON=python3.12.
+
+Put it on PATH (optional)
+-------------------------
+    export PATH="$PWD/bin:$PATH"
+
+Tests
+-----
+    python3 -m unittest discover -s tests -v
+
+The Info manual
+---------------
+    make info                      # builds doc/polygram.info (needs makeinfo)
+    info -f doc/polygram.info
+
+Requirements: a POSIX /bin/sh and Python 3.8+. `make info` additionally needs
+GNU Texinfo (makeinfo). git is used only by `polygram extern` for cloning
+upstream sources.

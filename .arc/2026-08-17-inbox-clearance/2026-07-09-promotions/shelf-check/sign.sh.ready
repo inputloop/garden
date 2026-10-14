@@ -1,0 +1,335 @@
+#!/bin/sh
+# sign.sh --- durable signing for the pub/ shelf. Assumes gpg on PATH.
+#
+# Copyright (C) 2026 Corwin <mplscorwin@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-or-later
+# This program comes with ABSOLUTELY NO WARRANTY; see the GNU GPL v3
+# or later <https://www.gnu.org/licenses/> for details.
+#
+# The durable replacement for: gpg --clear-sign $f && mv $f.asc $f
+# (which double-signs on the second pass and loses the .asc race).
+#
+# usage:
+#   sign.sh sign FILE...     clearsign in place; if FILE is already
+#                            clearsigned, the old signature is stripped
+#                            first, so re-signing after an edit is one
+#                            step and never nests. Verifies before it
+#                            replaces; the original is untouched on any
+#                            failure.
+#   sign.sh detach FILE...   write FILE.asc (armored detached sig);
+#                            keeps markdown pristine (no dash-escapes).
+#   sign.sh verify FILE...   verify clearsign, or FILE.asc if present.
+#   sign.sh body FILE        print the unsigned body (dash-unescaped).
+#   sign.sh unsign FILE      strip the signature in place (edit, then
+#                            sign again).
+#   sign.sh export-key       write corwin.asc (public key) beside this
+#                            script, for shelf consumers to import.
+#   sign.sh manifest [DIR]   emit a SEND-MANIFEST skeleton: one row per
+#                            file (bytes, sha256, sig state, clearance,
+#                            what) ready to edit, scrub, and sign.
+#   sign.sh vouch-key FILE   clearsign a comrade's public key in place,
+#                            after showing what is being vouched (the
+#                            bryant.asc ceremony, made repeatable).
+#
+#   sign.sh check-shelf [DIR]  fail-closed walk of a signed shelf: reads
+#                            expected state from DIR/.gate (SIGN:/NOSIG:/
+#                            FURNITURE: lines; unlisted = SIGN), verifies
+#                            every governed file, one TSV row each.
+#                            Read-only. Exits 2 BAD sig, 3 governed-but-
+#                            unsigned, 4 missing key, 0 clean.
+#
+# Key selection: $PUB_SIGN_KEY overrides the pinned fingerprint.
+
+set -eu
+
+KEY="${PUB_SIGN_KEY:-ECE77CF417C76C1ACFCE7C2B5B6135511580F007}"
+
+die() { printf 'sign.sh: %s\n' "$*" >&2; exit 1; }
+
+is_clearsigned() {
+    grep -q '^-----BEGIN PGP SIGNED MESSAGE-----' "$1" 2>/dev/null
+}
+
+# Print the body of a clearsigned file: skip the hash header block,
+# stop at the signature, reverse RFC 4880 dash-escaping ("- " prefix).
+extract_body() {
+    awk '
+        /^-----BEGIN PGP SIGNED MESSAGE-----$/ { s = 1; next }
+        s == 1 { if ($0 == "") s = 2; next }
+        s == 2 {
+            if ($0 ~ /^-----BEGIN PGP SIGNATURE-----$/) exit
+            sub(/^- /, "")
+            print
+        }
+    ' "$1"
+}
+
+# Canonical text: CRLF -> LF, trailing whitespace stripped, trailing blank
+# lines dropped. This is (at most) what gpg itself normalizes when
+# clearsigning, so differences inside this envelope are gpg's, not corruption.
+canon() {
+    awk '{ sub(/\r$/, ""); sub(/[ \t]+$/, ""); a[NR] = $0 }
+         END { n = NR; while (n > 0 && a[n] == "") n--
+               for (i = 1; i <= n; i++) print a[i] }' "$1"
+}
+
+# Body to a same-directory temp file (mv stays atomic on one filesystem).
+stage_body() { # $1=file $2=tmpout
+    if is_clearsigned "$1"; then
+        extract_body "$1" > "$2"
+    else
+        cat "$1" > "$2"
+    fi
+    # gpg adds a trailing newline on output; normalize so the round-trip
+    # comparison below cannot false-alarm on a missing final newline.
+    [ -s "$2" ] || die "$1: empty body -- refusing to sign nothing"
+    tail -c 1 "$2" | od -An -c | grep -q '\\n' || printf '\n' >> "$2"
+}
+
+cmd_sign() {
+    [ $# -ge 1 ] || die 'sign: need at least one FILE'
+    for f in "$@"; do
+        [ -f "$f" ] || die "$f: no such file"
+        # Executables are detach-only: clearsign buries the shebang three
+        # lines deep and appends an armor block the shell will try to run
+        # (learned on sig-report.sh, 2026-07-07).
+        case $(head -c 2 "$f") in '#!')
+            die "$f: has a shebang -- clearsign breaks executables; use: sign.sh detach $f" ;;
+        esac
+        case $f in *.sh|*.py|*.pl)
+            die "$f: script by extension -- use: sign.sh detach $f" ;;
+        esac
+        d=$(dirname "$f"); b=$(basename "$f")
+        body="$d/.$b.body.$$"; out="$d/.$b.signed.$$"
+        trap 'rm -f "$body" "$out"' EXIT
+        stage_body "$f" "$body"
+        gpg --yes --local-user "$KEY" --clearsign \
+            --output "$out" "$body" || die "$f: gpg clearsign failed"
+        # Trust the disk, not the message: verify, then prove the body
+        # survived, before touching the original. Byte-exact match is the
+        # happy path; a difference that vanishes under canon() is gpg's own
+        # line-ending/whitespace normalization and is allowed through with a
+        # note. Anything else is treated as corruption: the original stays
+        # untouched and both bodies are kept for inspection.
+        gpg --verify "$out" >/dev/null 2>&1 \
+            || die "$f: post-sign verify failed -- original untouched"
+        if extract_body "$out" | cmp -s - "$body"; then
+            :
+        else
+            got="$d/.$b.signed-body.$$"
+            extract_body "$out" > "$got"
+            canon "$got" > "$got.c"; canon "$body" > "$body.c"
+            if cmp -s "$got.c" "$body.c"; then
+                printf '%s: note: gpg canonicalized line endings/trailing whitespace\n' "$f" >&2
+                rm -f "$got" "$got.c" "$body.c"
+            else
+                trap - EXIT
+                rm -f "$got.c" "$body.c" "$out"
+                die "$f: body changed during signing -- original untouched
+  inspect: staged body   $body
+           signed body   $got
+  (diff them; then rm both)"
+            fi
+        fi
+        mv "$out" "$f"; rm -f "$body"
+        trap - EXIT
+        printf '%s: signed (%s)\n' "$f" "$KEY"
+    done
+}
+
+cmd_detach() {
+    [ $# -ge 1 ] || die 'detach: need at least one FILE'
+    for f in "$@"; do
+        [ -f "$f" ] || die "$f: no such file"
+        is_clearsigned "$f" && die "$f: is clearsigned; run 'unsign' first"
+        gpg --yes --armor --local-user "$KEY" \
+            --detach-sign --output "$f.asc" "$f"
+        gpg --verify "$f.asc" "$f" >/dev/null 2>&1 \
+            || die "$f: detached signature did not verify"
+        printf '%s.asc: written and verified\n' "$f"
+    done
+}
+
+cmd_verify() {
+    [ $# -ge 1 ] || die 'verify: need at least one FILE'
+    rc=0
+    for f in "$@"; do
+        if is_clearsigned "$f"; then
+            gpg --verify "$f" || rc=1
+        elif [ -f "$f.asc" ]; then
+            gpg --verify "$f.asc" "$f" || rc=1
+        else
+            printf '%s: no signature (not clearsigned, no %s.asc)\n' \
+                "$f" "$f" >&2
+            rc=1
+        fi
+    done
+    [ $rc -eq 0 ] || printf \
+        'hint: missing key? import corwin.asc or see README key sources.\n' >&2
+    exit $rc
+}
+
+cmd_body() {
+    [ $# -eq 1 ] || die 'body: exactly one FILE'
+    is_clearsigned "$1" || die "$1: not clearsigned"
+    extract_body "$1"
+}
+
+cmd_unsign() {
+    [ $# -eq 1 ] || die 'unsign: exactly one FILE'
+    f=$1
+    is_clearsigned "$f" || die "$f: not clearsigned"
+    d=$(dirname "$f"); b=$(basename "$f")
+    tmp="$d/.$b.body.$$"
+    extract_body "$f" > "$tmp"
+    [ -s "$tmp" ] || { rm -f "$tmp"; die "$f: extracted empty body"; }
+    # cat-over (not mv) preserves the file's mode and inode -- an unsigned
+    # script keeps its +x; hardlinks and mount caches stay coherent.
+    cat "$tmp" > "$f" && rm -f "$tmp"
+    printf '%s: signature stripped (edit, then: sign.sh sign %s)\n' "$f" "$f"
+}
+
+# One row per shelf file: name, bytes, sha256, signature state, clearance.
+# The WHAT column is deliberately TODO -- description and scrub-review are
+# keeper work; the tool refuses to guess them. Workflow:
+#   ./sign.sh manifest > MANIFEST   # then edit WHAT, scrub each row
+#   ./sign.sh sign MANIFEST
+cmd_manifest() {
+    dir=${1:-$(dirname "$0")}
+    [ -d "$dir" ] || die "$dir: not a directory"
+    gate=$(sed -n 's/^policy: *//p' "$dir/.gate" 2>/dev/null | head -n 1)
+    printf '# SEND-MANIFEST -- %s -- generated %s\n' \
+        "$dir" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    printf '# columns: file | bytes | sha256 | sig | clearance | what\n'
+    printf '# edit every WHAT, scrub-review every row, then: sign.sh sign MANIFEST\n'
+    for f in "$dir"/.gate "$dir"/*; do
+        [ -f "$f" ] || continue
+        b=$(basename "$f")
+        case "$b" in MANIFEST*|.*.body.*|.*.signed*) continue ;; esac
+        if command -v sha256sum >/dev/null 2>&1; then
+            sum=$(sha256sum "$f" | cut -d' ' -f1)
+        else # gpg is the one guaranteed tool on PATH
+            sum=$(gpg --print-md SHA256 "$f" | tr -d ' \n' \
+                  | sed 's/^[^:]*://' | tr 'A-F' 'a-f')
+        fi
+        sz=$(wc -c < "$f" | tr -d ' ')
+        if is_clearsigned "$f"; then
+            if gpg --verify "$f" >/dev/null 2>&1; then sig=SIGN
+            else sig='SIGN-BAD'; fi
+        elif [ -f "$f.asc" ] && gpg --verify "$f.asc" "$f" >/dev/null 2>&1; then
+            sig=DETACH
+        else
+            sig=NOSIG
+        fi
+        printf '%s | %s | %s | %s | %s | TODO\n' \
+            "$b" "$sz" "$sum" "$sig" "${gate:-TODO}"
+    done
+}
+
+# Vouch a comrade's public key: show the signer exactly what they are
+# vouching for, then clearsign the key block in place. Verification story
+# for consumers: gpg --verify NAME.asc proves the keeper vouched; the
+# inner block imports after unwrapping (sign.sh body NAME.asc | gpg --import).
+cmd_vouch_key() {
+    [ $# -eq 1 ] || die 'vouch-key: exactly one KEYFILE'
+    f=$1
+    [ -f "$f" ] || die "$f: no such file"
+    is_clearsigned "$f" && die "$f: already vouched; 'unsign' first to re-vouch"
+    gpg --show-keys "$f" >/dev/null 2>&1 || die "$f: not a public key block"
+    printf 'vouching for:\n' >&2
+    gpg --show-keys "$f" >&2
+    cmd_sign "$f"
+}
+
+cmd_export_key() {
+    dest=$(dirname "$0")/corwin.asc
+    gpg --armor --export "$KEY" > "$dest"
+    [ -s "$dest" ] || { rm -f "$dest"; die "no public key $KEY in keyring"; }
+    printf '%s: exported %s\n' "$dest" "$KEY"
+}
+
+# --- shelf-check additions (folded 2026-07-09) ------------------------------
+# Expected signature state for a shelf file, from DIR/.gate lines of the form
+# "SIGN: name" / "NOSIG: name" / "FURNITURE: name". Unlisted defaults to SIGN
+# -- fail-closed: silence means "must be signed".
+gate_state() { # $1=dir $2=basename
+    st=$(sed -n "s/^\\(SIGN\\|NOSIG\\|FURNITURE\\): *$2\$/\\1/p" \
+         "$1/.gate" 2>/dev/null | head -n 1)
+    printf '%s\n' "${st:-SIGN}"
+}
+
+# Verify one file; print class only, never exit: OK | BAD | NOKEY | NOSIG.
+verify_one() { # $1=file
+    if is_clearsigned "$1"; then
+        if gpg --verify "$1" >/dev/null 2>&1; then echo OK
+        elif gpg --status-fd 1 --verify "$1" 2>/dev/null \
+                | grep -q '^\[GNUPG:\] NO_PUBKEY'; then echo NOKEY
+        else echo BAD; fi
+    elif [ -f "$1.asc" ]; then
+        if gpg --verify "$1.asc" "$1" >/dev/null 2>&1; then echo OK
+        else echo BAD; fi
+    else
+        echo NOSIG
+    fi
+}
+
+# Fail-closed walk of a signed shelf. One TSV row per governed file; exits
+# non-zero on any BAD sig (2), governed-but-unsigned (3), or missing key (4).
+# Read-only: never signs, never repairs.
+cmd_check_shelf() { # $1 = optional DIR
+    dir=${1:-$(dirname "$0")}
+    [ -d "$dir" ] || die "$dir: not a directory"
+    if [ -f "$dir/.gate" ] && ! is_clearsigned "$dir/.gate"; then
+        printf 'check-shelf: warning: %s/.gate is unsigned -- expected-state is spoofable\n' "$dir" >&2
+    fi
+    bad=0; gap=0; nokey=0; n=0
+    printf '# file\texpect\tactual\tverdict\n'
+    for f in "$dir"/* "$dir"/.[!.]*; do
+        [ -f "$f" ] || continue
+        b=$(basename "$f")
+        case "$b" in
+            MANIFEST*|.*.body.*|.*.signed*|*.asc) continue ;;
+        esac
+        want=$(gate_state "$dir" "$b")
+        got=$(verify_one "$f")
+        verdict=OK
+        case "$got" in
+            OK) ;;
+            BAD)   bad=1;   verdict=BAD ;;
+            NOKEY) nokey=1; verdict=NOKEY ;;
+            NOSIG)
+                case "$want" in
+                    NOSIG|FURNITURE) ;;
+                    *) gap=1; verdict=UNSIGNED ;;
+                esac ;;
+        esac
+        n=$((n+1))
+        printf '%s\t%s\t%s\t%s\n' "$b" "$want" "$got" "$verdict"
+        [ "$verdict" = OK ] || printf 'check-shelf: %s: %s (expected %s)\n' "$b" "$verdict" "$want" >&2
+    done
+    if [ "$bad" -eq 1 ] || [ "$gap" -eq 1 ] || [ "$nokey" -eq 1 ]; then
+        printf 'SHELF: FAIL n=%s\n' "$n"
+        if   [ "$bad" -eq 1 ]; then exit 2
+        elif [ "$gap" -eq 1 ]; then exit 3
+        else exit 4; fi
+    fi
+    printf 'SHELF: PASS n=%s\n' "$n"
+}
+# --- end shelf-check additions --------------------------------------------
+
+command -v gpg >/dev/null 2>&1 || die 'gpg not found on PATH'
+
+case "${1:-help}" in
+    sign)       shift; cmd_sign "$@" ;;
+    detach)     shift; cmd_detach "$@" ;;
+    verify)     shift; cmd_verify "$@" ;;
+    check-shelf) shift; cmd_check_shelf "$@" ;;
+    body)       shift; cmd_body "$@" ;;
+    unsign)     shift; cmd_unsign "$@" ;;
+    export-key) cmd_export_key ;;
+    manifest)   shift; cmd_manifest "$@" ;;
+    vouch-key)  shift; cmd_vouch_key "$@" ;;
+    help|--help|-h) sed -n '2,41p' "$0" | sed 's/^# \{0,1\}//' ;;
+    *) die "unknown command: $1 (try: sign.sh help)" ;;
+esac
+

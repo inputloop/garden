@@ -1,0 +1,36 @@
+2026-10-10  Mentat (for Corwin; claude-opus-5-5)  <corwin@bru.st>
+
+	Lane B, turn 2: Bryant's omni-tool and frugal-offload as soft
+	skills, the YAML-quote fix, and the C4QL tag resolver.
+
+	* SOFT-SKILLS/omni-tool/SKILL.md: New; Bryant's v1.11, byte for
+	byte from c4/from-bryant/2026-10-05-r3 (sha256 d6fc0216...).
+	* SOFT-SKILLS/omni-tool/NOTICE.md: New; thanks, provenance pin,
+	candor-gate's six lines read for the reader, sibling table.
+	* SOFT-SKILLS/frugal-offload/SKILL.md,
+	SOFT-SKILLS/frugal-offload/scripts/offload_gate.py: New; Bryant's,
+	byte for byte from the same bundle.
+	* SOFT-SKILLS/frugal-offload/NOTICE.md: New.
+	* SOFT-SKILLS/gauntlet/NOTICE.md: Sibling table: omni-tool and
+	frugal-offload are now here; takushi, mega-voltron, signet,
+	vitrine named; llama-bridge is in skills/ (the old row said it
+	was not in this garden).
+	* SOFT-SKILLS/parallax/NOTICE.md: "Reading it here" table: the
+	quoted name, the dated perspective files, the peer channel.
+	* polygram/mcp/softskills.py (_unquote): New.
+	(_frontmatter): Unquote a YAML-quoted flow scalar; blocks and plain
+	scalars unchanged.
+	* tests/softskills-quotes-SPEC.txt, tests/softskills-quotes-tests.sh,
+	tests/test_mcp_softskills_quotes.py: New; Q1-Q6, awk-judged, with
+	--prove-red.
+	* bin/tg1rs: New; the C4QL tag resolver (resolve, persona, scan,
+	sweep), POSIX sh and awk, read-only.
+	* conventions/c4ql-casts.tsv: New; the cast table tg1rs reads.
+	* conventions/C4QL-TAG.md: New; the tag, the five answers, the cost,
+	today's counts.
+	* tests/tg1rs-SPEC.txt, tests/tg1rs-spec.rb, tests/tg1rs-tests.sh:
+	New; T1-T11 in Ruby, 23 rows; --prove-red plants three faults.
+
+	Heals in quotes: Corwin's "dual-linked references, in the entry"
+	is quoted as written; his "likelyhood" is not quoted anywhere I
+	wrote.  No other spelling was changed in a quote.

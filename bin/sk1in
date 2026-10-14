@@ -1,0 +1,138 @@
+#!/bin/sh
+# sk1in -- SKILL 1 INTEGRITY: Bryant's five checks for every SKILL.md a build ships.
+#
+# The checks are Bryant's (BRYANT-INFLUENCER.md r2, 2026-09-26, offer 2.3, "A skill-integrity gate
+# for the build"), found when four skills in his garden turned out damaged since authoring and every
+# copy downstream carried the damage faithfully.  With thanks.  Bryant's work shares our licence.
+#
+#   1 nul       no NUL bytes                                     RED when any
+#   2 ending    the last line ends a sentence or closes markup;  RED when it stops mid-sentence
+#               code fences are balanced                         RED when odd
+#               (a last line "sentinel: NAME-N", as candor-gate ends, counts as closed: it is the
+#               stronger form of this check, written by the author)
+#   3 desc      the front-matter description is <= 1024 chars    RED when longer, or missing
+#   4 version   a dated version note (a line naming a version    HOLD when none
+#               and a YYYY-MM-DD date)
+#   5 package   the packaged SKILL.md equals the authored one:   HOLD when CHANGED
+#               .skill-manifest entry, and dist/NAME.skill        NOT CHECKED when absent
+#
+# usage: sk1in [--strict] [--names] SKILLDIR...      (default: skills/*/ and SOFT-SKILLS/*/)
+#        sk1in --prove-red                            plant one fault per check, expect each RED
+# Output: one line per finding in words; a summary last.  Exit 1 when any RED (with --strict, any
+# HOLD too); 2 when a SKILL.md could not be read; 0 otherwise.  Disable: SK1IN=0.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st> and Contributors; GPL-3.0-or-later.
+# Mentat (for Corwin; claude-opus-5-5)
+set -u
+[ "${SK1IN:-1}" = 0 ] && { echo "sk1in: disabled (SK1IN=0); NOT CHECKED"; exit 0; }
+here=$(cd "$(dirname "$0")/.." && pwd)
+strict=0
+AWK=${AWK:-awk}; LC_ALL=C; export LC_ALL   # count bytes; continuation bytes are subtracted below
+
+check_one() { # $1 skill dir; prints lines "VERDICT\tcheck\tskill\twords"
+  d=${1%/}; n=$(basename "$d"); f="$d/SKILL.md"
+  if [ ! -r "$f" ]; then printf 'UNREAD\tread\t%s\tSKILL.md not readable\n' "$n"; return; fi
+  nul=$(tr -cd '\000' < "$f" | wc -c | tr -d ' ')
+  if [ "$nul" -gt 0 ]; then printf 'RED\tnul\t%s\t%s NUL bytes\n' "$n" "$nul"; else printf 'OK\tnul\t%s\tnone\n' "$n"; fi
+  tr -d '\000' < "$f" | $AWK -v n="$n" '
+    { sub(/\r$/, ""); line[NR] = $0 }
+    /^[ \t]*```/ { fences++ }
+    END {
+      # front matter
+      if (line[1] == "---") {
+        for (i = 2; i <= NR && line[i] != "---"; i++) fm[i] = 1
+        fmend = i
+      }
+      desc = ""; found = 0
+      for (i = 2; i < fmend; i++) {
+        if (line[i] ~ /^description:/) {
+          found = 1; v = line[i]; sub(/^description:[ \t]*/, "", v)
+          if (v ~ /^[>|][-+]?[ \t]*$/) v = ""
+          else { if (v ~ /^".*"$/ || v ~ /^\047.*\047$/) v = substr(v, 2, length(v) - 2) }
+          desc = v
+          for (j = i + 1; j < fmend && line[j] ~ /^[ \t]/; j++) {
+            w = line[j]; gsub(/^[ \t]+|[ \t]+$/, "", w)
+            desc = (desc == "" ? w : desc " " w)
+          }
+          break
+        }
+      }
+      if (!found) printf "RED\tdesc\t%s\tno description in the front matter\n", n
+      else {
+        c = desc; cont = gsub(/[\200-\277]/, "", c)
+        chars = length(desc) - cont
+        if (chars > 1024) printf "RED\tdesc\t%s\tdescription is %d characters (limit 1024)\n", n, chars
+        else printf "OK\tdesc\t%s\t%d characters\n", n, chars
+      }
+      # ending
+      for (k = NR; k > 0 && line[k] ~ /^[ \t]*$/; k--) ;
+      last = line[k]; sub(/[ \t]+$/, "", last)
+      if (fences % 2) printf "RED\tending\t%s\tcode fences unbalanced (%d)\n", n, fences
+      else if (k == 0) printf "RED\tending\t%s\tthe file is empty\n", n
+      else if (last ~ /^sentinel: [A-Z0-9][A-Z0-9-]*$/) printf "OK\tending\t%s\tcloses on its sentinel line\n", n
+      else if (last ~ /^[ \t]*(#|\||[-*+] |[0-9]+\. |>|```|---|<!--|\[|\*\*)/) printf "OK\tending\t%s\tcloses on markup\n", n
+      else if (last ~ /[]).!?:;}"\047`*_>]$/) printf "OK\tending\t%s\tcloses a sentence\n", n
+      else { t = last; if (length(t) > 50) t = "..." substr(t, length(t) - 46); printf "RED\tending\t%s\tstops mid-sentence: \"%s\"\n", n, t }
+      # dated version note
+      v = 0
+      for (i = 1; i <= NR; i++) if (tolower(line[i]) ~ /version/ && line[i] ~ /20[0-9][0-9]-[01][0-9]-[0-3][0-9]/) { v = i; break }
+      if (v) printf "OK\tversion\t%s\tline %d\n", n, v
+      else printf "HOLD\tversion\t%s\tno dated version note\n", n
+    }'
+  a=$(sha256sum < "$f" | cut -c1-64)
+  if [ -r "$d/.skill-manifest" ]; then
+    m=$($AWK '$2 == "./SKILL.md" || $2 == "SKILL.md" { print $1; exit }' "$d/.skill-manifest")
+    if [ -z "$m" ]; then printf 'HOLD\tpackage\t%s\tmanifest names no SKILL.md\n' "$n"
+    elif [ "$m" = "$a" ]; then printf 'OK\tpackage\t%s\tmanifest matches\n' "$n"
+    else printf 'HOLD\tpackage\t%s\tSKILL.md CHANGED since its manifest (re-sign)\n' "$n"; fi
+  else printf 'NOT\tpackage\t%s\tno .skill-manifest; NOT CHECKED\n' "$n"; fi
+  z="$here/dist/$n.skill"
+  if [ -r "$z" ] && command -v unzip >/dev/null 2>&1; then
+    p=$(unzip -p "$z" "$n/SKILL.md" 2>/dev/null | sha256sum | cut -c1-64)
+    e=$(printf '' | sha256sum | cut -c1-64)
+    if [ "$p" = "$e" ]; then printf 'NOT\tpackage\t%s\tdist/%s.skill has no %s/SKILL.md; NOT CHECKED\n' "$n" "$n" "$n"
+    elif [ "$p" = "$a" ]; then printf 'OK\tpackage\t%s\tdist bundle matches\n' "$n"
+    else printf 'HOLD\tpackage\t%s\tdist/%s.skill differs from the authored SKILL.md (rebuild)\n' "$n" "$n"; fi
+  fi
+}
+
+report() { # stdin: verdict lines; prints words, sets exit
+  $AWK -F'\t' -v strict="$strict" -v names="${names:-0}" '
+    { cnt[$1]++ ; if ($1 != "OK") printf "%-11s %-8s %-24s %s\n", ($1 == "NOT" ? "NOT CHECKED" : $1), $2, $3, $4
+      else if (names) printf "%-11s %-8s %-24s %s\n", $1, $2, $3, $4
+      sk[$3] = 1 }
+    END { s = 0; for (k in sk) s++
+      printf "sk1in: %d skills; %d OK, %d RED, %d HOLD, %d NOT CHECKED, %d UNREAD\n", s, cnt["OK"], cnt["RED"], cnt["HOLD"], cnt["NOT"], cnt["UNREAD"]
+      if (cnt["UNREAD"]) exit 2
+      if (cnt["RED"] || (strict && cnt["HOLD"])) exit 1
+      exit 0 }'
+}
+
+prove_red() {
+  t=$(mktemp -d); trap 'rm -rf "$t"' EXIT
+  mk() { mkdir -p "$t/$1"; printf -- '---\nname: %s\ndescription: A test skill.\n---\n# T\n\nVersion 1.0 (2026-10-04).\n\nIt ends.\n' "$1" > "$t/$1/SKILL.md"; }
+  mk good
+  mk nul;    printf 'tail\000\000\000' >> "$t/nul/SKILL.md"
+  mk cut;    printf 'This sentence stops in the mid' >> "$t/cut/SKILL.md"
+  mk fence;  printf '```sh\necho open\n' >> "$t/fence/SKILL.md"
+  mk long;   d=$(printf '%01100d' 0); sed -i "s/^description: .*/description: $d/" "$t/long/SKILL.md"
+  mk folded; d=$(printf '%0600d' 0); sed -i "s/^description: .*/description: >-\n  $d\n  $d/" "$t/folded/SKILL.md"
+  mk sent;   printf 'sentinel: SENT-1\n' >> "$t/sent/SKILL.md"
+  mk nover;  sed -i '/^Version/d' "$t/nover/SKILL.md"
+  mk chg;    printf 'deadbeef  ./SKILL.md\n' > "$t/chg/.skill-manifest"
+  out=$(for s in good nul cut fence long folded sent nover chg; do check_one "$t/$s"; done)
+  bad=0
+  want() { if printf '%s\n' "$out" | grep -q "^$1	$2	$3	"; then echo "ok   $3: $2 reads $1"; else echo "MISS $3: $2 should read $1"; bad=1; fi; }
+  want OK nul good; want OK ending good; want OK desc good; want OK version good
+  want RED nul nul; want RED ending cut; want RED ending fence; want RED desc long; want RED desc folded
+  want OK ending sent; want HOLD version nover; want HOLD package chg
+  [ $bad = 0 ] && echo "sk1in --prove-red: every planted fault read as it should" || { echo "sk1in --prove-red: FAILED"; exit 1; }
+  exit 0
+}
+
+case "${1:-}" in --prove-red) prove_red ;; esac
+names=0
+while [ $# -gt 0 ]; do case "$1" in --strict) strict=1; shift ;; --names) names=1; shift ;; --raw) raw=1; shift ;; *) break ;; esac; done
+[ $# -eq 0 ] && set -- "$here"/skills/*/ "$here"/SOFT-SKILLS/*/
+if [ "${raw:-0}" = 1 ]; then for d; do check_one "$d"; done; exit 0; fi
+for d; do [ -d "$d" ] && check_one "$d"; done | report

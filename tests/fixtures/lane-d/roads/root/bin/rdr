@@ -1,0 +1,3 @@
+#!/bin/sh
+# a reader program fixture: rd1ck must never run it
+echo READER-RAN-MARKER

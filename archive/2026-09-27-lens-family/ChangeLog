@@ -1,0 +1,307 @@
+2026-09-25  Claude (Cowork, skill fixes)  for Corwin  <mplscorwin@gmail.com>
+
+	* skills/shell-tooling, skills/project-memory: retired to .arc/skills/, carrying out
+	receipts D-1 and D-2 of REMOVAL-PASS-2026-08-17.md; REJECT rows in advice/ so the gate
+	does not re-synthesize them.
+	* skills/session-rotate/scripts/rotate_session.sh: the bump now replaces vN only as a whole
+	token (v1 no longer matches inside v13), moves "prior vN" along with it, and names the
+	snapshot actually written; tests/session-rotate-tests.sh (7, prove-red).  Express manifest
+	written; the old signature is parked in the skill's .arc (re-sign to restore tier 2).
+	* polygram/mcp/persona.py: persona_list reports a SPLIT when one file name serves under two
+	names (a stale twin of a renamed sheet); a sheet with no heading takes its first H1 as
+	title.  3 tests.
+
+2026-09-12  Claude (Cowork, push-readiness pass)  for Corwin  <mplscorwin@gmail.com>
+
+	* bin/gt1sp (new, unsigned): GIT TRANSPORT run1 SHIP PUSH -- one step from
+	a clean tree to a pushed commit.  Two guards that REFUSE (a present
+	.git/index.lock; being run against the sandbox mount, per
+	memory/git-fails-on-windows-mount) and four reports that never refuse
+	(stale detached signatures; untracked files naming an individual
+	memory/sharing-policy calls check-first; `make check`; the tests/*.sh
+	harnesses), then add/commit/push and a transport receipt appended to
+	h/TRANSPORT.log -- GIT-TRANSPORT-AREA inferred need (ii), kept by the
+	keeper 2026-08-17.  `--check` prints the three plain-git commands and
+	changes nothing; `--prove-red` 7/7 in a scratch repo.  The bend is named
+	in the header per A3 [UNUSUAL]: plain git is untouched, no alias, no hook.
+	* skills/ECE77CF417C76C1ACFCE7C2B5B6135511580F007.asc: RESTORED from HEAD
+	(3817 bytes, byte-identical).  The pinned public key was deleted from the
+	working tree, and unlike everything else the 2026-09-11 garden sweep
+	retired, no archived copy exists anywhere on the two mounts -- only git
+	had it.  Committing the deletion would have shipped a signed tree whose
+	signatures no reader could check.  Found because a fresh sandbox keyring
+	made `skill-sign verify` short-circuit to SIGNATURE FAILED on all 44
+	skills; importing the key from HEAD turned that into 44/44 Good.
+	* .gitignore: two entries so a single `git add -A` is safe -- `Claude
+	outputs/` (Claude Desktop's per-turn spill; measured 14 of 22 files
+	byte-duplicates of h/, 5 SKILL.md drafts either identical to the garden
+	copy or already archived pre-edit states, and the 3 with no other home
+	copied into h/ first) and `.pytest_cache/`.  Nothing deleted; the
+	directory stays on disk, untracked.  Pre-edit copy .arc/2026-09/
+	.gitignore-2026-09-12_Archived-by-... (sha16 91c7b3ee544e6aec).
+	`.gitignore.asc` stale until re-signed -- SIGN-QUEUE row 34.
+	* h/SEALED-2026-09-09-hypothesis-vibrobeast-arm.md (rescued): the sealed
+	plaintext, whose own receipt (h/SEAL-2026-09-09-hypothesis-vibrobeast
+	.sha256) says "the plaintext is NOT on disk", was in fact sitting in the
+	untracked spill directory.  Copied beside its receipt and re-verified:
+	sha256 201fffdf7f37f1ae... matches the seal exactly.  The receipt is left
+	as written -- it was true when sealed, and it is the record.  Also rescued:
+	h/PROMPT-2026-09-09-works-wave0-wave1.md, h/RECIPE-2026-09-11-pub.org.
+	* memory/corwin-legacy-2026-08-30.md: trailing newline added; it was the
+	one NOTICE in the ethicsminions guard report (possible truncation).  Guard
+	now reads RISK 0 notices except that one cleared; drift PASS (all three
+	attestations present -- o48's falsifier is green).
+	* memory/sandbox-ephemeral-per-session.md: two fingerprints from this
+	session -- the first `git status` of a sandbox session leaves a
+	.git/index.lock the mount will not let anyone unlink (harmless for reads,
+	fatal for the keeper's next `git add`), and an empty sandbox keyring makes
+	`skill-sign verify` cry SIGNATURE FAILED before it ever reports tree drift.
+	The untested cure for the first (`git --no-optional-locks status` as the
+	session's first git call) is written down WITH its falsifier, not as a
+	claim: proving it needs the lock gone first, and this seat cannot delete.
+	* h/PUSH-2026-09-12-commit-msg.txt (new): the commit message for the
+	2026-08-17..2026-09-12 catch-up, ready for `git commit -F`.
+	* Measured green at this commit, all from this session's own runs:
+	`make check` 100/100; nine tests/*.sh harnesses 166/166; `make garden`
+	SAME 44, DRIFT 0, INSTALLED-ONLY 0, STRAY 0, MINT 0; `skill-sign verify`
+	44/44 Good against the pinned key; `skill-lint` 44/44 ok.
+
+2026-09-12  Claude (Cowork, C4_ROOT sandbox-portability fix)  for Corwin  <mplscorwin@gmail.com>
+
+	* Makefile: C4_ROOT changed from a plain `=` to
+	`?= $(if $(wildcard /f/claude/c4/.),/f/claude/c4,$(HOME)/mnt/c4)` (SIGN-QUEUE
+	row 33) -- his own next-steps note that the hard-coded host-only default
+	kills every sandboxed session's first `make garden`. Prefers the real host
+	path when present, falls back to a mounted sandbox copy otherwise; either an
+	environment variable or the existing command-line override still wins over
+	both (was `=`, silently ignoring the environment; now `?=`). Verified against
+	the live Makefile in all four cases, including a sed-substituted copy
+	standing in for the real host path. `make check` (100 tests) unaffected.
+	* tests/makefile-c4root-tests.sh (new): 4/4, --prove-red clean. Proves the
+	auto-detect and both override forms against the live Makefile, not a
+	reimplementation.
+	* README.org: new "* Makefile targets" section documenting check/dist/garden/
+	skills/info/clean, the C4_ROOT auto-detect, both override forms, and the new
+	test; qualifies (does not delete) the old "supersedes a hand-rolled packaging
+	Makefile" line -- true for plain packaging, not for the cross-tree `garden`
+	gauge, which bin/polygram has no equivalent for.
+	* Pre-edit copies archived via aw2ri (temporarily reverted, archived,
+	restored, since both files already carried unrelated uncommitted changes
+	from earlier this session): .arc/2026-09/Makefile-2026-09-12_Archived-by-...
+	(sha16 de29e6442e7c811f), .arc/2026-09/README-2026-09-12_Archived-by-....org
+	(sha16 54f0bacc2e8c0f5d). .asc stale on both until re-signed.
+
+2026-09-12  Claude (Cowork, eclipse_pass.sh race-condition fix)  for Corwin  <mplscorwin@gmail.com>
+
+	* skills/eclipse-pass/scripts/eclipse_pass.sh: fixed the TOCTOU race in the
+	increment-dir collision guard found by the QA-stresstest matrix's Lane A1
+	(SIGN-QUEUE row 32). check-then-act (`[ -e ] then mkdir -p`) replaced with a
+	bare `mkdir` retry loop (POSIX-atomic). New tests/eclipse-pass-tests.sh
+	(13/13, --prove-red clean); its concurrency test proves the bug empirically:
+	20 real concurrent arms landed in 3 directories on the pre-patch script, 20
+	distinct directories on the patched one. Pre-edit copy archived via aw2ri
+	(skills/eclipse-pass/.arc/2026-09/, sha16 794f6fc5bae8d412). Correction noted
+	in the same SIGN-QUEUE row: a first-drafted hash for the new file was
+	typed before sha256sum actually ran and was wrong; caught and fixed before
+	handback, not after. .asc/.skill-manifest stale until re-signed; make dist
+	owed after.
+
+2026-09-12  Claude (Cowork, QA-stresstest turn: persona + 16-agent matrix)  for Corwin  <mplscorwin@gmail.com>
+
+	* pub/method/h/PENUMBRA.md, PENUMBRA.tsv (new): a persona sheet built from the
+	real, un-re-rolled rf1bm fate roll (pub/method/.task/h/roll-1.json,
+	roll-1-badguy.json); cs1gk-gauged clean (OK 17, WARN 0, FAULT 0). Registered
+	in PERSONA-CORPUS.md as held, not harvested.
+	* PERSONA-CORPUS.md: one line added under "Sheets registered" for the above.
+	* pub/method/sonnet-win-qa-stresstest-2026-09-12.md,
+	phase4-verification-2026-09-12.md (new): the win-story and verification pass
+	for a 16-agent, 4-lane sub-agent matrix run against the eclipse-pass
+	multi-arm ENHANCE and the new persona. Real finding, unpatched, routed for
+	his call: scripts/eclipse_pass.sh's increment-dir collision guard is
+	check-then-act, not atomic (two same-second arms can share a directory);
+	concrete fix written up, not applied. No signed file touched this turn.
+	* memory/qa-stresstest-persona-matrix-2026-09-12.md (new): durable MEMORY
+	note, reusable pattern = verify the verifiers (a matrix lane that re-applies
+	the house's own concern-tag convention to the other lanes' own findings, as
+	an inter-rater check) plus keep-the-mistake-in-the-record.
+
+2026-09-11  Claude (Cowork, description-length repair turn, pass 2)  for Corwin  <mplscorwin@gmail.com>
+
+	* skills/release-runbook/SKILL.md: description converted plain-scalar ->
+	block scalar (`>`); fixes a real YAML parse failure (bare "discipline):
+	"cut a release"" colon-space, confirmed with PyYAML as a second reader)
+	that predates this edit. Same 844 chars, verbatim. SIGN-QUEUE 31, .asc
+	stale until re-signed.
+	* skills/foaf/SKILL.md, skills/instrument-panel/SKILL.md,
+	skills/token-optimizer/SKILL.md: same YAML-colon fault as above, same
+	fix, unsigned mints -- body untouched, diff-confirmed.
+	* skills/emacs-tashaki/SKILL.md, skills/hand-test/SKILL.md,
+	skills/reformat-prompt/SKILL.md: different fault -- quoted name:/
+	description: defeated skill-lint.sh's bare-string L2 name check.
+	Round-tripped through PyYAML to clean name:/description: >  form;
+	embedded escaped quotes resolved correctly by the parser, not by hand.
+	* Full garden sweep (skill-lint.sh + PyYAML, 44 skills): zero frontmatter
+	faults remain of either kind.
+
+2026-09-11  Claude (Cowork, description-length repair turn)  for Corwin  <mplscorwin@gmail.com>
+
+	* skills/sandboxer/SKILL.md: description slimmed 1369 -> 985/1024 chars
+	(load limit; the row-20 extension had pushed it over). Trigger phrases
+	verbatim; body untouched. SIGN-QUEUE 30, .asc stale until re-signed.
+	* skills/pencil-your-own/SKILL.md: description slimmed 1321 -> 955/1024
+	chars. Unsigned mint; body untouched, tests.sh 10/10.
+	* skills/pocket-mentat/SKILL.md: description slimmed 1212 -> 978/1024
+	chars. Unsigned mint; body untouched, tests.sh 13/13.
+	* skills/countable-gauge/SKILL.md, skills/fortress-palace/SKILL.md: same
+	fault, same mint batch, found by sweeping the whole garden while fixing
+	the three he named -- not named by him. Slimmed 1151->976 and
+	1185->992/1024 respectively; tests.sh 16/16 and 9/9.
+	* Full skill-lint.sh sweep across skills/: zero L4 failures remain.
+	Three unrelated L2 (name-mismatch) faults untouched: emacs-tashaki,
+	hand-test, reformat-prompt -- named in SIGN-QUEUE, not fixed.
+	* make dist not run this turn -- his own next step, per his instruction.
+
+2026-09-11  Claude (Cowork, eclipse-pass ENHANCE turn)  for Corwin  <mplscorwin@gmail.com>
+
+	* skills/eclipse-pass/SKILL.md: folded the routed ENHANCE draft
+	c4/dist/skills/eclipse-pass-ENHANCE-multiarm-draft.md (skilltank verdict
+	2026-07-27) into move 3 as new item 3b, Multi-arm mode: arm-marking,
+	disjoint seeds, CONTRAST-doc-after-not-before, environment-delta
+	receipts, guest etiquette to skilltank; one new falsifier. No script
+	change -- eclipse_pass.sh's increment-dir auto-suffix already satisfies
+	the draft's no-clobber claim. skill-lint.sh: description 993/1024
+	chars, clean. .asc stale until re-signed (SIGN-QUEUE 29).
+	* dist/: whole garden reminted via `make dist` (58 skills; unrelated to
+	this edit, his standing --all-installed behavior).
+
+2026-09-11  Claude (Fable, Cowork on1gw turn)  for Corwin  <mplscorwin@gmail.com>
+
+	* polygram/dist.py (collect): new include_workspace= and names= keywords
+	so a mint can be scoped to the --skills-source roots alone, or to named
+	skills; default unchanged (workspace + family-filtered installed). Fixes
+	o36 / memory/c4-forge-mint-2026-09-04.md:28 (21 workspace skills swept
+	into skills/dist-2026-09-04/ on a mint meant for a few new ones).
+	* polygram/cli.py (dist): --sources-only, --only NAME (repeatable);
+	--sources-only with no source is exit 2; an --only name found in no
+	root is exit 1 and named.
+	* tests/test_dist.py: 3 tests (sources-only skips workspace; --only
+	scopes every root and outranks the family allowlist; default unchanged).
+	39/39 on Avalon, python3 -m unittest tests.test_dist.
+	* skills/color-theory/tool.py (audit): '#rrggbb' lines were read as
+	comments, so an audit of hex pairs passed over nothing (exit 0, no
+	output). Comment is now '#'+whitespace only; `selftest` subcommand
+	proves the mutant. .skill-manifest row stale until re-signed
+	(SIGN-QUEUE 15).
+	* h/lens.py (import-json): a reading's declared subject_sha is now
+	compared to the pin; mismatch is REFUSED and receipted, undeclared is
+	accepted and receipted as declared=none; `selftest` proves it. Before,
+	the pin's sha was stamped over every import (o12 / queue Q12).
+
+2026-07-05  Corwin  <mplscorwin@gmail.com>  (w/ wide fingers &Mentat/Cowork)
+
+	* release fresh vibes - 19 locally hatched/free range farm fed skils
+	* skills/*/{.skill-manifest,.signature.asc}: per-skill provenance
+	LIVE — all 13 curated trees signed in place via skill-sign.sh (QA-7
+	whole-tree scheme: sha256 every file, SKILL.md canonicalized, pinned
+	ECE77CF417C76C1ACFCE7C2B5B6135511580F007). Verified 13/13 valid, 2/2
+	independent: keeper bench (Avalon 13:59 CDT) + instrument through the
+	freshened mount. A standing verify now answers "is this really mine?"
+	per skill, not just per release.
+	* skills/color-theory/.signature.asc: legacy lone signature (pre-QA-7,
+	no manifest) superseded by the manifest scheme.
+	* claud-qa-hold/QA-10-skilltank-0.6.1-remint.md: new — the 0.6.0
+	skilltank .skill bundle carried STALE pre-release bytes (mint-time
+	mount-reader fault, not tamper: installed==bundle==MANIFEST all held
+	the 06-29 text while workspace==git HEAD held the reading-room text).
+	Core closed same day by the in-place tree signing above; 0.6.1 mint
+	carries the fix. Lesson pinned: certification sweeps hash git objects
+	or file-tool reads, NEVER the bash mount; mint from a git-clean tree.
+	* gated/core-ethics-pack-2026-06-29.tgz: found corrupt (gzip CRC,
+	confirmed independently keeper-side and sandbox-side). Excluded as a
+	fill source; awaits regrow from backup. Nothing depended on it.
+	* model.md: revision-history table noted truncated at v4 (dangling
+	pipe, carried in snapshots since >=07-02); repair rides next rotation.
+	* NEWS, polygram/__init__.py: 0.6.1.
+
+2026-07-04  Corwin  <mplscorwin@gmail.com>  (with Mentat/Cowork)
+
+	* polygram/gate.py (past_rejects, apply_durable_rejects): REJECT is
+	durable — the advice history is the ledger, latest terminal decision
+	(PASS/REJECT) per label wins, HOLD never overrides; a re-surfaced
+	rejected candidate lands HOLD with the history named; review
+	--promote (a later PASS) is the one way through. Wired into cmd_gate,
+	cmd_synth, review.build. Closes the "concise came back" gap.
+	* tests/test_durable_reject.py: new — 6 tests incl. the
+	HOLD-must-not-erase-the-ledger case. 76 total.
+	* labels.tsv: new — pinned label registry (label/meaning/owner/
+	consumer/since); rule: no consumer, no label. GRAMMARY.md gained the
+	LABELS section as the human truth the tsv must agree with.
+	* skills/ethicsminions/references/attestations.txt: new — arms the
+	minions --expect drift check (was SKIPping since birth); pins stable
+	blessed-principle phrases; canon remains SAVANNAH.
+	* skills/ethicsminions/scripts/check_principles.py: notes() layout
+	patch STAGED at claud-qa-hold/ (QA-9) — file write-denied from the
+	sandbox; land from host.
+	* skills/skill-sign: adopted (QA-7, Haiku lineage) — whole-tree
+	manifest signing, pinned verify, dotfile-safe bundles, zip-slip guard.
+	* skills/security-digest: adopted (QA-8) — Haiku's digest + "Report,
+	never act" autonomy line.
+	* skills/ethicsminions/references/AI_GUARD_PROVENANCE_CLAUDE.md:
+	QA-5 landed (rider satisfied; Corwin present and initiating).
+
+2026-07-02  Corwin  <mplscorwin@gmail.com>  (with Mentat/Cowork)
+
+	* bin/release: new — host-run release turnaround (gate: clean tree,
+	artifacts, MANIFEST stray-free, NEWS entry, tests, tag-free; then
+	sign/tag with --apply, Forgejo release + assets with --push).
+	Dry-run default; token via $FORGEJO_TOKEN only.
+	* skills/{sandboxer,session-rotate,skilltank}: fold installed reality
+	back into the curation of record — sandboxer gains the read-side
+	desync section; session-rotate ships rotate_session.sh (rotate.py
+	retired); skilltank drops the renounced torture dialect, torture.py,
+	and the consent_gate.py absorbed by the consent-gate skill. Repo had
+	lagged the live skills; 0.5.4 shipped the stale trio. Next mint
+	(0.5.5, curation-only) carries the current set.
+
+2026-07-02  Corwin  <mplscorwin@gmail.com>  (with Mentat/Cowork)
+
+	* polygram 0.5.4 (respin: 0.5.3 shipped mint residue, no leak)
+	* polygram/dist.py (_is_tmp_stray, _is_junk): filter sed -i mkstemp
+	strays (digit/uppercase suffix guard vs real words), vim swaps,
+	emacs lockfiles. Root cause of sedx44W4d in the 0.5.3 archives.
+	* polygram/cli.py (dist): --version accepted as alias for
+	--dist-version (argparse scopes it to the subcommand).
+	* polygram/dist.py (_rel): replace Path.relative_to with an
+	os.path.relpath helper — mingw/msys Python 3.14 hands pathlib
+	mixed separators (skills\name/SKILL.md) and relative_to refuses
+	them; relpath normalizes, so host and sandbox mint identically.
+	* polygram/__init__.py: 0.5.4.
+	* tests/test_dist.py: stray unit + bundle coverage incl.
+	false-positive check ("sediments" ships); dist --version parse test.
+
+2026-07-02  Corwin  <mplscorwin@gmail.com>  (with Mentat/Cowork)
+
+	* polygram 0.5.3 (curation-only)
+	* skills/principles: new — frozen PRINCIPLES v1.0 (blessed statement).
+	* skills/ethicsminions/SKILL.md: description spelling fixes.
+	* skills/ethicsminions/SKILL.md: slim description 1023 -> 747 chars
+	(1024 load limit); trigger phrases verbatim; body untouched. PMO #82
+	closed, #94 executed; remint held for #91 (advice 20260702-034933).
+
+2026-06-27  Corwin  <mplscorwin@gmail.com>  (with Mentat/Cowork)
+
+	* polygram 0.5.2
+	* polygram/cli.py (_default_skills_sources): read $POLYGRAM_SKILLS_SOURCE
+	when --skills-source is omitted.
+	* polygram/review.py (build): externs feed candidates only via their
+	own memory/ notes, not arbitrary repo docs.
+	* polygram/memory.py (_is_noise_tag): drop hex-colour tokens (e.g.
+	ffcc00) from candidate generation.
+	* polygram/dist.py: per-skill .skill bundle minting + shared junk filter.
+	* skills/: folded in mentat-skill, ethicsminions, sandboxer, skilltank;
+	shipped color-theory (WCAG contrast tool); removed QC-rejected
+	concise/ffcc00.
+	* GNU packaging: COPYING, AUTHORS, NEWS, ChangeLog, INSTALL, README.org,
+	doc/polygram.texi, site/index.html, model.md.
+
+	See NEWS for the user-visible summary and git history for detail.

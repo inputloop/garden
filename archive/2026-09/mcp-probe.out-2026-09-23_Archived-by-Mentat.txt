@@ -1,0 +1,32 @@
+== mcp-probe Wed 09/23/2026  2:30:43.96 
+== whoami 
+avalon\corwi
+== PATH 
+C:\Program Files (x86)\Intel\iCLS Client\;C:\Program Files\Intel\iCLS Client\;C:\Program Files\Alacritty\;D:\emax64\bin;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Windows\System32;C:\Windows;C:\Windows\System32\wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\PuTTY\;C:\ProgramData\chocolatey\bin;C:\Program Files\Microsoft VS Code\bin;C:\GnuPG\bin;D:\opt\MiKTex\MiKTeX 2.9\miktex\bin\x64\;C:\Program Files\MiKTeX 2.9\miktex\bin\x64\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\WireGuard\;C:\Program Files\dotnet\;C:\Program Files\Pandoc\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Docker\Docker\resources\bin;C:\ProgramData\DockerDesktop\version-bin;C:\Perl64\bin\;C:\sperl\c\bin;C:\sperl\perl\site\bin;C:\sperl\perl\bin;C:\Program Files\TortoiseSVN\bin;d:\Graphviz\bin;C:\Program Files\NVIDIA Corporation\NVIDIA app\NvDLISR;C:\Program Files\Tailscale\;C:\Program Files\Calibre2\;C:\Program Files\GitHub CLI\;C:\Program Files\Git\cmd;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;c:\msys64\mingw64\bin;c:\msys64\usr\bin;d:\emacs\bin;c:\msys2\mingw64\bin;c:\msys2\usr\bin;C:\Windows\System32;C:\Windows;C:\Windows\System32\wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\PuTTY\;C:\Program Files\nodejs\;D:\perl\c\bin;D:\perl\perl\site\bin;D:\perl\perl\bin;C:\ProgramData\chocolatey\bin;C:\Program Files\Microsoft VS Code\bin;C:\Program Files\Git\cmd;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Program Files\TortoiseSVN\bin;C:\GnuPG\bin;D:\MinGW\bin;C:\Users\corwi\AppData\Local\Programs\Python\Python38-32\Scripts\;C:\Users\corwi\AppData\Local\Programs\Python\Python38-32\;C:\Users\corwi\AppData\Local\Microsoft\WindowsApps;C:\Users\corwi\.cask\binn;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Users\corwi\AppData\Local\Microsoft\WindowsApps;C:\Users\corwi\AppData\Local\Programs\Microsoft VS Code\bin;D:\mpv;C:\ffmpeg\bin;D:\opt\MiKTex\miktex\bin\x64\ 
+== where python3 
+c:\msys64\mingw64\bin\python3.exe
+c:\msys64\usr\bin\python3.exe
+C:\Users\corwi\AppData\Local\Microsoft\WindowsApps\python3.exe
+== where python 
+c:\msys64\mingw64\bin\python.exe
+c:\msys64\usr\bin\python.exe
+C:\Users\corwi\AppData\Local\Programs\Python\Python38-32\python.exe
+C:\Users\corwi\AppData\Local\Microsoft\WindowsApps\python.exe
+== where py 
+C:\Windows\py.exe
+== py -0p 
+Installed Pythons found by py Launcher for Windows *
+
+
+ -3.8-32        C:\Users\corwi\AppData\Local\Programs\Python\Python38-32\python.exe
+ -3.7-64        python.exe== python3 -c version 
+3.14.5 (main, May 12 2026, 01:14:00)  [MINGW GCC 16.1.0 64 bit (AMD64)]
+rc=0 
+== python -c version 
+3.14.5 (main, May 12 2026, 01:14:00)  [MINGW GCC 16.1.0 64 bit (AMD64)]
+rc=0 
+== APPDATA Claude logs dir 
+The system cannot find the file specified.
+== log lines naming the servers 
+== plugin copies on this host 
+== done 

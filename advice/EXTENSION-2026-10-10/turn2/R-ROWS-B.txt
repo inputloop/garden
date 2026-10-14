@@ -1,0 +1,33 @@
+R-ROWS-B.txt -- lane B's refusal rows for polygram/mcp/__main__.py --prove-red (R37, R38), turn 2.
+The conductor folds these in; I did not edit __main__.py.  Each row: the words line first, then
+the code, written to sit inside _prove_red()'s "with tempfile.TemporaryDirectory() as td:" block
+after R28, where want, Path and td are in scope.  Both were run as written in a scratch harness
+(see HANDBACK-B.md): PASS, and FAIL under their plants.
+
+R37  A YAML-quoted name in a soft skill's front matter reads as the name, not with its quotes
+     (Bryant's parallax writes name: "parallax").
+
+        # R37 -- a quoted soft-skill name reads without its quotes (lane B, turn 2).
+        from polygram.mcp import softskills as _ss37
+        _f37 = _ss37._frontmatter('---\nname: "parallax"\ndescription: \'it\'\'s "his"\'\n---\n')
+        want("a YAML-quoted soft-skill name reads without its quotes",
+             _f37.get("name") == "parallax" and _f37.get("description") == 'it\'s "his"', repr(_f37))
+
+R38  The tag resolver never fails on a tag: a cast nobody defined answers WORD and keeps the tag
+     as written (C4-LANG's no-error rule).
+
+        # R38 -- tg1rs answers WORD for an unknown cast and exits 0 (lane B, turn 2).
+        import subprocess as _sub38
+        _tg38 = Path(__file__).resolve().parents[2] / "bin" / "tg1rs"
+        if _tg38.exists():
+            _c38 = Path(td) / "r38-casts.tsv"
+            _c38.write_text("# cast\ttable\tkey\tkind\tby\n", encoding="utf-8", newline="\n")
+            _r38 = _sub38.run(["sh", str(_tg38), "--casts", str(_c38), "resolve", "[r38 (nosuch)x]"],
+                              capture_output=True, text=True, encoding="utf-8")
+            want("an unknown cast answers WORD and keeps the tag",
+                 _r38.returncode == 0 and _r38.stdout.startswith("WORD\t") and "[r38 (nosuch)x]" in _r38.stdout,
+                 f"rc={_r38.returncode} {_r38.stdout[:160]!r}")
+        else:
+            print("  NOT CHECKED  R38: no bin/tg1rs here (a minted plugin); not counted")
+
+Mentat (for Corwin; claude-opus-5-5)

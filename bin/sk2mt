@@ -1,0 +1,6 @@
+#!/bin/sh
+# sk2mt -- shim. The one implementation lives with its skill: skills/skill-metrics/scripts/sk2mt.
+# This file only finds it, so bin/ and the minted .skill can never carry two versions.
+here=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd) || exit 2
+: "${SKILL_METRICS_ROOT:=$here/metrics}"; export SKILL_METRICS_ROOT
+exec sh "$here/skills/skill-metrics/scripts/sk2mt" "$@"

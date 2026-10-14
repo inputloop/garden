@@ -1,0 +1,8 @@
+# R-ROWS from lane T (turn 2; block R33-R36). None this turn.
+# Lane T changed no server under polygram/mcp/, so nothing it did belongs in __main__.py's
+# --prove-red. Its checks live beside the work instead:
+#   tests/tp2mt-tests.sh (T5-T9, sh) with tests/terms-v2-spec.awk (V1-V6, awk);
+#   tests/readme-voice-tests.sh with tests/readme-voice-spec.rb (R1-R5, Ruby);
+#   tests/grammary-paths-tests.sh with tests/grammary-paths-spec.awk (P1-P3, the † marker);
+#   tests/fp1gk-tests.sh (F1-F3) for bin/fp1gk.
+# R33-R36 are left free for the conductor.

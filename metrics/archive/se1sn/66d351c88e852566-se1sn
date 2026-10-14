@@ -1,0 +1,125 @@
+#!/bin/sh
+# se1sn -- SEAT ENTER 1 SESSION NOTE. The mechanical open: the first thing a session runs in a local-folder
+#          project so it knows where its memory is, what is loaded vs what is seated, and what a hand must do.
+#          No skill in the loop. Works with the rack empty. Runs from any reader (sandbox bash, host shell).
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st>
+# This program is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.  See <https://www.gnu.org/licenses/>.
+# Design informed by "Agent Skills for Context Engineering" (MIT, (c) 2025 Context Engineering Agent
+# Skills Contributors): static pointers + dynamic loading; scratch-pad offload; locked metric / editable
+# surface / durable log / promotion. Ideas only -- no code was taken from it.
+#
+# THE NAME (the AS4CE pattern, run-level in the slot, as bin/ep1nt does):
+#   S  SEAT       -- the project's own memory/ (never a store elsewhere)
+#   E  ENTER      -- the act of opening a session on it
+#   1  run-level 1 -- reads; writes ONE new file (mainmem/OPEN-<stamp>-<pid>.md). Never edits, never rm.
+#   S  SESSION    -- one run = one session note
+#   N  NOTE       -- the durable log a cold session or a compaction re-derives state from
+#
+# WHAT IT PRINTS (words, never hue):  loaded: <store A path | NOTVISIBLE>   seat: <memory/ path>
+#   the index-line counts of each, the count of A-index lines the seat lacks (ms1dg G8), the gauge's
+#   summary line, the seat index HEAD (first N lines; the whole index never rides into a prompt), the
+#   cards for hands. The OPEN note carries the same, plus the full gauge report.
+# WHAT IT REFUSES:  no memory/ under the root -> exit 3 NOSEAT (it never mkdirs a seat; a project without
+#   a seat is not opened by accident -- the experiment seat AS4CE0002 is the case). A .gate at the root
+#   or in memory/ with `policy: none` -> exit 3 GATED. Root not writable -> exit 4 NOWRITE (says the path).
+# LOCAL BY CONSTRUCTION: the OPEN note lists note NAMES; names are topics; it never travels (pub/, wire).
+#
+# usage: se1sn [--root DIR] [--auto DIR] [--head N] [--format words|tsv] [--quiet]
+#   --root DIR   project root holding memory/ (default: .)      --auto DIR  store A (default: $SE1SN_AUTO,
+#   --head N     index head lines to print (default 30)                     else /sessions/*/mnt/.auto-memory;
+#                                                                          --auto none = isolated run)
+#   --format     words (default) | tsv (one row per gauge, for rolls)   --quiet  summary line only on stdout
+# exit 0 OPENED · 1 OPENED-WITH-FAULT · 2 USAGE · 3 NOSEAT/GATED · 4 NOWRITE
+# Authored by Fable (Mentat/Vibrobeast) 2026-09-06 after a nine-column LENS and an eclipse pass
+# (AS4CE0001/h/MODEL-2026-09-06-memory-mechanical-session.md, .eclipse-increments/2026-09-06-mechanical-open/).
+
+ROOT="."; AUTO="${SE1SN_AUTO:-}"; HEAD=30; FMT=words; QUIET=0; NOAUTO=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --root) ROOT="$2"; shift 2;; --auto) AUTO="$2"; shift 2;; --head) HEAD="$2"; shift 2;;
+    --format) FMT="$2"; shift 2;; --quiet) QUIET=1; shift;;
+    -h|--help) sed -n '2,33p' "$0"; exit 2;;
+    *) echo "se1sn: unknown arg $1" >&2; exit 2;;
+  esac
+done
+case "$FMT" in words|tsv) ;; *) echo "se1sn: --format words|tsv" >&2; exit 2;; esac
+[ -d "$ROOT" ] || { echo "se1sn: root not a directory: $ROOT" >&2; exit 2; }
+ROOT=$(cd "$ROOT" && pwd -P)
+SEAT="$ROOT/memory"
+
+# ---- the seat, or a loud refusal --------------------------------------------------------------------
+if [ ! -d "$SEAT" ]; then
+  echo "se1sn: NOSEAT -- no memory/ under $ROOT (this project has no seat; nothing opened, nothing created)"
+  echo "        contents: $(ls -A "$ROOT" 2>/dev/null | tr '\n' ' ' | cut -c1-200)"
+  exit 3
+fi
+for g in "$SEAT/.gate" "$ROOT/.gate"; do
+  if [ -f "$g" ] && grep -q '^policy:[ ]*none' "$g"; then echo "se1sn: GATED -- $g says policy: none; not opened"; exit 3; fi
+done
+
+# ---- store A, if this reader can see it ---------------------------------------------------------------
+[ "$AUTO" = none ] && { AUTO=""; NOAUTO=1; }    # --auto none: an isolated run must not read the machine's A
+if [ -z "$AUTO" ] && [ "$NOAUTO" = 0 ]; then
+  for d in /sessions/*/mnt/.auto-memory; do [ -d "$d" ] && { AUTO="$d"; break; }; done
+fi
+[ -n "$AUTO" ] && [ ! -d "$AUTO" ] && { echo "se1sn: --auto $AUTO is not a directory" >&2; exit 2; }
+
+# ---- the gauge (locked metric): find ms1dg beside this script, under the root, or on PATH ----------------
+HERE=$(cd "$(dirname "$0")" && pwd -P); MS=""
+for c in "$HERE/ms1dg" "$ROOT/bin/ms1dg" "$(command -v ms1dg 2>/dev/null)"; do [ -n "$c" ] && [ -f "$c" ] && { MS="$c"; break; }; done
+[ -n "$MS" ] || { echo "se1sn: no ms1dg beside me, under $ROOT/bin, or on PATH -- the open needs its gauge" >&2; exit 2; }
+
+# ---- the durable log (new name every run; outside memory/; never edits) --------------------------------
+STAMP=$(date -u +%Y-%m-%dT%H%M%SZ); LOGDIR="$ROOT/mainmem"; LOG="$LOGDIR/OPEN-$STAMP-$$.md"
+[ -d "$LOGDIR" ] || mkdir "$LOGDIR" 2>/dev/null || { echo "se1sn: NOWRITE -- cannot create $LOGDIR"; exit 4; }
+( : > "$LOG" ) 2>/dev/null || { echo "se1sn: NOWRITE -- cannot create $LOG"; exit 4; }
+
+# ---- run the gauge once, keep its full report in the log -----------------------------------------------
+T=$(mktemp)
+if [ -n "$AUTO" ]; then sh "$MS" --seat "$SEAT" --auto "$AUTO" > "$T" 2>&1; RC=$?
+else sh "$MS" --seat "$SEAT" > "$T" 2>&1; RC=$?; fi
+SUM=$(grep '^ms1dg: ' "$T" | tail -1)
+DESYNC=$(grep 'G8 *index desync' "$T" | sed 's/.*index desync: \([0-9]*\) line.*/\1/' | head -1); DESYNC=${DESYNC:-0}
+FAULTS=$(printf '%s\n' "$SUM" | sed 's/.*FAULT \([0-9]*\).*/\1/'); FAULTS=${FAULTS:-0}
+count_idx() { [ -f "$1" ] && grep -c '](\([^)]*\)\.md)' "$1" || echo 0; }
+SEATN=$(count_idx "$SEAT/MEMORY.md"); AUTON=$( [ -n "$AUTO" ] && count_idx "$AUTO/MEMORY.md" || echo -)
+READER=sandbox; case "$ROOT" in /sessions/*) READER=sandbox;; *) READER=host;; esac
+[ -n "$AUTO" ] || AUTO_SHOW="NOTVISIBLE (no --auto, no \$SE1SN_AUTO, no /sessions/*/mnt/.auto-memory)"
+
+# ---- the note (anchored sections; a cold session re-derives state from this one file) ----------------
+{
+  echo "# OPEN $STAMP -- reader: $READER -- root: $ROOT"
+  echo
+  echo "## loaded vs seat"
+  echo "loaded: ${AUTO:-$AUTO_SHOW}   index lines: $AUTON"
+  echo "seat:   $SEAT   index lines: $SEATN"
+  echo "A-index lines the seat index lacks (ms1dg G8): $DESYNC"
+  echo
+  echo "## gauge"; echo "$SUM"
+  echo
+  echo "## cards"; grep '^CARD ' "$T" | sed 's/^/- /'
+  echo
+  echo "## seat index head ($HEAD lines of $(wc -l < "$SEAT/MEMORY.md" 2>/dev/null || echo 0))"
+  [ -f "$SEAT/MEMORY.md" ] && head -n "$HEAD" "$SEAT/MEMORY.md" || echo "(no MEMORY.md in the seat)"
+  echo
+  echo "## gauge report (full)"; cat "$T"
+  echo
+  echo "local by construction: this note names notes; it does not travel."
+} > "$LOG"
+rm -f "$T"
+
+# ---- stdout ------------------------------------------------------------------------------------------
+if [ "$FMT" = tsv ]; then
+  printf 'key\tvalue\n'; printf 'reader\t%s\nroot\t%s\nloaded\t%s\nseat\t%s\nloaded_index_lines\t%s\nseat_index_lines\t%s\ndesync\t%s\nfaults\t%s\nlog\t%s\n' \
+    "$READER" "$ROOT" "${AUTO:-NOTVISIBLE}" "$SEAT" "$AUTON" "$SEATN" "$DESYNC" "$FAULTS" "$LOG"
+  grep '^\[ ' "$LOG" | sed 's/^\[ \([A-Z]*\) \] *\(G[0-9a-z]*\) *\(.*\)$/gauge:\2\t\1: \3/' | head -40
+elif [ "$QUIET" = 1 ]; then
+  echo "se1sn: OPENED loaded=${AUTO:-NOTVISIBLE} seat=$SEAT desync=$DESYNC faults=$FAULTS log=$LOG"
+else
+  sed -n '1,/^## gauge report/p' "$LOG" | sed '$d'
+  echo "note: $LOG"
+fi
+[ "$FAULTS" -gt 0 ] && exit 1; exit 0

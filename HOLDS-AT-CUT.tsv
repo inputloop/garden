@@ -1,0 +1,5 @@
+# HOLDS-AT-CUT.tsv: the holds in force when this zip was cut (from conventions/FAMILY-HOLDS.tsv), read by fm1ct check.
+# Columns: PREFIX | CLASS | SOURCE | FALSIFIER.  His own hold list is never named here.
+memory/	LOCAL	memory/corwin-wheel-sharing-consent.md (his grant, signed 2026-07-05): his own information goes out to Bryant "point by point -- each detail released only on his explicit per-item approval ... still ask before each release, don't batch"; and memory/corwin-family-dee.md: "local/private, outward-sharing still guarded"	Corwin approves memory/ for a peer, or names the notes that may go
+mainmem/	LOCAL	as memory/: the memory hub's manifests and openings list the same notes by name and line	as memory/
+MEMORY.md	LOCAL	as memory/: one line per note, the index of memory/	as memory/

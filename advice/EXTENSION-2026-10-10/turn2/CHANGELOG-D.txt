@@ -1,0 +1,46 @@
+2026-10-10  Mentat (for Corwin; claude-opus-5-5)  <corwin@bru.st>
+
+	Lane D, turn 2: the family cut grows a garden cut and checks its
+	own holds; pb1ck learns claude.ai links and embargo words; the
+	shelves' READMEs and the pub recipe catch up with TERMS v1.1.
+
+	* conventions/FAMILY-HOLDS.tsv: New.  The garden's family-cut
+	holds: memory/, mainmem/ and MEMORY.md, class LOCAL, by Corwin's
+	signed per-item grant of 2026-07-05.
+	* conventions/SECRET-REVIEWED.tsv: New.  Nine secret-checker hits
+	read and found harmless (token variable names, test fixtures),
+	each bound to its path, line and line hash.
+	* SOFT-SKILLS/egress/SKILL.md, SOFT-SKILLS/family-shelf/SKILL.md:
+	Footers minted by bin/ft1mt (the other session's uncommitted
+	work, folded in; bodies unchanged).
+	* conventions/FOOTERS.org (egress): Re-dated by ft1mt mint.
+	* advice/EXTENSION-2026-10-10/turn2/INPUTLOOP-STAGES.md: New.
+
+	In the C4 tree (c4/; its own ChangeLog is not mine to edit):
+	* bin/fm1ct (classes_ok, set_tree): New.  A hold of any class
+	but BLIND, LOCAL or NEVER stops the cut.  --tree DIR cuts another
+	git tree (the garden) with its own conventions/FAMILY-HOLDS.tsv
+	and SECRET-REVIEWED.tsv, zip named DATE-garden-COMMIT.zip.
+	(do_cut): Records HOLDS-AT-CUT.tsv in the zip; MANIFEST says
+	writing CC-BY-SA-4.0, code GPL-3.0-or-later OR LGPL-3.0-or-later,
+	the TA model alone CC-BY-4.0.
+	(check): Judges a zip by the holds recorded in it; takes --tree.
+	(die): Prints its message only, not the exit code after it.
+	(--prove-red): New; runs tests/fm1ct-spec.py.
+	* tests/fm1ct-spec.py: Cases S12-S17 and five new mutants.
+	* bin/pb1ck (RE_CLAUDE, EM_HITS): A claude.ai link and an
+	embargoed word (em1bg over d/contexts) are each a LEAK; no
+	embargo rows reads NOT checked in the verdict.  Prove-red RED 7,
+	RED 8.
+
+	Outside both trees:
+	* G:\dist\README.md: The folder table says what is on disk and
+	what is planned; one bracket tag became a sentence; the family
+	shelf paragraph names the garden.  SHA256SUMS: its line.
+	* G:\dist-fam\README.md: The garden parcel, HOLDS-AT-CUT.tsv,
+	the commands; licence line CC-BY-SA-4.0.  SHA256SUMS: rewritten.
+	* G:\dist-fam\bryant\2026-10-10-garden-535d010.zip and .KEEPER.md:
+	New, the first garden cut.
+	* H:\pub\RECIPE.org: Corwin's file, edited and recorded here: the
+	four lc1ck faults (writing as CC BY 4.0) now say CC-BY-SA-4.0;
+	the old copy is .c4/RECIPE-2026-10-10-before-licence.org.

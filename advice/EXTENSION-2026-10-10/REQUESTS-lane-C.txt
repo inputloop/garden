@@ -1,0 +1,43 @@
+
+From lane B (2026-10-10), GRAMMARY entries for terms lane B added:
+- persona ledger: the regenerated LEDGER.md saying who carries whose inverse, read only from
+  the sheets (persona_ledger tool). Whose word: Corwin's ruling of 2026-10-10 (the net), S4's
+  name for the file.
+- "Whose inverse I carry": the sheet section a persona writes (his pen) naming whom it can
+  falsify. Whose word: S4 (study, 2026-10-10), proposed; not yet in any sheet.
+- default voice: the plain voice (iT) persona_resolve hands back when no sheet resolves, at the
+  origin of the tone dial. Whose word: card 11.
+- DIVERGED: the ledger's word for a second copy of a sheet whose bytes differ; which is the
+  master is Corwin's pen.
+- gp.1: already planned among the pointer entries (garden-pony); tavern_status now says it.
+# From lane A, 2026-10-10.
+# 1. GRAMMARY: new terms lane A uses, each needs an entry (whose word: Mentat, from the design):
+#    - frame: the one append-only table (FRAME.md) for spans, checkpoints, gauges and tone; off by default.
+#    - reset (span): a token count that rose; counted as a new prompt, never subtracted.
+#    - declared key: a preference a skill names in its SKILL.md preferences: list; that skill is its reader.
+#    - people.named: the keeper and the participants he named; only their person.<name>.* rows are kept.
+#    - writer rule: person.<name>.* is written on that person's turn, the keeper's turn, or with a consent row's id.
+#    - seatkeeper "no": skill.seatkeeper.<hash> = "no: <path>"; pref_unset takes it back.
+#    - pr1ef: the preferences reader in awk (PR preferences, 1 reads only, EF the file).
+# 2. README facts (C3): prefs.KNOWN now has 18 keys (people.named is new, beside usage.capture,
+#    tone.dial and tone.show), and pref_unset is a new tool on the mentcached server.
+# 3. tests/test_plugin.py test_every_unshipped_tool_is_marked errors at 09:1x (bin/sp1rp not found in
+#    plugin._README with "not shipped" after it); plugin.py was mid-edit (09:04). Not a lane-A file.
+
+From lane D (2026-10-10), GRAMMARY entries for terms lane D added (whose word: Mentat, from the
+design and cards named; tool codes explained on first use in each tool's header):
+- road: one way to reach a stored fact, in conventions/ROADS.md; walked in order by rd1ck.
+  Whose word: Model T (TMTOWTDI), card 18; W called them routes.
+- READ / NOT REACHED / FENCED: the three words rd1ck says per road; never "absent" (a road that did
+  not answer this time is not evidence the fact is gone). Whose word: design §1 ROADS row.
+- grain (seating): how much seating st1dt proposes: none, light (a .gate only) or full (.gate,
+  INDEX.md and a seat entry). Whose word: Model T's seating act; this reading is lane D's guess.
+- kept out of view: st1dt's count of secret-class entries, never named or opened. Card 21.
+- drop (Bryant): one hand-over of files from Bryant, under c4/from-bryant/<date>. Whose word: S1.
+- counterpart: our skill matching one of Bryant's, with a relation (same-origin, derived-from-ours,
+  derived-from-his, answer-to, none); conventions/bryant-counterparts.tsv. Whose word: S1 sketch step 10.
+- modes of work (extracted, not judged): lines br1in pulls by pattern (trigger, loop, gates,
+  hand-back) from a skill's description and headings, with no reading of what they mean. Whose
+  word: Corwin's ask (Bryant-modes ingestion); S1 sketch step 8.
+- tool codes: st1dt (the seating detector), rd1ck (the roads checker), qg1ck (the question gauge),
+  br1in (the Bryant drop intake).

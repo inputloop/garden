@@ -1,0 +1,217 @@
+#!/bin/sh
+# hb1ck -- the handback check: three failures from 2026-09-13, made mechanical.
+#
+# usage: sh bin/hb1ck --layout ROOT [--since FILE]     where did this session's files land?
+#        sh bin/hb1ck --claims LEDGER.md               is every opening claim resolved?
+#        sh bin/hb1ck --defer HANDBACK.md              does every deferral name its blocker?
+#        sh bin/hb1ck --park SHELF INCREMENTS          is the shelf parked, or edited since last park?
+#        sh bin/hb1ck --prove-red                      self-test: each check must go red on a bad input
+#
+# WHY. Three things went wrong on 2026-09-13 that no tool could see:
+#
+#   1. I invented a shelf. `AS4CE0001/INDEX.md` documents the layout -- skills/, book/, advice/, bin/ --
+#      and I wrote deliverables into an undocumented `h/` because I never opened the map. --layout
+#      compares where files landed against the map that was already in the room.
+#
+#   2. I named a gap and called that discharging it: "nobody re-read the books end to end; that's the
+#      next read, and I didn't do it" -- with about 97% of the session's budget unspent. --defer makes
+#      a deferral carry its blocker, and a BUDGET blocker must print the number, because the number is
+#      what makes the excuse impossible to write.
+#
+#   3. Confident statements made in the first ten minutes did not come back at the end, so the keeper
+#      could not tell which ones had governed the work. --claims closes that loop: what you asserted
+#      early, you resolve late, one row at a time.
+#
+# TOKENS a deferral may use (case-insensitive), each requiring what it says:
+#   [BLOCKED: why]   something outside this session stops it
+#   [KEEPER: what]   it needs Corwin's hand or his ruling
+#   [BUDGET: N]      budget is the reason -- N is the remaining figure, and it must be a number
+#   [TOOL: what]     it needs an instrument that does not exist yet
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st> -- GPLv3-or-later. Authored by Mentat (for Corwin).
+set -u
+
+FAULTS=0; OKS=0
+say()  { printf '[ %-5s ] %s\n' "$1" "$2"; [ "$1" = "FAULT" ] && FAULTS=$((FAULTS+1)) || OKS=$((OKS+1)); return 0; }
+
+# ---- --layout: did anything land off the documented map? -------------------------------------------
+layout() {
+  root=$1; idx="$root/INDEX.md"; since=${2:-}
+  [ -f "$idx" ] || { say FAULT "no INDEX.md at $root -- this check needs the project's own layout map"; return; }
+  # the map's own words: every backticked `dir/` in the layout table is a documented home
+  homes=$(grep -o '`[a-zA-Z_.][a-zA-Z0-9_.-]*/`' "$idx" | tr -d '`' | sort -u)
+  [ -n "$homes" ] || { say FAULT "INDEX.md names no directories in backticks -- cannot read the map"; return; }
+  say OK "map read: $(printf '%s' "$homes" | tr '\n' ' ')"
+  if [ -n "$since" ] && [ -f "$since" ]; then
+    off=""
+    while IFS= read -r f; do
+      [ -n "$f" ] || continue
+      d=$(printf '%s' "$f" | sed 's|^\./||; s|/.*||')
+      case "$f" in */*) ;; *) continue;; esac        # a file at the root is furniture, not a shelf
+      printf '%s\n' "$homes" | grep -qx "$d/" || off="$off $f"
+    done < "$since"
+    if [ -n "$off" ]; then
+      say FAULT "landed outside every documented home:$off"
+      printf '        the map is %s -- move them, or amend the map and say why\n' "$idx"
+    else say OK "every listed file landed in a documented home"; fi
+  fi
+}
+
+# ---- --claims: every opening claim resolved by close ------------------------------------------------
+claims() {
+  f=$1; [ -f "$f" ] || { say FAULT "no claims ledger at $f"; return; }
+  # count without grep -c in a pipeline: a trailing newline there turns into "Illegal number"
+  # any single-letter id prefix: C1.. was the first ledger's, D1.. the second's, and a check that
+  # only knows one prefix silently refuses a whole ledger. (Found by running it on its own ledger.)
+  rows=$(grep -E '^\| *[A-Z][0-9]+ *\|' "$f" 2>/dev/null | wc -l | tr -d ' ')
+  [ "${rows:-0}" -gt 0 ] || { say FAULT "no claim rows (expected lines starting '| C1 |', '| D1 |', ...)"; return; }
+  # the verdict is the LAST cell of the row; strip the outer pipes, then take the final field
+  open=$(awk -F'|' '/^\| *[A-Z][0-9]+ *\|/ {
+           v=$(NF-1); gsub(/^[ \t]+|[ \t]+$/,"",v);
+           id=$2; gsub(/ /,"",id);
+           if (v=="" || v=="-" || tolower(v)=="open" || tolower(v)=="tbd") print id }' "$f")
+  bad=$(printf '%s' "$open" | grep . | wc -l | tr -d ' ')
+  if [ "${bad:-0}" -gt 0 ]; then
+    say FAULT "$bad of $rows opening claim(s) never resolved: $(printf '%s' "$open" | tr '\n' ' ')"
+    printf '        every C-row needs HELD / BROKEN / CHANGED in its last column before the handback\n'
+  else say OK "all $rows opening claim(s) resolved"; fi
+}
+
+# ---- --defer: every deferral names its blocker -------------------------------------------------------
+# E15, worked 2026-09-13. The first cut of this check had five defects, every one found by running it
+# on real files in the tree rather than on its own fixtures:
+#
+#   FP1  a file that DOCUMENTS the tokens faulted on its own documentation: the literal `[BUDGET: N]`
+#        in a usage line has no figure in it. A token inside backticks is a MENTION, not a USE.
+#   FP2  `| 10 | be the one who is owed |` -- a row of a game book's random table. A table cell is
+#        data, not a promise. (This check was also being run on a book, which is operator error, but
+#        a tool that faults confusingly on the wrong input has a share of that.)
+#   FP3  an ENHANCE ledger's own rows, which describe deferrals for a living, all faulted.
+#   BUG  `n=$(grep -c . "$t" || echo 0)` -- grep exits 1 on no match, so the fallback APPENDED to
+#        grep's own "0" and `[ "$n" -eq 0 ]` got "0\n0": "Illegal number". Exactly the posix-gotchas
+#        footgun already fixed once in claims() and missed here.
+#   FP4  a HEADING that labels a section -- "## 5 - ENHANCE - out of scope for this round" -- and
+#        the verdict word DEFERRED itself, written in caps as a label. Structure and vocabulary are
+#        not promises.
+#   FP5  "a later session" / "the next session" bare are DESCRIPTIVE -- "a note is not edited by a
+#        later session" is a rule, not a punt. They count only with a handoff preposition (for/to).
+#   FN   "TODO", "out of scope", "punted", "a later session", "have not yet", "remains to be" and
+#        friends all walked straight past it.
+#
+# The shape of the fix: build a PROSE VIEW that keeps line numbers but blanks fenced code, table rows
+# and backticked spans, then match on that. Prose makes promises; data and documentation do not.
+defer() {
+  f=$1; [ -f "$f" ] || { say FAULT "no handback at $f"; return; }
+  t=${TMPDIR:-/tmp}/hb1ck.$$; p="$t.prose"
+  # prose view: same number of lines, so reported line numbers still point into the real file
+  awk '
+    /^[ \t]*```/ { fence = !fence; print ""; next }
+    fence        { print ""; next }
+    /^[ \t]*\|/  { print ""; next }          # a table row is data
+    /^[ \t]*#/   { print ""; next }          # a heading is structure, not a promise
+    {
+      gsub(/`[^`]*`/, " ");                  # a backticked span is a mention, not a use
+      # CAPS is the label channel in this house (c4-load-bearing-character): CARRIED / SUPERSEDED /
+      # DEFERRED in caps are verdict labels being applied, not promises being made. TODO stays,
+      # because TODO in caps is a real marker and always has been.
+      gsub(/DEFERRED|CARRIED|SUPERSEDED/, " ");
+      print
+    }
+  ' "$f" > "$p"
+
+  grep -n -i -E "did not (do|run|read|finish|get|write|build|land)|i have not|i haven't|have not yet|haven't yet|left undone|left for later|still owed|is still owed|next step|deferred|not done this (turn|session)|ran out of|TODO|out of scope|punted|not in this pass|remains to be|for a later session|to a later session|for the next session|to the next session|next turn|will need to|someone should|we should eventually" "$p" > "$t" 2>/dev/null || true
+  n=$(wc -l < "$t" | tr -d ' ')            # never grep -c in a substitution with a fallback
+  if [ "${n:-0}" -eq 0 ]; then say OK "no deferral language found in prose"; rm -f "$t" "$p"; return; fi
+
+  naked=""
+  while IFS= read -r line; do
+    ln=${line%%:*}
+    lo=$((ln>1?ln-1:1)); hi=$((ln+1))
+    # a blocker counts only if it is USED in prose, not mentioned in backticks
+    sed -n "${lo},${hi}p" "$p" | grep -q -i -E '\[(BLOCKED|KEEPER|BUDGET|TOOL):' || naked="$naked $ln"
+  done < "$t"
+  rm -f "$t"
+
+  if [ -n "$naked" ]; then
+    say FAULT "$n deferral(s); unblocked at line(s):$naked"
+    printf '        a deferral carries [BLOCKED: why] / [KEEPER: what] / [BUDGET: N] / [TOOL: what]\n'
+    printf '        "I did not get to it" is not a blocker. If BUDGET, print the remaining number.\n'
+  else say OK "$n deferral(s), every one carrying a blocker"; fi
+
+  # a BUDGET blocker must show a real figure -- and only a USED one is judged, never a documented one
+  nofig=$(grep -o -i '\[BUDGET:[^]]*\]' "$p" 2>/dev/null | grep -v '[0-9]' | head -1)
+  rm -f "$p"
+  if [ -n "$nofig" ]; then
+    say FAULT "BUDGET blocker with no figure: $nofig"
+    printf '        the figure is the whole point: writing it next to "I did not" makes the sentence unwritable\n'
+  fi
+}
+
+# --park SHELF INCREMENTS -- has the shelf been edited since the last time it was parked?
+#
+# Bought 2026-09-13, second round. Draft 1 of four books was parked to .eclipse-increments/ and signed.
+# Draft 2 was edited IN PLACE into draft 3 and no longer exists anywhere. Nothing warned me. INDEX.md
+# says .eclipse-increments/ holds "parked losing and superseded drafts" and a superseded draft I
+# overwrote was never parked, so the map was obeyed in letter and broken in fact.
+#
+# The rule: a file on the shelf whose current bytes match NO parked copy has been edited since its
+# last park. That is not automatically wrong -- it is the normal state mid-session -- so this is a
+# CLOSING check. Run it before the handback and park what it names.
+park() {
+  shelf=$1; inc=$2
+  [ -d "$shelf" ] || { printf '[ FAULT ] no such shelf: %s\n' "$shelf"; FAULTS=$((FAULTS+1)); return; }
+  [ -d "$inc" ]   || { printf '[ FAULT ] no such increments dir: %s\n' "$inc"; FAULTS=$((FAULTS+1)); return; }
+  unparked=0; checked=0
+  for f in "$shelf"/*; do
+    [ -f "$f" ] || continue
+    b=$(basename "$f"); checked=$((checked+1))
+    h=$(sha256sum "$f" | cut -d' ' -f1)
+    found=0
+    # any parked copy under ANY increment, at any depth, with this basename and these bytes
+    for p in $(find "$inc" -type f -name "$b" 2>/dev/null); do
+      [ "$(sha256sum "$p" | cut -d' ' -f1)" = "$h" ] && { found=1; break; }
+    done
+    [ "$found" -eq 1 ] || { printf '[ FAULT ] unparked: %s has no parked copy of its current bytes\n' "$f"; unparked=$((unparked+1)); }
+  done
+  if [ "$unparked" -eq 0 ]; then
+    printf '[ OK ]    all %d shelf file(s) have a parked copy of their current bytes\n' "$checked"
+    OKS=$((OKS+1))
+  else
+    printf '          -- park them: cp them to %s/<date>-<slug>/ before the handback.\n' "$inc"
+    printf '          -- a superseded draft that exists nowhere cannot be diffed, cited, or reverted.\n'
+    FAULTS=$((FAULTS+unparked))
+  fi
+}
+
+prove_red() {
+  t=${TMPDIR:-/tmp}/hb1ck-red.$$; mkdir -p "$t/proj"; rc=0
+  printf '# INDEX\n| where | what |\n| `bin/` | code |\n| `book/` | corpus |\n' > "$t/proj/INDEX.md"
+  printf 'h/thing.md\nbin/ok\n' > "$t/list"
+  sh "$0" --layout "$t/proj" --since "$t/list" 2>&1 | grep -q 'landed outside' || rc=1
+  printf '| id | claim | how checked | verdict |\n| C1 | x | y |  |\n' > "$t/claims.md"
+  sh "$0" --claims "$t/claims.md" 2>&1 | grep -q 'never resolved' || rc=1
+  printf 'I did not run the second read.\n' > "$t/hb.md"
+  sh "$0" --defer "$t/hb.md" 2>&1 | grep -q 'unblocked at line' || rc=1
+  printf 'I did not run the second read. [BUDGET: lots]\n' > "$t/hb2.md"
+  sh "$0" --defer "$t/hb2.md" 2>&1 | grep -q 'BUDGET blocker with no figure' || rc=1
+  mkdir -p "$t/shelf" "$t/inc/old"
+  printf 'v2\n' > "$t/shelf/BOOK.md"; printf 'v1\n' > "$t/inc/old/BOOK.md"
+  sh "$0" --park "$t/shelf" "$t/inc" 2>&1 | grep -q 'unparked' || rc=1
+  printf 'v2\n' > "$t/inc/old/BOOK.md"
+  sh "$0" --park "$t/shelf" "$t/inc" 2>&1 | grep -q 'have a parked copy' || rc=1
+  rm -rf "$t"
+  [ $rc -eq 0 ] && { echo "PASS: every check goes red on the failure it was built for"; exit 0; }
+  echo "FAIL: a check did not go red"; exit 1
+}
+
+[ $# -gt 0 ] || { sed -n '2,30p' "$0"; exit 2; }
+case "$1" in
+  --prove-red) prove_red;;
+  --layout) shift; r=${1:?root}; shift; s=""; [ "${1:-}" = "--since" ] && { shift; s=${1:?}; }; layout "$r" "$s";;
+  --claims) shift; claims "${1:?ledger}";;
+  --defer)  shift; defer  "${1:?handback}";;
+  --park)   shift; park "${1:?shelf}" "${2:?increments}";;
+  *) sed -n '2,30p' "$0"; exit 2;;
+esac
+echo "hb1ck: OK $OKS -- FAULT $FAULTS"
+[ "$FAULTS" -eq 0 ]

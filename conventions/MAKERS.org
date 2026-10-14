@@ -1,0 +1,16 @@
+#+TITLE: Makers: skills whose words are partly someone else's
+#+STARTUP: showall
+
+Read by bin/ft1mt: a skill named here gets these makers in its minted footer, before the house
+holder.  The attribution ladder (c4 man/attribution-ladder.md), rung 1: more than 15 lines of the
+skill first seen in another author's sources.  Evidence from colophon's garden edition
+(peers/bryant/colophon) `who --sources`, 2026-10-05; the keepers decide, and a row is removed
+only when the person concerned shows it is an error.
+
+| skill           | other makers                                     | evidence                                                                                  |
+|-----------------+--------------------------------------------------+-------------------------------------------------------------------------------------------|
+| aethernet-relay | Bryant Frankford <nathanielfrankford@gmail.com>  | 91 lines first seen in his drop of 2026-08-05 (c4 from-bryant/2026-08-05); ours entered git 2026-09-11 |
+| foaf            | Bryant Frankford <nathanielfrankford@gmail.com>  | its author: the skill began as his prompt (June 2026, with the Bastion drop he shared), touched up and named by Corwin and minted here first, 2026-06-27 (Corwin's word, 2026-10-05); and assets/meshfeed.html, his MeshFeed (955 lines; c4 from-bryant/2026-10-05-r3/reading/EVIDENCE-who-our-garden-v3.txt) |
+| garden-pony     | Bryant Frankford <nathanielfrankford@gmail.com>  | its subject is his software (Tavern, written with Alfred); Corwin's build brief, 2026-10-08: "Bryant first where the subject is his software" (AS4CE0001/advice/LENS-2026-10-08-topo-pony/10-BUILD-BRIEF.md) |
+| topoforge-story | Bryant Frankford <nathanielfrankford@gmail.com>  | its subject is his software (TopoForge, written with Alfred); same brief, same rule |
+| token-optimizer | Bryant Frankford <nathanielfrankford@gmail.com>  | 89 lines first seen in his drop of 2026-08-05 (c4 from-bryant/2026-08-05); his skill from v1.0 (2026-07-06; public 07-07, by its own version notes); ours entered git 2026-09-11 |

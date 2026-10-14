@@ -1,0 +1,11 @@
+# FAMILY-HOLDS.tsv -- what a family cut of the garden (AS4CE0001) leaves out, and only this.  Read by
+# c4/bin/fm1ct cut PEER --tree AS4CE0001.  The peers are C4's (c4/d/family/PEERS.tsv), declared once.
+# The rule is the C4 tree's: send as much as possible; a path stays out only by a row naming its CLASS
+# (BLIND, LOCAL, NEVER), the SOURCE that says so, and the FALSIFIER, the event that opens it.
+# Columns (tab-separated): PREFIX (anchored at the garden root; a trailing / is a folder) | CLASS | SOURCE | FALSIFIER
+memory/	LOCAL	memory/corwin-wheel-sharing-consent.md (his grant, signed 2026-07-05): his own information goes out to Bryant "point by point -- each detail released only on his explicit per-item approval ... still ask before each release, don't batch"; and memory/corwin-family-dee.md: "local/private, outward-sharing still guarded"	Corwin approves memory/ for a peer, or names the notes that may go
+mainmem/	LOCAL	as memory/: the memory hub's manifests and openings list the same notes by name and line	as memory/
+MEMORY.md	LOCAL	as memory/: one line per note, the index of memory/	as memory/
+# Mentat (for Corwin; claude-opus-5-5)
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+# SPDX-License-Identifier: CC-BY-SA-4.0

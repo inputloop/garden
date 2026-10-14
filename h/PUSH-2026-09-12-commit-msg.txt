@@ -1,0 +1,60 @@
+catch-up 2026-08-17..2026-09-12: the memory seat, the skill garden, ten gauges
+
+First commit since dd5da1f (2026-08-17): 673 new files, 58 modified, none
+deleted.  This is TRANSPORT, not publication -- nothing here is tagged,
+released, or cleared for a shelf.
+
+* The memory seat.  memory/ is now the durable store this project reads and
+  writes: 177 new notes beside the 33 already tracked, an index
+  (memory/MEMORY.md) and a second index page for the 109 notes no line named
+  (memory/memory-index-2026-09-11.md).  bin/se1sn opens a session against it
+  -- loaded-vs-seat, gauge, cards, one note under mainmem/ -- and bin/ms1dg
+  gauges any claim made about it.  Sort receipts: h/MEMORY-SORT-2026-09-11.md.
+
+* The skill garden.  skills/ is the one place a curated skill lives: 44 of
+  them, each worn by the app byte-for-byte and each verifying Good against
+  the pinned key ECE77CF4...F007.  Measured at this commit, not asserted:
+  skill-sign verify 44/44 Good; skill-lint 44/44 ok; make garden SAME 44,
+  DRIFT 0, INSTALLED-ONLY 0, STRAY 0, MINT 0.  26 of the 44 are new to the
+  repo, brought home from the installed store, the mint floor and Bryant's
+  drops.  make dist mints one .skill per resident plus 14 deck-derived canon
+  skills (dist/ stays untracked).
+
+* Gauges and harnesses.  tests/ gains nine POSIX harnesses, 166 checks, each
+  carrying --prove-red: cs1gk 22, dc1sv 24, eclipse-pass 13, landcheck 9,
+  makefile-c4root 4, ms1dg 33, pg1rl 19, rf1bm 16, se1sn 26.  make check runs
+  100 Python tests.  All green at this commit.
+
+* Fixes that arrived with a red receipt, not an assertion.  A TOCTOU race in
+  skills/eclipse-pass/scripts/eclipse_pass.sh: 20 concurrent arms landed in 3
+  directories against the pre-patch copy, 20 in 20 against the patched one.
+  color-theory's audit read every "#rrggbb" line as a comment and so audited
+  nothing.  skilltank's hub weight keyed refs on hyphen-split tokens and could
+  match 3 of 49 link targets.  Makefile C4_ROOT no longer hard-codes a
+  host-only path, so a fresh sandbox's first `make garden` runs.
+
+* bin/gt1sp (new, unsigned).  One step from a clean tree to a pushed commit:
+  two guards that refuse -- .git/index.lock present, or run against the
+  sandbox mount -- and four reports that never refuse: stale detached
+  signatures, untracked files naming a check-first individual, make check,
+  the shell harnesses.  Then add, commit, push, and a transport receipt on
+  h/TRANSPORT.log.  --prove-red 7/7.  Plain git is untouched: no alias, no
+  hook, no wrapper in git's path.
+
+* Signature state, stated rather than hidden.  21 detached .asc files are
+  stale against their file (edit-after-sign, the benign cause; `sh bin/gt1sp
+  --check` lists them).  The manifest tier is current -- all 44 skills
+  verify -- so the two tiers disagree and the older per-file .asc is the one
+  behind.  SIGN-QUEUE.md carries the rows.
+
+* Restored: skills/ECE77CF417C76C1ACFCE7C2B5B6135511580F007.asc, the pinned
+  public key, deleted from the working tree by the 2026-09-11 garden sweep
+  with no archive beside it.  Recovered from HEAD; 3817 bytes, byte-identical.
+  Without it in the tree no stranger can verify anything the tree ships.
+
+Correction kept in the record rather than smoothed away: this message first
+said 676 new files.  That came from expanding untracked directories with
+`find`, which does not apply .gitignore; the authoritative reader,
+`git ls-files --others --exclude-standard`, says 673.  The six-file gap was
+h/__pycache__/*.pyc, already ignored.  Two readers, one of them wrong, caught
+before the commit -- c4prime's seventh repeat fault, ahead-of-receipt.

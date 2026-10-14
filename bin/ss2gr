@@ -1,0 +1,98 @@
+#!/bin/sh
+# ss2gr -- SOFT SKILLS 2 GRADUATE: which soft skills have earned a place in the garden, on evidence;
+#          graduate one by hand.
+#
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st>
+# SPDX-License-Identifier: GPL-3.0-or-later
+# This program is free software: you can redistribute it and/or modify it under the terms
+# of the GNU General Public License as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
+# This file is part of vibrobeast.  Authored by Mentat (for Corwin).  It is free software: you can
+# redistribute it and/or modify it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your option) any later
+# version.  It is distributed WITHOUT ANY WARRANTY; see <https://www.gnu.org/licenses/>.
+#
+# THE NAME: S S SOFT SKILLS · 2 (writes only with --graduate; the default is a report) · G R GRADUATE.
+#
+# THE RULE (Corwin, 2026-09-24): "skills stay soft until they demonstrate they are getting used, not a
+#   work around for the general organic growth vibe ... organic is a favor that we support." So:
+#   the dynaloader's usage ledger (~/.mentcached/softskills-usage.tsv, one line per soft_skill_read)
+#   is the evidence; this tool COUNTS it -- reads, distinct days, first and last read -- per soft
+#   skill, and prints a table. It picks NO threshold: a threshold picked-not-validated is the fault
+#   countable-gauge exists to catch. Graduation is a hand-turn: `ss2gr --graduate NAME` copies the
+#   folder into skills/NAME/, writes its EXPRESS manifest (skill-sign.sh manifest -- unsigned; the
+#   next `make dist` signs it), and leaves the soft copy in place (the dynaloader shadows it, first
+#   root wins, and says so). `make dist` prints this report; it never graduates.
+#
+# usage: sh bin/ss2gr [--root DIR] [--usage FILE]          the report (read-only)
+#        sh bin/ss2gr --graduate NAME [--root DIR]          copy SOFT-SKILLS/NAME -> skills/NAME + manifest
+#        sh bin/ss2gr --prove-red
+# env: SOFT_SKILLS (roots, os.pathsep-separated; default <root>/SOFT-SKILLS), MENTCACHED_SOFTSKILLS_USAGE
+# Exit: 0 · 1 --graduate refused (already in skills/, no such soft skill, no SKILL.md) · 2 usage.
+set -u
+me=ss2gr
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd); GRAD=; USAGE=; PROVE=0
+while [ $# -gt 0 ]; do case $1 in
+  --root) [ $# -ge 2 ] || { echo "$me: --root needs a value" >&2; exit 2; }; ROOT=$2; shift ;;
+  --usage) [ $# -ge 2 ] || { echo "$me: --usage needs a value" >&2; exit 2; }; USAGE=$2; shift ;;
+  --graduate) [ $# -ge 2 ] || { echo "$me: --graduate needs a value" >&2; exit 2; }; GRAD=$2; shift ;;
+  --prove-red) PROVE=1 ;;
+  -h|--help) sed -n '/^# usage:/,/^# Exit:/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  *) echo "$me: unknown option $1" >&2; exit 2 ;; esac; shift; done
+TAB=$(printf '\t')
+
+roots() {  # the SOFT-SKILLS roots, one per line
+  if [ -n "${SOFT_SKILLS:-}" ]; then printf '%s\n' "$SOFT_SKILLS" | tr ':;' '\n\n'; else printf '%s\n' "$ROOT/SOFT-SKILLS"; fi
+}
+usage_file() { [ -n "$USAGE" ] && { printf '%s\n' "$USAGE"; return; }; printf '%s\n' "${MENTCACHED_SOFTSKILLS_USAGE:-$HOME/.mentcached/softskills-usage.tsv}"; }
+
+report() {
+  u=$(usage_file)
+  echo "== $me · soft skills and their use (ledger: $u$( [ -f "$u" ] || printf ' -- absent: no soft_skill_read recorded yet'))"
+  printf '%-24s %6s %5s  %-10s  %-10s  %s\n' SOFT-SKILL READS DAYS FIRST LAST STATE
+  roots | while IFS= read -r r; do [ -d "$r" ] || continue
+    for d in "$r"/*/; do [ -f "$d/SKILL.md" ] || continue; n=$(basename "$d")
+      if [ -f "$u" ]; then
+        st=$(awk -F"$TAB" -v n="$n" 'NR>1 && $2==n {c++; d=substr($1,1,10); if(!(d in seen)){seen[d]=1; days++}; if(first==""||$1<first)first=$1; if($1>last)last=$1} END{printf "%d %d %s %s", c, days, (first==""?"-":substr(first,1,10)), (last==""?"-":substr(last,1,10))}' "$u")
+      else st="0 0 - -"; fi
+      set -- $st
+      state=soft; [ -d "$ROOT/skills/$n" ] && state="GRADUATED (skills/$n exists; the soft copy is shadowed)"
+      printf '%-24s %6s %5s  %-10s  %-10s  %s\n' "$n" "$1" "$2" "$3" "$4" "$state"
+    done
+  done
+  echo "$me: no threshold is applied here -- the numbers are the evidence; \`sh bin/ss2gr --graduate NAME\` is the hand that turns."
+}
+
+graduate() {
+  n=$1; src=""
+  for r in $(roots); do [ -f "$r/$n/SKILL.md" ] && { src=$r/$n; break; }; done
+  [ -n "$src" ] || { echo "$me: no soft skill '$n' with a SKILL.md under: $(roots | tr '\n' ' ')" >&2; return 1; }
+  [ -e "$ROOT/skills/$n" ] && { echo "$me: skills/$n already exists -- graduation is a copy, never an overwrite" >&2; return 1; }
+  mkdir -p "$ROOT/skills/$n" && (cd "$src" && find . -type f ! -path './.arc/*' -print | while IFS= read -r f; do mkdir -p "$ROOT/skills/$n/$(dirname "$f")"; cp -p "$f" "$ROOT/skills/$n/$f"; done) || return 1
+  a=$(cd "$src" && find . -type f ! -path './.arc/*' | wc -l); b=$(cd "$ROOT/skills/$n" && find . -type f | wc -l)
+  [ "$a" -eq "$b" ] || { echo "$me: copied $b of $a files -- refusing to call that a graduation" >&2; return 1; }
+  signer=$ROOT/skills/skill-sign/scripts/skill-sign.sh
+  if [ -f "$signer" ]; then sh "$signer" manifest "$ROOT/skills/$n" | sed "s|^|$me: |"; else echo "$me: no skill-sign.sh beside this tree; skills/$n has no manifest yet"; fi
+  echo "$me: graduated $n: $src -> skills/$n ($b files; unsigned until the next make dist; the soft copy stays and is shadowed)"
+}
+
+if [ $PROVE -eq 1 ]; then
+  W=$(mktemp -d) || exit 2; trap 'rm -rf "$W"' EXIT
+  mkdir -p "$W/SOFT-SKILLS/alpha" "$W/SOFT-SKILLS/beta" "$W/skills"
+  printf -- '---\nname: alpha\ndescription: a\n---\nx\n' > "$W/SOFT-SKILLS/alpha/SKILL.md"; printf -- '---\nname: beta\ndescription: b\n---\ny\n' > "$W/SOFT-SKILLS/beta/SKILL.md"; printf 'ref\n' > "$W/SOFT-SKILLS/alpha/notes.md"
+  printf 'ts\tname\troot\tfile\n2026-09-20T01:00:00Z\talpha\tr\tSKILL.md\n2026-09-20T02:00:00Z\talpha\tr\tSKILL.md\n2026-09-22T01:00:00Z\talpha\tr\tnotes.md\n' > "$W/usage.tsv"
+  red=0
+  o=$(SOFT_SKILLS= sh "$0" --root "$W" --usage "$W/usage.tsv" 2>&1)
+  printf '%s\n' "$o" | grep -q '^alpha  *3  *2  2026-09-20  2026-09-22  soft' && printf '%s\n' "$o" | grep -q '^beta  *0  *0  -  *-  *soft' && red=$((red+1)) || echo "FAIL: report must count reads and distinct days per soft skill: $o"
+  printf '%s\n' "$o" | grep -q 'no threshold is applied' && red=$((red+1)) || echo "FAIL: the report must say it picks no threshold"
+  o=$(SOFT_SKILLS= sh "$0" --root "$W" --usage "$W/nowhere.tsv" 2>&1); printf '%s\n' "$o" | grep -q 'absent: no soft_skill_read recorded yet' && red=$((red+1)) || echo "FAIL: an absent ledger is said, not hidden: $o"
+  o=$(SOFT_SKILLS= sh "$0" --root "$W" --graduate gamma 2>&1); [ $? -eq 1 ] && printf '%s\n' "$o" | grep -q "no soft skill 'gamma'" && red=$((red+1)) || echo "FAIL: graduating an absent skill must refuse: $o"
+  o=$(SOFT_SKILLS= sh "$0" --root "$W" --graduate alpha 2>&1); rc=$?
+  [ $rc -eq 0 ] && [ -f "$W/skills/alpha/SKILL.md" ] && [ -f "$W/skills/alpha/notes.md" ] && [ -f "$W/SOFT-SKILLS/alpha/SKILL.md" ] && red=$((red+1)) || echo "FAIL: graduate must copy every file and leave the soft copy: rc=$rc $o"
+  o=$(SOFT_SKILLS= sh "$0" --root "$W" --graduate alpha 2>&1); [ $? -eq 1 ] && printf '%s\n' "$o" | grep -q 'already exists' && red=$((red+1)) || echo "FAIL: a second graduation must refuse (never overwrite): $o"
+  o=$(SOFT_SKILLS= sh "$0" --root "$W" --usage "$W/usage.tsv" 2>&1); printf '%s\n' "$o" | grep -q '^alpha .*GRADUATED (skills/alpha exists' && red=$((red+1)) || echo "FAIL: the report must show the graduated state: $o"
+  o=$(sh "$0" --graduate 2>&1); [ $? -eq 2 ] && red=$((red+1)) || echo "FAIL: --graduate without a value must exit 2"
+  [ $red -eq 8 ] && { echo "PASS: ss2gr counts reads and days per soft skill, names an absent ledger, picks no threshold, graduates by copy (every file, soft copy kept), refuses an absent skill and an overwrite, and shows the graduated state"; exit 0; }
+  echo "FAIL: ss2gr prove-red $red/8"; exit 1
+fi
+if [ -n "$GRAD" ]; then graduate "$GRAD"; else report; fi

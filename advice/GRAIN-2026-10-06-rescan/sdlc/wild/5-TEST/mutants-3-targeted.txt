@@ -1,0 +1,176 @@
+SURVIVED gen.sh:12: LC_ALL=C
+KILLED   gen.sh:11: G10
+KILLED   gen.sh:15: G01
+KILLED   gen.sh:16: G01
+KILLED   gen.sh:17: G01
+SURVIVED gen.sh:13: export LC_ALL
+KILLED   gen.sh:19: G01
+KILLED   gen.sh:20: G01
+KILLED   gen.sh:18: G01
+KILLED   gen.sh:21: G10 F15
+KILLED   gen.sh:22: G10
+KILLED   gen.sh:23: G01
+KILLED   gen.sh:25: G01
+KILLED   gen.sh:26: G01
+KILLED   gen.sh:28: G01
+KILLED   gen.sh:24: G10
+KILLED   gen.sh:30: G01
+KILLED   gen.sh:29: G10
+KILLED   gen.sh:31: G10
+KILLED   gen.sh:34: G01
+KILLED   gen.sh:33: G01
+KILLED   gen.sh:37: G01
+KILLED   gen.sh:38: G01
+KILLED   gen.sh:35: G10
+KILLED   gen.sh:40: G01
+KILLED   gen.sh:42: G01
+KILLED   gen.sh:41: G11
+SURVIVED gen.sh:43: echo "gen.sh: wrote $out" >&2
+SURVIVED firstrun.el.in:1: ;;; larder-firstrun.el --- Larder first-run menu, one frame, mouse only  -*- lexical-binding: t; -*-
+KILLED   firstrun.el.in:3: G09
+SURVIVED firstrun.el.in:4: ;; Copyright (C) 2026 the Larder software contributors
+SURVIVED firstrun.el.in:6: ;;; Commentary:
+SURVIVED firstrun.el.in:8: ;; Profile: @@PROFILE@@.  Template: gen.sh fills `larder-choices' from recipes.conf.
+SURVIVED firstrun.el.in:9: ;; Start it with:  emacs -Q --fullscreen -l larder-firstrun.el -f larder-firstrun
+SURVIVED firstrun.el.in:10: ;; A button runs `larder-open-program' with larder://ID; the same launcher the
+SURVIVED firstrun.el.in:11: ;; HTML page uses, so both pages can only do what recipes.conf names.
+SURVIVED firstrun.el.in:13: ;;; Code:
+SURVIVED firstrun.el.in:15: (require 'button)
+KILLED   firstrun.el.in:17: F09 F15
+KILLED   firstrun.el.in:18: F09 F15
+KILLED   firstrun.el.in:20: F09 F15
+KILLED   firstrun.el.in:21: F09 F15
+KILLED   firstrun.el.in:22: F03 F04 F15
+KILLED   firstrun.el.in:23: F09 F15
+KILLED   firstrun.el.in:24: F09 F15
+KILLED   firstrun.el.in:26: F09 F15
+SURVIVED firstrun.el.in:27:   "Run the action named by BUTTON without waiting for it."
+KILLED   firstrun.el.in:28: F09 F15
+KILLED   firstrun.el.in:29: F09 F15
+KILLED   firstrun.el.in:31: F09 F15
+KILLED   firstrun.el.in:33: F09 F15
+SURVIVED firstrun.el.in:32:   "Fill the current buffer with one button per choice."
+KILLED   firstrun.el.in:35: F09 F15
+KILLED   firstrun.el.in:34: F09
+KILLED   firstrun.el.in:36: F09 F15
+KILLED   firstrun.el.in:37: F09 F15
+KILLED   firstrun.el.in:38: F09 F15
+KILLED   firstrun.el.in:40: F09
+KILLED   firstrun.el.in:39: F09
+KILLED   firstrun.el.in:41: F09
+KILLED   firstrun.el.in:42: F09 F15
+KILLED   firstrun.el.in:43: F09 F15
+KILLED   firstrun.el.in:44: F09 F15
+KILLED   firstrun.el.in:47: F09 F15
+SURVIVED firstrun.el.in:46: ;;;###autoload
+SURVIVED firstrun.el.in:48:   "Show the first-run menu in the selected frame."
+KILLED   firstrun.el.in:49: F09
+SURVIVED firstrun.el.in:50:   (when (fboundp 'menu-bar-mode) (menu-bar-mode -1))
+SURVIVED firstrun.el.in:51:   (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+KILLED   firstrun.el.in:53: F09
+KILLED   firstrun.el.in:52: F09
+KILLED   firstrun.el.in:54: F09
+KILLED   firstrun.el.in:55: F09
+KILLED   firstrun.el.in:56: F09 F15
+KILLED   firstrun.el.in:58: F09
+SURVIVED firstrun.el.in:60: ;;; larder-firstrun.el ends here
+KILLED   firstrun.html.in:1: F05
+KILLED   firstrun.html.in:2: G09
+SURVIVED firstrun.html.in:3: <!-- Copyright (C) 2026 the Larder software contributors. Template: gen.sh fills the list below. -->
+KILLED   firstrun.html.in:4: F05
+KILLED   firstrun.html.in:5: F05
+KILLED   firstrun.html.in:6: F05
+KILLED   firstrun.html.in:7: F05
+KILLED   firstrun.html.in:8: F05
+SURVIVED firstrun.html.in:9: <style>
+SURVIVED firstrun.html.in:10: :root {
+KILLED   firstrun.html.in:11: F07
+KILLED   firstrun.html.in:12: F07
+KILLED   firstrun.html.in:13: F07
+KILLED   firstrun.html.in:14: F07
+KILLED   firstrun.html.in:15: F07
+SURVIVED firstrun.html.in:16: }
+SURVIVED firstrun.html.in:17: body { margin: 0; padding: 2rem; background: var(--bg); color: var(--fg); font: 1.15rem/1.5 sans-serif; }
+SURVIVED firstrun.html.in:18: h1 { margin: 0 0 0.5rem; }
+SURVIVED firstrun.html.in:19: ul { list-style: none; margin: 1.5rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); gap: 1rem; }
+SURVIVED firstrun.html.in:20: li { display: flex; flex-direction: column; gap: 0.25rem; }
+SURVIVED firstrun.html.in:21: a.btn { display: block; padding: 1rem 1.25rem; background: var(--btn-bg); color: var(--btn-fg); text-decoration: none; font-weight: bold; font-size: 1.3rem; border-radius: 0.4rem; }
+SURVIVED firstrun.html.in:22: a.btn:hover, a.btn:focus { outline: 0.25rem solid var(--fg); }
+SURVIVED firstrun.html.in:23: .help { color: var(--help); }
+SURVIVED firstrun.html.in:24: .meta { margin-top: 2rem; color: var(--help); font-size: 0.9rem; }
+SURVIVED firstrun.html.in:25: </style>
+SURVIVED firstrun.html.in:26: </head>
+KILLED   firstrun.html.in:27: F05
+KILLED   firstrun.html.in:28: F05
+SURVIVED firstrun.html.in:29: <p>This stick keeps your files. Click a button to begin. If this is your first time, click the first one.</p>
+KILLED   firstrun.html.in:30: F05
+KILLED   firstrun.html.in:31: F03 F04 F15
+KILLED   firstrun.html.in:32: F05
+KILLED   firstrun.html.in:33: F05
+KILLED   firstrun.html.in:34: F05
+KILLED   firstrun.html.in:35: F05
+KILLED   author/render-edition.sh:9: A03
+SURVIVED author/render-edition.sh:10: LC_ALL=C
+SURVIVED author/render-edition.sh:11: export LC_ALL
+KILLED   author/render-edition.sh:13: A03
+KILLED   author/render-edition.sh:14: A03
+KILLED   author/render-edition.sh:15: A01 A02 A03 A04 A06
+KILLED   author/render-edition.sh:16: A03
+KILLED   author/render-edition.sh:17: A03
+KILLED   author/render-edition.sh:19: F14 A01 A02 A03 A04 A06
+KILLED   author/render-edition.sh:20: A01 A02 A03 A04 A06
+KILLED   author/render-edition.sh:21: A03
+KILLED   author/render-edition.sh:22: F14 A01 A02 A03 A04 A06
+KILLED   author/render-edition.sh:23: A03
+KILLED   author/render-edition.sh:24: F14 A01 A02 A03 A04 A06
+KILLED   author/render-edition.sh:25: A02 A04 A06
+KILLED   author/render-edition.sh:26: F14 A01 A02 A03 A04 A06
+KILLED   author/render-edition.sh:28: A01 A02 A03 A04 A06
+KILLED   author/render-edition.sh:29: A01 A02 A03 A04 A06
+KILLED   author/render-edition.sh:30: A01 A02 A03 A04 A06
+KILLED   author/render-edition.sh:31: A01 A02 A03 A04 A06
+KILLED   author/render-edition.sh:32: A01 A02 A03 A04 A06
+KILLED   author/render-edition.sh:34: A01 A02 A03 A04 A06
+KILLED   author/render-edition.sh:35: F14 A01 A02 A03 A04 A06
+KILLED   author/render-edition.sh:36: F14 A01 A02 A03 A04 A06
+KILLED   author/render-edition.sh:37: A02 A04
+KILLED   author/render-edition.sh:38: A02
+KILLED   author/render-edition.sh:39: F14 A01 A02 A03 A04 A06
+KILLED   author/render-edition.sh:40: A01 A02 A03 A04 A06
+KILLED   author/render-edition.sh:41: A01 A02 A04 A06
+KILLED   author/render-edition.sh:42: F14 A01 A02 A03 A04 A06
+KILLED   author/render-edition.sh:43: F14 A01 A02 A03 A04 A06
+KILLED   author/render-edition.sh:45: F14 A01 A02 A04 A06
+KILLED   author/render-edition.sh:46: A03
+KILLED   author/render-edition.sh:47: A03
+KILLED   author/render-edition.sh:48: F14 A01 A02 A03 A04 A06
+KILLED   author/render-edition.sh:49: A01 A02 A04 A06
+SURVIVED author/render-edition.sh:50: echo "render-edition: wrote $out/PERMISSION.md (LEGAL_REVIEW=$review)" >&2
+SURVIVED larder-open.in:11: set -eu
+SURVIVED larder-open.in:12: LC_ALL=C
+SURVIVED larder-open.in:13: export LC_ALL
+SURVIVED larder-open.in:14: set -f
+KILLED   larder-open.in:16: F11
+KILLED   larder-open.in:17: F10 F11 F12
+KILLED   larder-open.in:18: F10
+KILLED   larder-open.in:19: F10 F11 F12 F14
+SURVIVED larder-open.in:20:     ''|[!a-z]*|*[!a-z0-9-]*) echo "larder-open: not an action name" >&2; exit 64 ;;
+KILLED   larder-open.in:21: F10 F11 F12 F14
+KILLED   larder-open.in:24: F10 F11 F12 F14
+KILLED   larder-open.in:25: F10 F11 F12 F14
+SURVIVED larder-open.in:26:         list=
+KILLED   larder-open.in:27: F10
+KILLED   larder-open.in:28: F10
+KILLED   larder-open.in:29: F10
+KILLED   larder-open.in:30: F10 F11 F12 F14
+KILLED   larder-open.in:31: F10 F11 F12 F14
+KILLED   larder-open.in:33: F12
+KILLED   larder-open.in:34: F12
+KILLED   larder-open.in:35: F10 F11 F12 F14
+KILLED   larder-open.in:36: F12
+KILLED   larder-open.in:37: F12
+KILLED   larder-open.in:38: F10 F11 F12 F14
+KILLED   larder-open.in:40: F10 F11 F12 F14
+KILLED   larder-open.in:41: F10 F12 F13
+KILLED   larder-open.in:42: F11
+KILLED   larder-open.in:43: F10 F11 F12 F14

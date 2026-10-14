@@ -1,0 +1,44 @@
+# Patch set P1–P5 against ALPHAv0.1.2.md (offered upstream; local copy = drop + these)
+# Semantic patches (prose diffs), minted from the 2026-07-08 eclipse pass.
+# Upstream law is mint-never-edit: these propose content for a v0.1.3 mint,
+# they do not edit v0.1.2, which stands on the record.
+
+## P1 — §3 axis 4 (verification posture)
+- OLD: "Verify the **channel** (hash the message); trust the agent's agency."
++ NEW: "Verify the **channel** (hash the message); default intent-trust in
++ the agent's agency. The verification floor belongs to the ARTIFACT CLASS:
++ a peer's *claims* weigh as keeper-backed word, a peer's *code* (or any
++ executable payload) still gets content review from any source — see
++ delegate posture, which applies to artifacts, not only to delegates."
+
+## P2 — §7 header + table split
+- OLD: "map, nearly one-to-one, onto problems ..."
++ NEW: "map onto problems ... — four rows strongly (same mechanism or same
++ control, independently reached), three adjacently (same spirit, different
++ layer)."
++ Split table: STRONG = input-never-authority/card-injection,
++ journaling/observability, consent-gates/fine-grained-authz,
++ receipts/message-integrity. ADJACENT = secrets/confidential-computing,
++ keeper-cap/agent-sprawl, hospitality/name-spoofing (with P4 caveat).
++ Add to STRONG row 1: A2A v1.0 ships **Signed Agent Cards** (LF press
++ 2026-04-09) — the industry's own arrival at pinned-identity verification.
+
+## P3 — §7 citation label
+- OLD: "the 2026 agent-security literature" (covering McKinsey)
++ NEW: distinguish "security literature (protocol threat models, AIUC-1)"
++ from "industry analysis (McKinsey's five agent risks)".
+
+## P4 — §7 name-spoofing row caveat
++ ADD: "Caveat, named for the record: the wire client itself presents a
++ browser User-Agent to pass Cloudflare on the relay (disclosed in-code,
++ overridable, keeper's own site). Until retired (honest UA + relay-side
++ allowlist), the garden answers *agent* identity-spoofing while practicing
++ a disclosed *transport* masquerade; the row is claimed with that debt on
++ the books."
+
+## P5 — §2 scope note
++ ADD after the table: "Scope: this ontology classifies standing ON THE
++ WIRE. A keeper's human collaborator (their own trust root, not an agent,
++ not this garden's keeper) has no square here by construction; if such a
++ colleague ever takes wire standing, the ontology owes them one —
++ predicted extension, same accountability axis."

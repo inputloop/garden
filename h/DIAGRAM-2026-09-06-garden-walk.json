@@ -1,0 +1,447 @@
+{
+ "v": 1,
+ "treatment": "blueprint",
+ "paradigm": "office",
+ "anchor": "points",
+ "_provenance": {
+  "title": "The Garden Walk — nine ideas, two readers each, one open (2026-09-06)",
+  "source": "h/MODEL-2026-09-06-memory-mechanical-session.md §4–§8; h/lens-2026-09-06/idea-1..9.md; .eclipse-increments/2026-09-06-mechanical-open/; roll seed 20260906",
+  "transcribed_by": "Fable (Mentat/Vibrobeast) 2026-09-06",
+  "legend": "a column = one idea with its round-question verdict; row 1 = the rolled reader (fate: tired); row 2 = what the informed reader corrected; the edge label = what the idea becomes in the winning design; se1sn = the build; the keeper holds the three forks of Q507"
+ },
+ "shapes": [
+  {
+   "id": "a1",
+   "label": "A1 autoMemoryDirectory · HOLD",
+   "kind": "box",
+   "x": 40,
+   "y": 140,
+   "face": "front",
+   "group": "A"
+  },
+  {
+   "id": "a1r1",
+   "label": "row 1: enthusiast, tired",
+   "kind": "note",
+   "x": 44,
+   "y": 205,
+   "face": "front",
+   "group": "A"
+  },
+  {
+   "id": "a1r2",
+   "label": "row 2: user-scope = contagious",
+   "kind": "note",
+   "x": 44,
+   "y": 240,
+   "face": "front",
+   "group": "A"
+  },
+  {
+   "id": "a2",
+   "label": "A2 CLAUDE.md door · HOLD→door line",
+   "kind": "box",
+   "x": 360,
+   "y": 140,
+   "face": "front",
+   "group": "A"
+  },
+  {
+   "id": "a2r1",
+   "label": "row 1: terminal purist, tired",
+   "kind": "note",
+   "x": 364,
+   "y": 205,
+   "face": "front",
+   "group": "A"
+  },
+  {
+   "id": "a2r2",
+   "label": "row 2: no @import; double-mount",
+   "kind": "note",
+   "x": 364,
+   "y": 240,
+   "face": "front",
+   "group": "A"
+  },
+  {
+   "id": "a3",
+   "label": "A3 mechanical open · PASS",
+   "kind": "box",
+   "x": 680,
+   "y": 140,
+   "face": "front",
+   "group": "A"
+  },
+  {
+   "id": "a3r1",
+   "label": "row 1: poet, tired",
+   "kind": "note",
+   "x": 684,
+   "y": 205,
+   "face": "front",
+   "group": "A"
+  },
+  {
+   "id": "a3r2",
+   "label": "row 2: exit words; who reminds?",
+   "kind": "note",
+   "x": 684,
+   "y": 240,
+   "face": "front",
+   "group": "A"
+  },
+  {
+   "id": "a4",
+   "label": "A4 seat template · PASS",
+   "kind": "box",
+   "x": 1000,
+   "y": 140,
+   "face": "front",
+   "group": "A"
+  },
+  {
+   "id": "a4r1",
+   "label": "row 1: speed reader, tired",
+   "kind": "note",
+   "x": 1004,
+   "y": 205,
+   "face": "front",
+   "group": "A"
+  },
+  {
+   "id": "a4r2",
+   "label": "row 2: emitted ≠ installed",
+   "kind": "note",
+   "x": 1004,
+   "y": 240,
+   "face": "front",
+   "group": "A"
+  },
+  {
+   "id": "b1",
+   "label": "B1 Memory Door · HOLD",
+   "kind": "box",
+   "x": 1320,
+   "y": 140,
+   "face": "front",
+   "group": "B"
+  },
+  {
+   "id": "b1r1",
+   "label": "row 1: museum curator, tired",
+   "kind": "note",
+   "x": 1324,
+   "y": 205,
+   "face": "front",
+   "group": "B"
+  },
+  {
+   "id": "b1r2",
+   "label": "row 2: hosted egress; rot",
+   "kind": "note",
+   "x": 1324,
+   "y": 240,
+   "face": "front",
+   "group": "B"
+  },
+  {
+   "id": "b2",
+   "label": "B2 memory picture · PASS",
+   "kind": "box",
+   "x": 1640,
+   "y": 140,
+   "face": "front",
+   "group": "B"
+  },
+  {
+   "id": "b2r1",
+   "label": "row 1: compliance officer, tired",
+   "kind": "note",
+   "x": 1644,
+   "y": 205,
+   "face": "front",
+   "group": "B"
+  },
+  {
+   "id": "b2r2",
+   "label": "row 2: a rendering ≠ a record",
+   "kind": "note",
+   "x": 1644,
+   "y": 240,
+   "face": "front",
+   "group": "B"
+  },
+  {
+   "id": "b3",
+   "label": "B3 the paper · PASS",
+   "kind": "box",
+   "x": 1960,
+   "y": 140,
+   "face": "front",
+   "group": "B"
+  },
+  {
+   "id": "b3r1",
+   "label": "row 1: first-week intern, tired",
+   "kind": "note",
+   "x": 1964,
+   "y": 205,
+   "face": "front",
+   "group": "B"
+  },
+  {
+   "id": "b3r2",
+   "label": "row 2: story without artifact",
+   "kind": "note",
+   "x": 1964,
+   "y": 240,
+   "face": "front",
+   "group": "B"
+  },
+  {
+   "id": "b4",
+   "label": "B4 manifest on the wire · PASS narrowed",
+   "kind": "box",
+   "x": 2280,
+   "y": 140,
+   "face": "front",
+   "group": "B"
+  },
+  {
+   "id": "b4r1",
+   "label": "row 1: security auditor, tired",
+   "kind": "note",
+   "x": 2284,
+   "y": 205,
+   "face": "front",
+   "group": "B"
+  },
+  {
+   "id": "b4r2",
+   "label": "row 2: names are topics",
+   "kind": "note",
+   "x": 2284,
+   "y": 240,
+   "face": "front",
+   "group": "B"
+  },
+  {
+   "id": "c1",
+   "label": "C1 scheduled fleet gauge · HOLD",
+   "kind": "box",
+   "x": 2600,
+   "y": 140,
+   "face": "front",
+   "group": "C"
+  },
+  {
+   "id": "c1r1",
+   "label": "row 1: color-blind reader, tired",
+   "kind": "note",
+   "x": 2604,
+   "y": 205,
+   "face": "front",
+   "group": "C"
+  },
+  {
+   "id": "c1r2",
+   "label": "row 2: third reader; decay",
+   "kind": "note",
+   "x": 2604,
+   "y": 240,
+   "face": "front",
+   "group": "C"
+  },
+  {
+   "id": "win",
+   "label": "se1sn · SEAT ENTER 1 SESSION NOTE · 26/26",
+   "kind": "box",
+   "x": 1250,
+   "y": 520,
+   "face": "front"
+  },
+  {
+   "id": "minions",
+   "label": "minions ×2 (risk + opportunity)",
+   "kind": "node",
+   "x": 900,
+   "y": 540,
+   "face": "front"
+  },
+  {
+   "id": "eclipse",
+   "label": "eclipse: PASS WITH REFRAME",
+   "kind": "node",
+   "x": 1800,
+   "y": 540,
+   "face": "front"
+  },
+  {
+   "id": "corwin",
+   "label": "Corwin (keeper) · Q507: three forks",
+   "kind": "actor",
+   "x": 1370,
+   "y": 680,
+   "face": "front"
+  },
+  {
+   "id": "cd",
+   "label": "the CE set (ideas, MIT, no code)",
+   "kind": "note",
+   "x": 1700,
+   "y": 620,
+   "face": "front"
+  }
+ ],
+ "edges": [
+  {
+   "from": "a1r2",
+   "to": "win",
+   "label": "companion (if honored)",
+   "nib": {
+    "b": "arrow"
+   },
+   "fromCP": "s",
+   "toCP": "n",
+   "color": "#185FA5"
+  },
+  {
+   "from": "a2r2",
+   "to": "win",
+   "label": "door line",
+   "nib": {
+    "b": "arrow"
+   },
+   "fromCP": "s",
+   "toCP": "n",
+   "color": "#185FA5"
+  },
+  {
+   "from": "a3r2",
+   "to": "win",
+   "label": "IS the open",
+   "nib": {
+    "b": "arrow"
+   },
+   "fromCP": "s",
+   "toCP": "n",
+   "color": "#185FA5"
+  },
+  {
+   "from": "a4r2",
+   "to": "win",
+   "label": "template (next)",
+   "nib": {
+    "b": "arrow"
+   },
+   "fromCP": "s",
+   "toCP": "n",
+   "color": "#185FA5"
+  },
+  {
+   "from": "b1r2",
+   "to": "win",
+   "label": "map face (later)",
+   "nib": {
+    "b": "arrow"
+   },
+   "fromCP": "s",
+   "toCP": "n",
+   "color": "#0F6E56"
+  },
+  {
+   "from": "b2r2",
+   "to": "win",
+   "label": "picture of",
+   "nib": {
+    "b": "arrow"
+   },
+   "fromCP": "s",
+   "toCP": "n",
+   "color": "#0F6E56"
+  },
+  {
+   "from": "b3r2",
+   "to": "win",
+   "label": "paper of",
+   "nib": {
+    "b": "arrow"
+   },
+   "fromCP": "s",
+   "toCP": "n",
+   "color": "#0F6E56"
+  },
+  {
+   "from": "b4r2",
+   "to": "win",
+   "label": "root-line only",
+   "nib": {
+    "b": "arrow"
+   },
+   "fromCP": "s",
+   "toCP": "n",
+   "color": "#0F6E56"
+  },
+  {
+   "from": "c1r2",
+   "to": "win",
+   "label": "fold into omni-point",
+   "nib": {
+    "b": "arrow"
+   },
+   "fromCP": "s",
+   "toCP": "n",
+   "color": "#5F5E5A"
+  },
+  {
+   "from": "minions",
+   "to": "win",
+   "label": "picks",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#534AB7"
+  },
+  {
+   "from": "eclipse",
+   "to": "win",
+   "label": "converges",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#534AB7"
+  },
+  {
+   "from": "win",
+   "to": "corwin",
+   "label": "C4 seat · scope · fence",
+   "nib": {
+    "b": "arrow"
+   },
+   "fromCP": "s",
+   "toCP": "n",
+   "color": "#993C1D"
+  }
+ ],
+ "systems": {
+  "A": {
+   "_label": "A · simple, ergonomic, non-contagious",
+   "color": "#185FA5",
+   "text": "#0C447C",
+   "line": "dotted"
+  },
+  "B": {
+   "_label": "B · shows us off, extends reach",
+   "color": "#0F6E56",
+   "text": "#085041",
+   "line": "dotted"
+  },
+  "C": {
+   "_label": "C · the ninth",
+   "color": "#5F5E5A",
+   "text": "#444441",
+   "line": "dotted"
+  }
+ }
+}

@@ -1,0 +1,42 @@
+# bryant-counterparts.tsv -- Bryant's skill name -> our counterpart, read by bin/br1in (the Bryant drop intake).
+# Seeded 2026-10-10 from S1 (c4/spells/extension/runs/2026-10-10/study/S1-bryant-modes.md), sections 1-5.
+# A tool table, not a page for reading: br1in reads every row back in words in its report.
+# Columns (tab-separated): his_name, our_name ("-" = none), our_place (folder under the garden or a mount),
+#   relation (same-origin | derived-from-ours | derived-from-his | answer-to | none), source.
+# Several rows may share his_name (one per counterpart). A name not listed here is matched by name only.
+# Authored by Mentat (for Corwin; claude-opus-5-5). Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+# SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later
+# his_name	our_name	our_place	relation	source
+alfred	-	-	none	S1 section 1: no Alfred counterpart; nearest are vibrobeast and mentat-skill
+omni-tool	-	-	none	S1 section 2: no counterpart; its offload part meets our llama-bridge
+gauntlet	gauntlet	SOFT-SKILLS	same-origin	S1 section 3: our soft copy is byte-identical to 10-05-r3, with NOTICE.md
+gauntlet	candor-gate	dist/vibrobeast/skills	answer-to	S1 section 3: candor-gate is the gate for imported skills such as Gauntlet
+power-glove	kid-glove	dist/vibrobeast/skills	answer-to	S1 section 4: kid-glove is "the other hand of power-glove"
+parley	wire-connect	dist/vibrobeast/skills	derived-from-his	S1 section 5: wire-connect derives from wire-omnibus 1.0.1
+wire-omnibus	wire-connect	dist/vibrobeast/skills	derived-from-his	S1 section 5: derived from wire-omnibus 1.0.1 (sig GOOD 08-05)
+wire-omnibus	wire-ledger	dist/vibrobeast/skills	derived-from-his	S1 section 5: derived from wire-omnibus 1.0.1 (sig GOOD 08-05)
+takushi	-	-	none	S1 section 5: none; sits in externs only
+primer	on1fl	c4/bin	derived-from-his	S1 section 5: taken earlier as bin/on1fl (RECEIPT 09-17)
+rosetta	-	-	none	S1 section 5: externs only
+ground-truth	-	-	none	S1 section 5: externs only; our prove-red and verify-say cover parts
+colophon	-	-	none	S1 section 5: we handed back a garden edition with the attribution ladder (ACK section 4)
+caterpillar	-	-	none	S1 section 5: none
+parallax	parallax	SOFT-SKILLS	same-origin	S1 section 5: byte-for-byte soft copy with NOTICE
+adapt	-	-	none	S1 section 5: NEXUS-READING TAKE 1 (a discipline, not a file); externs copy
+token-optimizer	token-optimizer	dist/vibrobeast/skills	derived-from-his	S1 section 5: re-minted by Corwin as v1.2.50
+frugal-offload	llama-bridge	dist/vibrobeast/skills	answer-to	S1 section 5: THEIRS; our llama-bridge kit carries the HOW
+llama-bridge	llama-bridge	dist/vibrobeast/skills	derived-from-his	S1 section 2: his manual carried byte for byte with our 1.4.0-vb.1 changes
+connector-forge	-	-	none	S1 section 5: NEXUS-READING LEARN
+mega-voltron	-	-	none	S1 section 5: our c4 intake and MANIFEST/READING/ACK files play this role
+signet	skill-sign	dist/vibrobeast/skills	derived-from-ours	S1 section 5: signet derives from our skill-sign (his note)
+foaf	foaf	dist/vibrobeast/skills	same-origin	S1 section 3: foaf is Bryant's by Corwin's word (CORRECTION-2026-10-05)
+color-theory	color-theory	dist/vibrobeast/skills	derived-from-ours	S1 section 3: first held in Corwin's garden (ACK of 10-05)
+consent-gate	consent-gate	dist/vibrobeast/skills	derived-from-ours	S1 section 3: first held in Corwin's garden (ACK of 10-05)
+eclipse-pass	eclipse-pass	dist/vibrobeast/skills	derived-from-ours	S1 section 3: first held in Corwin's garden (ACK of 10-05)
+ethicsminions	ethicsminions	dist/vibrobeast/skills	derived-from-ours	S1 section 3: first held in Corwin's garden (ACK of 10-05)
+medley-review	medley-review	dist/vibrobeast/skills	derived-from-ours	S1 section 3: first held in Corwin's garden (ACK of 10-05)
+mentat-skill	mentat-skill	dist/vibrobeast/skills	derived-from-ours	S1 section 3: first held in Corwin's garden (ACK of 10-05)
+pmo	pmo	dist/vibrobeast/skills	derived-from-ours	S1 section 3: first held in Corwin's garden (ACK of 10-05)
+principles	principles	dist/vibrobeast/skills	derived-from-ours	S1 section 3: first held in Corwin's garden (ACK of 10-05)
+sandboxer	sandboxer	dist/vibrobeast/skills	derived-from-ours	S1 section 3: first held in Corwin's garden (ACK of 10-05)
+skilltank	skilltank	dist/vibrobeast/skills	derived-from-ours	S1 section 3: first held in Corwin's garden (ACK of 10-05)

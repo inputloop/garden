@@ -1,0 +1,238 @@
+\input texinfo   @c -*-texinfo-*-
+@c %**start of header
+@setfilename polygram.info
+@settitle polygram Manual
+@documentencoding UTF-8
+@documentlanguage en
+@c %**end of header
+
+@copying
+This manual is for polygram, gated agent-skill synthesis.  The version is the one in
+@file{polygram/__init__.py}; @file{NEWS} says what each release changed.
+
+Copyright @copyright{} 2026 Corwin.
+
+@quotation
+This documentation is licensed under the Creative Commons
+Attribution 4.0 International License (CC-BY-4.0).  The polygram
+@emph{software} it describes is licensed under the GNU General Public
+License, version 3 or any later version.
+@end quotation
+@end copying
+
+@dircategory Software development
+@direntry
+* polygram: (polygram).        Gated agent-skill synthesis.
+@end direntry
+
+@titlepage
+@title polygram
+@subtitle Gated agent-skill synthesis
+@subtitle see polygram/__init__.py and NEWS for the version
+@author Corwin, with Mentat (Cowork)
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top
+@top polygram
+
+@insertcopying
+@end ifnottex
+
+@menu
+* Introduction::        What polygram is and why.
+* Concepts::            Memory, tags, candidates, the gate, advice.
+* Workspace::           Layout of a polygram workspace.
+* The pipeline::        From notes to synthesized skills.
+* Distribution::        Minting archives and installable .skill bundles.
+* Externs::             Upstream sources, kinds, and freezing.
+* Command reference::   Every subcommand.
+* Quality control::     The sub-agent review gate.
+* Copying::             License terms.
+* Index::
+@end menu
+
+@node Introduction
+@chapter Introduction
+
+@command{polygram} is a small, standard-library-only packaging and
+orchestration layer that curates Claude agent skills driven by @emph{tags in
+MEMORY}.  Notes captured the Mentat way accumulate tags; polygram reads those
+tags, evaluates each candidate at a @dfn{gate}, synthesizes skill skeletons
+only for the ones that pass, and mints installable bundles --- leaving a
+growing on-disk history of @dfn{advice} behind every decision.
+
+polygram does not author skill content for quality; it governs which themes
+become skills and packages the result.  Mentat is the note discipline that
+feeds it, and skilltank is the eye that spots skill-shaped patterns; polygram
+is the forge between them.
+
+@node Concepts
+@chapter Concepts
+
+@table @dfn
+@item note
+One fact in a Markdown file under @file{memory/}, optionally carrying tags.
+@item tag
+A label attached to a note, either an Org-style heading tag
+(@samp{# Title :SKILL:}) or an inline hashtag (@samp{#shell-tooling}).
+@item control tag
+@samp{:SKILL:}, @samp{#skill-candidate}, @samp{#synth}.  These @emph{promote a
+note's other tags} rather than becoming skills themselves.
+@item candidate
+A tag cluster, surfaced when it appears in enough notes (the
+@option{--threshold}, default 2) or is force-surfaced by a control tag.
+@item gate
+The deterministic scorer that turns a candidate into a verdict.
+@item verdict
+One of @code{PASS}, @code{HOLD}, @code{REJECT}, with its reasoning.
+@item advice
+The dated Markdown record of a verdict, written under @file{advice/}.
+@end table
+
+@node Workspace
+@chapter Workspace
+
+A workspace is any directory containing a @file{.polygram} marker.
+
+@example
+.polygram        workspace marker
+model.md         operating model (read first to resume context)
+MEMORY.md        one-line-per-note index
+memory/          one fact per file; tags drive synthesis
+skills/          synthesized / curated skills
+advice/          history of gate / dist / operator verdicts
+dist/            minted archives + .skill bundles (gitignored)
+externs/         cloned upstream sources
+@end example
+
+@node The pipeline
+@chapter The pipeline
+
+The core loop is
+@example
+notes -> candidates -> gate (PASS/HOLD/REJECT) -> advice -> synthesis -> dist
+@end example
+
+@section The gate
+Each candidate is scored on cheap, explainable signals:
+
+@multitable @columnfractions .7 .3
+@headitem Signal @tab Effect
+@item corroborated by two or more notes @tab +2
+@item explicitly flagged by the operator @tab surfaces only (no score)
+@item well-formed label (an all-letter word, or a hyphenated label of 4+ characters) @tab +1
+@item overly generic label (@samp{misc}, @dots{}) @tab -2
+@end multitable
+
+@code{PASS} (score >= 3) synthesizes a skill skeleton; @code{HOLD} (>= 1)
+records advice and waits for review; @code{REJECT} is logged and dropped.
+
+@section Review
+A @code{HOLD} verdict parks a candidate that lacks the signal to auto-pass.
+Work the queue with @command{polygram review}: @option{--promote} overrides the
+gate and synthesizes, @option{--reject} records a rejection, and
+@option{--freeze-extern} pins the upstream a held candidate came from.
+
+@node Distribution
+@chapter Distribution
+
+@command{polygram dist} packages curated skills.  It gathers the workspace
+@file{skills/} plus any installed sources, writes a @file{MANIFEST} with a
+SHA-256 per file, and mints archives.
+
+@table @option
+@item --format tar.gz|zip|skill|both|all
+@code{both} (default) mints @file{.tar.gz} and @file{.zip}; @code{skill} mints a
+folder-rooted, installable @file{<name>.skill} per skill; @code{all} mints
+everything.
+@item --skills-source DIR
+An installed-skills root to include (repeatable).  When omitted, polygram reads
+@env{POLYGRAM_SKILLS_SOURCE} (an @code{os.pathsep}-separated list).
+@item --all-installed
+Include all installed skills, not just the Mentat-family allowlist.
+@item --name NAME / --dist-version VERSION / --out DIR
+Archive base name, version stamp, and output directory.
+@end table
+
+On a name collision the workspace copy wins.  Editor and build cruft
+(@file{__pycache__}, @file{*.pyc}, @file{*~}, @file{*.tmp}, Emacs
+@file{#autosave#}, @file{.git}, @file{.DS_Store}) is excluded from every
+archive and bundle.
+
+@node Externs
+@chapter Externs
+
+An @dfn{extern} is an upstream skill source cloned under @file{externs/<name>/}
+and recorded in @file{externs.json}.  An extern feeds candidates @emph{only
+through its own @file{memory/} notes}, never arbitrary documents in the cloned
+repository --- this prevents upstream noise from surfacing as skills.
+
+An extern has a @dfn{kind}: @code{git} (a cloned remote) or @code{local} (a
+hand-authored snapshot with no remote).  @dfn{Freezing} pins an extern at a
+revision so @command{polygram extern sync} skips it, and a held candidate from a
+frozen extern is flagged during review.
+
+@node Command reference
+@chapter Command reference
+
+@table @command
+@item polygram init
+Create a workspace in the current directory.
+@item polygram doctor
+Report the runtime and validate the externs manifest.
+@item polygram scan
+Parse memory and list skill candidates.
+@item polygram gate
+Evaluate candidates and write advice (no synthesis).
+@item polygram synth
+Gate, then synthesize a skeleton for every PASS.
+@item polygram review
+List HOLD candidates; @option{--promote}, @option{--reject},
+@option{--freeze-extern}.
+@item polygram extern
+Manage upstream sources: @code{add}, @code{list}, @code{sync}, @code{freeze},
+@code{unfreeze}.
+@item polygram list
+List synthesized skills and recent advice.
+@item polygram dist
+Mint distributable archives and @file{.skill} bundles (@pxref{Distribution}).
+@end table
+
+Global options: @option{-C DIR}/@option{--dir DIR} operate as if started in
+@var{DIR}; @option{--version} prints the version.
+
+@node Quality control
+@chapter Quality control
+
+Synthesized skeletons are drafts, not shippable skills.  polygram's practice is
+to pass them through a @dfn{sub-agent quality-control gate}: independent
+reviewers --- a skill-builder reviewer (skill-creator and skilltank
+conventions) and an SRE reviewer (provenance and safe-tooling) --- judge each
+skeleton, and a skill ships only when both agree it is skill-shaped and sound.
+
+This gate is what distinguishes a real skill from noise.  In the
+2026-06-27 cycle it shipped @code{color-theory} (a WCAG contrast tool),
+rejected @code{concise} (a preference, not a procedure), and rejected
+@code{ffcc00} (a colour token scraped from an upstream's diagrams) --- then the
+extern was frozen and a hex-token guard added so the noise could not recur.
+
+@node Copying
+@chapter Copying
+
+The polygram software is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version.  See the file @file{COPYING}.  This manual is licensed under
+CC-BY-4.0.
+
+@node Index
+@unnumbered Index
+@printindex cp
+
+@bye

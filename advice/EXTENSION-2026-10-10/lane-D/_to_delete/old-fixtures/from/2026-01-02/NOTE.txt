@@ -1,0 +1,1 @@
+Detached note from the fixture keeper; not covered by SHA256SUMS on purpose.

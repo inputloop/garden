@@ -1,0 +1,937 @@
+# polygram -- tests for the minted plugin.
+# Copyright (C) 2026 Corwin <mplscorwin@gmail.com>.  GPL-3.0-or-later.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+# This file is part of polygram.  polygram is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later version.  It is
+# distributed WITHOUT ANY WARRANTY; see <https://www.gnu.org/licenses/>.
+"""Mint the plugin, unzip it, and talk to its servers the way the app will.
+
+The point of this file is that it does NOT import the servers from the source
+tree.  It unpacks ``dist/vibrobeast.plugin`` into a scratch directory, builds
+the launch exactly as ``.mcp.json`` says the app will (``${CLAUDE_PLUGIN_ROOT}``
+substituted in ``args``, and NO ``env`` -- see the desktop's reserved-name rule
+below), launches the server as a subprocess, and speaks JSON-RPC to its stdin.
+
+That is the difference between "the code works" and "the plugin works", and
+they are two representations of one truth that can split silently: a server
+that runs fine from the source tree and cannot start from inside the bundle is
+the single most likely way a first install fails.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+import unittest
+import zipfile
+from pathlib import Path
+
+from polygram import dist, plugin
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+OPEN = {"jsonrpc": "2.0", "id": 0, "method": "tools/call",
+        "params": {"name": "seat_open", "arguments": {"create": True}}}
+
+
+def _rpc(server_dir: Path, server: str, calls: list[dict],
+         env_extra: dict | None = None) -> list[dict]:
+    """Speak JSON-RPC to a server launched exactly as .mcp.json describes."""
+    # Apply the env the plugin's OWN .mcp.json declares, with
+    # ${CLAUDE_PLUGIN_ROOT} substituted the way the app does. Hand-building an
+    # env here would test a configuration nobody ships: an earlier version set
+    # only PYTHONPATH, so PYTHONDONTWRITEBYTECODE was declared in the manifest
+    # and never exercised.
+    env = dict(os.environ)
+    env.pop("MENTCACHED_SEAT", None)
+    env.pop("PERSONA_ROOT", None)
+    env.pop("PYTHONPATH", None)   # the app sets none; the source tree must not leak in
+    cfg = json.loads((server_dir / ".mcp.json").read_text(encoding="utf-8"))["mcpServers"]
+    sdef = cfg[server]
+    for k, v in (sdef.get("env") or {}).items():
+        v = v.replace("${CLAUDE_PLUGIN_ROOT}", str(server_dir))
+        if v.startswith("${") and v.endswith("}"):
+            continue            # an unset passthrough: leave it unset
+        env[k] = v
+    env.update(env_extra or {})
+    # The argv is the config's own, with the one substitution the app makes; only the
+    # interpreter is replaced, by the one running this test, so the test does not depend on
+    # a `python3` being on PATH here.
+    args = [a.replace("${CLAUDE_PLUGIN_ROOT}", str(server_dir)) for a in sdef["args"]]
+    inp = "".join(json.dumps(c) + "\n" for c in calls)
+    proc = subprocess.run(
+        [sys.executable, *args],
+        input=inp, capture_output=True, text=True, encoding="utf-8", env=env, timeout=60,
+        cwd=str(server_dir))
+    if proc.returncode != 0:
+        raise AssertionError(f"server exited {proc.returncode}\n{proc.stderr}")
+    return [json.loads(ln) for ln in proc.stdout.splitlines() if ln.strip()]
+
+
+def _mk(p: Path) -> Path:
+    p.mkdir(parents=True, exist_ok=True)
+    return p
+
+
+def _text(reply: dict) -> str:
+    return reply["result"]["content"][0]["text"]
+
+
+class MintedPlugin(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls._td = tempfile.TemporaryDirectory()
+        out = Path(cls._td.name) / "dist"
+        out.mkdir()
+        skills = dist.collect(ROOT / "skills", include_workspace=True)
+        cls.res = plugin.mint_plugin(out, skills, source_root=ROOT)
+        cls.unpacked = Path(cls._td.name) / "installed"
+        with zipfile.ZipFile(cls.res.archive) as zf:
+            zf.extractall(cls.unpacked)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._td.cleanup()
+
+    # ------------------------------------------------------------- shape
+    def test_it_validates(self):
+        self.assertEqual(plugin.validate(self.res.root), [])
+        self.assertEqual(self.res.problems, [])
+
+    def test_manifest_is_valid_json_with_a_kebab_name(self):
+        mf = json.loads((self.unpacked / ".claude-plugin" / "plugin.json")
+                        .read_text(encoding="utf-8"))
+        self.assertEqual(mf["name"], "vibrobeast")
+        self.assertEqual(mf["license"], "GPL-3.0-or-later")
+        self.assertEqual(mf["mcpServers"], "./.mcp.json")
+
+    def test_every_skill_has_a_skill_md(self):
+        for d in (self.unpacked / "skills").iterdir():
+            if d.is_dir():
+                self.assertTrue((d / "SKILL.md").is_file(), d.name)
+
+    def test_the_three_servers_are_wired_through_the_launcher_with_no_env(self):
+        """The shape the desktop will prepare (2026-09-23).
+
+        RECEIPT, from %LOCALAPPDATA%\\Claude\\Logs\\main*.log on avalon:
+            [PluginMcpHostConfig] Plugin "plugin_019U3bNQkGTiXZ6scgwqCx7c" server
+            "mentcached": failed to build host proxy target: env declares
+            reserved variable name "PYTHONPATH"
+        That line is the whole of `not_started / could_not_prepare`. So: the
+        launcher is named through ${CLAUDE_PLUGIN_ROOT} in args, where the
+        plugin format documents that variable, and there is no env key at all.
+        """
+        cfg = json.loads((self.unpacked / ".mcp.json").read_text(encoding="utf-8"))["mcpServers"]
+        self.assertEqual(sorted(cfg), ["mentcached", "persona", "skillx"])
+        for name, sdef in cfg.items():
+            self.assertNotIn("env", sdef, f"{name}: an env key is one the desktop has to prepare")
+            self.assertEqual(sdef["args"][-2:],
+                             ["${CLAUDE_PLUGIN_ROOT}/servers/launch.py", name], name)
+        self.assertTrue((self.unpacked / "servers" / "launch.py").is_file())
+
+    def test_the_reserved_name_cannot_come_back(self):
+        """A regression guard with the failure's own words in it: no server may
+        declare PYTHONPATH, and validate() must say so if one does."""
+        cfg_path = self.unpacked / ".mcp.json"
+        cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+        for name, sdef in cfg["mcpServers"].items():
+            self.assertNotIn("PYTHONPATH", sdef.get("env") or {}, name)
+        import shutil, tempfile as _tf
+        with _tf.TemporaryDirectory() as td:
+            copy = Path(td) / "p"
+            shutil.copytree(self.unpacked, copy)
+            bad = json.loads(cfg_path.read_text(encoding="utf-8"))
+            bad["mcpServers"]["mentcached"]["env"] = {"PYTHONPATH": "${CLAUDE_PLUGIN_ROOT}/servers"}
+            (copy / ".mcp.json").write_text(json.dumps(bad, indent=2), encoding="utf-8", newline="\n")
+            problems = plugin.validate(copy)
+            self.assertTrue(any("PYTHONPATH" in pb and "reserved" in pb for pb in problems),
+                            problems)
+
+    def test_manifest_hashes_every_shipped_file(self):
+        lines = [ln for ln in (self.unpacked / "MANIFEST").read_text(encoding="utf-8").splitlines()
+                 if ln.strip()]
+        on_disk = {f"./{p.relative_to(self.unpacked).as_posix()}"
+                   for p in self.unpacked.rglob("*")
+                   if p.is_file() and p.name != "MANIFEST"
+                   and "__pycache__" not in p.parts}
+        listed = {ln.split("  ", 1)[1] for ln in lines}
+        self.assertEqual(listed, on_disk)
+
+    def test_the_plugin_never_writes_bytecode_into_itself(self):
+        """__pycache__ is the one directory python executes without being
+        asked, so the plugin is configured never to create one -- which lets
+        check.sh treat any .pyc as hostile instead of tolerating it."""
+        # The promise used to be an env line; it is now the launcher's own first act
+        # (sys.dont_write_bytecode = True), which is why the run below is the witness.
+        import shutil, tempfile as _tf
+        with _tf.TemporaryDirectory() as td:
+            copy = Path(td) / "p"
+            shutil.copytree(self.unpacked, copy)
+            for junk in copy.rglob("__pycache__"):
+                shutil.rmtree(junk)
+            _rpc(copy, "mentcached",
+                 [{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}])
+            self.assertEqual([], [str(p) for p in copy.rglob("__pycache__")],
+                             "a server run wrote bytecode into the plugin")
+            proc = subprocess.run(["sh", str(copy / "check.sh")],
+                                  capture_output=True, text=True, encoding="utf-8", timeout=120)
+            self.assertEqual(proc.returncode, 0,
+                             f"stdout={proc.stdout}\nstderr={proc.stderr}")
+            self.assertIn("match MANIFEST", proc.stdout)
+            self.assertIn("does NOT", proc.stdout,
+                          "check.sh must say what it does not prove")
+
+    def test_check_sh_calls_a_planted_pyc_hostile(self):
+        import shutil, tempfile as _tf
+        with _tf.TemporaryDirectory() as td:
+            copy = Path(td) / "p"
+            shutil.copytree(self.unpacked, copy)
+            for junk in copy.rglob("__pycache__"):
+                shutil.rmtree(junk)
+            pc = copy / "servers" / "polygram" / "mcp" / "__pycache__"
+            pc.mkdir(parents=True)
+            (pc / "store.cpython-311.pyc").write_bytes(b"\x00" * 32)
+            proc = subprocess.run(["sh", str(copy / "check.sh")],
+                                  capture_output=True, text=True, encoding="utf-8", timeout=120)
+            self.assertEqual(proc.returncode, 1, proc.stdout)
+            self.assertIn("UNLISTED", proc.stdout)
+            self.assertIn("hostile", proc.stdout)
+
+    def test_check_sh_sees_files_nested_beside_a_lookalike_name(self):
+        """The skips are anchored to the plugin root: an earlier version let
+        anything called check.sh or MANIFEST anywhere in the tree go unseen."""
+        import shutil, tempfile as _tf
+        with _tf.TemporaryDirectory() as td:
+            copy = Path(td) / "p"
+            shutil.copytree(self.unpacked, copy)
+            for junk in copy.rglob("__pycache__"):
+                shutil.rmtree(junk)
+            (copy / "servers" / "check.sh").write_text("#!/bin/sh\necho gotcha\n", encoding="utf-8", newline="")
+            (copy / "servers" / "MANIFEST").write_text("nope\n", encoding="utf-8", newline="")
+            proc = subprocess.run(["sh", str(copy / "check.sh")],
+                                  capture_output=True, text=True, encoding="utf-8", timeout=120)
+            self.assertEqual(proc.returncode, 1, proc.stdout)
+            self.assertIn("./servers/check.sh", proc.stdout)
+            self.assertIn("./servers/MANIFEST", proc.stdout)
+
+    def test_check_sh_handles_a_path_with_a_space(self):
+        import shutil, tempfile as _tf
+        from polygram import dist as _dist
+        with _tf.TemporaryDirectory() as td:
+            skills = _dist.collect(ROOT / "skills")
+            res = plugin.mint_plugin(Path(td), skills, source_root=ROOT)
+            spaced = res.root / "skills" / "two columns note.md"
+            spaced.write_text("hello\n", encoding="utf-8", newline="")
+            res2 = plugin.mint_plugin(Path(td) / "b", skills, source_root=ROOT)
+            (res2.root / "a file with spaces.txt").write_text("x\n", encoding="utf-8", newline="")
+            # Re-mint so the MANIFEST carries the spaced path, then check.
+            res3 = plugin.mint_plugin(Path(td) / "c", skills, source_root=ROOT)
+            (res3.root / "a file with spaces.txt").write_text("x\n", encoding="utf-8", newline="")
+            import hashlib
+            h = hashlib.sha256(b"x\n").hexdigest()
+            mf = res3.root / "MANIFEST"
+            mf.write_text(mf.read_text(encoding="utf-8") + f"{h}  ./a file with spaces.txt\n", newline="")
+            proc = subprocess.run(["sh", str(res3.root / "check.sh")],
+                                  capture_output=True, text=True, encoding="utf-8", timeout=120)
+            self.assertNotIn("MISSING", proc.stdout)
+            self.assertEqual(proc.returncode, 0, proc.stdout)
+
+    def test_check_sh_goes_red_on_a_changed_byte(self):
+        import shutil, tempfile as _tf
+        with _tf.TemporaryDirectory() as td:
+            copy = Path(td) / "p"
+            shutil.copytree(self.unpacked, copy)
+            r = copy / "README.md"
+            r.write_text(r.read_text(encoding="utf-8") + "tampered\n", newline="")
+            proc = subprocess.run(["sh", str(copy / "check.sh")],
+                                  capture_output=True, text=True, encoding="utf-8", timeout=120)
+            self.assertEqual(proc.returncode, 1, proc.stdout)
+            self.assertIn("CHANGED", proc.stdout)
+
+    def test_every_module_the_servers_import_actually_ships(self):
+        """The general form of a real miss: `chainspec.py` was added to the
+        servers and not to the ship list, so the bundle imported a module that
+        was not in it. Listing files by hand is the bug; walking the imports
+        is the check."""
+        import ast
+        srv = self.unpacked / "servers"
+        shipped = {p.relative_to(srv).as_posix()
+                   for p in srv.rglob("*.py")}
+        missing = []
+        for p in sorted(srv.rglob("*.py")):
+            tree = ast.parse(p.read_text(encoding="utf-8"), filename=str(p))
+            pkg = p.relative_to(srv).parent.as_posix().replace("/", ".")
+            for node in ast.walk(tree):
+                if isinstance(node, ast.ImportFrom) and node.level:
+                    base = pkg.rsplit(".", node.level - 1)[0] if node.level > 1 else pkg
+                    root = (node.module or "")
+                    for alias in node.names:
+                        cand = f"{base}.{root}.{alias.name}".strip(".").replace("..", ".")
+                        rel = cand.replace(".", "/") + ".py"
+                        modrel = (f"{base}.{root}" if root else base).replace(".", "/") + ".py"
+                        if rel not in shipped and modrel not in shipped:
+                            missing.append(f"{p.name}: from {'.'*node.level}{root} "
+                                           f"import {alias.name}")
+        # Every relative import must resolve to a shipped module or a shipped
+        # name inside one; anything left is a module we forgot to carry.
+        really = [m for m in missing
+                  if not any(m.split("import ")[1].strip() in
+                             (q.stem for q in srv.rglob("*.py")) for _ in (0,))]
+        self.assertEqual([], [m for m in missing if "chainspec" in m], missing)
+
+    def test_the_third_reader_ships_and_runs_from_the_bundle(self):
+        pl = self.unpacked / "servers" / "bin" / "dl2-verify.pl"
+        self.assertTrue(pl.is_file(), "the Perl reader must ship: on a host "
+                        "with no sh it is the only second reader")
+        proc = subprocess.run(["perl", str(pl), "--prove-red"],
+                              capture_output=True, text=True, encoding="utf-8", timeout=120)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("prove-red PASS", proc.stdout)
+
+    def test_all_three_readers_agree_from_inside_the_bundle(self):
+        """The conformance suite runs against the source tree. This runs the
+        two shipped readers against a chain the SERVER wrote, inside the
+        installed bundle -- a different question."""
+        seat = Path(self._td.name) / "seat3"
+        _rpc(self.unpacked, "mentcached", [OPEN,
+             {"jsonrpc": "2.0", "id": 2, "method": "tools/call",
+              "params": {"name": "seat_append", "arguments": {
+                  "seam": "cross", "text": "one", "source": "them",
+                  "would_change": "x"}}},
+             {"jsonrpc": "2.0", "id": 3, "method": "tools/call",
+              "params": {"name": "seat_append", "arguments": {
+                  "seam": "cross", "text": "two", "source": "them",
+                  "would_change": "x"}}}],
+             {"MENTCACHED_SEAT": str(seat)})
+        d = seat / "notes" / "cross"
+        self.assertEqual(len(list(d.glob("g*.md"))), 2)
+        outs = {}
+        for label, cmd in (("sh", ["sh", str(self.unpacked / "servers" / "bin" / "dl2-verify.sh")]),
+                           ("perl", ["perl", str(self.unpacked / "servers" / "bin" / "dl2-verify.pl")])):
+            proc = subprocess.run(cmd + [str(d)], capture_output=True,
+                                  text=True, encoding="utf-8", timeout=60)
+            outs[label] = proc.stdout.strip()
+        self.assertEqual(outs["sh"], outs["perl"], outs)
+        self.assertTrue(outs["sh"].startswith("OK\t2"), outs)
+
+    def test_the_forge_cli_is_not_shipped(self):
+        """A plugin carrying a skill-minting pipeline it never runs is surface
+        with no use -- and gate/synth/review touch the workspace."""
+        for unwanted in ("cli.py", "gate.py", "synth.py", "review.py",
+                         "externs.py", "dist.py", "plugin.py"):
+            self.assertFalse((self.unpacked / "servers" / "polygram" / unwanted).exists(),
+                             f"{unwanted} should not ship in the plugin")
+
+    # -------------------------------------------------- it actually starts
+    def test_mentcached_initializes_from_inside_the_bundle(self):
+        [reply] = _rpc(self.unpacked, "mentcached",
+                       [{"jsonrpc": "2.0", "id": 1, "method": "initialize"}])
+        info = reply["result"]
+        self.assertEqual(info["serverInfo"]["name"], "mentcached")
+        self.assertEqual(info["protocolVersion"], "2024-11-05")
+
+    def test_all_three_list_their_tools(self):
+        for name, least in (("mentcached", 9), ("persona", 6), ("skillx", 4)):
+            [reply] = _rpc(self.unpacked, name,
+                           [{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}])
+            tools = reply["result"]["tools"]
+            self.assertGreaterEqual(len(tools), least, name)
+            for t in tools:
+                self.assertIn("description", t)
+                self.assertIn("inputSchema", t)
+
+    def test_a_round_trip_through_the_bundle_writes_reads_and_cites(self):
+        seat = Path(self._td.name) / "seat"
+        calls = [
+            {"jsonrpc": "2.0", "id": 1, "method": "initialize"},
+            {"jsonrpc": "2.0", "id": 2, "method": "tools/call",
+             "params": {"name": "seat_append", "arguments": {
+                 "seam": "the-two-columns",
+                 "text": "first-seen is written once; last-cited lives in a log.",
+                 "source": "them (Corwin, 2026-09-14)",
+                 "would_change": "a store where citing rewrote the note",
+                 "triggers": ["first seen", "last cited", "pressure"]}}},
+            {"jsonrpc": "2.0", "id": 3, "method": "tools/call",
+             "params": {"name": "seat_cite", "arguments": {
+                 "seam": "the-two-columns", "where": "this test"}}},
+            {"jsonrpc": "2.0", "id": 4, "method": "tools/call",
+             "params": {"name": "seat_read",
+                        "arguments": {"seam": "the-two-columns"}}},
+            {"jsonrpc": "2.0", "id": 5, "method": "tools/call",
+             "params": {"name": "seat_chain",
+                        "arguments": {"seam": "the-two-columns"}}},
+        ]
+        replies = _rpc(self.unpacked, "mentcached", [OPEN] + calls,
+                       {"MENTCACHED_SEAT": str(seat)})[1:]
+        self.assertEqual(len(replies), 5)
+
+        wrote = json.loads(_text(replies[1]))
+        self.assertEqual(wrote["gen"], 1)
+        self.assertEqual(wrote["mode"], "SEATED")
+
+        read = json.loads(_text(replies[3]))
+        self.assertEqual(read["pressure"], 1, "the citation moved pressure")
+        self.assertTrue(read["first_seen"].startswith("g0001-"))
+        self.assertIn("first-seen is written once", read["note"])
+
+        chain = json.loads(_text(replies[4]))
+        self.assertEqual(chain["chain"], "OK")
+        self.assertEqual(chain["verified_by"], "python+shell+perl",
+                         "all three readers must be reachable from the bundle")
+
+    def test_the_shell_verifier_ships_and_runs_from_the_bundle(self):
+        sh = self.unpacked / "servers" / "bin" / "dl2-verify.sh"
+        self.assertTrue(sh.is_file())
+        proc = subprocess.run(["sh", str(sh), "--prove-red"],
+                              capture_output=True, text=True, encoding="utf-8", timeout=60)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("prove-red PASS", proc.stdout)
+
+    def test_skillx_refuses_and_names_its_blockers(self):
+        replies = _rpc(self.unpacked, "skillx", [
+            {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+             "params": {"name": "skillx_offer",
+                        "arguments": {"skill": "x", "party": "y"}}}])
+        txt = _text(replies[0])
+        self.assertTrue(replies[0]["result"]["isError"])
+        for tok in ("B1", "B2", "B3", "ccspt", "Nothing was sent"):
+            self.assertIn(tok, txt)
+
+    def test_an_unreachable_seat_is_notvisible_not_a_quiet_substitute(self):
+        replies = _rpc(self.unpacked, "mentcached", [
+            {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+             "params": {"name": "seat_read", "arguments": {"seam": "x"}}}],
+            {"MENTCACHED_SEAT": "/nonexistent-seat-xyz/deeper/still"})
+        txt = _text(replies[0])
+        self.assertTrue(replies[0]["result"]["isError"])
+        self.assertIn("NOTVISIBLE", txt)
+        self.assertIn("no fallback was chosen for you", txt)
+        self.assertTrue(txt.startswith("[mode: NOTVISIBLE]"),
+                        f"an error result must carry the mode word: {txt[:80]}")
+
+    def test_every_mentcached_result_carries_the_mode_word(self):
+        seat = Path(self._td.name) / "seat2"
+        calls = [{"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                  "params": {"name": n, "arguments": a}}
+                 for n, a in (("seat_mode", {}), ("seat_list", {}),
+                              ("seat_index", {}), ("seat_buoyancy", {}),
+                              ("link_check", {"text": "see c4:/h/x.md"}))]
+        for r in _rpc(self.unpacked, "mentcached", [OPEN] + calls,
+                      {"MENTCACHED_SEAT": str(seat)}):
+            self.assertIn("mode", json.loads(_text(r)))
+
+    def test_persona_refuses_to_mint_an_absent_sheet(self):
+        proot = Path(self._td.name) / "personas"
+        proot.mkdir(parents=True, exist_ok=True)
+        replies = _rpc(self.unpacked, "persona", [
+            {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+             "params": {"name": "persona_resolve",
+                        "arguments": {"name": "nobody-at-all"}}}],
+            {"PERSONA_ROOT": str(proot)})
+        out = json.loads(_text(replies[0]))
+        self.assertIn("NOT SERVED", out["say"])
+        self.assertFalse((proot / "notes" / "nobody-at-all").exists())
+
+    def test_persona_byline_never_gives_the_persona_the_rights(self):
+        replies = _rpc(self.unpacked, "persona", [
+            {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+             "params": {"name": "persona_byline",
+                        "arguments": {"name": "Mentat", "principal": "Corwin Brust",
+                                      "owns": "rules"}}}],
+            {"PERSONA_ROOT": str(_mk(Path(self._td.name) / "p2"))})
+        out = json.loads(_text(replies[0]))
+        self.assertEqual(out["byline"], "Author: Mentat (for Corwin Brust)")
+        self.assertIn("Corwin Brust", out["rights"])
+        self.assertNotIn("Mentat", out["rights"])
+        self.assertEqual(out["split"],
+                         "Corwin Brust (rules), transcribed & formalized by Mentat")
+
+
+class TheZipKeepsExecuteBits(unittest.TestCase):
+    """F4 (audit 2026-09-27): the .plugin stored every entry as -rw-rw-rw- with a FAT
+    create_system, so an unzip dropped the execute bit and the documented
+    `scripts/skill-sign.sh ...` failed with Permission denied.  Every entry must be a Unix
+    entry: 0755 when it starts with "#!", 0644 otherwise."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls._td = tempfile.TemporaryDirectory()
+        out = Path(cls._td.name) / "dist"; out.mkdir()
+        skills = dist.collect(ROOT / "skills", include_workspace=True)
+        cls.res = plugin.mint_plugin(out, skills, source_root=ROOT)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._td.cleanup()
+
+    def test_every_entry_is_unix_with_the_mode_its_first_bytes_earn(self):
+        with zipfile.ZipFile(self.res.archive) as zf:
+            infos = zf.infolist()
+            self.assertTrue(infos)
+            for zi in infos:
+                want = 0o755 if zf.read(zi.filename)[:2] == b"#!" else 0o644
+                self.assertEqual(zi.create_system, 3, zi.filename)
+                self.assertEqual((zi.external_attr >> 16) & 0o777, want, zi.filename)
+
+    def test_the_signing_script_is_executable_in_the_zip(self):
+        with zipfile.ZipFile(self.res.archive) as zf:
+            zi = zf.getinfo("skills/skill-sign/scripts/skill-sign.sh")
+        self.assertEqual((zi.external_attr >> 16) & 0o777, 0o755)
+
+    @unittest.skipUnless(os.name == "posix" and shutil.which("unzip"), "needs POSIX + unzip")
+    def test_an_unzipped_script_runs_as_documented(self):
+        dest = Path(self._td.name) / "unzipped"
+        subprocess.run(["unzip", "-q", str(self.res.archive), "-d", str(dest)], check=True)
+        p = subprocess.run(["./scripts/skill-sign.sh", "help"], cwd=str(dest / "skills" / "skill-sign"),
+                           capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(p.returncode, 0, p.stderr)
+
+
+class CanonSkillsGetAnExpressManifest(unittest.TestCase):
+    """F2 (audit 2026-09-27): canon skills minted by reference (C4's dist/skills) shipped in the
+    plugin with no .skill-manifest, while the Makefile promised every unsigned skill carries an
+    express one.  The mint writes it into the PLUGIN tree -- never into the source tree -- in
+    the exact bytes skill-sign.sh's build_manifest would write."""
+
+    def setUp(self):
+        self._td = tempfile.TemporaryDirectory()
+        self.t = Path(self._td.name)
+        self.canon = self.t / "canon"
+        sk = self.canon / "x-canon"; (sk / "scripts").mkdir(parents=True)
+        (sk / "SKILL.md").write_bytes(b"---\r\nname: x-canon\r\ndescription: a fixture.  \r\n---\r\n\r\nbody\r\n\r\n")
+        (sk / "scripts" / "go.sh").write_bytes(b"#!/bin/sh\necho go\n")
+        (sk / "notes b.md").write_bytes(b"a file with a space\n")
+        own = self.canon / "y-signed"; own.mkdir()
+        (own / "SKILL.md").write_bytes(b"---\nname: y-signed\ndescription: has its own.\n---\n")
+        (own / ".skill-manifest").write_bytes(b"its own manifest\n")
+        out = self.t / "dist"; out.mkdir()
+        self.res = plugin.mint_plugin(out, [dist.SkillSrc("x-canon", sk, "installed"),
+                                            dist.SkillSrc("y-signed", own, "installed")],
+                                      source_root=ROOT)
+
+    def tearDown(self):
+        self._td.cleanup()
+
+    def test_a_canon_skill_ships_with_an_express_manifest(self):
+        self.assertTrue((self.res.root / "skills" / "x-canon" / ".skill-manifest").is_file())
+
+    def test_the_source_tree_is_never_written(self):
+        self.assertFalse((self.canon / "x-canon" / ".skill-manifest").exists())
+
+    def test_a_skill_that_carries_its_own_manifest_keeps_it(self):
+        self.assertEqual((self.res.root / "skills" / "y-signed" / ".skill-manifest").read_bytes(),
+                         b"its own manifest\n")
+
+    def test_the_whole_plugin_manifest_lists_it(self):
+        text = (self.res.root / "MANIFEST").read_text(encoding="utf-8")
+        self.assertIn("  ./skills/x-canon/.skill-manifest\n", text)
+
+    @unittest.skipUnless(shutil.which("sh") and shutil.which("sha256sum"), "needs sh + sha256sum")
+    def test_the_bytes_match_skill_sign_manifest(self):
+        # The second implementation: skill-sign.sh (POSIX sh + awk) on a copy of the source.
+        twin = self.t / "twin" / "x-canon"
+        shutil.copytree(self.canon / "x-canon", twin)
+        p = subprocess.run(["sh", str(ROOT / "skills" / "skill-sign" / "scripts" / "skill-sign.sh"),
+                            "manifest", str(twin)], capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertEqual((self.res.root / "skills" / "x-canon" / ".skill-manifest").read_bytes(),
+                         (twin / ".skill-manifest").read_bytes())
+
+
+class TheReadmeServesAStranger(unittest.TestCase):
+    """F5/F10 (audit 2026-09-27): the plugin's README named the author's own paths
+    (F:/claude/AS4CE/..., C:/msys64/...), tools the plugin does not ship, and had no Install,
+    Verify or what-it-reads-and-writes section.  A stranger with only the .plugin reads it."""
+
+    T = plugin._README
+
+    def test_no_host_paths_of_the_author(self):
+        for bad in ("F:/", "C:/", "AS4CE0001", "F:\\\\"):
+            self.assertNotIn(bad, self.T)
+
+    def test_it_has_install_verify_and_what_it_reads_and_writes(self):
+        for h in ("## Install", "## Verify", "## What it reads and writes"):
+            self.assertIn(h, self.T)
+        self.assertIn("ECE7 7CF4 17C7 6C1A CFCE  7C2B 5B61 3551 1580 F007", self.T)
+        self.assertIn("sh skills/skill-sign/scripts/skill-sign.sh verify skills/NAME", self.T)
+        self.assertIn("PRIVACY.md", self.T)
+
+    def test_every_unshipped_tool_is_marked(self):
+        for tool in ("bin/mt1pl", "bin/sp1rp", "bin/ss2gr", "bin/wd1nn", "bin/gd1ck"):
+            i = self.T.index(tool)
+            self.assertIn("not shipped", self.T[i:i + 120], tool)
+
+    def test_the_licence_line_names_the_writing(self):
+        self.assertIn("Every file not otherwise marked is GPL-3.0-or-later", self.T)
+        self.assertIn("see\nTERMS-OF-SERVICE.md for the writing", self.T)
+
+
+class AStaleMintNeverBlocksTheNextOne(unittest.TestCase):
+    """`make dist` on avalon, 2026-09-23: WinError 5 unlinking a read-only file copy2 had
+    preserved into the previous mint. POSIX never sees this, so the test plants the exact
+    shape -- a read-only file inside the tree the mint must clear -- and requires the mint to
+    clear it. On Windows this is the regression; here it is the witness that the handler runs."""
+
+    def test_a_read_only_file_in_the_old_mint_is_cleared(self):
+        import os, stat
+        with tempfile.TemporaryDirectory() as td:
+            old = Path(td) / "vibrobeast" / "skills" / "x"; old.mkdir(parents=True)
+            ro = old / "ro.md"; ro.write_text("stale", encoding="utf-8", newline="\n"); os.chmod(ro, stat.S_IREAD)
+            try:
+                plugin._rmtree_force(Path(td) / "vibrobeast")
+            finally:
+                if ro.exists():
+                    os.chmod(ro, stat.S_IWRITE | stat.S_IREAD)
+            self.assertFalse((Path(td) / "vibrobeast").exists())
+
+
+class TheLaunchConfigExpandsOnlyWhatItMust(unittest.TestCase):
+    """Every ${...} in .mcp.json is one more thing the host has to get right.
+
+    On 2026-09-16 all three servers on the keeper's own machine reported
+    `not_started / could_not_prepare`, with four env values that were pure
+    passthrough: ${MENTCACHED_SEAT}, ${MENTCACHED_JAIL}, ${MENTCACHED_BY},
+    ${PERSONA_ROOT}. They were never load-bearing -- a subprocess inherits its
+    parent's environment -- and _rpc above had to skip them to test anything.
+    This is the test that keeps them from coming back.
+    """
+
+    ALLOWED: set = set()   # 2026-09-23: nothing is allowed in env, because there is no env
+
+    def _cfg(self):
+        with tempfile.TemporaryDirectory() as td:
+            skills = dist.collect(ROOT / "skills")
+            res = plugin.mint_plugin(Path(td), skills, source_root=ROOT)
+            return json.loads((res.root / ".mcp.json")
+                              .read_text(encoding="utf-8"))["mcpServers"]
+
+    def test_no_env_value_is_a_bare_passthrough(self):
+        for name, sdef in self._cfg().items():
+            for k, v in (sdef.get("env") or {}).items():
+                if v in self.ALLOWED:
+                    continue
+                self.assertNotIn("${", v,
+                    f"{name}.env[{k}]={v!r} makes the launch depend on the "
+                    f"host expanding it; the server reads this variable from "
+                    f"the inherited environment instead")
+
+    def test_the_seat_variables_are_not_declared_at_all(self):
+        for name, sdef in self._cfg().items():
+            for gone in ("MENTCACHED_SEAT", "MENTCACHED_JAIL",
+                         "MENTCACHED_BY", "PERSONA_ROOT"):
+                self.assertNotIn(gone, sdef.get("env") or {}, f"{name}/{gone}")
+
+    def test_a_user_who_exports_the_variable_is_still_honoured(self):
+        """The whole justification for removing them: inheritance already works.
+
+        This is the second witness for the removal -- not that the key is
+        absent from the JSON (the test above), but that the behaviour the key
+        claimed to provide survives without it.
+        """
+        with tempfile.TemporaryDirectory() as td:
+            seat = Path(td) / "inherited-seat"
+            seat.mkdir()
+            skills = dist.collect(ROOT / "skills")
+            res = plugin.mint_plugin(Path(td) / "d", skills, source_root=ROOT)
+            out = _rpc(res.root, "mentcached",
+                       [{"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                         "params": {"name": "seat_mode", "arguments": {}}}],
+                       {"MENTCACHED_SEAT": str(seat)})
+            body = json.dumps(out)
+            self.assertIn(str(seat).replace("\\", "\\\\").strip("\\"),
+                          body.replace("\\\\", "\\"),
+                          f"the exported seat did not reach the server: {body[:400]}")
+
+
+class TheProbe(unittest.TestCase):
+    def test_a_command_that_is_not_there_is_reported_not_guessed(self):
+        why = plugin.probe_python("definitely-not-an-interpreter-xyz")
+        self.assertTrue(why)
+        self.assertIn("not found", why)
+
+    def test_a_command_that_is_not_python_is_rejected(self):
+        """`which` would say yes to this. Running it is what catches it --
+        the same shape as a Windows App Execution Alias."""
+        import shutil as _sh
+        for notpython in ("true", "echo"):
+            if _sh.which(notpython):
+                self.assertTrue(plugin.probe_python(notpython), notpython)
+                return
+            self.skipTest("no non-python command available to test with")
+
+    def test_auto_bakes_in_something_that_actually_runs(self):
+        with tempfile.TemporaryDirectory() as td:
+            skills = dist.collect(ROOT / "skills")
+            res = plugin.mint_plugin(Path(td), skills, source_root=ROOT,
+                                     python="auto")
+            cfg = json.loads((res.root / ".mcp.json")
+                             .read_text(encoding="utf-8"))["mcpServers"]
+            chosen = {s["command"] for s in cfg.values()}
+            self.assertEqual(len(chosen), 1)
+            self.assertEqual(plugin.probe_python(chosen.pop()), "")
+
+
+class TheInterpreterLine(unittest.TestCase):
+    def test_the_argv_probed_is_the_argv_baked(self):
+        """The property that was false for one release, and nothing said so.
+
+        probe_python ran ``py -3``; _mcp_json baked bare ``py`` with args
+        starting at ``-m``. So ``--python auto`` on a host where only the
+        launcher answers certified one command and shipped another -- the
+        launcher's default interpreter, untested. This test exists because
+        every test above passes a SINGLE-token spec, and single tokens are the
+        arm that cannot diverge. A line the suite routes around is where the
+        fault lives.
+        """
+        for spec in ("python3", "/mingw64/bin/python3", "py", "py -3"):
+            with self.subTest(spec=spec):
+                probed = plugin.python_argv(spec)
+                cfg = plugin._mcp_json(spec, ["mentcached"])["mcpServers"]["mentcached"]
+                baked = [cfg["command"], *cfg["args"]]
+                self.assertEqual(baked[:len(probed)], probed,
+                                 f"{spec!r}: probed {probed}, baked {baked[:len(probed)]}")
+                self.assertEqual(baked[len(probed):],
+                                 ["${CLAUDE_PLUGIN_ROOT}/servers/launch.py", "mentcached"])
+
+    def test_a_bare_py_is_never_baked_unqualified(self):
+        """`py` alone is the launcher picking for you; -3 is the whole point."""
+        self.assertEqual(plugin.python_argv("py"), ["py", "-3"])
+        cfg = plugin._mcp_json("py", ["mentcached"])["mcpServers"]["mentcached"]
+        self.assertEqual(cfg["command"], "py")
+        self.assertEqual(cfg["args"][0], "-3")
+
+    def test_a_single_token_spec_bakes_exactly_as_before(self):
+        """The fix must not move the common case by one byte."""
+        cfg = plugin._mcp_json("/mingw64/bin/python3", ["mentcached"])["mcpServers"]["mentcached"]
+        self.assertEqual(cfg["command"], "/mingw64/bin/python3")
+        self.assertEqual(cfg["args"], ["${CLAUDE_PLUGIN_ROOT}/servers/launch.py", "mentcached"])
+        self.assertNotIn("env", cfg)
+
+    def test_python_is_a_mint_time_choice(self):
+        with tempfile.TemporaryDirectory() as td:
+            out = Path(td)
+            skills = dist.collect(ROOT / "skills")
+            res = plugin.mint_plugin(out, skills, source_root=ROOT,
+                                     python="/mingw64/bin/python3")
+            cfg = json.loads((res.root / ".mcp.json").read_text(encoding="utf-8"))["mcpServers"]
+            for sdef in cfg.values():
+                self.assertEqual(sdef["command"], "/mingw64/bin/python3")
+            self.assertIn("/mingw64/bin/python3",
+                          (res.root / "README.md").read_text(encoding="utf-8"))
+
+    def test_a_bad_plugin_name_is_refused(self):
+        with tempfile.TemporaryDirectory() as td:
+            skills = dist.collect(ROOT / "skills")
+            for bad in ("Vibrobeast", "vibro beast", "vibro_beast"):
+                with self.assertRaises(ValueError, msg=bad):
+                    plugin.mint_plugin(Path(td), skills, source_root=ROOT, name=bad)
+
+    def test_missing_server_files_are_reported_not_silently_shipped(self):
+        with tempfile.TemporaryDirectory() as td:
+            empty = Path(td) / "empty-source"
+            empty.mkdir()
+            skills = dist.collect(ROOT / "skills")
+            res = plugin.mint_plugin(Path(td) / "out", skills, source_root=empty)
+            self.assertTrue(res.problems)
+            # Search ALL problems, not problems[0]. The index assumption was the
+        # bug: a second, unrelated problem (a missing COPYING) was added and
+        # this test failed while the behaviour it checks was perfectly fine.
+        # A test that depends on being the only complaint is a test that will
+        # go red for somebody else's reason.
+        joined = "\n".join(res.problems)
+        self.assertIn("will not start", joined, joined)
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+
+class TheLicenceReachesTheRecipient(unittest.TestCase):
+    """GPLv3 compliance, found by a register audit rather than by a test.
+
+    Every shipped file's header ends "You should have received a copy of the
+    GNU General Public License along with this program."  `plugin.json`
+    declares `GPL-3.0-or-later`.  And the bundle contained no licence text at
+    all -- so the one sentence the licence itself requires the distributor to
+    make true was false in every file that said it.
+
+    For a project whose author is an FSF volunteer this is not a nicety, and
+    it is exactly the class of thing a suite full of byte-level hash checks
+    will never notice, because nothing was wrong with any byte that shipped.
+    """
+
+    def test_the_bundle_carries_the_gpl(self):
+        import tempfile as _tf
+        from polygram import dist as _dist
+        with _tf.TemporaryDirectory() as td:
+            skills = _dist.collect(ROOT / "skills")
+            res = plugin.mint_plugin(Path(td), skills, source_root=ROOT)
+            cov = res.root / "COPYING"
+            self.assertTrue(cov.is_file(),
+                            "the headers promise a copy; send one")
+            text = cov.read_text(encoding="utf-8")
+            self.assertIn("GNU GENERAL PUBLIC LICENSE", text.upper())
+            self.assertIn("Version 3", text)
+
+    def test_a_missing_licence_is_reported_not_silently_omitted(self):
+        import shutil as _sh, tempfile as _tf
+        from polygram import dist as _dist
+        with _tf.TemporaryDirectory() as td:
+            bare = Path(td) / "src"
+            bare.mkdir()
+            for rel in plugin._SERVER_FILES + plugin._SERVER_AUX:
+                dest = bare / rel
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                _sh.copy2(ROOT / rel, dest)
+            skills = _dist.collect(ROOT / "skills")
+            res = plugin.mint_plugin(Path(td) / "out", skills, source_root=bare)
+            self.assertFalse((res.root / "COPYING").exists())
+            self.assertTrue(
+                any("COPYING" in p for p in res.problems),
+                "shipping GPL headers with no licence must be LOUD: "
+                f"{res.problems}")
+
+
+class TheZeroSubstitutionArm(unittest.TestCase):
+    """`--self-locating`: a .mcp.json with nothing for the host to expand.
+
+    Two causes for `not_started / could_not_prepare` were named in
+    plugin.py's docstring and both were eliminated on 2026-09-19 with
+    receipts -- and the symptom stayed. One host-expanded substitution was
+    left, `"PYTHONPATH": "${CLAUDE_PLUGIN_ROOT}/servers"`, inside `env`.
+    Whether THAT is the third cause is a hypothesis nobody here can settle:
+    the falsifier is the desktop's own log line, which only the keeper can
+    read. This is the arm that makes the question answerable by installing
+    something, and these are the properties it has to have to be worth
+    installing.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls._td = tempfile.TemporaryDirectory()
+        skills = dist.collect(ROOT / "skills", include_workspace=True)
+        cls.res = plugin.mint_plugin(Path(cls._td.name) / "d", skills,
+                                     source_root=ROOT, self_locating=True)
+        cls.launcher = cls.res.root / "servers" / "launch.py"
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._td.cleanup()
+
+    def _run_launcher(self, *argv, cwd=None):
+        env = dict(os.environ)
+        env.pop("PYTHONPATH", None)          # the whole point
+        env.pop("MENTCACHED_SEAT", None)
+        return subprocess.run([sys.executable, str(self.launcher), *argv],
+                              capture_output=True, text=True, encoding="utf-8",
+                              env=env, timeout=60,
+                              cwd=str(cwd or Path(self._td.name)))
+
+    def test_nothing_in_the_launch_config_asks_the_host_to_expand_anything(self):
+        raw = (self.res.root / ".mcp.json").read_text(encoding="utf-8")
+        self.assertNotIn("${", raw, raw)
+
+    def test_there_is_no_env_block_at_all(self):
+        """Not an empty one, not a literal one -- absent.
+
+        An empty `env` is still a key the host has to prepare. The arm is
+        only decisive if the whole block is gone.
+        """
+        cfg = json.loads((self.res.root / ".mcp.json")
+                         .read_text(encoding="utf-8"))["mcpServers"]
+        self.assertEqual(sorted(cfg), ["mentcached", "persona", "skillx"])
+        for name, sdef in cfg.items():
+            self.assertNotIn("env", sdef, name)
+            self.assertEqual(sdef["args"][-1], name)
+            self.assertTrue(sdef["args"][-2].endswith("/servers/launch.py"),
+                            sdef["args"])
+
+    def test_the_launcher_starts_the_server_with_no_pythonpath(self):
+        """Invoked by absolute path, from somewhere else, with nothing set."""
+        r = self._run_launcher("--list")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        for s in ("mentcached", "persona", "skillx"):
+            self.assertIn(s, r.stdout)
+
+    def test_the_launcher_answers_json_rpc_with_no_pythonpath(self):
+        """--list only proves the import. This proves the server."""
+        env = dict(os.environ)
+        env.pop("PYTHONPATH", None)
+        r = subprocess.run([sys.executable, str(self.launcher), "mentcached"],
+                           input='{"jsonrpc":"2.0","id":1,'
+                                 '"method":"initialize","params":{}}\n',
+                           capture_output=True, text=True, encoding="utf-8",
+                           env=env, timeout=60, cwd=str(self._td.name))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn('"protocolVersion"', r.stdout)
+
+    def test_the_launcher_writes_no_bytecode_into_the_plugin(self):
+        """The env that carried PYTHONDONTWRITEBYTECODE=1 is gone, so the
+        launcher has to set sys.dont_write_bytecode itself -- and check.sh
+        calls a .pyc it did not mint hostile, so a stray one would turn the
+        byte check red on correct use."""
+        self.assertEqual(self._run_launcher("--list").returncode, 0)
+        strays = [p for p in self.res.root.rglob("*")
+                  if p.name == "__pycache__" or p.suffix == ".pyc"]
+        self.assertEqual(strays, [], strays)
+
+    def test_check_interpreter_still_reads_the_argv_out_of_the_new_shape(self):
+        """The shape moved; the sed/awk parser had to move with it.
+
+        It used to stop at `-m`, and there is no `-m` any more. Unfixed it
+        would have read command+launcher+server as the interpreter and then
+        tested something nobody launches.
+        """
+        import shutil as _sh
+        if not _sh.which("sh"):
+            self.skipTest("no sh on this host")
+        r = subprocess.run(["sh", "check-interpreter.sh"], cwd=str(self.res.root),
+                           capture_output=True, text=True, encoding="utf-8",
+                           timeout=120)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        for s in ("mentcached", "persona", "skillx"):
+            self.assertIn(f"OK     {s}:", r.stdout)
+
+    def test_the_shipped_launcher_is_the_one_the_config_names(self):
+        """validate() cannot check the baked absolute path -- it belongs to
+        the installing host -- but it can check the file ships."""
+        self.assertEqual(plugin.validate(self.res.root), [])
+        self.launcher.unlink()
+        try:
+            problems = plugin.validate(self.res.root)
+            self.assertTrue(any("launch.py" in p for p in problems), problems)
+        finally:
+            self.launcher.write_text(plugin._LAUNCH_PY, encoding="utf-8",
+                                     newline="")
+
+    def test_the_install_root_is_baked_verbatim_not_guessed(self):
+        """A cross-host mint is the normal case on this estate: the minting
+        box is a Linux VM and the running box is Windows. Whatever the
+        operator names is what goes in, unchanged but for separators."""
+        cfg = plugin._mcp_json("python3", ["mentcached"],
+                               "F:/claude/x/vibrobeast/servers/launch.py")
+        s = cfg["mcpServers"]["mentcached"]
+        self.assertEqual(s["command"], "python3")
+        self.assertEqual(s["args"],
+                         ["F:/claude/x/vibrobeast/servers/launch.py", "mentcached"])
+        self.assertNotIn("env", s)
+
+    def test_the_two_shapes_differ_only_in_how_the_launcher_is_named(self):
+        """2026-09-23: the default shape moved, on purpose and with a receipt
+        (the desktop's reserved-name refusal). What is left of the opt-in is
+        ONE difference: ${CLAUDE_PLUGIN_ROOT} in args versus an absolute path.
+        Neither shape has an env key, and both ship the same launcher-aware
+        check-interpreter.sh."""
+        cfg = plugin._mcp_json("python3", ["mentcached"])["mcpServers"]["mentcached"]
+        self.assertEqual(cfg["command"], "python3")
+        self.assertEqual(cfg["args"], ["${CLAUDE_PLUGIN_ROOT}/servers/launch.py", "mentcached"])
+        self.assertNotIn("env", cfg)
+        self.assertNotEqual(plugin._interp_sh(True), plugin._INTERP_SH)
+        self.assertIn("PYTHONPATH", plugin._interp_sh(True))   # the refusal is checked up front

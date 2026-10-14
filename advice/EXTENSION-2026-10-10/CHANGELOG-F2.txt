@@ -1,0 +1,41 @@
+2026-10-10  Claude (Cowork, fix lane F2 of the extension edition: docs and what ships)  for Corwin  <corwin@bru.st>
+
+	Folds review pass 2: C5 (the outside reader) J1-J14, P6 (Merlin by the Corwin model) #4,
+	P5 (Vanth by Ilunga) J1.
+	* polygram/plugin.py (SHIPPED_DOCS): New.  GRAMMARY.md and FRAME.md ship beside README.md in
+	every mint, copied as bytes and listed in MANIFEST; one missing at the source root is a
+	problem said in the result, like COPYING.  The module docstring's tree lists both.
+	(_README): A "Words this README uses" section before Install: GRAMMARY.md for every term,
+	FRAME.md for the usage record, and plain-words glosses of switch, restart the plugin (quit
+	Claude and open it again, or turn the plugin off and on), the keeper, people.named (starts as
+	corwin; how a new user gets their own name kept), persona, seat, garden, mint.  Verify: what an
+	unsigned build shows (TREE CHANGED for the changed skills, expected).  Before the first run: a
+	missing Python is fixed by installing one from python.org and turning off the Store aliases,
+	with no source checkout; re-minting is the second road, for those who keep one.
+	(_README_ROWS): the persona row says what a persona is and what the server does.
+	* tests/test_plugin.py (TheGlossaryAndTheFrameShip): New.  Both documents ship byte for byte,
+	are in MANIFEST and the .plugin, and the README names both.
+	(TheReadmeServesAStranger.test_a_stranger_is_told_the_words_and_the_steps): New.
+	(TheLicenceReachesTheRecipient.test_a_missing_licence_is_reported_not_silently_omitted): also
+	requires GRAMMARY.md and FRAME.md to be reported when missing.
+	* FRAME.md: a "Leaving" section (rows stay, no expiry, how to remove them, off writes no row);
+	CONFIDENCE is a number from 0 to 1 (17% is 0.17); "one rule, two numbers" says 83% and 0.17
+	are the same rule.
+	* GRAMMARY.md: the header's count matches bin/gm1gk: 47 entries added to the seed's 36, 83 in
+	all (41 new words, 5 pointer entries, one seed line given its own entry).
+	* NEWS (1.1.0): the first paragraph says what changes, in plain words; an "Unsigned" bullet; the
+	fourth new key is people.named; GRAMMARY count 47 added / 83 in all; TA glossed; the 83%
+	rule tied to FRAME.md's 0.17; the licence-block cleanup named.
+	* README.org (Copying): documentation is CC-BY-SA-4.0 (was CC-BY-4.0; bin/lc1ck faulted it).
+	* INSTALL: the floor is eight (drift added), pointed at editions.FLOOR; `make dist SIZE=grain`
+	said to be the same as `make edition SIZE=grain` after the full mint.
+	* INDEX.md: FRAME.md listed beside GRAMMARY.md.
+	* skills/*/SKILL.md, SOFT-SKILLS/*/SKILL.md (54 skills, not egress or family-shelf): the old
+	typed GPL licence block above the minted footer removed (the footer already says writing
+	CC-BY-SA, scripts GPL-3.0-or-later); build-loop's one provenance sentence inside that block kept
+	as prose; foaf's scoped block (text BY-SA, code GPL) kept.  Old copies, signatures and manifests
+	in .arc/2026-10/<folder>/<skill>/*_pre-licence-block-2026-10-10*.
+	* conventions/FOOTERS.org: `sh bin/ft1mt mint` re-dated the 53 mint rows those edits touched
+	(version 1.1.0, revised from 1.0.1, 2026-10-10); old table in
+	.arc/2026-10/FOOTERS.org_pre-licence-block-2026-10-10.  This also re-dated seatkeeper, whose
+	body lane A had changed.

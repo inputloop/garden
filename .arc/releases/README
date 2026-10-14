@@ -1,0 +1,1 @@
+0.8.51: an unintended second make dist (19:53, during the first release card). Rewound on 2026-09-25 to honor "cut 0.8.50": __version__ set back to 0.8.50; this record parked here. 0.8.51 was never committed or tagged.

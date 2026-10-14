@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" width="2099" height="1144" viewBox="0 0 2099 1144" font-family="var(--c4-font, monospace)" font-size="12">
+<title>Memory · skills · shop — actors, relationships, events across five intersecting contexts (2026-09-05)</title><desc>Rendered by dc1sv from the canonical diagram document; 28 shapes, 26 edges, 5 systems. Groups are drawn as labelled rectangles; every status is a word, never a hue alone.</desc>
+<style>rect.box{fill:var(--c4-box,#fffdf5);stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}polygon.decision{fill:var(--c4-decision,#f1efe8);stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}circle.node{fill:var(--c4-node,#ffffff);stroke:var(--c4-ink,#1a1a1a);stroke-width:2}rect.note{fill:none;stroke:var(--c4-muted,#888780);stroke-dasharray:3 3;stroke-width:1}text{fill:var(--c4-ink,#1a1a1a)}text.note{fill:var(--c4-muted,#5f5e5a);font-style:italic}path.edge{fill:none;stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}path.dash{stroke-dasharray:6 4}rect.sys{fill:var(--c4-sys,rgba(120,120,200,0.06));stroke:var(--c4-sysline,#6a67b8);stroke-width:1.5;stroke-dasharray:8 4}rect.sys.core{fill:var(--c4-core,rgba(240,200,0,0.10));stroke:var(--c4-coreline,#b08800);stroke-dasharray:none}text.sys{fill:var(--c4-sysline,#6a67b8);font-size:11px;font-weight:bold}rect.lbl{fill:var(--c4-label-bg,#ffffff);stroke:var(--c4-muted,#888780);stroke-width:0.75}text.lbl{fill:var(--c4-ink,#1a1a1a);font-size:11px}</style>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--c4-ink,#1a1a1a)"/></marker><marker id="open" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10" fill="none" stroke="var(--c4-ink,#1a1a1a)"/></marker><marker id="circle" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7"><circle cx="5" cy="5" r="4" fill="var(--c4-ink,#1a1a1a)"/></marker><marker id="diamond" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,5 L5,0 L10,5 L5,10 z" fill="var(--c4-ink,#1a1a1a)"/></marker></defs>
+<rect class="sys seat" x="418" y="370" width="966" height="568" rx="6" style="stroke:var(--c4-sys-seat,#0F6E56);stroke-dasharray:2 4;fill:none"/>
+<text class="sys" x="426" y="930" style="fill:var(--c4-systext-seat,#085041)">SEAT · C4 shop (the reader bash sees)</text>
+<rect class="sys harness" x="38" y="90" width="1071" height="388" rx="6" style="stroke:var(--c4-sys-harness,#534AB7);stroke-dasharray:2 4;fill:none"/>
+<text class="sys" x="46" y="104" style="fill:var(--c4-systext-harness,#3C3489)">HARNESS · Cowork (the reader that sees A)</text>
+<rect class="sys rack" x="918" y="90" width="853" height="458" rx="6" style="stroke:var(--c4-sys-rack,#185FA5);stroke-dasharray:2 4;fill:none"/>
+<text class="sys" x="926" y="104" style="fill:var(--c4-systext-rack,#0C447C)">RACK · installed skills (read-only to me)</text>
+<rect class="sys keeper" x="1078" y="750" width="983" height="376" rx="6" style="stroke:var(--c4-sys-keeper,#993C1D);stroke-dasharray:2 4;fill:none"/>
+<text class="sys" x="1848" y="764" style="fill:var(--c4-systext-keeper,#712B13)">KEEPER · host (sees everything)</text>
+<rect class="sys forge" x="1418" y="390" width="287" height="452" rx="6" style="stroke:var(--c4-sys-forge,#5F5E5A);stroke-dasharray:2 4;fill:none"/>
+<text class="sys" x="1426" y="404" style="fill:var(--c4-systext-forge,#444441)">FORGE · polygram</text>
+<path class="edge" d="M 640,140 L 527,143" marker-end="url(#arrow)" style="stroke:var(--c4-edge-sstart-storeA,#534AB7)"/>
+<path class="edge" d="M 96,148 L 240,143" marker-end="url(#arrow)" style="stroke:var(--c4-edge-filetool-storeA,#534AB7)"/>
+<path class="edge dash" d="M 78,300 L 78,233 L 384,233 L 384,166" marker-end="url(#open)" style="stroke:var(--c4-edge-bash-storeA,#534AB7)"/>
+<path class="edge" d="M 78,356 L 78,583 L 560,583" marker-end="url(#arrow)" style="stroke:var(--c4-edge-bash-seatB,#534AB7)"/>
+<path class="edge" d="M 476,428 L 527,143" marker-end="url(#arrow)" style="stroke:var(--c4-edge-mentat-storeA,#534AB7)"/>
+<path class="edge" d="M 920,160 L 920,280 L 458,280 L 458,400" marker-end="url(#arrow)" style="stroke:var(--c4-edge-compact-mentat,#534AB7)"/>
+<path class="edge" d="M 458,456 L 458,672 L 560,672" marker-end="url(#arrow)" style="stroke:var(--c4-edge-mentat-astage,#0F6E56)"/>
+<path class="edge" d="M 930,683 L 889,583" marker-end="url(#arrow)" style="stroke:var(--c4-edge-ms1dg-seatB,#0F6E56)"/>
+<path class="edge" d="M 838,672 L 930,683" marker-end="url(#arrow)" style="stroke:var(--c4-edge-astage-ms1dg,#0F6E56)"/>
+<path class="edge" d="M 1049,683 L 1118,683 L 1118,860" marker-end="url(#arrow)" style="stroke:var(--c4-edge-ms1dg-corwin,#0F6E56)"/>
+<path class="edge" d="M 1049,683 L 1360,903" marker-end="url(#arrow)" style="stroke:var(--c4-edge-ms1dg-hostrun,#993C1D)"/>
+<path class="edge dash" d="M 1360,903 L 889,783" marker-end="url(#open)" style="stroke:var(--c4-edge-hostrun-indexB,#993C1D)"/>
+<path class="edge" d="M 1040,503 L 724,503 L 724,560" marker-end="url(#arrow)" style="stroke:var(--c4-edge-seatkeeper-seatB,#185FA5)"/>
+<path class="edge" d="M 1014,286 L 1014,473 L 990,473 L 990,660" marker-end="url(#arrow)" style="stroke:var(--c4-edge-sandboxer-ms1dg,#185FA5)"/>
+<path class="edge" d="M 940,263 L 78,263 L 78,300" marker-end="url(#arrow)" style="stroke:var(--c4-edge-sandboxer-bash,#185FA5)"/>
+<path class="edge" d="M 1346,286 L 1346,353 L 1580,353 L 1580,420" marker-end="url(#arrow)" style="stroke:var(--c4-edge-skilltank-enhance,#185FA5)"/>
+<path class="edge" d="M 1176,166 L 1176,428 L 476,428" marker-end="url(#arrow)" style="stroke:var(--c4-edge-mentatskill-mentat,#185FA5)"/>
+<path class="edge" d="M 1580,460 L 1580,510 L 1583,510 L 1583,560" marker-end="url(#arrow)" style="stroke:var(--c4-edge-enhance-poly,#5F5E5A)"/>
+<path class="edge" d="M 1583,606 L 1583,633 L 1562,633 L 1562,660" marker-end="url(#arrow)" style="stroke:var(--c4-edge-poly-mint,#5F5E5A)"/>
+<path class="edge" d="M 1562,684 L 1562,732 L 1660,732 L 1660,780" marker-end="url(#arrow)" style="stroke:var(--c4-edge-mint-install,#5F5E5A)"/>
+<path class="edge dash" d="M 1640,800 L 1117,800 L 1117,526" marker-end="url(#open)" style="stroke:var(--c4-edge-install-seatkeeper,#5F5E5A)"/>
+<path class="edge" d="M 1118,916 L 1118,1003 L 1360,1003" marker-end="url(#arrow)" style="stroke:var(--c4-edge-corwin-pub,#993C1D)"/>
+<path class="edge" d="M 1100,888 L 724,888 L 724,806" marker-end="url(#arrow)" style="stroke:var(--c4-edge-corwin-indexB,#993C1D)"/>
+<path class="edge dash" d="M 1918,1092 L 384,1092 L 384,120" marker-end="url(#open)" style="stroke:var(--c4-edge-amd-storeA,#993C1D)"/>
+<path class="edge" d="M 1250,660 L 1250,633 L 1271,633 L 1271,606" marker-end="url(#arrow)" style="stroke:var(--c4-edge-bank-dc1sv,#0F6E56)"/>
+<path class="edge" d="M 1840,1006 L 1840,1056 L 1482,1056 L 1482,1026" marker-end="url(#arrow)" style="stroke:var(--c4-edge-dial-pub,#993C1D)"/>
+<circle class="node" cx="78" cy="128" r="8"/><path class="edge" d="M 78,136 L 78,156 M 60,142 L 96,142 M 78,156 L 60,176 M 78,156 L 96,176"/>
+<text x="78" y="190" text-anchor="middle">file tool</text>
+<circle class="node" cx="78" cy="308" r="8"/><path class="edge" d="M 78,316 L 78,336 M 60,322 L 96,322 M 78,336 L 60,356 M 78,336 L 96,356"/>
+<text x="78" y="370" text-anchor="middle">bash (sandbox)</text>
+<rect class="box" x="240" y="120" width="287" height="46" rx="3"/><text x="384" y="147" text-anchor="middle">store A · auto-memory (harness-owned)</text>
+<rect class="note" x="590" y="300" width="285" height="24"/><text class="note" x="596" y="316">transcript .jsonl (mounted) · Q7 reader</text>
+<circle class="node" cx="660" cy="140" r="20"/>
+<text x="660" y="174" text-anchor="middle">session start: index ≤200 lines / 25KB</text>
+<circle class="node" cx="920" cy="140" r="20"/>
+<text x="920" y="174" text-anchor="middle">compaction</text>
+<rect class="box" x="940" y="240" width="147" height="46" rx="3"/><text x="1014" y="267" text-anchor="middle">sandboxer (skill)</text>
+<circle class="node" cx="458" cy="408" r="8"/><path class="edge" d="M 458,416 L 458,436 M 440,422 L 476,422 M 458,436 L 440,456 M 458,436 L 476,456"/>
+<text x="458" y="470" text-anchor="middle">Mentat</text>
+<rect class="box" x="560" y="560" width="329" height="46" rx="3"/><text x="724" y="587" text-anchor="middle">seat B · memory/ · 154 notes · ceremony 2/4</text>
+<rect class="box" x="560" y="760" width="329" height="46" rx="3"/><text x="724" y="787" text-anchor="middle">MEMORY.md (seat index, locked from sandbox)</text>
+<rect class="note" x="560" y="660" width="278" height="24"/><text class="note" x="566" y="676">mainmem/astage (A staged by file tool)</text>
+<rect class="box" x="930" y="660" width="119" height="46" rx="3"/><text x="990" y="687" text-anchor="middle">ms1dg (gauge)</text>
+<rect class="box" x="1180" y="660" width="140" height="46" rx="3"/><text x="1250" y="687" text-anchor="middle">C4 bank · palace</text>
+<rect class="box" x="1180" y="560" width="182" height="46" rx="3"/><text x="1271" y="587" text-anchor="middle">dc1sv (picture reader)</text>
+<rect class="box" x="1040" y="480" width="154" height="46" rx="3"/><text x="1117" y="507" text-anchor="middle">seatkeeper (skill)</text>
+<rect class="box" x="1120" y="120" width="112" height="46" rx="3"/><text x="1176" y="147" text-anchor="middle">mentat-skill</text>
+<rect class="box" x="1300" y="120" width="224" height="46" rx="3"/><text x="1412" y="147" text-anchor="middle">color-theory (contrast math)</text>
+<rect class="box" x="1300" y="240" width="91" height="46" rx="3"/><text x="1346" y="267" text-anchor="middle">skilltank</text>
+<rect class="box" x="1560" y="120" width="189" height="46" rx="3"/><text x="1654" y="147" text-anchor="middle">ethicsminions (concurs)</text>
+<circle class="node" cx="1580" cy="440" r="20"/>
+<text x="1580" y="474" text-anchor="middle">ENHANCE → reauthor</text>
+<rect class="box" x="1520" y="560" width="126" height="46" rx="3"/><text x="1583" y="587" text-anchor="middle">polygram forge</text>
+<rect class="note" x="1440" y="660" width="243" height="24"/><text class="note" x="1446" y="676">skills-mint 2026-09-04 (unsigned)</text>
+<circle class="node" cx="1660" cy="800" r="20"/>
+<text x="1660" y="834" text-anchor="middle">sign + install</text>
+<circle class="node" cx="1118" cy="868" r="8"/><path class="edge" d="M 1118,876 L 1118,896 M 1100,882 L 1136,882 M 1118,896 L 1100,916 M 1118,896 L 1136,916"/>
+<text x="1118" y="930" text-anchor="middle">Corwin (keeper)</text>
+<rect class="box" x="1360" y="880" width="224" height="46" rx="3"/><text x="1472" y="907" text-anchor="middle">ms1dg on the host (reader 2)</text>
+<rect class="box" x="1360" y="980" width="245" height="46" rx="3"/><text x="1482" y="1007" text-anchor="middle">pub/ shelf (clearsign in place)</text>
+<rect class="note" x="1640" y="1080" width="278" height="24"/><text class="note" x="1646" y="1096">autoMemoryDirectory → seat? (untested)</text>
+<rect class="box" x="1640" y="960" width="399" height="46" rx="3"/><text x="1840" y="987" text-anchor="middle">ceremony dial · 1 2 4 9 17 · per store, keeper's pick</text>
+<rect class="lbl" x="540" y="132" width="87" height="18" rx="3"/><text class="lbl" x="584" y="146" text-anchor="middle">reads index</text>
+<rect class="lbl" x="114" y="136" width="108" height="18" rx="3"/><text class="lbl" x="168" y="150" text-anchor="middle">Write (+stamp)</text>
+<rect class="lbl" x="191" y="224" width="80" height="18" rx="3"/><text class="lbl" x="231" y="237" text-anchor="middle">cannot see</text>
+<rect class="lbl" x="226" y="574" width="185" height="18" rx="3"/><text class="lbl" x="319" y="587" text-anchor="middle">rw · no rm · index locked</text>
+<rect class="lbl" x="479" y="276" width="45" height="18" rx="3"/><text class="lbl" x="502" y="290" text-anchor="middle">notes</text>
+<rect class="lbl" x="586" y="271" width="206" height="18" rx="3"/><text class="lbl" x="689" y="284" text-anchor="middle">survives: addresses + hashes</text>
+<rect class="lbl" x="483" y="663" width="52" height="18" rx="3"/><text class="lbl" x="509" y="676" text-anchor="middle">stages</text>
+<rect class="lbl" x="862" y="624" width="94" height="18" rx="3"/><text class="lbl" x="910" y="637" text-anchor="middle">gauges G1–G7</text>
+<rect class="lbl" x="854" y="668" width="59" height="18" rx="3"/><text class="lbl" x="884" y="682" text-anchor="middle">G8 diff</text>
+<rect class="lbl" x="1096" y="762" width="45" height="18" rx="3"/><text class="lbl" x="1118" y="776" text-anchor="middle">cards</text>
+<rect class="lbl" x="1126" y="784" width="157" height="18" rx="3"/><text class="lbl" x="1204" y="797" text-anchor="middle">same script, reader 2</text>
+<rect class="lbl" x="1067" y="834" width="115" height="18" rx="3"/><text class="lbl" x="1124" y="847" text-anchor="middle">G4: lock owner?</text>
+<rect class="lbl" x="642" y="522" width="164" height="18" rx="3"/><text class="lbl" x="724" y="536" text-anchor="middle">reseat: new files only</text>
+<rect class="lbl" x="976" y="450" width="52" height="18" rx="3"/><text class="lbl" x="1002" y="463" text-anchor="middle">canary</text>
+<rect class="lbl" x="31" y="272" width="94" height="18" rx="3"/><text class="lbl" x="78" y="286" text-anchor="middle">fingerprints</text>
+<rect class="lbl" x="1412" y="344" width="101" height="18" rx="3"/><text class="lbl" x="1463" y="357" text-anchor="middle">NEW / ENHANCE</text>
+<rect class="lbl" x="776" y="419" width="101" height="18" rx="3"/><text class="lbl" x="826" y="432" text-anchor="middle">mutations 1–8</text>
+<rect class="lbl" x="1548" y="487" width="66" height="18" rx="3"/><text class="lbl" x="1582" y="500" text-anchor="middle">reauthor</text>
+<rect class="lbl" x="1550" y="610" width="45" height="18" rx="3"/><text class="lbl" x="1572" y="623" text-anchor="middle">mints</text>
+<rect class="lbl" x="1585" y="723" width="52" height="18" rx="3"/><text class="lbl" x="1611" y="736" text-anchor="middle">awaits</text>
+<rect class="lbl" x="1077" y="654" width="80" height="18" rx="3"/><text class="lbl" x="1117" y="667" text-anchor="middle">live skill</text>
+<rect class="lbl" x="1157" y="994" width="164" height="18" rx="3"/><text class="lbl" x="1239" y="1007" text-anchor="middle">clearsigns (pub/ = 17)</text>
+<rect class="lbl" x="646" y="838" width="157" height="18" rx="3"/><text class="lbl" x="724" y="851" text-anchor="middle">24 + 37 lines by hand</text>
+<rect class="lbl" x="308" y="597" width="150" height="18" rx="3"/><text class="lbl" x="384" y="610" text-anchor="middle">if honored: A = seat</text>
+<rect class="lbl" x="1217" y="610" width="87" height="18" rx="3"/><text class="lbl" x="1260" y="623" text-anchor="middle">diagram doc</text>
+<rect class="lbl" x="1562" y="1047" width="199" height="18" rx="3"/><text class="lbl" x="1661" y="1060" text-anchor="middle">17 GRAND: shelf + vouch map</text>
+<!-- tally shapes 28 edges 26 groups 5 -->
+</svg>

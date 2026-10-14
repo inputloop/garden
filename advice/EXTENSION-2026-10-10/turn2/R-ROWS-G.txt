@@ -1,0 +1,36 @@
+# R-ROWS from lane G (turn 2, 2026-10-10), for the conductor to fold into polygram/mcp/__main__.py's
+# --prove-red, inside the same `with tempfile... as td` scope where `want` and `td` exist.  Words first,
+# then the code.  Both were run in a scratch harness against this tree (want/td stand-ins): R29 PASS;
+# R30 PASS, and R30's own plant is the red half (one NODE line cut from the facts must turn the recount red).
+# R31 and R32 are not used: the browser checks (GV9, GV12, GV13) need Chromium and axe-core, which the
+# MCP harness must not assume; they live in tests/gv1mt-tests.sh, which exits 77 NOT CHECKED without them.
+#
+# R29  the garden view builds from this tree, and its awk recount agrees with the counts it claims (GV6).
+# R30  the recount goes red when one NODE line is missing from the facts file (GV6, prove-red).
+
+        # R29 / R30 -- the garden view (lane G, turn 2): build into td, recount in awk, then plant a fault.
+        import subprocess as _sp29, os as _os29
+        _root29 = _os29.path.dirname(_os29.path.dirname(_os29.path.abspath(__import__("polygram").__file__)))
+        _out29 = _os29.path.join(td, "garden-view")
+        _b29 = _sp29.run(["python3", _os29.path.join(_root29, "bin", "gv1mt"), "build", "--root", _root29,
+                          "--out", _out29, "--at", "2026-10-10T00:00:00Z"], capture_output=True, text=True)
+        _awk29 = _os29.path.join(_root29, "tests", "gv1mt-recount.awk")
+        _r29 = _sp29.run(["awk", "-f", _awk29, _os29.path.join(_out29, "data.json"),
+                          _os29.path.join(_out29, "garden-view.facts"), _os29.path.join(_out29, "index.html")],
+                         capture_output=True, text=True)
+        want("the garden view builds and its awk recount agrees with its counts",
+             _b29.returncode == 0 and _r29.returncode == 0 and "GREEN" in _r29.stdout)
+        _f30 = _os29.path.join(_out29, "garden-view.facts")
+        with open(_f30, encoding="utf-8") as _h30:
+            _ls30 = _h30.read().splitlines(True)
+        _cut30 = next(i for i, l in enumerate(_ls30) if l.startswith("NODE "))
+        with open(_f30, "w", encoding="utf-8") as _h30:
+            _h30.writelines(_ls30[:_cut30] + _ls30[_cut30 + 1:])
+        _r30 = _sp29.run(["awk", "-f", _awk29, _os29.path.join(_out29, "data.json"), _f30,
+                          _os29.path.join(_out29, "index.html")], capture_output=True, text=True)
+        want("the garden view's recount goes red when a NODE line is missing",
+             _r30.returncode == 1 and "MISMATCH" in _r30.stdout)
+
+Authored by Mentat (for Corwin; claude-opus-5-5).
+Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later

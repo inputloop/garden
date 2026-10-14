@@ -1,0 +1,99 @@
+#!/bin/sh
+# nd1ck -- NO-DOOR 1 CHECK: what does each skill in the garden ask of the door (CLAUDE.md-class
+#          instruction files, the ClaudeDesktop global-instruction area)? A gauge for the unit test
+#          where others' work and textual sources come in and the skills must be sufficient on their
+#          own -- "so that we can show using C4 doesn't 'take over' the ClaudeDesktop user global
+#          instruction area, or require special stuff there to work that other capability sets do
+#          not" (Corwin, 2026-09-24, the day he removed CLAUDE.md from /f/claude and /f/claude/c4).
+#
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st>
+# SPDX-License-Identifier: GPL-3.0-or-later
+# This program is free software: you can redistribute it and/or modify it under the terms
+# of the GNU General Public License as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
+# This file is part of vibrobeast.  Authored by Mentat (for Corwin).  It is free software: you can
+# redistribute it and/or modify it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your option) any later
+# version.  It is distributed WITHOUT ANY WARRANTY; see <https://www.gnu.org/licenses/>.
+#
+# THE NAME: N D NO DOOR · 1 read-only · C K CHECK.  MEASURES, never repairs, never exhorts.
+#
+# WHAT IT COUNTS. For every skills/<x>/SKILL.md and SOFT-SKILLS/<x>/SKILL.md (scripts/ too with
+# --deep): lines naming a door-class file or area --
+#   CLAUDE.md  PREFERENCES.md  model.md  CORWIN.txt/corwin.txt
+#   "global instruction(s)"  "personal instructions"  "system prompt"
+# (not counted: a skill's OWN references/ files -- ethicsminions' references/attestations.txt is the
+# skill's asset, shipped with it; and PRINCIPLES, which is a skill of its own, not the door.)
+# -- and sorts each skill into ONE of:
+#   DOOR-FREE      no such line
+#   DOOR-READS     names one, but the line says it is optional / when present / if it exists /
+#                  "the nearest" / "falls back" -- reads the door if there, works without it
+#   DOOR-REQUIRES  names one with must / required / read ... first / --expect / expects / assumes /
+#                  "fires on" -- the skill's own text says it needs the door to work
+# The words are a heuristic and the line is printed so a reader can overrule it: this gauge is a
+# grep with a verdict column, not a judge. A DOOR-REQUIRES skill is not wrong; it is a skill the
+# unit test must run WITH its door or rewrite -- either way, now it is a list, not a feeling.
+#
+# usage: sh bin/nd1ck [--root DIR] [--deep] [--tsv] [--strict]
+#   --deep    also scan scripts/*, references/* (default: SKILL.md only -- the text the router reads)
+#   --tsv     VERDICT<TAB>skill<TAB>where<TAB>hits<TAB>first-line
+#   --strict  exit 1 when any skill is DOOR-REQUIRES (for a gate that wants it; the default is 0)
+#        sh bin/nd1ck --prove-red
+# Also reports whether a door is present at DIR (CLAUDE.md) and at DIR/.. -- the unit test's premise.
+set -u
+me=nd1ck
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd); DEEP=0; TSV=0; STRICT=0; PROVE=0
+while [ $# -gt 0 ]; do case $1 in
+  --root) [ $# -ge 2 ] || { echo "$me: --root needs a value" >&2; exit 2; }; ROOT=$2; shift ;;
+  --deep) DEEP=1 ;; --tsv) TSV=1 ;; --strict) STRICT=1 ;; --prove-red) PROVE=1 ;;
+  -h|--help) sed -n '/^# usage:/,/^# Also/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  *) echo "$me: unknown option $1" >&2; exit 2 ;; esac; shift; done
+TAB=$(printf '\t')
+NAMES='CLAUDE\.md|PREFERENCES\.md|model\.md|[Cc][Oo][Rr][Ww][Ii][Nn]\.txt|[Gg]lobal [Ii]nstruction|[Pp]ersonal [Ii]nstructions|[Ss]ystem [Pp]rompt'
+OPT='when present|if (it|one|there is one|present|it exists|found)|optional|falls? back|nearest|may (be|carry)|where (present|one exists)|when (one|it|C4) (exists|is reachable)|reads? (it|them) if'
+REQ='must|required?|requires|read .*first|--expect|expects|assumes|fires on|before (anything|acting)|needs? (a|the)'
+
+classify() {  # FILE... -> prints "VERDICT<TAB>hits<TAB>first line"
+  hits=$(grep -n -E "$NAMES" "$@" 2>/dev/null | grep -v -E '^[^:]*:[0-9]+:[[:space:]]*#' )
+  n=$(printf '%s' "$hits" | grep -c .)
+  if [ "$n" -eq 0 ]; then printf 'DOOR-FREE\t0\t-\n'; return; fi
+  req=$(printf '%s\n' "$hits" | grep -E -i "$REQ" | grep -v -E -i "$OPT" | head -1)
+  if [ -n "$req" ]; then printf 'DOOR-REQUIRES\t%s\t%s\n' "$n" "$(printf '%s' "$req" | sed 's/^[^:]*:[0-9]*://; s/^[[:space:]]*//' | cut -c1-110)"; return; fi
+  printf 'DOOR-READS\t%s\t%s\n' "$n" "$(printf '%s\n' "$hits" | head -1 | sed 's/^[^:]*:[0-9]*://; s/^[[:space:]]*//' | cut -c1-110)"
+}
+
+run() {
+  free=0; reads=0; req=0
+  [ $TSV -eq 1 ] || { echo "== $me · what the garden asks of the door (root $ROOT$( [ $DEEP -eq 1 ] && printf ' · --deep'))"
+    for d in "$ROOT" "$(dirname "$ROOT")"; do [ -f "$d/CLAUDE.md" ] && echo "   door PRESENT  $d/CLAUDE.md" || echo "   door absent   $d/CLAUDE.md"; done; }
+  for shelf in skills SOFT-SKILLS; do
+    for d in "$ROOT/$shelf"/*/; do [ -f "$d/SKILL.md" ] || continue; n=$(basename "$d")
+      if [ $DEEP -eq 1 ]; then set -- "$d/SKILL.md" $(find "$d" -type f \( -path '*/scripts/*' -o -path '*/references/*' \) ! -name '*.asc' 2>/dev/null); else set -- "$d/SKILL.md"; fi
+      line=$(classify "$@"); v=${line%%"$TAB"*}; rest=${line#*"$TAB"}
+      case $v in DOOR-FREE) free=$((free+1));; DOOR-READS) reads=$((reads+1));; DOOR-REQUIRES) req=$((req+1));; esac
+      if [ $TSV -eq 1 ]; then printf '%s\t%s\t%s\t%s\n' "$v" "$n" "$shelf" "$rest"; else printf '   %-14s %-22s %-11s %s\n' "$v" "$n" "$shelf" "$(printf '%s' "$rest" | sed "s/^\([0-9]*\)$TAB/\1 hit(s) · /")"; fi
+    done
+  done
+  [ $TSV -eq 1 ] || echo "$me: DOOR-FREE $free · DOOR-READS $reads · DOOR-REQUIRES $req -- a REQUIRES row is a skill the unit test runs with its door or rewrites; the line shown is the claim, read it before believing the verdict"
+  [ $STRICT -eq 1 ] && [ $req -gt 0 ] && return 1; return 0
+}
+
+if [ $PROVE -eq 1 ]; then
+  W=$(mktemp -d) || exit 2; trap 'rm -rf "$W"' EXIT
+  mkdir -p "$W/skills/free" "$W/skills/reads" "$W/skills/needs/scripts" "$W/SOFT-SKILLS/soft"
+  printf -- '---\nname: free\ndescription: nothing about doors\n---\nbody\n' > "$W/skills/free/SKILL.md"
+  printf -- '---\nname: reads\ndescription: x\n---\nRead the project CLAUDE.md when present; work without it.\n' > "$W/skills/reads/SKILL.md"
+  printf -- '---\nname: needs\ndescription: x\n---\nYou must read CLAUDE.md first.\n' > "$W/skills/needs/SKILL.md"
+  printf '# a comment mentioning CLAUDE.md is not a claim\necho hi\n' > "$W/skills/needs/scripts/t.sh"
+  printf -- '---\nname: soft\ndescription: x\n---\nthis expects the personal instructions to carry the attestations\n' > "$W/SOFT-SKILLS/soft/SKILL.md"
+  red=0
+  o=$(sh "$0" --root "$W" --tsv 2>&1)
+  printf '%s\n' "$o" | grep -q "^DOOR-FREE${TAB}free" && printf '%s\n' "$o" | grep -q "^DOOR-READS${TAB}reads" && printf '%s\n' "$o" | grep -q "^DOOR-REQUIRES${TAB}needs" && printf '%s\n' "$o" | grep -q "^DOOR-REQUIRES${TAB}soft${TAB}SOFT-SKILLS" && red=$((red+1)) || echo "FAIL: the four verdicts: $o"
+  o=$(sh "$0" --root "$W" 2>&1); printf '%s\n' "$o" | grep -q 'DOOR-FREE 1 · DOOR-READS 1 · DOOR-REQUIRES 2' && printf '%s\n' "$o" | grep -q "door absent   $W/CLAUDE.md" && red=$((red+1)) || echo "FAIL: counts / door line: $o"
+  sh "$0" --root "$W" --strict >/dev/null 2>&1 && echo "FAIL: --strict must exit 1 with a REQUIRES row" || red=$((red+1))
+  printf 'x\n' > "$W/CLAUDE.md"; o=$(sh "$0" --root "$W" 2>&1); printf '%s\n' "$o" | grep -q "door PRESENT  $W/CLAUDE.md" && red=$((red+1)) || echo "FAIL: a present door must be reported: $o"
+  o=$(sh "$0" --root "$W" --deep --tsv 2>&1); printf '%s\n' "$o" | grep -q "^DOOR-REQUIRES${TAB}needs" && red=$((red+1)) || echo "FAIL: --deep must not change a verdict on a comment-only mention: $o"
+  [ $red -eq 5 ] && { echo "PASS: nd1ck sorts FREE / READS / REQUIRES from the skill's own lines (a comment is not a claim), counts, reports the door's presence, and --strict gates on REQUIRES"; exit 0; }
+  echo "FAIL: nd1ck prove-red $red/5"; exit 1
+fi
+run

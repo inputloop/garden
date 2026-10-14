@@ -1,0 +1,36 @@
+# polygram -- GNU-style convenience Makefile.
+# Copyright (C) 2026 Corwin.  Licensed GPL-3.0-or-later (see COPYING).
+.POSIX:
+PYTHON  = python3
+MAKEINFO = makeinfo
+INSTALL_INFO = install-info
+
+.PHONY: all check test doctor info dist skills clean help
+
+help:
+	@echo "targets: check  doctor  info  dist  skills  clean"
+
+all: check info
+
+check test:
+	$(PYTHON) -m unittest discover -s tests -v
+
+doctor:
+	$(PYTHON) -m polygram doctor
+
+# Build the Texinfo manual to Info (requires GNU Texinfo / makeinfo).
+info: doc/polygram.info
+doc/polygram.info: doc/polygram.texi
+	$(MAKEINFO) --no-split -o $@ $<
+
+# Mint distributable archives + installable .skill bundles into dist/.
+dist:
+	$(PYTHON) -m polygram dist --format all
+
+skills:
+	$(PYTHON) -m polygram synth
+
+clean:
+	rm -rf dist doc/polygram.info
+	find . -name __pycache__ -type d -prune -exec rm -rf {} +
+	find . -name '*.pyc' -delete

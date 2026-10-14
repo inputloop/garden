@@ -1,0 +1,231 @@
+# tier: smoke
+# polygram -- tests for prefs (the switches), checks (the on-open panel) and softskills (the dynaloader).
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st>.  GPL-3.0-or-later.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+# This file is part of polygram.  polygram is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later version.  It is
+# distributed WITHOUT ANY WARRANTY; see <https://www.gnu.org/licenses/>.
+"""Corwin, 2026-09-23: checks behind preference, on by default; a dynaloader for SOFT-SKILLS folders.
+
+Pinned: a known key has a default and the file's last row wins; an unknown key is refused; a
+user-named prefs path is never created. seat_mode and span_start carry `checks`, each entry
+saying off/ran/could-not. The loader scans on every call (a folder dropped in appears without
+restart), parses folded frontmatter, refuses `..`, absolute paths, non-text and oversize files,
+names its roots, and says who shadows whom.
+"""
+
+from __future__ import annotations
+
+import os
+import tempfile
+import unittest
+from pathlib import Path
+
+from polygram.mcp import checks, mentcached, prefs, softskills, spans
+from polygram.mcp.rpc import ToolError
+
+
+def _skill(root: Path, name: str, desc: str = "A soft one.", extra: dict | None = None) -> Path:
+    d = root / name; d.mkdir(parents=True, exist_ok=True)
+    (d / "SKILL.md").write_text(f"---\nname: {name}\ndescription: >-\n  {desc}\n  second line\n---\n\n# {name}\n\nbody\n", encoding="utf-8", newline="\n")
+    for rel, text in (extra or {}).items():
+        p = d / rel; p.parent.mkdir(parents=True, exist_ok=True); p.write_text(text, encoding="utf-8", newline="\n")
+    return d
+
+
+class Base(unittest.TestCase):
+    def setUp(self):
+        self.td = tempfile.TemporaryDirectory(); self.addCleanup(self.td.cleanup)
+        self.root = Path(self.td.name)
+        self._env = dict(os.environ)
+        self.addCleanup(lambda: (os.environ.clear(), os.environ.update(self._env)))
+        for k in ("MENTCACHED_PREFS", "SOFT_SKILLS", "POLYGRAM_DIST", "MENTCACHED_SEAT", "CLAUDE_PLUGIN_ROOT"):
+            os.environ.pop(k, None)
+        os.environ["MENTCACHED_SOFTSKILLS_USAGE"] = str(self.root / "softskills-usage.tsv")
+        self._dp, prefs.DEFAULT_PATH = prefs.DEFAULT_PATH, self.root / "prefs.tsv"
+        self._dl, spans.DEFAULT_LEDGER = spans.DEFAULT_LEDGER, self.root / "spans.tsv"
+        self.addCleanup(lambda: setattr(prefs, "DEFAULT_PATH", self._dp))
+        self.addCleanup(lambda: setattr(spans, "DEFAULT_LEDGER", self._dl))
+        self.ss = self.root / "SOFT-SKILLS"; self.ss.mkdir()
+        os.environ["SOFT_SKILLS"] = str(self.ss)
+        self._own, softskills.OWN = softskills.OWN, None
+        self.addCleanup(lambda: setattr(softskills, "OWN", self._own))
+
+
+class Prefs(Base):
+    def test_defaults_then_the_last_row_wins(self):
+        self.assertTrue(prefs.on("freshness.auto"))
+        self.assertEqual(prefs.current()["freshness.auto"]["source"], "default")
+        prefs.set_("freshness.auto", "off", "t", "testing")
+        self.assertFalse(prefs.on("freshness.auto"))
+        prefs.set_("freshness.auto", "on", "t", "back")
+        self.assertTrue(prefs.on("freshness.auto"))
+        rows = (self.root / "prefs.tsv").read_text(encoding="utf-8").splitlines()
+        self.assertEqual(len(rows), 3, "append-only: header + two rows")
+
+    def test_steward_switches_are_known_and_default_as_the_skill_says(self):
+        cur = prefs.current()
+        self.assertEqual(cur["steward.auto"]["value"], "on")
+        self.assertEqual(cur["steward.canon"]["value"], "on")
+        prefs.set_("steward.auto", "off", "t", "quiet opens in this seat")
+        self.assertFalse(prefs.on("steward.auto"))
+
+    def test_unknown_key_is_refused(self):
+        with self.assertRaises(ToolError) as cm:
+            prefs.set_("nobody.reads.this", "x", "t", "")
+        self.assertIn("unknown preference", str(cm.exception))
+
+    def test_a_user_named_prefs_path_is_never_created(self):
+        os.environ["MENTCACHED_PREFS"] = str(self.root / "nowhere" / "p.tsv")
+        with self.assertRaises(ToolError):
+            prefs.set_("freshness.auto", "off", "t", "")
+        self.assertFalse((self.root / "nowhere").exists())
+
+    def test_tools_on_mentcached(self):
+        srv = mentcached.build(by="t", seat=self.root / "seat", jail=None)
+        names = [t.name for t in srv.tools]
+        for n in ("pref_list", "pref_set", "soft_skills_list", "soft_skill_read"):
+            self.assertIn(n, names)
+        out = srv.call("pref_set", {"key": "softskills.auto", "value": "off", "why": "test"})
+        self.assertEqual(out["was"], "on")
+        lst = srv.call("pref_list", {})
+        self.assertIn("softskills.auto=off", lst["say"])
+
+
+class Checks(Base):
+    def test_seat_mode_and_span_start_carry_the_panel(self):
+        _skill(self.ss, "alpha")
+        srv = mentcached.build(by="t", seat=self.root / "seat", jail=None)
+        m = srv.call("seat_mode", {})
+        self.assertIn("checks", m)
+        self.assertIn("1 soft skill(s) loadable", m["checks"]["soft_skills"])
+        self.assertTrue(m["checks"]["freshness"].startswith("UNKNOWN"), m["checks"])   # source tree
+        s = srv.call("span_start", {"label": "x"})
+        self.assertIn("checks", s)
+        srv.call("span_stop", {})
+
+    def test_freshness_in_the_panel_reaches_current_when_installed_and_shelf_agree(self):
+        """CLAUDE_PLUGIN_ROOT is honoured as the installed root, POLYGRAM_DIST as the shelf."""
+        import json
+        for name in ("inst", "shelf"):
+            d = self.root / name; (d / ".claude-plugin").mkdir(parents=True)
+            (d / ".claude-plugin" / "plugin.json").write_text(json.dumps({"name": "vibrobeast"}), encoding="utf-8", newline="\n")
+            (d / "MANIFEST").write_text(f"{'a' * 64}  ./README.md\n", encoding="utf-8", newline="\n")
+        os.environ["CLAUDE_PLUGIN_ROOT"] = str(self.root / "inst")
+        os.environ["POLYGRAM_DIST"] = str(self.root / "shelf")
+        c = checks.run()
+        self.assertTrue(c["freshness"].startswith("installed mint"), c["freshness"])
+        self.assertIn("identical manifests", c["freshness"])
+        prefs.set_("freshness.shelf", str(self.root / "shelf"), "t", "pref beats env")
+        os.environ.pop("POLYGRAM_DIST")
+        self.assertIn("identical manifests", checks.run()["freshness"])
+
+    def test_a_check_turned_off_says_so(self):
+        prefs.set_("softskills.auto", "off", "t", ""); prefs.set_("freshness.auto", "off", "t", "")
+        c = checks.run()
+        self.assertEqual(c["soft_skills"], "off (pref softskills.auto)")
+        self.assertEqual(c["freshness"], "off (pref freshness.auto)")
+
+
+class Loader(Base):
+    def test_a_folder_dropped_in_appears_on_the_next_call(self):
+        self.assertEqual(softskills.scan()["skills"], [])
+        _skill(self.ss, "alpha", "Alpha does things.")
+        s = softskills.scan()
+        self.assertEqual([k["name"] for k in s["skills"]], ["alpha"])
+        self.assertEqual(s["skills"][0]["description"], "Alpha does things. second line")
+        self.assertTrue(s["roots"][0]["exists"])
+
+    def test_every_read_is_a_ledger_line_and_a_failed_ledger_never_refuses_the_read(self):
+        (self.ss / "alpha").mkdir(); (self.ss / "alpha" / "SKILL.md").write_text("---\nname: alpha\ndescription: a\n---\nbody\n", encoding="utf-8", newline="\n")
+        softskills.read({"name": "alpha"}); softskills.read({"name": "alpha"})
+        rows = (self.root / "softskills-usage.tsv").read_text(encoding="utf-8").splitlines()
+        self.assertEqual(rows[0], "ts\tname\troot\tfile")
+        self.assertEqual(len(rows), 3, "header + one line per read")
+        self.assertTrue(all(r.split("\t")[1] == "alpha" and r.split("\t")[3] == "SKILL.md" for r in rows[1:]))
+        os.environ["MENTCACHED_SOFTSKILLS_USAGE"] = str(self.root / "softskills-usage.tsv" / "not-a-dir" / "x.tsv")
+        r = softskills.read({"name": "alpha"})
+        self.assertIn("body", r["text"], "an unwritable ledger is not a reason to refuse the skill")
+
+    def test_read_gives_the_text_and_the_files_beside_it(self):
+        _skill(self.ss, "beta", extra={"references/r.md": "ref body", "scripts/go.sh": "#!/bin/sh\n"})
+        r = softskills.read({"name": "beta"})
+        self.assertIn("# beta", r["text"])
+        self.assertEqual(r["files"], ["references/r.md", "scripts/go.sh"])
+        self.assertEqual(softskills.read({"name": "beta", "file": "references/r.md"})["text"], "ref body")
+
+    def test_refusals(self):
+        _skill(self.ss, "gamma", extra={"big.md": "x" * (softskills.MAX_BYTES + 1), "blob.png": "\x89PNG"})
+        (self.root / "secret.txt").write_text("no", encoding="utf-8", newline="\n")
+        for file, why in (("../secret.txt", "inside the skill folder"), ("/etc/passwd", "inside the skill folder"),
+                          ("big.md", "over the"), ("blob.png", "text only"), ("missing.md", "not a file")):
+            with self.subTest(file=file), self.assertRaises(ToolError) as cm:
+                softskills.read({"name": "gamma", "file": file})
+            self.assertIn(why, str(cm.exception))
+        with self.assertRaises(ToolError):
+            softskills.read({"name": "nobody"})
+
+    def test_two_roots_first_wins_and_says_who_is_shadowed(self):
+        other = self.root / "OTHER"; other.mkdir()
+        _skill(self.ss, "dup", "first"); _skill(other, "dup", "second"); _skill(other, "only-here")
+        os.environ["SOFT_SKILLS"] = os.pathsep.join([str(self.ss), str(other)])
+        s = softskills.scan()
+        self.assertEqual(sorted(k["name"] for k in s["skills"]), ["dup", "only-here"])
+        self.assertEqual(next(k for k in s["skills"] if k["name"] == "dup")["description"], "first second line")
+        self.assertEqual(len(s["shadowed"]), 1)
+
+    def test_the_pref_beats_the_env(self):
+        other = self.root / "PREF"; other.mkdir(); _skill(other, "viapref")
+        prefs.set_("softskills.roots", str(other), "t", "")
+        self.assertEqual([k["name"] for k in softskills.scan()["skills"]], ["viapref"])
+        self.assertEqual(softskills.scan()["roots"][0]["how"], "pref softskills.roots")
+
+    def test_the_plugins_own_folder_is_read_last_whatever_the_pref_says(self):
+        # ERRATA E1 (2026-09-29): a set softskills.roots hid a sized edition's own soft skills.
+        own = self.root / "EDITION" / "SOFT-SKILLS"; own.mkdir(parents=True); _skill(own, "edition-only"); _skill(own, "dup")
+        other = self.root / "PREF"; other.mkdir(); _skill(other, "viapref"); _skill(other, "dup")
+        prefs.set_("softskills.roots", str(other), "t", "")
+        softskills.OWN = own
+        s = softskills.scan()
+        self.assertEqual(sorted(k["name"] for k in s["skills"]), ["dup", "edition-only", "viapref"])
+        self.assertEqual(s["roots"][-1]["how"], "the running plugin's own")
+        self.assertEqual(next(k for k in s["skills"] if k["name"] == "dup")["root"], str(other), "the pref still wins a name")
+        prefs.set_("softskills.roots", str(own), "t", "")
+        self.assertEqual(len(softskills.scan()["roots"]), 1, "the own folder named by the pref is not listed twice")
+
+    def test_the_own_folder_is_read_last_on_the_env_and_default_branches_too(self):
+        # M2's mutants (2026-09-29): the $SOFT_SKILLS branch is the one a sized edition's launcher uses
+        own = self.root / "EDITION" / "SOFT-SKILLS"; own.mkdir(parents=True); _skill(own, "edition-only")
+        softskills.OWN = own
+        s = softskills.scan()   # Base sets $SOFT_SKILLS
+        self.assertEqual(s["roots"][0]["how"], "$SOFT_SKILLS"); self.assertEqual(s["roots"][-1]["how"], "the running plugin's own")
+        self.assertIn("edition-only", [k["name"] for k in s["skills"]])
+        os.environ.pop("SOFT_SKILLS")
+        home = self.root / "home"; home.mkdir(); os.environ["HOME"] = str(home); os.environ["USERPROFILE"] = str(home)
+        s = softskills.scan()
+        self.assertEqual(s["roots"][0]["how"], "default beside the seat"); self.assertEqual(s["roots"][-1]["how"], "the running plugin's own")
+        self.assertIn("edition-only", [k["name"] for k in s["skills"]])
+
+    def test_the_own_folder_is_found_in_a_minted_layout(self):
+        # <plugin>/servers/launch.py beside <plugin>/servers/polygram/mcp/softskills.py -> <plugin>/SOFT-SKILLS
+        import importlib.util, shutil
+        plug = self.root / "plug"; mcp = plug / "servers" / "polygram" / "mcp"; mcp.mkdir(parents=True)
+        (plug / "servers" / "launch.py").write_text("", encoding="utf-8", newline="\n"); (plug / "SOFT-SKILLS").mkdir()
+        shutil.copy(softskills.__file__, mcp / "softskills.py")
+        src = (mcp / "softskills.py").read_text(encoding="utf-8")
+        ns: dict = {"__file__": str(mcp / "softskills.py")}
+        body = src.split("def _own_soft()", 1)[1].split("OWN: Path", 1)[0]
+        exec("from pathlib import Path\ndef _own_soft()" + body, ns)
+        self.assertEqual(ns["_own_soft"](), plug / "SOFT-SKILLS")
+        (plug / "servers" / "launch.py").unlink()
+        self.assertIsNone(ns["_own_soft"](), "without launch.py it is a tree, and <tree>/SOFT-SKILLS is absent here")
+
+    def test_no_root_says_where_it_looked(self):
+        os.environ["SOFT_SKILLS"] = str(self.root / "absent")
+        self.assertIn("no SOFT-SKILLS root exists", softskills.summary())
+
+
+if __name__ == "__main__":
+    unittest.main()

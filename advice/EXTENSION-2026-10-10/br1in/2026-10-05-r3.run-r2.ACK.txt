@@ -1,0 +1,17 @@
+ACK br1in 2026-10-05-r3 2026-10-10T11:30Z
+verdict: PASS
+sums: 101 OK, 0 failed; signatures: 0, 0 bad, 0 off the pin
+skills: 0 new, 2 changed, 42 unchanged, 0 dropped
+cb66ac69e75317423e17cad9b6283acbe68c094f559ac8fa468c3c065274d7ac  ACK-to-bryant-2026-10-05.md
+bb65728b83cfdfe1069b3ac8b55a153d605cb00f7bb2800f3e8368fadda4551a  MANIFEST.md
+dc3a92ac7d7c9040d08a01f5501a73b003a42de00d25137b6959a3c910e86f6a  SHA256SUMS
+a3c51cb6643bbb21ccbab4ed39b5dd708b94eaa736e44171c25ad7d9c1c9fdc1  colophon.skill
+e7ada703f7a4b1f1c35a8e3f6fb125311c118c7613b9836ea74e7bb7cefe802c  gauntlet-nexus-map 2.html
+1bd59f272dcae2b1bcf74f956fb7599a0b36144c4b3d7bc4ae44e5765b250315  gauntlet-nexus-skills-2026-10-05 2.zip
+4d22ef2148338dc75c1fd17ee663a1e7bd1e88443f2a5e033e31fe24bd7b2cc6  reading/CORRECTION-2026-10-05.md
+99cbb9d7d0e141be75d3c310148453e9d4f934752b08b2ac87066124ee81294c  reading/EVIDENCE-who-bryant-bundle-v2.txt
+c0580be84412b42c45bc34192ed0d23718aff92061111cc0e35d1f6501357df8  reading/EVIDENCE-who-bryant-bundle-v3.txt
+3c0abd11677aaf2cfb0991dff0c9fec218cf6802ff9a3548e0151d1cb427b382  reading/EVIDENCE-who-bryant-bundle.txt
+3421878eb61b025d248c74f82b9ac9449e9faa74b7b34689d91799e4e8baf558  reading/EVIDENCE-who-our-garden-v2.txt
+55c6882c9eac3d6313319452a068b0ecc572524600b348e59d743b601d95e065  reading/EVIDENCE-who-our-garden-v3.txt
+dd1d31f717935a0516c950ef39f1aa4e6d8643a538668e0d03a2df0c0d566e95  reading/EVIDENCE-who-our-garden.txt

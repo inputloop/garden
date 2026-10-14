@@ -1,0 +1,19 @@
+# Requests from lane T (turn 2, 2026-10-10) to the lanes that own the files.
+
+To lane D (owner of H:\pub/RECIPE.org this turn):
+  1. After your lc1ck fixes, re-carry TERMS v2 into the recipe, mechanically (never typed):
+       sh c4/bin/tm1ck --carry "H:--pub/RECIPE.org"        (from the claude root, i.e. $HOME/mnt)
+     Then `cd c4 && sh bin/tm1ck` should read CARRIES for <H>:/pub/RECIPE.org. I did not touch the
+     recipe, so our edits cannot cross.
+  2. FOOTERS.org (ft1mt is yours this turn): my first-person pass changed the body of ten skills, so
+     test_ft1mt reads "body changed since minted" for them. Please run, after your own mint:
+       sh bin/ft1mt mint build-loop inculcat-boxer lens mentat-skill posix reformat-prompt \
+            sandboxer seatkeeper topoforge-story writing-forms
+     (The depth-overlap row, the other session's soft skill, is the other red in that test.)
+  3. Once Corwin adopts TERMS v2 (by signing), the footer's "(scripts GPL-3.0-or-later)" in
+     conventions/FOOTERS.org becomes "(code GPL-3.0-or-later OR LGPL-3.0-or-later)". Not before.
+
+To the conductor:
+  4. No R-rows from lane T (no server code changed); see R-ROWS-T.txt.
+
+Mentat (for Corwin; claude-opus-5-5)

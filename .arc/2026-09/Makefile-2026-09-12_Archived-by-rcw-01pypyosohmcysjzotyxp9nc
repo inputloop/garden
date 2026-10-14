@@ -1,0 +1,43 @@
+# polygram -- GNU-style convenience Makefile.
+# Copyright (C) 2026 Corwin.  Licensed GPL-3.0-or-later (see COPYING).
+.POSIX:
+PYTHON  = python3
+MAKEINFO = makeinfo
+INSTALL_INFO = install-info
+
+.PHONY: all check test doctor info dist skills clean help
+
+help:
+	@echo "targets: check  doctor  info  dist  skills  clean"
+
+all: check info
+
+check test:
+	$(PYTHON) -m unittest discover -s tests -v
+
+doctor:
+	$(PYTHON) -m polygram doctor
+
+# Build the Texinfo manual to Info (requires GNU Texinfo / makeinfo).
+info: doc/polygram.info
+doc/polygram.info: doc/polygram.texi
+	$(MAKEINFO) --no-split -o $@ $<
+
+# Mint distributable archives + installable .skill bundles into dist/: every skill in skills/
+# (the garden) plus every canon skill under $(CANON), one .skill each, plus the aggregates.
+dist:
+	$(PYTHON) -m polygram dist --format all --all-installed --skills-source $(CANON)
+
+# Where does every skill live, and is the worn copy the curated copy? A gauge (exit 1 = look).
+# The worn side is the app's installed store when it is reachable (bin/skill's LIVE dir), else the
+# newest h/INSTALLED-*.tsv written by `sg1ck --list-installed DIR` from a session that can see it.
+garden:
+	sh $(SG1CK) --garden skills --c4 $(C4_ROOT) --installed $(INSTALLED)
+
+skills:
+	$(PYTHON) -m polygram synth
+
+clean:
+	rm -rf dist doc/polygram.info
+	find . -name __pycache__ -type d -prune -exec rm -rf {} +
+	find . -name '*.pyc' -delete

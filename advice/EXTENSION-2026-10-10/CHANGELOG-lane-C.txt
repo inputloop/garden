@@ -1,0 +1,43 @@
+2026-10-10  Claude (Cowork, lane C of the extension edition: docs, licence and release)  for Corwin  <corwin@bru.st>
+
+	* c4/man/licensing-defaults.md: TERMS v1.1.  The writing line says CC-BY-SA-4.0, with the TA
+	model and already-published essays named as the CC BY 4.0 exceptions; "Why each default" and
+	the partner line follow; a change record.  The v1 text is kept whole at
+	c4/archive/2026-10/licensing-defaults-2026-10-10_Archived-by-*.md (aw2ri keep).  The carriers
+	still hold v1 (tm1ck: 5 DIFFERS, 1 MISSING) until re-carried; CORWIN.md is his to re-sign.
+	* bin/lc1ck: New.  The licence check: writing says CC-BY-SA-4.0, no prose file carries a code
+	licence, a terms or privacy text names BY-SA; counts the short CC-BY-SA4 footers.
+	* tests/lc1ck-spec.rb, tests/lc1ck-tests.sh: New.  Ruby spec, 11 rows; --prove-red.
+	* bin/release: --news-reason=WHY (the reason line: written into NEWS when the version has no
+	entry, else into the tag message), --prose-gates, --gauge (the NEWS-lag gauge).  Two new
+	refusals, each passable with the reason line: a retired bracket tag in shipped prose, and a
+	licence fault in shipped prose (lc1ck).  The NEWS gate now also matches a bare "Version X"
+	heading.
+	* tests/release-gate-spec.tcl, tests/release-gate-tests.sh: New.  Tcl spec, 13 rows; --prove-red
+	plants three broken copies.
+	* NEWS: entries for 1.0.2, 1.0.3, 1.0.4 and 1.0.5, from releases/, the ChangeLog and git.
+	* polygram/plugin.py (readme_text, readme_facts, _README_ROWS): the README's server count and
+	table come from SERVERS, a new switches table from prefs.KNOWN, and a floor line from
+	editions.FLOOR.  The cmd mint's README says the servers start through launch.cmd; the
+	hand-edit line for .mcp.json and the stale "three servers" lines are gone; the module
+	docstring and launch.py say no fixed count.
+	* tests/readme-count-spec.awk, tests/readme-count-tests.sh: New.  awk spec (C1-C3), a planted
+	seventh server, the prose-count gauge (--gauge); --prove-red five plants.
+	* tests/test_plugin.py: the README test reads plugin.readme_text().
+	* GRAMMARY.md: line 1 says it is a made word; forty-one new entries, each with a "Whose word"
+	line (twelve from the other lanes' requests); pointer entries for Tavern, Wire and garden-pony,
+	crediting Bryant; the seed's confusing passages reworded (S2 B5), the NO4C entry split and
+	pointed at models/SEMAPHORES.md and Avalon's bin/lift.sh; the footer minted by ft1mt.
+	* bin/gm1gk: New.  The GRAMMARY gauge: entries, entries with no "Whose word" line, tree words
+	with no entry, spelling NOT CHECKED with no dictionary; --words mints the headword list.
+	* conventions/TREE-WORDS.md: New.  The tree words gm1gk counts, seeded from S2 B3.
+	* tests/gm1gk-tests.sh: New.  G1-G4; --prove-red.
+	* UPGRADES.md: New.  The suggestion book for Bryant's software; U1, the bridge's queue fields.
+	* polygram/hooks.md: New.  Five hooks named from acts that already run; reached and worn modes.
+	* tests/hooks-tests.sh, tests/notice-version-tests.sh: New.
+	* SOFT-SKILLS/gauntlet/NOTICE.md: version 1.5, as its SKILL.md carries.
+	* README.org: the servers named without a typed count; the floor of eight.
+	* INDEX.md: CORWIN.md 1.4-sa; the persona sheets named as they are; rows for peers/, pub/, the
+	pasted chats and UPGRADES.md.
+	* PROJECT.md: no session trailer in commits (his rule of 2026-10-05); pushes by the dedicated
+	key since 2026-10-04, public pushes and releases his.

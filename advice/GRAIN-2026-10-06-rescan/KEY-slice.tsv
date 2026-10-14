@@ -1,0 +1,14 @@
+# cal1sc key for the 10-05 evening slice (58 messages), GRAIN 2026-10-06
+speaker	bryant1269
+maxquote	10
+maxwords	600
+fact	consent	consent
+fact	if-it-helps	if it helps
+fact	licences	gplv3|gpl-3|gpl 3
+fact	repo	token.?optimizer
+fact	send-everything	send(ing)? (me )?everything|everything.{0,40}decid
+fact	optional	optional
+private	games	jackbox|party game|playing (a |the )?game|social activit|which games
+private	relative	\bdee\b|spouse|wife
+private	past-job	doctor'?s office|past job|worked at|wrote a report|report recommending|workforce report
+private	place	baker street

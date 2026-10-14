@@ -1,0 +1,27 @@
+# tg1rs SPEC -- the C4QL tag resolver (lane B, turn 2).  Written before the test and the code.
+# Source: Corwin, turn 2 brief ("the TAG part must be -or resolve into ... a table row identifier in
+# a core context store ... doubly dual-linked references, in the entry and in the PERSONA journal");
+# study S9 section A (the five answers, the cast table, n1 from the persona side).
+T1  A tag is [PERSONA (CAST)FACT]: a persona slug, one space, a lower-case cast word in round
+    brackets, and a row key with no space.  PERSONA is read case-blind.
+T2  The cast table (conventions/c4ql-casts.tsv) says which table a cast word points at, how its key
+    is read, and which column names the persona.  A cast not in it answers WORD, and the tag is kept
+    exactly as written.
+T3  A cast of kind "indirect" names another cast; tg1rs follows at most 4 hops, then answers WORD.
+T4  When the cast resolves but its table cannot be read here, or the table has no row with that key,
+    the answer is GAP, and the reason names the table.
+T5  Forward link (entry -> persona): the row's "by" column names the persona (or an alias that
+    includes it); for a store note, a generation's came-from names [[persona:PERSONA...]].
+T6  Back link (persona -> entry): a generation in the persona's journal has a leads-to line naming
+    [[FACT]], [[FACT|...]], [[CAST:FACT]] or [[CAST:FACT|...]]; for a store note, a line in its
+    cited log whose second field is the persona also counts.
+T7  Row found: both links LINKED; forward only FORWARD-ONLY; back only BACK-ONLY; neither GAP
+    ("row found, no link either way").  Every answer is one of LINKED, FORWARD-ONLY, BACK-ONLY, GAP,
+    WORD; tg1rs never fails on a tag.
+T8  "tg1rs persona P" walks P's journal once (n1) and resolves every fact it leads to.
+T9  "tg1rs scan FILE..." finds every tag in the files and resolves it; text that is not a tag is
+    left alone.
+T10 "tg1rs sweep" resolves every tag the tables and journals imply, then prints the counts in words.
+    From a table it takes only the persons the cast table knows (a "names" row, or an alias's
+    members): a word in a prose "by" column that names nobody is not a persona.
+T11 Output is one tab-separated row per tag: answer, persona, cast, fact, reason.  Nothing is written.

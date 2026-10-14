@@ -1,0 +1,6 @@
+a73f15630317a4eae96aaf690469f5b268681c072fea21ccefbc9b05c5e55dad  ./SKILL.md
+693447ee757a5fb7276dae9d38165bad5954eaad052a62ae36652d6072bfc544  ./scripts/SAYS-SO
+1d96ae3ee78c5479a4995c84b570321c4ff9622afd1d671ace3b4be30287d732  ./scripts/check.sh
+69eb6dffebbca37f67deec16633c1d6d25747fa412e23c3256691bedab41ffb0  ./scripts/skill-lint.sh
+8fff448f9ef4476becd7e01fa47df6fbe76a26956c7a3bac509b61782c48e5f1  ./scripts/skill-sign.sh
+4ef1a24a8aaf31e7c86380f03fbda3b8d2e139d215b7e5e30886613d2a95d2e8  ./scripts/tests.sh

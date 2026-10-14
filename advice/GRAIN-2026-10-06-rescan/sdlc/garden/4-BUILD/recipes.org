@@ -1,0 +1,489 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+#+title: Larder software recipes (garden prototype)
+#+property: header-args :tangle no :padline no :mkdirp yes
+
+* What this file is
+
+This is the one source for the software side of a Larder stick: five canned profiles
+(=minimal=, =desktop=, =homelab=, =hardened=, =fullsink=), two opt-in add-ons, the choices the
+first-run shell offers, and a small overlay for an author's edition. Everything under =out/=
+is generated from the blocks below. Edit this file, never =out/=.
+
+Base: Debian 13 "trixie", built with live-build. Why that base and not Guix or Arch is argued in
+=../2-ANALYSIS.md=; the short version is Secure Boot on reclaimed laptops, a stable release, and the
+packages the Larder spec names.
+
+*Status.* Nothing here has been built into an image or booted. The lists are checked against the
+package names Debian 13.7 publishes (see =../5-TEST/evidence/PROVENANCE.txt=), not by an install.
+
+* How to read this file: two readers
+
+A block is found by plain markers, so it can be read with or without Emacs:
+
+- =#+name: X= above a block names it. A line that is exactly =<<X>>= inside a tangled block with
+  =:noweb yes= stands for that block's text.
+- =:tangle PATH= says where a block is written (relative to this file). No =:tangle=, or =no=: the block
+  is only a named piece.
+- Reader one: =bin/lr1tg= (POSIX awk). Reader two: =org-babel-tangle= in Emacs.
+  =5-TEST/lr1ck= runs both on this file and requires the same bytes.
+
+Use only what both readers handle alike: whole-line references at column 0, no nesting, no blank
+first or last line in a referenced block. =bin/lr1tg= refuses anything else; Emacs would not.
+
+* Pieces shared by every list
+
+Every generated list starts with these two lines. Live-build skips lines that begin with a hash.
+A list line that begins with an exclamation mark would be RUN by live-build, so none may.
+
+#+name: hdr
+#+begin_src text
+# SPDX-License-Identifier: CC-BY-SA-4.0
+# Generated from recipes.org. Edit the recipe, not this file.
+#+end_src
+
+* Package groups
+
+One group per block, one package per line. Each package is in exactly one group, so a profile
+is a union of groups and a duplicate is a mistake the test can see. Live-build itself adds
+=live-boot=, =live-config=, =live-config-systemd=, =systemd-sysv=, =shim-signed= and the signed
+GRUB, so they are not listed (observed in the live-build source, see PROVENANCE.txt).
+
+- =g-boot=: kernel, initramfs, encrypted persistence plumbing, free firmware only.
+- =g-core=: what every edition needs: shell tools, network, WireGuard, GnuPG, SSH.
+- =g-token=: smart-card and FIDO2 tools, the software stand-in for the secure element (spec, phase 2).
+- =g-console=: Emacs without a window system, Git, tmux. The console first-run shell is Emacs.
+- =g-vtmouse=: mouse on the Linux console (the console shell must work with a mouse alone).
+- =g-xfce=: the desktop, as small as XFCE goes.
+- =g-access=: on-screen keyboard and screen reader.
+- =g-apps=: browser, word processor, spreadsheet, PDF viewer, Nextcloud client, offline library.
+- =g-apps-more=: slides, mail, image viewer, archive tool.
+- =g-media=: one audio and video player.
+- =g-hardening=: mandatory access control, firewall, USB policy, audit, sandboxing, a password vault.
+- =g-onion=: Tor and torsocks. Debian's =tor= package enables its service when installed (read in its
+  postinst, not run), so a build needs a hook to switch it off; this prototype has no such hook.
+- =g-server=: what a chapter's "pantry box" runs, headless.
+- =g-maker=: QGIS, FreeCAD, KiCad, and the tool for flashing the radio board.
+- =g-author=: an e-book reader and a converter, for the author's edition and for fullsink.
+- =g-emacs-gui=: Emacs with a window, for people who want the Emacs first-run frame on a desktop.
+- =g-firmware=: NON-FREE firmware (Debian's =non-free-firmware= component). Opt-in; see Add-ons.
+
+#+name: g-boot
+#+begin_src text
+linux-image-amd64
+initramfs-tools
+squashfs-tools
+cryptsetup
+cryptsetup-initramfs
+firmware-linux-free
+#+end_src
+
+#+name: g-core
+#+begin_src text
+sudo
+openssh-client
+gnupg
+rsync
+curl
+ca-certificates
+network-manager
+wireguard-tools
+dosfstools
+e2fsprogs
+pciutils
+usbutils
+man-db
+less
+locales
+console-setup
+keyboard-configuration
+#+end_src
+
+#+name: g-token
+#+begin_src text
+pcscd
+scdaemon
+opensc
+fido2-tools
+libpam-u2f
+tpm2-tools
+#+end_src
+
+#+name: g-console
+#+begin_src text
+emacs-nox
+git
+tmux
+nano
+#+end_src
+
+#+name: g-vtmouse
+#+begin_src text
+gpm
+#+end_src
+
+#+name: g-xfce
+#+begin_src text
+xfce4
+xfce4-terminal
+xfce4-power-manager
+lightdm
+xserver-xorg
+network-manager-gnome
+pavucontrol
+gvfs
+gvfs-backends
+udisks2
+polkitd
+xdg-utils
+fonts-dejavu-core
+fonts-noto-core
+#+end_src
+
+#+name: g-access
+#+begin_src text
+onboard
+orca
+#+end_src
+
+#+name: g-apps
+#+begin_src text
+firefox-esr
+libreoffice-writer
+libreoffice-calc
+libreoffice-gtk3
+evince
+mousepad
+nextcloud-desktop
+kiwix
+#+end_src
+
+#+name: g-apps-more
+#+begin_src text
+libreoffice-impress
+thunderbird
+ristretto
+file-roller
+#+end_src
+
+#+name: g-media
+#+begin_src text
+mpv
+#+end_src
+
+#+name: g-hardening
+#+begin_src text
+apparmor
+apparmor-profiles
+apparmor-utils
+ufw
+usbguard
+auditd
+libpam-tmpdir
+keepassxc
+mat2
+bubblewrap
+firejail
+secure-delete
+lynis
+#+end_src
+
+#+name: g-onion
+#+begin_src text
+tor
+torsocks
+#+end_src
+
+#+name: g-server
+#+begin_src text
+podman
+nginx
+postgresql
+postgresql-17-postgis-3
+kiwix-tools
+prometheus-node-exporter
+ansible
+smartmontools
+mdadm
+lvm2
+qemu-system-x86
+libvirt-daemon-system
+fail2ban
+nmap
+i2pd
+#+end_src
+
+#+name: g-maker
+#+begin_src text
+qgis
+freecad
+kicad
+inkscape
+gimp
+audacity
+esptool
+#+end_src
+
+#+name: g-author
+#+begin_src text
+foliate
+pandoc
+#+end_src
+
+#+name: g-emacs-gui
+#+begin_src text
+emacs-gtk
+#+end_src
+
+#+name: g-firmware
+#+begin_src text
+firmware-iwlwifi
+firmware-realtek
+firmware-atheros
+firmware-brcm80211
+firmware-mediatek
+firmware-misc-nonfree
+firmware-intel-graphics
+firmware-amd-graphics
+amd64-microcode
+intel-microcode
+#+end_src
+
+* The five profiles
+
+A profile is a union of groups. Rows of the table are what the test checks against the files.
+
+| profile  | for whom                                              | groups                                                                                  |
+|----------+-------------------------------------------------------+-----------------------------------------------------------------------------------------|
+| minimal  | a shell that boots, unlocks and joins a network       | boot core token console vtmouse                                                         |
+| desktop  | the everyday desktop for members and new organizers   | boot core token console xfce access apps apps-more media                                |
+| homelab  | a headless chapter server ("pantry box")              | boot core token console vtmouse onion server                                            |
+| hardened | the desktop with fewer parts and more guards          | boot core token console xfce access apps hardening onion                                |
+| fullsink | everything in this file, including what some will not want | every group, including firmware                                                    |
+
+#+begin_src text :tangle out/minimal.packages :noweb yes
+<<hdr>>
+<<g-boot>>
+<<g-core>>
+<<g-token>>
+<<g-console>>
+<<g-vtmouse>>
+#+end_src
+
+#+begin_src text :tangle out/desktop.packages :noweb yes
+<<hdr>>
+<<g-boot>>
+<<g-core>>
+<<g-token>>
+<<g-console>>
+<<g-xfce>>
+<<g-access>>
+<<g-apps>>
+<<g-apps-more>>
+<<g-media>>
+#+end_src
+
+#+begin_src text :tangle out/homelab.packages :noweb yes
+<<hdr>>
+<<g-boot>>
+<<g-core>>
+<<g-token>>
+<<g-console>>
+<<g-vtmouse>>
+<<g-onion>>
+<<g-server>>
+#+end_src
+
+#+begin_src text :tangle out/hardened.packages :noweb yes
+<<hdr>>
+<<g-boot>>
+<<g-core>>
+<<g-token>>
+<<g-console>>
+<<g-xfce>>
+<<g-access>>
+<<g-apps>>
+<<g-hardening>>
+<<g-onion>>
+#+end_src
+
+#+begin_src text :tangle out/fullsink.packages :noweb yes
+<<hdr>>
+<<g-boot>>
+<<g-core>>
+<<g-token>>
+<<g-console>>
+<<g-vtmouse>>
+<<g-xfce>>
+<<g-access>>
+<<g-apps>>
+<<g-apps-more>>
+<<g-media>>
+<<g-hardening>>
+<<g-onion>>
+<<g-server>>
+<<g-maker>>
+<<g-author>>
+<<g-emacs-gui>>
+<<g-firmware>>
+#+end_src
+
+* Add-ons: opt-in, never in a free profile
+
+Two things are kept out of =minimal=, =desktop=, =homelab= and =hardened= on purpose. Both are in
+=fullsink=, and a builder can add either to any profile.
+
+*Firmware* (=g-firmware= above) comes from Debian's =non-free-firmware= component. Many reclaimed laptops
+will not reach Wi-Fi without it; the Free Software Foundation does not list Debian as a free
+distribution partly for this reason. It is its own list so a builder chooses it knowingly.
+
+#+begin_src text :tangle out/addon-firmware.packages :noweb yes
+<<hdr>>
+<<g-firmware>>
+#+end_src
+
+*Mesh* is the Reticulum stack the Larder spec names (chat over LoRa and other links). None of it is in
+Debian. Each row says where the licence stands, taken from the upstream =LICENSE= files read on
+2026-10-06 (master branch; the version a build installs may differ). The Reticulum License adds two
+conditions to an MIT-style grant: no use in a system able to purposefully harm people, and no use in
+building an AI or machine-learning training dataset. Conditions on what the software may be used for
+are conditions on freedom 0, so a builder who values the four freedoms should read this before ticking it.
+Columns: name, licence, standing, needs, how it would be installed.
+
+#+name: mesh-external
+#+begin_src text
+# SPDX-License-Identifier: CC-BY-SA-4.0
+# name|licence|standing|needs|how installed (none of these is built here)
+rns|Reticulum License (MIT-style plus use conditions)|restricted||pip at provisioning, by the signed larder-setup
+lxmf|Reticulum License (MIT-style plus use conditions)|restricted|rns|pip at provisioning
+nomadnet|GPL-3.0|free|rns lxmf|pip at provisioning
+sideband|CC BY-NC-SA 4.0 (non-commercial)|restricted|rns lxmf|pip or a flatpak at provisioning
+#+end_src
+
+#+begin_src text :tangle out/addon-mesh.external :noweb yes
+<<mesh-external>>
+#+end_src
+
+#+begin_src text :tangle out/fullsink.external :noweb yes
+<<mesh-external>>
+#+end_src
+
+* Build flags per profile
+
+These are =lb config= options, one per line, option then value. Every option name is checked against
+the option list of the live-build version in trixie. Lines that begin with a hash are comments. Use: =set --; while read -r f v; do case $f in "#"*) continue;; esac; set -- "$@" "$f" "$v"; done < out/desktop.lbflags; lb config "$@"=
+
+The four free profiles say =--archive-areas main= and turn firmware off. =fullsink= adds the firmware
+component. =--uefi-secure-boot enable= follows the spec (shim for Secure Boot); the option exists,
+but no build has been run here to see it work.
+
+#+name: lb-common
+#+begin_src text
+--distribution trixie
+--architecture amd64
+--binary-image iso-hybrid
+--debian-installer none
+--uefi-secure-boot enable
+--firmware-chroot false
+--firmware-binary false
+#+end_src
+
+#+begin_src text :tangle out/minimal.lbflags :noweb yes
+<<hdr>>
+<<lb-common>>
+--archive-areas main
+--apt-recommends false
+--iso-volume LARDER-MINIMAL
+#+end_src
+
+#+begin_src text :tangle out/desktop.lbflags :noweb yes
+<<hdr>>
+<<lb-common>>
+--archive-areas main
+--apt-recommends true
+--iso-volume LARDER-DESKTOP
+#+end_src
+
+#+begin_src text :tangle out/homelab.lbflags :noweb yes
+<<hdr>>
+<<lb-common>>
+--archive-areas main
+--apt-recommends false
+--iso-volume LARDER-HOMELAB
+#+end_src
+
+#+begin_src text :tangle out/hardened.lbflags :noweb yes
+<<hdr>>
+<<lb-common>>
+--archive-areas main
+--apt-recommends false
+--iso-volume LARDER-HARDENED
+#+end_src
+
+#+begin_src text :tangle out/fullsink.lbflags :noweb yes
+<<hdr>>
+<<lb-common>>
+--archive-areas main non-free-firmware
+--apt-recommends true
+--iso-volume LARDER-FULLSINK
+#+end_src
+
+* First-run shell: profiles and choices
+
+Which first-run shell an edition gets follows from what it has: a window system gets the HTML page
+(shown full-screen by the browser), a console-only edition gets the Emacs frame. Both read the same
+choices, and the test checks each shell against this table.
+
+#+begin_src text :tangle out/profiles.txt
+# SPDX-License-Identifier: CC-BY-SA-4.0
+# profile|shell|for whom
+minimal|emacs|a shell that boots, unlocks and joins a network
+desktop|html|the everyday desktop for members and new organizers
+homelab|emacs|a headless chapter server ("pantry box")
+hardened|html|the desktop with fewer parts and more guards
+fullsink|html|everything in this file, including what some will not want
+#+end_src
+
+A choice is offered when the edition's profile is listed (=*= is every profile). =needs= is a package
+that must be in each listed profile's list (=-= means none); for author choices it may instead be in
+=out/author.packages=. =command= is what the shell would start; the =larder-*= commands are not built
+here. The spec names =larder-setup=, =larder-soft-reset= and =larder-wipe=; =larder-close=, =larder-assist= and
+=larder-notice= are this prototype's own placeholders for things the spec describes without a name. Every other program is a file in the package the choice needs
+(=../5-TEST/evidence/trixie-13.7-programs.txt=; =lr1ck= check B17). The words are plain on purpose.
+
+#+begin_src text :tangle out/choices.txt
+# SPDX-License-Identifier: CC-BY-SA-4.0
+# id|edition|profiles|needs|label|plain words|command
+try|base|*|-|Look around first|Nothing you do here is kept when you turn the computer off.|larder-close
+private|base|*|cryptsetup|Make my private space|You choose a PIN. Your files stay on this stick, locked.|larder-setup persistence
+chapter|base|*|wireguard-tools|Join my group|Connect to your group's server, using the file a facilitator gave you.|larder-setup chapter
+library|base|desktop hardened fullsink|kiwix|Open the library|Read books and guides without the internet.|kiwix-desktop
+write|base|desktop hardened fullsink|libreoffice-writer|Write a document|Open a word processor.|lowriter
+help|base|*|-|Ask for help|Someone you trust can see your screen, only while you allow it. You can stop at any time.|larder-assist
+read|author|desktop fullsink|foliate|Read a book|Open the book reader.|foliate
+listen|author|desktop fullsink|mpv|Listen to a book|Play an audiobook from this stick.|mpv --force-window=yes /usr/share/larder/author/audio
+fanwork|author|desktop fullsink|mousepad|Write a fan work|Start a new story in this world.|mousepad
+stamp|author|desktop fullsink|-|Mark my story by permission|Adds the notice's mark to a finished story. It refuses until the author has signed the notice.|lr1st
+notice|author|desktop fullsink|-|Read the permission notice|What you may and may not do with these stories.|larder-notice
+#+end_src
+
+* Author overlay
+
+The author's edition is not a sixth profile. It is =desktop= (or =fullsink=) plus the choices marked
+=author= above plus the list below. It is built on =desktop= or =fullsink= only. It ships no book text: see =author/books.org= for the per-title,
+per-right gate and =author/PERMISSION-NOTICE.md= for the notice (a draft, not a grant).
+
+#+begin_src text :tangle out/author.packages :noweb yes
+<<hdr>>
+<<g-author>>
+#+end_src
+
+* Using the output
+
+A builder picks a profile, then (in a Debian trixie chroot or VM, which this prototype does not do):
+
+1. =lb config= with the flags from =out/PROFILE.lbflags=;
+2. copy =out/PROFILE.packages= to =config/package-lists/larder.list.chroot=;
+3. add =out/addon-firmware.packages= as a second list if firmware is wanted, and widen =--archive-areas= to match;
+4. =lb build=.
+
+Steps 1 to 4 were not run for this prototype.

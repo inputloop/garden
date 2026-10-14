@@ -1,0 +1,99 @@
+ITEM STATE CUR LAST DATE NOTE
+cs1gk GREEN archive/cs1gk/e6a8be8b03c08cb9-cs1gk NONE 2026-09-23T02:26:33Z tests/cs1gk-tests.sh PASS 1s; tests/cs1gk-tests.sh --prove-red PASS 0s
+dc1sv GREEN archive/dc1sv/b8fbe8a644dd4e88-dc1sv NONE 2026-09-23T02:26:33Z tests/dc1sv-tests.sh PASS 1s; tests/dc1sv-tests.sh --prove-red PASS 1s
+eclipse-pass GREEN archive/eclipse-pass/c7fe703267282742-SKILL.md NONE 2026-09-23T02:26:34Z tests/eclipse-pass-tests.sh PASS 0s; tests/eclipse-pass-tests.sh --prove-red PASS 1s; lint + size PASS 0s 12259B 1873w ~3065tok(est) · description 993/1024 chars
+gb1md GREEN archive/gb1md/e53bc340e3c420fa-gb1md NONE 2026-09-23T02:26:34Z tests/gb1md-tests.sh PASS 2s; tests/gb1md-tests.sh --prove-red PASS 2s
+gd1ck GREEN archive/gd1ck/92ea80f5802f8b3f-gd1ck NONE 2026-09-23T02:26:34Z tests/gd1ck-tests.sh PASS 2s; tests/gd1ck-tests.sh --prove-red PASS 2s
+aethernet-relay GREEN archive/aethernet-relay/375b1043e921a72b-SKILL.md NONE 2026-09-23T02:26:34Z lint + size PASS 0s 7872B 1121w ~1968tok(est) · description 938/1024 chars
+altorewired GREEN archive/altorewired/0da17f2fa8f92e0f-SKILL.md NONE 2026-09-23T02:26:34Z lint + size PASS 0s 5667B 923w ~1417tok(est) · description 1015/1024 chars
+boundscheck GREEN archive/boundscheck/7e6b80f702964156-SKILL.md NONE 2026-09-23T02:26:34Z lint + size PASS 0s 5804B 1004w ~1451tok(est) · description 580/1024 chars
+candor-gate GREEN archive/candor-gate/a591430d53f3eec8-SKILL.md NONE 2026-09-23T02:26:34Z lint + size PASS 0s 7015B 1112w ~1754tok(est) · description 955/1024 chars
+color-theory GREEN archive/color-theory/793e1e7704abf4e6-SKILL.md NONE 2026-09-23T02:26:34Z lint + size PASS 0s 3458B 537w ~865tok(est) · description 815/1024 chars
+consent-gate GREEN archive/consent-gate/42f227e28ae03c51-SKILL.md NONE 2026-09-23T02:26:34Z lint + size PASS 0s 8139B 1169w ~2035tok(est) · description 830/1024 chars
+countable-gauge GREEN archive/countable-gauge/4cf1cfc724af97cd-SKILL.md NONE 2026-09-23T02:26:34Z lint + size PASS 0s 7184B 1153w ~1796tok(est) · description 976/1024 chars; skills/countable-gauge/tests.sh PASS 0s; skills/countable-gauge/tests.sh --prove-red PASS 0s
+drawer-vs-door GREEN archive/drawer-vs-door/821f53aae9c84cd7-SKILL.md NONE 2026-09-23T02:26:35Z lint + size PASS 0s 9525B 1532w ~2382tok(est) · description 1011/1024 chars
+emacs-tashaki GREEN archive/emacs-tashaki/dc27cc6d4dcaa6ba-SKILL.md NONE 2026-09-23T02:26:35Z lint + size PASS 0s 5559B 762w ~1390tok(est) · description 820/1024 chars
+ethicsminions GREEN archive/ethicsminions/fde494a3e42836fc-SKILL.md NONE 2026-09-23T02:26:35Z lint + size PASS 0s 8905B 1362w ~2227tok(est) · description 734/1024 chars
+foaf GREEN archive/foaf/bd16baec58c12f3c-SKILL.md NONE 2026-09-23T02:26:35Z lint + size PASS 0s 12010B 1786w ~3003tok(est) · description 702/1024 chars
+fortress-palace GREEN archive/fortress-palace/23449dd820ce939f-SKILL.md NONE 2026-09-23T02:26:35Z lint + size PASS 0s 7735B 1235w ~1934tok(est) · description 992/1024 chars; skills/fortress-palace/tests.sh PASS 0s; skills/fortress-palace/tests.sh --prove-red PASS 0s
+hand-test GREEN archive/hand-test/412487ad3ab006ab-SKILL.md NONE 2026-09-23T02:26:35Z lint + size PASS 0s 4328B 697w ~1082tok(est) · description 484/1024 chars
+garden LOOK NONE NONE 2026-09-23T02:26:35Z make garden (sg1ck) LOOK 20s
+at1pl GREEN archive/at1pl/1ddb53df85cb3b2b-at1pl NONE 2026-09-23T02:26:35Z c4/tests/at1pl-tests.sh PASS 2s; c4/tests/at1pl-tests.sh --prove-red PASS 1s
+da1te GREEN archive/da1te/3719633662d017cd-da1te NONE 2026-09-23T02:26:35Z c4/tests/da1te-tests.sh PASS 1s; c4/tests/da1te-tests.sh --prove-red PASS 0s
+containment-during-exec GREEN archive/containment-during-exec/76d5a0ac691c9f44-SKILL.md NONE 2026-09-23T02:26:35Z lint + size (canon) PASS 0s 3889B 538w ~973tok(est) · description 951/1024 chars
+fantasy-operational-boundary GREEN archive/fantasy-operational-boundary/0d9441eaf724c86c-SKILL.md NONE 2026-09-23T02:26:35Z lint + size (canon) PASS 0s 4260B 651w ~1065tok(est) · description 915/1024 chars
+gf-02-containment-during-exec GREEN archive/gf-02-containment-during-exec/ee69773bcb4d4d0f-SKILL.md NONE 2026-09-23T02:26:36Z lint + size (canon) PASS 0s 2757B 395w ~690tok(est) · description 233/1024 chars
+gf-02-layered-assurance GREEN archive/gf-02-layered-assurance/371d58cf4ac6d081-SKILL.md NONE 2026-09-23T02:26:36Z lint + size (canon) PASS 0s 3759B 551w ~940tok(est) · description 855/1024 chars
+guarded-visibility GREEN archive/guarded-visibility/19e01693c878b9d8-SKILL.md NONE 2026-09-23T02:26:36Z lint + size (canon) PASS 0s 2380B 356w ~595tok(est) · description 284/1024 chars
+hb1ck GREEN archive/hb1ck/92a57b887f6196ad-hb1ck NONE 2026-09-23T02:27:22Z tests/hb1ck-tests.sh PASS 1s; tests/hb1ck-tests.sh --prove-red PASS 0s
+landcheck GREEN NONE NONE 2026-09-23T02:27:22Z tests/landcheck-tests.sh PASS 1s; tests/landcheck-tests.sh --prove-red PASS 0s
+makefile-c4root GREEN archive/makefile-c4root/2c2fb1a1eb3ea7c9-Makefile NONE 2026-09-23T02:27:22Z tests/makefile-c4root-tests.sh PASS 0s; tests/makefile-c4root-tests.sh --prove-red PASS 0s
+ms1dg GREEN archive/ms1dg/7e3f5f5f9f1c049d-ms1dg NONE 2026-09-23T02:27:22Z tests/ms1dg-tests.sh PASS 3s; tests/ms1dg-tests.sh --prove-red PASS 2s
+mt1pl GREEN archive/mt1pl/f933a42a16a4f86f-mt1pl NONE 2026-09-23T02:27:23Z tests/mt1pl-tests.sh PASS 1s; tests/mt1pl-tests.sh --prove-red PASS 0s
+pg1rl GREEN archive/pg1rl/f792add672b26d0f-pg1rl NONE 2026-09-23T02:27:23Z tests/pg1rl-tests.sh PASS 7s; tests/pg1rl-tests.sh --prove-red PASS 8s
+pk1tv GREEN archive/pk1tv/aff37682d82a171c-pk1tv NONE 2026-09-23T02:27:23Z tests/pk1tv-tests.sh PASS 0s; tests/pk1tv-tests.sh --prove-red PASS 1s
+inculcat-boxer GREEN archive/inculcat-boxer/21f71f8d2e648a77-SKILL.md NONE 2026-09-23T02:27:23Z lint + size PASS 0s 8879B 1411w ~2220tok(est) · description 911/1024 chars
+instrument-panel GREEN archive/instrument-panel/3c114ee09d766ef5-SKILL.md NONE 2026-09-23T02:27:23Z lint + size PASS 0s 4988B 799w ~1247tok(est) · description 769/1024 chars
+lens GREEN archive/lens/d2bac4e51542d410-SKILL.md NONE 2026-09-23T02:27:23Z lint + size PASS 0s 7444B 1213w ~1861tok(est) · description 928/1024 chars
+medley-review GREEN archive/medley-review/239301d99c3f575b-SKILL.md NONE 2026-09-23T02:27:23Z lint + size PASS 0s 6528B 947w ~1632tok(est) · description 737/1024 chars
+mentat-skill GREEN archive/mentat-skill/f4dc70723f73ba53-SKILL.md NONE 2026-09-23T02:27:23Z lint + size PASS 0s 13458B 2284w ~3365tok(est) · description 960/1024 chars
+pencil-your-own GREEN archive/pencil-your-own/75ae8127e80a9884-SKILL.md NONE 2026-09-23T02:27:23Z lint + size PASS 0s 12750B 2054w ~3188tok(est) · description 955/1024 chars; skills/pencil-your-own/tests.sh PASS 0s; skills/pencil-your-own/tests.sh --prove-red PASS 0s
+pmo GREEN archive/pmo/50fa8ea7fe74092c-SKILL.md NONE 2026-09-23T02:27:23Z lint + size PASS 0s 7927B 1250w ~1982tok(est) · description 963/1024 chars
+pocket-mentat GREEN archive/pocket-mentat/041f8b7a932dc2bc-SKILL.md NONE 2026-09-23T02:27:24Z lint + size PASS 0s 6590B 1048w ~1648tok(est) · description 978/1024 chars; skills/pocket-mentat/tests.sh PASS 0s; skills/pocket-mentat/tests.sh --prove-red PASS 0s
+posix-gotchas GREEN archive/posix-gotchas/0b6df44dd84074bd-SKILL.md NONE 2026-09-23T02:27:24Z lint + size PASS 0s 6574B 1055w ~1644tok(est) · description 749/1024 chars
+posix GREEN archive/posix/cca6a6737904933c-SKILL.md NONE 2026-09-23T02:27:24Z lint + size PASS 0s 7471B 1159w ~1868tok(est) · description 678/1024 chars
+principles GREEN archive/principles/f60ced857bd76867-SKILL.md NONE 2026-09-23T02:27:24Z lint + size PASS 0s 3622B 474w ~906tok(est) · description 757/1024 chars
+project-memory GREEN archive/project-memory/b9da2aa4568d169a-SKILL.md NONE 2026-09-23T02:27:24Z lint + size PASS 0s 1413B 189w ~354tok(est) · description 649/1024 chars
+reformat-prompt GREEN archive/reformat-prompt/91478fef58c677a2-SKILL.md NONE 2026-09-23T02:27:24Z lint + size PASS 0s 3145B 457w ~787tok(est) · description 305/1024 chars
+iThmss GREEN archive/iThmss/b7857a074bbfe920-iThmss NONE 2026-09-23T02:27:24Z c4/tests/iThmss-tests.sh PASS 1s
+ju1as RED archive/ju1as/894f33b8d363e3b6-ju1as NONE 2026-09-23T02:27:24Z c4/tests/ju1as-tests.sh FAIL 6s; c4/tests/ju1as-tests.sh --prove-red FAIL 6s
+mo1nt GREEN archive/mo1nt/4a19676ed2b0ecc0-mo1nt NONE 2026-09-23T02:27:24Z c4/tests/mo1nt-tests.sh PASS 0s; c4/tests/mo1nt-tests.sh --prove-red PASS 0s
+on1fl GREEN archive/on1fl/a3b89e7ed3a31e60-on1fl NONE 2026-09-23T02:27:24Z c4/tests/on1fl-tests.sh PASS 0s; c4/tests/on1fl-tests.sh --prove-red PASS 1s
+pl1in GREEN archive/pl1in/8bbcfb25fc47f82f-pl1in NONE 2026-09-23T02:27:25Z c4/tests/pl1in-tests.sh PASS 2s; c4/tests/pl1in-tests.sh --prove-red PASS 3s
+intake GREEN archive/intake/ab7e8a4dbcbe089c-intake NONE 2026-09-23T02:27:25Z c4/tests/intake-spec.py PASS 0s
+hooks-to-knowledge GREEN archive/hooks-to-knowledge/1862966c919f8a07-SKILL.md NONE 2026-09-23T02:27:25Z lint + size (canon) PASS 0s 4714B 753w ~1179tok(est) · description 1000/1024 chars
+layered-assurance GREEN archive/layered-assurance/47a76b868d135bd3-SKILL.md NONE 2026-09-23T02:27:25Z lint + size (canon) PASS 0s 3788B 553w ~947tok(est) · description 855/1024 chars
+magic-words-persona GREEN archive/magic-words-persona/9f062d0baab31b86-SKILL.md NONE 2026-09-23T02:27:25Z lint + size (canon) PASS 0s 3387B 519w ~847tok(est) · description 1014/1024 chars
+md-org-canonicity GREEN archive/md-org-canonicity/a41593e254e82d27-SKILL.md NONE 2026-09-23T02:27:25Z lint + size (canon) PASS 0s 3484B 490w ~871tok(est) · description 977/1024 chars
+prove-a-promise GREEN archive/prove-a-promise/142874b1b0e202a7-SKILL.md NONE 2026-09-23T02:27:25Z lint + size (canon) PASS 0s 3591B 516w ~898tok(est) · description 835/1024 chars
+rf1bm GREEN archive/rf1bm/298933fc2a2c8219-rf1bm NONE 2026-09-23T02:28:04Z tests/rf1bm-tests.sh PASS 0s; tests/rf1bm-tests.sh --prove-red PASS 1s
+se1sn GREEN archive/se1sn/66d351c88e852566-se1sn NONE 2026-09-23T02:28:04Z tests/se1sn-tests.sh PASS 1s; tests/se1sn-tests.sh --prove-red PASS 1s
+release-runbook GREEN archive/release-runbook/8ad7a200ac016052-SKILL.md NONE 2026-09-23T02:28:04Z lint + size PASS 0s 4974B 734w ~1244tok(est) · description 844/1024 chars
+rolls GREEN archive/rolls/d845f59bf3751b48-SKILL.md NONE 2026-09-23T02:28:04Z lint + size PASS 0s 10373B 1672w ~2594tok(est) · description 843/1024 chars
+run-card GREEN archive/run-card/ddadfa3c7955b487-SKILL.md NONE 2026-09-23T02:28:04Z lint + size PASS 0s 9947B 1690w ~2487tok(est) · description 962/1024 chars
+sandboxer GREEN archive/sandboxer/424873f9ca18c9cd-SKILL.md NONE 2026-09-23T02:28:04Z lint + size PASS 0s 30302B 4877w ~7576tok(est) · description 985/1024 chars
+savane-forensics GREEN archive/savane-forensics/dbb216fcecd2cbbd-SKILL.md NONE 2026-09-23T02:28:04Z lint + size PASS 0s 6386B 923w ~1597tok(est) · description 513/1024 chars
+seams GREEN archive/seams/44d4622a4d1723fb-SKILL.md NONE 2026-09-23T02:28:04Z lint + size PASS 0s 11256B 1809w ~2814tok(est) · description 951/1024 chars
+seatkeeper GREEN archive/seatkeeper/72b6c15390e43237-SKILL.md NONE 2026-09-23T02:28:04Z lint + size PASS 0s 10926B 1671w ~2732tok(est) · description 420/1024 chars
+security-digest GREEN archive/security-digest/0f56d51308dba97d-SKILL.md NONE 2026-09-23T02:28:04Z lint + size PASS 0s 6388B 961w ~1597tok(est) · description 549/1024 chars
+session-rotate GREEN archive/session-rotate/b9553f711e8c6f08-SKILL.md NONE 2026-09-23T02:28:05Z lint + size PASS 0s 6821B 1032w ~1706tok(est) · description 797/1024 chars
+shelf-check GREEN archive/shelf-check/b2c1c24544fa56ba-SKILL.md NONE 2026-09-23T02:28:05Z lint + size PASS 0s 5466B 795w ~1367tok(est) · description 799/1024 chars
+shell-tooling GREEN archive/shell-tooling/bf140d16d20486f4-SKILL.md NONE 2026-09-23T02:28:05Z lint + size PASS 0s 720B 88w ~180tok(est) · description 149/1024 chars
+skill-metrics GREEN archive/skill-metrics/f254b00c3080f18a-SKILL.md NONE 2026-09-23T02:28:05Z lint + size PASS 0s 4928B 716w ~1232tok(est) · description 967/1024 chars; skills/skill-metrics/tests.sh PASS 1s; skills/skill-metrics/tests.sh --prove-red PASS 1s
+skill-sign GREEN archive/skill-sign/aa1cb6aa11ac8aaa-SKILL.md NONE 2026-09-23T02:28:05Z lint + size PASS 0s 4296B 590w ~1074tok(est) · description 663/1024 chars
+skilltank GREEN archive/skilltank/36e996b262859bb9-SKILL.md NONE 2026-09-23T02:28:05Z lint + size PASS 0s 12394B 1954w ~3099tok(est) · description 948/1024 chars
+token-optimizer GREEN archive/token-optimizer/194b9ca2dfc607f7-SKILL.md NONE 2026-09-23T02:28:05Z lint + size PASS 0s 8025B 1220w ~2007tok(est) · description 832/1024 chars
+two-columns GREEN archive/two-columns/e8d3cfd517d4e945-SKILL.md NONE 2026-09-23T02:28:05Z lint + size PASS 0s 8896B 1490w ~2224tok(est) · description 496/1024 chars; skills/two-columns/tests.sh PASS 1s; skills/two-columns/tests.sh --prove-red PASS 0s
+verify-say GREEN archive/verify-say/62bc68b9dfac67b7-SKILL.md NONE 2026-09-23T02:28:05Z lint + size PASS 0s 8925B 1418w ~2232tok(est) · description 1005/1024 chars
+wire-connect GREEN archive/wire-connect/c7d1a22fff06e90f-SKILL.md NONE 2026-09-23T02:28:05Z lint + size PASS 0s 5160B 750w ~1290tok(est) · description 1018/1024 chars
+wire-ledger GREEN archive/wire-ledger/5d565ecb23da2423-SKILL.md NONE 2026-09-23T02:28:06Z lint + size PASS 0s 4276B 576w ~1069tok(est) · description 870/1024 chars
+writing-forms GREEN archive/writing-forms/e2410158cf4090c5-SKILL.md NONE 2026-09-23T02:28:06Z lint + size PASS 0s 12742B 2188w ~3186tok(est) · description 890/1024 chars
+vibrobeast GREEN archive/vibrobeast/fd8733bbf41c10ef-MANIFEST NONE 2026-09-23T02:28:06Z plugin bytes vs MANIFEST PASS 4s
+sp1ll GREEN archive/sp1ll/d1c0f14101088aaa-sp1ll NONE 2026-09-23T02:28:06Z c4/tests/sp1ll-tests.sh PASS 6s; c4/tests/sp1ll-tests.sh --prove-red PASS 7s
+sw1ng RED archive/sw1ng/752259c4c2e1ad58-sw1ng NONE 2026-09-23T02:28:06Z c4/tests/sw1ng-tests.sh FAIL 4s; c4/tests/sw1ng-tests.sh --prove-red FAIL 4s; c4/tests/sw1ng-spec.py PASS 1s
+wd1ck GREEN archive/wd1ck/474bb37563cb071e-wd1ck NONE 2026-09-23T02:28:06Z c4/tests/wd1ck-tests.sh PASS 1s; c4/tests/wd1ck-tests.sh --prove-red PASS 1s
+rewire-order GREEN archive/rewire-order/339e00b37c06e7b9-SKILL.md NONE 2026-09-23T02:28:06Z lint + size (canon) PASS 0s 3506B 499w ~877tok(est) · description 1013/1024 chars
+signing-model GREEN archive/signing-model/1bc2828d55734585-SKILL.md NONE 2026-09-23T02:28:06Z lint + size (canon) PASS 0s 6504B 914w ~1626tok(est) · description 1007/1024 chars
+tool-lifecycle GREEN archive/tool-lifecycle/5ec204fc96ee2afc-SKILL.md NONE 2026-09-23T02:28:06Z lint + size (canon) PASS 0s 3973B 593w ~994tok(est) · description 996/1024 chars
+values-baseline GREEN archive/values-baseline/56a213999d853b42-SKILL.md NONE 2026-09-23T02:28:06Z lint + size (canon) PASS 1s 3446B 517w ~862tok(est) · description 919/1024 chars
+polygram RED archive/polygram/6aaeddec02293e86-polygram-curation-0.7.0.MANIFEST NONE 2026-09-23T02:29:47Z python suite FAIL 0s
+whose GREEN archive/whose/bc9ad0478df28e46-whose NONE 2026-09-23T02:29:47Z c4/tests/whose-tests.sh PASS 24s; c4/tests/whose-tests.sh --prove-red PASS 72s
+polygram GREEN archive/polygram/6aaeddec02293e86-polygram-curation-0.7.0.MANIFEST NONE 2026-09-23T02:31:43Z python suite PASS 99s
+c4 RED archive/c4/3be522d63ae7fbcb-README.md NONE 2026-09-23T02:32:22Z c4/bin/selftest FAIL 12s
+gd1ck GREEN archive/gd1ck/0423298837d92e8a-gd1ck archive/gd1ck/92ea80f5802f8b3f-gd1ck 2026-09-23T03:41:25Z tests/gd1ck-tests.sh PASS 3s (TOTAL pass=28 fail=0); tests/gd1ck-tests.sh --prove-red PASS 2s (PASS: harness correctly went red under a planted bad expectation)
+makefile-c4root GREEN archive/makefile-c4root/4ca5a199b2840b1d-Makefile archive/makefile-c4root/2c2fb1a1eb3ea7c9-Makefile 2026-09-23T03:42:14Z tests/makefile-c4root-tests.sh PASS 0s (TOTAL: 4 ok, 0 failed); tests/makefile-c4root-tests.sh --prove-red PASS 0s (PASS: harness correctly went red under a planted bad expectation)
+skill-metrics GREEN archive/skill-metrics/f05b20476af1ec67-SKILL.md archive/skill-metrics/f254b00c3080f18a-SKILL.md 2026-09-23T03:42:55Z lint + size PASS 0s (5031B 734w ~1258tok(est) · description 967/1024 chars); skills/skill-metrics/tests.sh PASS 1s (TOTAL pass=46 fail=0); skills/skill-metrics/tests.sh --prove-red PASS 1s (prove-red: harness went red on the planted expectation -- PASS)
+vibrobeast GREEN archive/vibrobeast/c9258c8d3d991a79-MANIFEST archive/vibrobeast/fd8733bbf41c10ef-MANIFEST 2026-09-23T03:42:55Z plugin bytes vs MANIFEST PASS 4s (prove who minted them -- that needs a signature against a pinned key.)
+polygram GREEN archive/polygram/47d5762b20c1da44-polygram-curation-0.7.0.MANIFEST archive/polygram/6aaeddec02293e86-polygram-curation-0.7.0.MANIFEST 2026-09-23T03:44:47Z python suite PASS 103s (Ran 331 tests in 102.239s · OK)
+gd1ck GREEN archive/gd1ck/8fafffb2ce357e3a-gd1ck archive/gd1ck/0423298837d92e8a-gd1ck 2026-09-23T03:49:27Z tests/gd1ck-tests.sh PASS 2s (TOTAL pass=28 fail=0); tests/gd1ck-tests.sh --prove-red PASS 3s (PASS: harness correctly went red under a planted bad expectation)
+vibrobeast GREEN archive/vibrobeast/7cd7f14b73b86774-MANIFEST archive/vibrobeast/c9258c8d3d991a79-MANIFEST 2026-09-23T03:49:27Z plugin bytes vs MANIFEST PASS 3s (OK 331 file(s) match MANIFEST)

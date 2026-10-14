@@ -1,0 +1,116 @@
+#!/bin/sh
+# pi1ck -- PRIOR-INSTRUCTION 1 CHECK: lint a retro-apply record for the shapes the skill demands.
+#
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st>
+# SPDX-License-Identifier: GPL-3.0-or-later
+# This program is free software: you can redistribute it and/or modify it under the terms
+# of the GNU General Public License as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
+# This file is part of vibrobeast.  Authored by Mentat (for Corwin).  It is free software: you can
+# redistribute it and/or modify it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your option) any later
+# version.  It is distributed WITHOUT ANY WARRANTY; see <https://www.gnu.org/licenses/>.
+#
+# THE NAME: P I PRIOR-INSTRUCTION · 1 read-only · C K CHECK.  A gauge with a verdict column; it
+# never edits.  Born of the 2026-09-24 review (advice/20260924-023500-review-baseline-per-prior-
+# instruction.md §A): two records labelled every line and still hid three slips a grep would see.
+#
+# WHAT IT CHECKS, per table row of a retro-apply record (a `| decision | DECIDED-BY | line |` table):
+#   L1  every row carries one label: DECIDED-BY instruction|preference|default · RETAINED · SEAT ·
+#       ROUTED · gap   (a CORRECTION row is a continuation, not a decision: it is counted, not labelled)
+#   L2  a ROUTED row states a radius: the cell contains "radius" and the sentence after it is not
+#       "none" / "n/a" -- a "radius: none" ROUTED line is a SEAT line mislabelled (§3, §6)
+#   L3  a gap row points at a footnote, and the file's gap footnote(s) carry numbers (N canon files,
+#       M notes), a "Terms searched:" line and a "Miss chance" figure (§5)
+#   L4  a DECIDED-BY row carries a confidence figure ("conf N%" or "N%") and a "checked:" phrase
+#       (§6 as amended 2026-09-24) -- reported as a COUNT of rows lacking it, not a failure, for
+#       records written before the amendment (--strict makes it a failure)
+#   L5  a CORRECTION row sits directly under a decision row and carries a date
+# usage: sh bin/pi1ck FILE... [--strict] [--tsv]     exit 0 clean · 1 any L1/L2/L3/L5 failure (or L4 under --strict) · 2 usage
+#        sh bin/pi1ck --prove-red
+set -u
+me=pi1ck; STRICT=0; TSV=0; PROVE=0; FILES=
+while [ $# -gt 0 ]; do case $1 in
+  --strict) STRICT=1 ;; --tsv) TSV=1 ;; --prove-red) PROVE=1 ;;
+  -h|--help) sed -n '/^# usage:/,/^#        sh bin\/pi1ck --prove-red/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  -*) echo "$me: unknown option $1" >&2; exit 2 ;; *) FILES="$FILES $1" ;; esac; shift; done
+TAB=$(printf '\t')
+
+lint() {  # FILE -> lines; returns 0 clean, 1 failures
+  f=$1; fail=0; rows=0; dec=0; routed=0; seat=0; ret=0; gap=0; corr=0; noconf=0
+  # table rows: lines starting with | that are not header/separator
+  grep '^|' "$f" | grep -v '^| *decision *|\|^| *fork *|\|^|---\|^| *--- *|' | grep -v '^| *# *|' > "$W/rows"
+  prev=""; n=0; total=$(grep -c . "$W/rows")
+  while IFS= read -r ln; do
+    rows=$((rows+1)); n=$((n+1))
+    # a row directly followed by a CORRECTION row is CORRECTED: its faults are shown, not counted
+    nxt=$(sed -n "$((n+1))p" "$W/rows"); corrected=0; case "$nxt" in *CORRECTION*) corrected=1 ;; esac
+    c2=$(printf '%s' "$ln" | sed 's/^|//; s/|$//')   # the whole row: labels may sit in any cell
+    c1=$(printf '%s' "$ln" | awk -F'|' '{print $2}')
+    case "$ln" in
+      *CORRECTION*) corr=$((corr+1)); printf '%s' "$ln" | grep -q '20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]' || { echo "  L5  a CORRECTION row without a date: $(printf '%s' "$ln" | cut -c1-90)"; fail=1; }
+                    printf '%s' "$prev" | grep -q '^|' || { echo "  L5  a CORRECTION row not under a decision row: $(printf '%s' "$ln" | cut -c1-90)"; fail=1; }; prev=$ln; continue ;;
+    esac
+    # the label is the FIRST label word in the row (a row may mention another label later: "→ ROUTED below")
+    first=$(printf '%s' "$c2" | grep -o -i 'DECIDED-BY\|\*\*instruction\*\*\|\*\*preference\*\*\|\*\*default\*\*\|RETAINED\|SEAT\|ROUTED\|\*\*gap\*\*' | head -1 | tr 'a-z' 'A-Z')
+    label=""
+    case "$first" in DECIDED-BY|*INSTRUCTION*|*PREFERENCE*|*DEFAULT*) label=DECIDED; dec=$((dec+1)) ;;
+      RETAINED) label=RETAINED; ret=$((ret+1)) ;; SEAT) label=SEAT; seat=$((seat+1)) ;;
+      ROUTED) label=ROUTED; routed=$((routed+1)) ;; *GAP*) label=GAP; gap=$((gap+1)) ;; esac
+    flag() { if [ $corrected -eq 1 ]; then echo "  ok  corrected below: $1"; else echo "  $1"; fail=1; fi; }
+    [ -n "$label" ] || flag "L1  no label on row: $(printf '%s' "$ln" | cut -c1-90)"
+    if [ "$label" = ROUTED ]; then
+      rad=$(printf '%s' "$c2" | sed -n 's/.*[Rr]adius[^:]*:[[:space:]]*//p' | cut -c1-40)
+      [ -n "$rad" ] || flag "L2  ROUTED without a radius sentence: $(printf '%s' "$ln" | cut -c1-90)"
+      printf '%s' "$rad" | grep -q -i '^\(none\|n/a\|-\)\b' && flag "L2  ROUTED with 'radius: none' -- a SEAT line mislabelled: $(printf '%s' "$ln" | cut -c1-90)"
+    fi
+    if [ "$label" = DECIDED ]; then
+      printf '%s' "$ln" | grep -q -i 'conf[a-z]* *[0-9][0-9]*%\|[0-9][0-9]*% ' && printf '%s' "$ln" | grep -q -i 'checked' || noconf=$((noconf+1))
+    fi
+    if [ "$label" = GAP ]; then printf '%s' "$ln" | grep -q -i 'footnote\|¹\|²\|³\|Q[0-9][0-9]*' || flag "L3  gap row points at no footnote or bank row: $(printf '%s' "$ln" | cut -c1-90)"; fi
+    prev=$ln
+  done < "$W/rows"
+  # L3: the footnote itself
+  if [ $gap -gt 0 ] || grep -q -i 'gap footnote\|Miss chance' "$f"; then
+    fn=$(grep -i -A9 'Gap footnote\|^¹\|Checked:' "$f" | tr '\n' ' ')
+    printf '%s' "$fn" | grep -q '[0-9][0-9]* canon' || { echo "  L3  gap footnote without a canon-file count (N canon files)"; fail=1; }
+    printf '%s' "$fn" | grep -q -i 'Miss chance: *about *[0-9][0-9]*%' || { echo "  L3  gap footnote without a Miss chance figure"; fail=1; }
+    printf '%s' "$fn" | grep -q -i 'Terms searched:\|terms searched\|searched for' || { echo "  L3  gap footnote without a 'Terms searched:' line (added to §5 on 2026-09-24)"; fail=1; }
+  fi
+  [ $STRICT -eq 1 ] && [ $noconf -gt 0 ] && { echo "  L4  $noconf DECIDED-BY row(s) without a confidence figure + checked: (strict)"; fail=1; }
+  if [ $TSV -eq 1 ]; then printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$( [ $fail -eq 0 ] && echo CLEAN || echo FAULT)" "$f" "$rows" "$dec" "$ret" "$seat" "$routed" "$gap" "$corr"
+  else printf '%s  %s  rows %s · DECIDED-BY %s (%s without conf+checked) · RETAINED %s · SEAT %s · ROUTED %s · gap %s · CORRECTION %s\n' "$( [ $fail -eq 0 ] && echo CLEAN || echo FAULT)" "$f" "$rows" "$dec" "$noconf" "$ret" "$seat" "$routed" "$gap" "$corr"; fi
+  return $fail
+}
+W=$(mktemp -d) || exit 2; trap 'rm -rf "$W"' EXIT
+if [ $PROVE -eq 1 ]; then
+  red=0
+  cat > "$W/good.md" <<'G'
+# retro
+| decision | DECIDED-BY | line |
+|---|---|---|
+| a | **instruction** (the prompt) [conf 90% · checked: a test] | done |
+| b | **ROUTED** — radius: a note in his name reaches other people's inboxes and cannot be unsent | drafts stand |
+| c | **SEAT** — his key | prepared |
+| d | **gap** — see footnote ¹ | left |
+| ↳ CORRECTION 2026-09-24 | the line above was wrong: checked by gpg | corrected |
+## Gap footnote
+¹ Checked: 4 canon files, 9 notes, this session. Terms searched: ring, ceremony. Miss chance: about 9% — invented.
+G
+  sh "$0" "$W/good.md" > "$W/o" 2>&1 && grep -q '^CLEAN' "$W/o" && red=$((red+1)) || echo "FAIL: a well-formed record must read CLEAN: $(cat "$W/o")"
+  sed 's/radius: a note in his name reaches other people.s inboxes and cannot be unsent/radius: none; the VM cannot reach them/' "$W/good.md" > "$W/bad1.md"
+  sh "$0" "$W/bad1.md" > "$W/o" 2>&1 && echo "FAIL: 'radius: none' must fault" || { grep -q 'L2 ' "$W/o" && red=$((red+1)) || echo "FAIL: L2 not named: $(cat "$W/o")"; }
+  sed 's/^| b | \*\*ROUTED\*\* — radius.*/| b | some prose with no label | x |/' "$W/good.md" > "$W/bad2.md"
+  sh "$0" "$W/bad2.md" > "$W/o" 2>&1 && echo "FAIL: an unlabelled row must fault" || { grep -q 'L1 ' "$W/o" && red=$((red+1)) || echo "FAIL: L1 not named"; }
+  sed 's/Terms searched: ring, ceremony. //' "$W/good.md" > "$W/bad3.md"
+  sh "$0" "$W/bad3.md" > "$W/o" 2>&1 && echo "FAIL: a footnote with no terms line must fault" || { grep -q 'Terms searched' "$W/o" && red=$((red+1)) || echo "FAIL: L3 terms not named: $(cat "$W/o")"; }
+  sed 's/↳ CORRECTION 2026-09-24/↳ CORRECTION/' "$W/good.md" > "$W/bad4.md"
+  sh "$0" "$W/bad4.md" > "$W/o" 2>&1 && echo "FAIL: an undated correction must fault" || { grep -q 'L5 ' "$W/o" && red=$((red+1)) || echo "FAIL: L5 not named"; }
+  sed 's/ \[conf 90% · checked: a test\]//' "$W/good.md" > "$W/bad5.md"
+  sh "$0" "$W/bad5.md" > "$W/o" 2>&1 && grep -q '(1 without conf+checked)' "$W/o" && red=$((red+1)) || echo "FAIL: a missing confidence is counted, not faulted: $(cat "$W/o")"
+  sh "$0" --strict "$W/bad5.md" > "$W/o" 2>&1 && echo "FAIL: --strict must fault a missing confidence" || { grep -q 'L4 ' "$W/o" && red=$((red+1)) || echo "FAIL: L4 not named"; }
+  [ $red -eq 7 ] && { echo "PASS: pi1ck reads a well-formed record CLEAN and faults radius:none, an unlabelled row, a footnote with no terms line, an undated correction; counts missing confidence and faults it under --strict"; exit 0; }
+  echo "FAIL: pi1ck prove-red $red/7"; exit 1
+fi
+[ -n "$FILES" ] || { echo "usage: $me FILE... [--strict] [--tsv] | --prove-red" >&2; exit 2; }
+rc=0; for f in $FILES; do [ -f "$f" ] || { echo "$me: no such file $f" >&2; rc=2; continue; }; lint "$f" || rc=1; done; exit $rc

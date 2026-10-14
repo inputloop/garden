@@ -1,0 +1,191 @@
+#!/bin/sh
+# or1ky -- OUTSIDE READER 1 KEY: the answer key for the outside-reader questions, computed by our
+# own tools from local checkouts, never written by hand.
+# usage: or1ky DIR     DIR holds checkouts (or a parcel's recipes/ copies) of all five repositories,
+#                      named gw-survey, persona-engine, field-comic, kid-glove and drift
+#
+# One line per question (Q6: one per repository).  A true answer is quoted, so an answer that
+# itself says "NOT CHECKED" (dr1pg's for Q5 does) reads as an answer:
+#   Q5 "NOT CHECKED (not present)"
+# When the key could not check a question, the line is not quoted and says which repository or
+# tool was missing:
+#   Q3 KEY-NOT-CHECKED (field-comic is not in DIR; the key reads field-comic/data/vol2.json)
+# That is a gap in the key, never a disagreement with the reader.
+#
+# Q6 never reads COPYING (it cannot say "or later", and says nothing of the prose).  It reads
+# licence marks: REUSE.toml and .reuse/dep5, SPDX-License-Identifier lines, and the house's
+# copyright lines ("...; GPL-3.0-or-later." and "...; CC-BY-SA4: <creativecommons.org URL>").
+# A mark in a code file, in an .org block that unfolds to a code file, or in an HTML <script>
+# counts for the code, and only in the first 20 lines of that file, block or script (its header;
+# deeper down it is a string the code writes, or a test fixture).  A mark anywhere in a prose file
+# (.org outside its code blocks, .md, .txt, .html, .json, README, ChangeLog) counts for the prose.
+# LICENSE and COPYING files are skipped.
+# env: OR1KY_AWK, the awk to use (default awk).
+# Copyright 2026 Corwin Brust <corwin@bru.st> and Contributors; GPL-3.0-or-later.
+# Mentat (for Corwin; claude-opus-5-5)
+set -u
+d=${1:?usage: or1ky DIR}
+AWK=${OR1KY_AWK:-awk}
+t=$(mktemp -d) || exit 2
+trap 'rm -rf "$t"' EXIT
+
+q() { printf '"%s"' "$(printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g')"; }
+knc() { echo "$1 KEY-NOT-CHECKED ($2)"; }
+say() { # Qn ANSWER WHY -> Qn "ANSWER", or Qn KEY-NOT-CHECKED (WHY) when the tool printed nothing
+  if [ -n "$2" ]; then echo "$1 $(q "$2")"; else knc "$1" "$3"; fi
+}
+gone() { # REPO FILE -> why the key cannot check, naming the repository and the file it reads
+  if [ -d "$d/$1" ]; then echo "$1 is in $d but has no $2"
+  else echo "$1 is not in $d; the key reads $1/$2"; fi
+}
+join() { "$AWK" 'NR > 1 { printf ", " } { printf "%s", $0 }'; }
+
+f=bin/gw1as.py
+if [ -f "$d/gw-survey/$f" ]; then
+  say Q1 "$(python3 "$d/gw-survey/$f" "$d/gw-survey/tests/facts/tangled.facts" 2>/dev/null | sed -n 's/^STATE *//p')" \
+    "gw-survey's $f printed no STATE line"
+else knc Q1 "$(gone gw-survey $f)"; fi
+
+f=skill/persona-engine/scripts/pe1gt
+if [ -f "$d/persona-engine/$f" ]; then
+  say Q2 "$(sh "$d/persona-engine/$f" plan --use 2 --name gw7 2>/dev/null | sed -n '1s/:.*//p')" \
+    "persona-engine's $f printed nothing"
+else knc Q2 "$(gone persona-engine $f)"; fi
+
+f=data/vol2.json
+if [ -f "$d/field-comic/$f" ]; then
+  say Q3 "$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(len(d["panels"]), "panels;", sum(1 for p in d["panels"] for b in p["bubbles"] if "fixes" in b), "bubbles with fixes")' "$d/field-comic/$f" 2>/dev/null)" \
+    "python3 could not read field-comic's $f"
+else knc Q3 "$(gone field-comic $f)"; fi
+
+f=skill/kid-glove/kit/topics.org-table
+if [ -f "$d/kid-glove/$f" ]; then
+  say Q4 "$("$AWK" -F'|' 'NF > 3 && $2 !~ /^-/ && $2 !~ /topic/ { n++ } END { print n + 0 " topics" }' "$d/kid-glove/$f")" \
+    "the awk could not read kid-glove's $f"
+else knc Q4 "$(gone kid-glove $f)"; fi
+
+f=skill/drift/scripts/dr1pg
+if [ -f "$d/drift/$f" ]; then
+  g=$t/q5; mkdir -p "$g"
+  if (cd "$g" && git init -q && git -c user.name=k -c user.email=k@k commit -q --allow-empty -m k) >/dev/null 2>&1; then
+    say Q5 "$(python3 "$d/drift/$f" "$g" --since 2026-01-01 --ledger "$g/none" 2>/dev/null | sed -n 's/^- kid glove ledger: //p')" \
+      "drift's $f printed no kid glove ledger line"
+  else knc Q5 "git could not make the empty repository that drift's $f reads"; fi
+else knc Q5 "$(gone drift $f)"; fi
+
+# ---- Q6: licence marks ----------------------------------------------------------------------
+KIND='
+function kind(f,   b) { # a path or a REUSE pattern -> code or prose
+  b = f; sub(/.*\//, "", b)
+  if (b ~ /\.(org|md|markdown|txt|html|htm|rst|tex|texi|json)$/) return "prose"
+  if (b ~ /^(README|ChangeLog|NEWS|AUTHORS|THANKS|INSTALL|HACKING)([.-]|$)/) return "prose"
+  return "code"
+}'
+MARKS='
+function blockkind(h,   n, w, i, lang) { # an Org src block header -> what the block unfolds to
+  n = split(h, w, /[ \t]+/); lang = ""
+  for (i = 1; i < n; i++) if (w[i] == ":tangle" && w[i + 1] != "no") return kind(w[i + 1])
+  for (i = 1; i < n; i++) if (tolower(w[i]) == "#+begin_src") { lang = tolower(w[i + 1]); break }
+  if (lang ~ /^(org|markdown|md|text|txt|html)$/) return "prose"
+  return "code"
+}
+function ccurl(s,   u, slug, ver) { # a creativecommons.org licence URL -> its SPDX id, or ""
+  if (match(s, /creativecommons\.org\/publicdomain\/zero\/1\.0/)) return "CC0-1.0"
+  if (!match(s, /creativecommons\.org\/licenses\/[a-z-]+\/[0-9]\.[0-9]/)) return ""
+  u = substr(s, RSTART, RLENGTH); sub(/^creativecommons\.org\/licenses\//, "", u)
+  slug = u; sub(/\/.*/, "", slug); ver = u; sub(/.*\//, "", ver)
+  return "CC-" toupper(slug) "-" ver
+}
+function idok(x) {
+  return x ~ /^[A-Za-z][A-Za-z0-9.+-]*[A-Za-z0-9+]$/ && (x ~ /[0-9]/ || x ~ /^LicenseRef-/ || x ~ /^(MIT|ISC|Unlicense|Zlib|WTFPL)$/)
+}
+function mark(s,   r, i, x) { # a licence mark on this line -> "SOURCE<TAB>SPDX expression", or ""
+  if (match(s, /SPDX-License-Identifier:[ \t]*/)) {
+    r = substr(s, RSTART + RLENGTH)
+    if (!match(r, /^[A-Za-z0-9.+-]+([ \t]+(AND|OR|WITH)[ \t]+[A-Za-z0-9.+-]+)*/)) return ""
+    r = substr(r, 1, RLENGTH); x = r; sub(/[ \t].*/, "", x)
+    return idok(x) ? "SPDX-License-Identifier lines\t" r : ""
+  }
+  if (match(s, /Copyright (\([Cc]\) )?[0-9][0-9][0-9][0-9][^0-9]/)) {
+    r = substr(s, RSTART + RLENGTH); gsub(/&lt;/, "<", r); gsub(/&gt;/, ">", r); i = index(r, "; ")
+    if (!i) return ""
+    r = substr(r, i + 2); x = r; sub(/[ \t].*/, "", x)
+    if (x ~ /:$/) { x = ccurl(r); return x == "" ? "" : "copyright lines\t" x }
+    sub(/[.,;]+$/, "", x)
+    return idok(x) ? "copyright lines\t" x : ""
+  }
+  return ""
+}
+{ f = $0
+  if (f ~ /(^|\/)(COPYING|LICENSE|LICENCE)([.-][^\/]*)?$/) next
+  if (f ~ /\.(png|jpe?g|gif|webp|ico|pdf|gz|tgz|zip|xz|bz2|tar|woff2?|ttf|otf|mp3|mp4|ogg|wav)$/) next
+  k0 = kind(f); org = (f ~ /\.org$/); html = (f ~ /\.html?$/); inb = 0; sc = 0; n = 0
+  while ((getline s < f) > 0) {
+    k = k0; n++
+    if (org) {
+      if (s ~ /^[ \t]*#\+(begin_src|BEGIN_SRC)([ \t]|$)/) { inb = 1; bk = blockkind(s); n = 0; continue }
+      if (s ~ /^[ \t]*#\+(end_src|END_SRC)[ \t]*$/) { inb = 0; continue }
+      if (inb) k = bk; else k = "prose"
+    }
+    if (html) {
+      if (s ~ /<script/ && !sc) { sc = 1; n = 1 }
+      if (sc) k = "code"
+      if (s ~ /<\/script>/) sc = 0
+    }
+    if (k == "code" && n > 20) continue
+    m = mark(s)
+    if (m != "") { split(m, p, "\t"); print k "\t" p[2]; print "src\t" p[1] }
+  }
+  close(f)
+}'
+REUSE_TOML='
+function flush(   k, c) {
+  c = 0; if (ex != "") for (k in ks) { print k "\t" ex; c++ }
+  if (c) print "src\tREUSE.toml"
+  split("", ks); ex = ""; ip = 0
+}
+function strs(s,   v) {
+  while (match(s, /"[^"]*"/)) { v = substr(s, RSTART + 1, RLENGTH - 2); ks[kind(v)] = 1; s = substr(s, RSTART + RLENGTH) }
+}
+/^[ \t]*\[\[annotations\]\]/ { flush(); next }
+/^[ \t]*path[ \t]*=/ { s = $0; sub(/^[^=]*=/, "", s); strs(s); ip = (s ~ /\[/ && s !~ /\]/); next }
+ip { strs($0); if ($0 ~ /\]/) ip = 0; next }
+/^[ \t]*"?SPDX-License-Identifier"?[ \t]*=/ { s = $0; sub(/^[^=]*=/, "", s); if (match(s, /"[^"]*"/)) ex = substr(s, RSTART + 1, RLENGTH - 2); next }
+END { flush() }'
+DEP5='
+function add(s,   n, w, i) { n = split(s, w, /[ \t]+/); for (i = 1; i <= n; i++) if (w[i] != "") ks[kind(w[i])] = 1 }
+function flush(   k, c) {
+  c = 0; if (ex != "") for (k in ks) { print k "\t" ex; c++ }
+  if (c) print "src\t.reuse/dep5"
+  split("", ks); ex = ""; inf = 0
+}
+/^[ \t]*$/ { flush(); next }
+/^Files:/ { s = $0; sub(/^Files:[ \t]*/, "", s); add(s); inf = 1; next }
+/^[ \t]/ && inf { add($0); next }
+/^License:/ { s = $0; sub(/^License:[ \t]*/, "", s); ex = s; inf = 0; next }
+{ inf = 0 }
+END { flush() }'
+
+q6one() { # REPO -> "IDS (code); IDS (prose)" [read: SOURCES], or KEY-NOT-CHECKED (why)
+  r=$1 root=$d/$1
+  [ -d "$root" ] || { echo "KEY-NOT-CHECKED ($r is not in $d)"; return; }
+  : > "$t/marks"
+  [ -f "$root/REUSE.toml" ] && "$AWK" "$KIND$REUSE_TOML" "$root/REUSE.toml" >> "$t/marks"
+  [ -f "$root/.reuse/dep5" ] && "$AWK" "$KIND$DEP5" "$root/.reuse/dep5" >> "$t/marks"
+  if [ -e "$root/.git" ] && git -C "$root" --no-optional-locks ls-files > "$t/files" 2>/dev/null; then :
+  else (cd "$root" && find . -type f ! -path './.git/*' | sed 's|^\./||') > "$t/files"; fi
+  (cd "$root" && "$AWK" "$KIND$MARKS" < "$t/files") >> "$t/marks"
+  code=$(sed -n 's/^code	//p' "$t/marks" | LC_ALL=C sort -u | join)
+  prose=$(sed -n 's/^prose	//p' "$t/marks" | LC_ALL=C sort -u | join)
+  srcs=$(sed -n 's/^src	//p' "$t/marks" | LC_ALL=C sort -u | join)
+  if [ -z "$code$prose" ]; then
+    echo "KEY-NOT-CHECKED (no licence mark in $r: no REUSE.toml, .reuse/dep5, SPDX-License-Identifier or copyright-line licence; COPYING is not read)"
+  elif [ -z "$prose" ]; then
+    echo "$(q "$code (code)"), prose KEY-NOT-CHECKED (no licence mark on any prose file in $r) [read: $srcs]"
+  elif [ -z "$code" ]; then
+    echo "$(q "$prose (prose)"), code KEY-NOT-CHECKED (no licence mark in the header of any code file in $r) [read: $srcs]"
+  else
+    echo "$(q "$code (code); $prose (prose)") [read: $srcs]"
+  fi
+}
+for r in gw-survey persona-engine field-comic kid-glove drift; do echo "Q6 $r: $(q6one "$r")"; done

@@ -1,0 +1,8 @@
+# softskills-quotes SPEC (lane B, turn 2). Written before the test and the code.
+Q1  A front-matter scalar written in YAML double quotes ("parallax") reads as its contents: parallax.
+Q2  Inside double quotes, \" reads as " and \\ reads as \ ; other text is kept as written.
+Q3  A scalar in YAML single quotes ('it''s') reads as its contents, with '' read as ': it's.
+Q4  A folded (>-) or literal (|) block, and a plain unquoted scalar, read exactly as before.
+Q5  A value that only starts with a quote (one quote, or a quote in the middle) is kept as written.
+Q6  On the live garden, the soft skill parallax lists with declared_name parallax, and gauntlet's
+    description does not begin with a quote character.

@@ -1,0 +1,53 @@
+SPDX-License-Identifier: CC-BY-SA-4.0
+
+Where the evidence files in this folder came from (all fetched 2026-10-06, by the author of this
+prototype, outside the build; the prototype itself uses no network).
+
+1. trixie-13.7-main.names.gz, trixie-13.7-nff.names
+   - https://deb.debian.org/debian/dists/trixie/InRelease (Debian 13.7, Date: Sat, 12 Sep 2026 07:55:41 UTC)
+   - Signature checked with gpgv against debian-archive-keyring 2025.1 (the .deb's sha256 matched the
+     hash in the index): GOODSIG from Debian Archive Automatic Signing Key (12/bookworm),
+     (13/trixie), and Debian Stable Release Key (13/trixie).
+   - The primary fingerprints of those three keys (B8B8 0B5B ... 47F8, 04B5 4C3C ... 88BD,
+     4158 7F7D ... 9DE4) each appear on https://ftp-master.debian.org/keys.html, a second origin.
+   - The sha256 of each Packages.xz below equals the value listed in that signed InRelease:
+       main/binary-amd64/Packages.xz            7778d3e3f303b7ddb8ce0fe7c8d57473a076c6bf2e8f241f75421d2396352498
+       main/binary-all/Packages.xz              55bef3400f6614ac8bfdd05922310d9ff456e458d0bf9a0a201e6d9359144108
+       non-free-firmware/binary-amd64/Packages.xz a05bfaf35b64eb8271e374f617b3b75b5ba24dacfa86fd7ddbec5a60d99a17da
+       non-free-firmware/binary-all/Packages.xz   9e4d40d30ad308b7a663790b1d2ce557057bd9ee933e3b2e9605f2088690a7c1
+   - Names were taken with:  xz -dc Packages.xz | awk '/^Package: /{print $2}' | sort -u
+   Limits: a name in the list means "a package of that name was in trixie 13.7 on that date". It does
+   not say the package installs cleanly, nor that its dependencies resolve on the live image.
+
+2. lb-config-options.txt
+   - live-build 1:20250505+deb13u1 (the version in trixie), .deb sha256 matched the signed index
+     (58e09779881cbcc631c49ceb703413e0247a87db01823e597b2a1c40a2afd8f4); extracted with dpkg-deb -x
+     into a scratch folder, nothing installed or run. Names are the long options of usr/lib/live/build/config.
+   - Same source showed: live-build adds live-boot, live-config, live-config-systemd and systemd-sysv
+     itself for a live system (config, lines ~1378-1392); installs shim-signed and the signed grub when
+     --uefi-secure-boot is auto or enable (binary_grub-efi, lines ~94-130); and skips list lines that
+     begin with # while EXECUTING list lines that begin with ! (functions/packagelists.sh).
+
+3. trixie-13.7-programs.txt
+   - https://deb.debian.org/debian/dists/trixie/main/Contents-amd64.gz  sha256 3d3e6930908db0b53f780dd7397b9589e27db88b59205c331a76d76d6726e419
+   - https://deb.debian.org/debian/dists/trixie/main/Contents-all.gz    sha256 0c2e2d099588073221d6eebb0a84e950f1728818faf527de9034d0116f7a8221
+     (each equals the value for that file in the signed InRelease of item 1; arch:all packages such as foliate
+     are listed only in Contents-all, so both are needed)
+   - Rows were made with:  zcat Contents-amd64.gz Contents-all.gz | awk '$1 == "usr/bin/NAME"'  for each program;
+     the package is the text after the section/ in the second column.
+   - What it showed: kiwix-desktop is in kiwix; foliate in foliate; mpv, mousepad, firefox-esr, gpm (as
+     usr/sbin/gpm) in the package of the same name; lowriter in libreoffice-writer; BUT libreoffice is in
+     libreoffice-common, and usr/bin/emacs is in no package's file list (the command emacs is made by an
+     alternatives link at install time; the file the package ships is emacs-nox).
+   Limits: a file in a package's list says the package ships it, not that it runs, or runs on a live image.
+
+4. Maintainer scripts of tor_0.4.9.11-0+deb13u1_amd64.deb and gpm_1.20.7-11+b2_amd64.deb
+   - Each .deb's sha256 equals the value in the signed Packages index of item 1. Only the control part was
+     unpacked (dpkg-deb -e) into a scratch folder; nothing was installed or run.
+   - postinst of both calls  deb-systemd-helper enable '<name>.service'  on a first installation (the comment
+     in the script says: "was-enabled defaults to true, so new installations run enable"). So a Debian package
+     that ships a service enables it by default; whether it also starts during an image build is a separate
+     matter (live-build's chroot normally blocks that), but the enabled state stays in the image.
+   Limits: two packages read, not all that the lists name; the script was read, not run.
+
+Regenerate: repeat the fetches above; compare the sha256 values; the test (lr1ck) reads only these files.

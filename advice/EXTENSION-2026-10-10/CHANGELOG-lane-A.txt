@@ -1,0 +1,46 @@
+2026-10-10  Mentat (for Corwin; claude-opus-5-5)  <corwin@bru.st>
+
+	Lane A of the extension edition: preferences, spans and the frame.
+
+	* polygram/mcp/spans.py (_is_reset, _legs, _resets_words): A rising token
+	figure is a reset, never a negative count (A1, R17).  span_mark returns
+	tokens_since_last null and reset true; spend is the sum of the falling
+	legs; span_report and span_stop say "N resets seen" in words.
+	(Frame, frame_path, frame_names_path, FRAME_COLUMNS, FRAME_KINDS): The
+	usage frame (A2, R18).  With usage.capture on, span_start writes a start
+	row and a reset or a flagged mark writes a prompt row (date, kind, span,
+	count, by, nothing else); Frame.pref mirrors a preference set as a pref
+	row.  Off by default: no row, no file.
+	* bin/sp1rp: The same reset rule in awk; "N resets seen" in the summary.
+	* polygram/mcp/prefs.py (classify, ignored, unset_, pref_unset): A row is
+	reported or applied, never dropped (A3); unknown rows listed under
+	ignored:.  pref_unset appends an (unset) row.  --classify for the spec.
+	(KNOWN): usage.capture (off), tone.dial (0/0, 0/0), tone.show (words),
+	people.named (corwin).
+	(PREFIXES, reader, writer, seat_hash, declined, quote, applied): Declared
+	keys, the person./room./skill. prefixes with a named reader and a name
+	check, the person writer rule (own turn, the keeper's turn for a named
+	participant, or a consent row's id), held at write and at read; rows gain
+	turn and consent columns.  The seatkeeper "no" is
+	skill.seatkeeper.<hash> = "no: <path>", hash checked at write;
+	pref_list reads it back as the path (A4).  A third party's person row
+	never goes into the frame.
+	(current): Known keys read without a skill scan, so softskills.roots()
+	cannot recurse.
+	* polygram/mcp/softskills.py (preferences_declared, declared,
+	OWN_SKILLS): Gather the preferences: lists from SOFT-SKILLS roots and the
+	plugin's own skills/ folder.
+	* bin/pr1ef: New.  The preferences file read with awk: the same
+	classification as prefs.py, including declared keys, prefixes and the
+	writer rule.
+	* skills/seatkeeper/SKILL.md: Declare skill.seatkeeper.<hash>; a section
+	on the remembered "no".  Signed copy archived under .arc/2026-10/.
+	* FRAME.md: New.  The twelve columns in words.
+	* tests/spans-reset-spec.tcl, tests/spans-reset-tests.sh: New Tcl spec,
+	with --prove-red planting the old subtraction in Python and in awk.
+	* tests/pr1ef-spec.rb, tests/pr1ef-tests.sh: New Ruby spec; Python and
+	awk agree row by row; --prove-red plants a dropped row in each.
+	* tests/prefs-declared-spec.rb, tests/prefs-declared-tests.sh: New Ruby
+	spec, D1-D11; --prove-red plants seven faults.
+	* tests/test_mcp_spans.py: Reset and capture tests.
+	* tests/fixtures/lane-a/: New fixtures.

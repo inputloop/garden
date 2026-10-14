@@ -1,0 +1,17 @@
+id	keepers-pen
+owner	MINE
+scope	project
+form	list
+since	2026-09-23
+title	The keeper's pen: ask whose key before touching a signed file
+source	c4/context/keepers-pen-seam.md · c4/t/TAXONOMY/seam/document/signed · c4/q/retention/palace/semaphores.md row keepers-pen
+---
+
+- **Before editing a file that has a signature beside it, ask whose key made it.** Corwin's own
+  (ECE77CF4…F007): edit in place, archive the signed copy under `.arc/`, regenerate the manifest so
+  `verify` reads TIER 1 and never BAD, add a SIGN-QUEUE row — his 2026-09-10 rule, *a signature does
+  not freeze a file against my edits*. Another keeper's key: the pen is
+  theirs — restore byte-for-byte from the minted copy and make the tool unable to reach it
+  (`.nongnu-steward` → `steward.ignore`). Both rules stand; neither is picked over the other.
+- **Check:** `gpg --list-packets <skill>/.signature.asc | grep keyid` names the key BEFORE the edit; the
+  2026-09-23 instance (`foaf`) was misread as another keeper's — its keyid is Corwin's own 5B6135511580F007.

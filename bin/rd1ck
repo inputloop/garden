@@ -1,0 +1,179 @@
+#!/bin/sh
+# rd1ck -- ROADS 1 CHECK: walk each store's roads in conventions/ROADS.md and say, per road,
+# READ, NOT REACHED or FENCED. It never says "absent" (SPEC RD1-RD5 in tests/lane-d-SPEC.txt).
+#   READ         a mount road from which rd1ck actually read one line back: the file's first line,
+#                or, for a folder, the first line of the first plain file in it (the path is
+#                printed, the line never is). A target that merely exists is not READ
+#                (SPEC RD6, F1 pass 2, P5 O6/J5).
+#   READER PRESENT, NOT READ   a `reader` road (or a mount road into a bin/ folder): the reader
+#                program is there, but rd1ck does not run it, so no fact was read. Never counts
+#                as serving the store.
+#   PRESENT, NOT READ   the target exists but gave no line back (an empty file, an empty folder).
+#   NOT REACHED  it did not answer from this seat. The line names the seat that looked, the parent
+#                folder it listed (or tried to) and the request it tried, or "none open".
+#   FENCED       the target is under a fenced path; it is not opened, listed or stat'ed.
+# ONE ROAD, TWO STORES (SPEC RD7): when the folder that served one store also served another, the
+# end of the run says so: one unmount closes both, so it is one road, not two.
+# Only `mount` roads can be walked by a shell; mcp, connector, session, hand, drop and host roads
+# are NOT REACHED here, each with the request that would reach them.
+#
+# Usage: rd1ck [--table FILE] [--root DIR] [--seat NAME] [--store NAME] [--tsv] [--trace]
+#   --table  the Markdown source (default: conventions/ROADS.md beside this bin/)
+#   --root   the mount root that `mount` targets are under (default: $HOME/mnt)
+#   --tsv    print the table minted as TSV (store, road, kind, where, check, words, drop) and stop
+#   --trace  print every path rd1ck touches to stderr, as "touch: PATH" (the tests read it)
+# Exit: 0 when every store has a READ road or none is walkable here; 1 when a store with a mount
+#       road has no road READ; 2 usage.
+#
+# Authored by Mentat (for Corwin; claude-opus-5-5).
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+# SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later
+set -u
+LC_ALL=C; export LC_ALL
+here=$(cd "$(dirname "$0")" && pwd -P)
+TABLE=$(dirname "$here")/conventions/ROADS.md
+ROOT=$HOME/mnt; SEAT=; STORE=; TSV=; TRACE=
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --table) TABLE=$2; shift 2 ;;
+    --root) ROOT=$2; shift 2 ;;
+    --seat) SEAT=$2; shift 2 ;;
+    --store) STORE=$2; shift 2 ;;
+    --tsv) TSV=1; shift ;;
+    --trace) TRACE=1; shift ;;
+    -h|--help) sed -n '2,20p' "$0"; exit 0 ;;
+    *) echo "rd1ck: unknown argument $1" >&2; exit 2 ;;
+  esac
+done
+[ -f "$TABLE" ] || { echo "rd1ck: no table at $TABLE" >&2; exit 2; }
+[ -n "$SEAT" ] || SEAT="the device shell on $(hostname 2>/dev/null || echo 'this machine')"
+
+# mint the TSV from the Markdown source: store, road, kind, where, check, words, drop
+mint() {
+  awk '
+    function trim(s){ gsub(/^[ \t]+|[ \t]+$/,"",s); return s }
+    /^## / { store=substr($0,4); drop="not marked"; next }
+    /^Tavern drop:/ { drop=trim(substr($0,13)); next }
+    /^\|/ && store != "" {
+      n=split($0, c, "|"); r=trim(c[2])
+      if (r !~ /^[0-9]+$/) next
+      printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", store, r, trim(c[3]), trim(c[4]), trim(c[5]), trim(c[6]), drop
+    }' "$TABLE"
+}
+if [ -n "$TSV" ]; then
+  printf '# minted from %s by rd1ck --tsv; edit the Markdown, never this\n' "$TABLE"; mint; exit 0
+fi
+
+fenced() {
+  case "/$1/" in
+    */c4/Z/*|*/c4/a/*|*/c4/p/*|*/.keys/*|*/.house/*|*/SAVANNAH/*|*/.patternwalk/*) return 0 ;; #guard:fence
+  esac
+  case "$1" in *.secret|*.key) return 0 ;; esac
+  return 1
+}
+touch_() { [ -n "$TRACE" ] && printf 'touch: %s\n' "$1" >&2; return 0; }
+got1() { # FILE -> 0 when one line (one or more bytes) was read back from it
+  touch_ "$1"
+  n=$(head -n 1 "$1" 2>/dev/null | wc -c | tr -d ' ')
+  [ "${n:-0}" -gt 0 ] #guard:readback
+}
+readback() { # PATH -> prints the file a line was read back from; 0 when one was
+  if [ -f "$1" ]; then got1 "$1" && { printf '%s' "$1"; return 0; }; return 1; fi
+  for f in "$1"/*; do                 # depth 1, then depth 2 inside folders that are not fenced
+    [ -f "$f" ] && [ -r "$f" ] || continue
+    fenced "$f" && continue
+    got1 "$f" && { printf '%s' "$f"; return 0; }
+  done
+  for d in "$1"/*/; do
+    [ -d "$d" ] || continue
+    fenced "$d" && continue           # a fenced folder is never listed
+    for f in "$d"*; do
+      [ -f "$f" ] && [ -r "$f" ] || continue
+      fenced "$f" && continue
+      got1 "$f" && { printf '%s' "$f"; return 0; }
+    done
+  done
+  return 1
+}
+isreader() { case "/$1/" in */bin/*) return 0 ;; esac; return 1; } #guard:reader
+nearest() { # the nearest existing ancestor of $1, at or under the root
+  p=$1
+  while [ "$p" != "$ROOT" ] && [ "$p" != "/" ] && [ "$p" != "." ]; do
+    p=$(dirname "$p"); touch_ "$p"
+    [ -d "$p" ] && { printf '%s' "$p"; return; }
+  done
+  printf '%s' "$p"
+}
+
+mint > "${TMPDIR:-/tmp}/rd1ck.$$" || exit 2
+trap 'rm -f "${TMPDIR:-/tmp}/rd1ck.$$" "${TMPDIR:-/tmp}/rd1ck.$$.sh"' EXIT
+bad=0; laststore=; served=; walkable=; servedat=; readers=; present=
+SH=${TMPDIR:-/tmp}/rd1ck.$$.sh; : > "$SH"
+finish() {
+  [ -n "$laststore" ] || return 0
+  if [ -n "$served" ]; then printf '  => served by road %s.\n' "$served"; printf '%s\t%s\n' "$servedat" "$laststore" >> "$SH"
+  elif [ -n "$present" ]; then printf '  => no road READ from %s: a target is there but gave no line back, so no fact was read.\n' "$SEAT"; bad=$((bad+1))
+  elif [ -n "$walkable" ]; then printf '  => no road READ from %s this time; this is an outage on this seat, not evidence the fact is gone.\n' "$SEAT"; bad=$((bad+1))
+  elif [ -n "$readers" ]; then printf '  => no road here read a fact; a reader program is present, but rd1ck does not run it (READER PRESENT, NOT READ). The session must try the roads above.\n'
+  else printf '  => no road here is walkable by a shell; the session must try roads above.\n'; fi
+}
+printf 'rd1ck: roads walked from %s, mount root %s, table %s\n' "$SEAT" "$ROOT" "$TABLE"
+while IFS="$(printf '\t')" read -r store road kind where check words drop; do
+  [ -n "$STORE" ] && [ "$store" != "$STORE" ] && continue
+  if [ "$store" != "$laststore" ]; then
+    finish; laststore=$store; served=; walkable=; servedat=; readers=; present=
+    printf '\n%s (Tavern drop: %s)\n' "$store" "$drop"
+  fi
+  label="road $road ($kind, $words)"
+  case "$kind" in
+    mount|reader)
+      if [ "$where" = "-" ] || [ -z "$where" ]; then
+        printf '  %s: NOT REACHED; seat: %s; parent listed: none (no target written); request: none open (write the target into ROADS.md).\n' "$label" "$SEAT"
+        continue
+      fi
+      p=$ROOT/$where; [ "$where" = "." ] && p=$ROOT
+      if fenced "$p"; then
+        printf '  %s: FENCED; %s is under a fenced path, so it is not opened, listed or read.\n' "$label" "$where"
+        continue
+      fi
+      touch_ "$p"
+      if [ -r "$p" ] && { [ -f "$p" ] || { [ -d "$p" ] && ls "$p" >/dev/null 2>&1; }; }; then #guard:read
+        if [ "$kind" = reader ] || isreader "$p"; then
+          readers=1
+          printf '  %s: READER PRESENT, NOT READ; the reader program is at %s, but rd1ck does not run it, so no fact was read.\n' "$label" "$where"
+          continue
+        fi
+        walkable=1
+        if f=$(readback "$p"); then
+          rel=${f#"$ROOT"/}
+          at=$where; [ "$where" = "." ] && at="the mount root"
+          if [ "$f" = "$p" ]; then printf '  %s: READ at %s (one line read back).\n' "$label" "$at"
+          else printf '  %s: READ at %s (one line read back from %s).\n' "$label" "$at" "$rel"; fi
+          [ -n "$served" ] || { served=$road; servedat=$where; }
+        else
+          present=1
+          printf '  %s: PRESENT, NOT READ; %s is there but gave no line back (empty, or no plain file in it).\n' "$label" "$where"
+        fi
+      else
+        walkable=1
+        par=$(nearest "$p")
+        if [ -d "$par" ] && ls "$par" >/dev/null 2>&1; then pw="$par (listed)"; else pw="$par (could not list)"; fi
+        printf '  %s: NOT REACHED; seat: %s; parent listed: %s; request: none open (the target is not on this seat; ask in chat whether the folder is connected).\n' "$label" "$SEAT" "$pw"
+      fi ;;
+    mcp|connector|session)
+      printf '  %s: NOT REACHED; seat: %s; parent listed: none (not a path); request: ask the session to call %s.\n' "$label" "$SEAT" "$where" ;;
+    hand)
+      printf '  %s: NOT REACHED; seat: %s; parent listed: none (not a path); request: ask in chat (%s).\n' "$label" "$SEAT" "$where" ;;
+    drop)
+      printf '  %s: NOT REACHED; seat: %s; parent listed: none (not a path); request: none open (needs gp.1, which runs nowhere today).\n' "$label" "$SEAT" ;;
+    host)
+      printf '  %s: NOT REACHED; seat: %s; parent listed: none (not a path); request: ask the session (%s).\n' "$label" "$SEAT" "$where" ;;
+    *)
+      printf '  %s: NOT REACHED; seat: %s; parent listed: none; request: none open (kind "%s" is not one rd1ck knows).\n' "$label" "$SEAT" "$kind" ;;
+  esac
+done < "${TMPDIR:-/tmp}/rd1ck.$$"
+finish
+awk -F'\t' '{ n[$1]++; s[$1] = s[$1] (n[$1] > 1 ? " and " : "") $2 }
+  END { for (w in n) if (n[w] > 1) printf "\nrd1ck: one road serves two stores: %s served %s; one unmount closes both, so count it as one road, not %d.\n", w, s[w], n[w] }' "$SH" #guard:shared
+printf '\nrd1ck: %s store(s) with a walkable road and none READ.\n' "$bad"
+[ "$bad" -eq 0 ]

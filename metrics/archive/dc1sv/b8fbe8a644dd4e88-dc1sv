@@ -1,0 +1,347 @@
+#!/usr/bin/env python3
+# dc1sv -- DOCUMENT CANONICAL 1 SVG VIEW. Render the canonical diagram document (h/MODEL-diagram.md,
+#          the JSON envelope shared by the HTML / Emacs / MCP / node fabrics) as one SVG file.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st>
+# This program is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.  See <https://www.gnu.org/licenses/>.
+#
+# ---------------------------------------------------------------------------------------------
+# THE NAME, declared as my reading (the AS4CE pattern, run-level in the middle, as bin/ep1nt does):
+#   D  DOCUMENT   -- the canonical diagram document is the only input
+#   C  CANONICAL  -- it renders the shared wire form, never a private one
+#   1  run-level 1 -- `is of in as to`: reads one doc, writes one derived file. Nothing installed,
+#                     nothing signed, nothing transformed in place.
+#   S  SVG        -- the derived file
+#   V  VIEW       -- a fifth READER of the same document, beside HTML/Emacs/MCP/node. Two readers
+#                    agreeing is evidence (c4draw's law); this one must never call the others.
+#
+# STYLING IS EXTERNAL (c4draw's seam): every colour is a CSS custom property with a fallback, so a
+# host restyles by setting variables, never by editing this file.
+#
+# v2 (2026-09-05, additive; v1 documents render byte-identical -- tests/dc1sv-tests.sh pins that):
+#   shape.groups: [..]        a shape in several systems (groups intersect where they share members)
+#   systems.G.color / .line   group stroke colour (CSS/hex, exposed as var(--c4-sys-G, colour)) and
+#                             line: "dotted" for a gentle 2/4 dash; .text = label colour (default: color)
+#   edge.label                a relationship name, drawn at the path's midpoint on an OPAQUE backing
+#                             (var(--c4-label-bg, #fff)) so the line never shows through the words
+#   edge.color                stroke colour for that edge (var(--c4-edge-<from>-<to>, colour))
+#
+# usage: dc1sv DOC.json > out.svg          render
+#        dc1sv --tally DOC.json            print counts (shapes edges groups) for a cross-check
+#        dc1sv --text DOC.json             the document as words (contexts, members, 'A -> B: label') --
+#                                          the accessible reading; ships beside every picture
+#        dc1sv --lint DOC.json             layout faults without eyes: label/shape, edge-through-shape,
+#                                          shape/shape, label/label, group titles (exit 1 if any)
+#        dc1sv --prove-red                 an edge to a missing shape must go red (exit 1)
+# exit 0 rendered/tallied · 1 the document does not hold (unknown shape/kind/nib) · 2 usage
+# Authored by Fable (Mentat/Vibrobeast) 2026-09-05 for Corwin's EXPERIMENT functional model.
+import json, sys
+
+KINDS = ("box", "decision", "actor", "node", "note")
+NIBS = ("none", "arrow", "open", "circle", "diamond")
+PAD = 14
+
+def die(msg, code=1):
+    sys.stderr.write("dc1sv: %s\n" % msg); sys.exit(code)
+
+def load(path):
+    with open(path, "r", encoding="utf-8") as f:
+        d = json.load(f)
+    if not (isinstance(d, dict) and d.get("v") == 1 and isinstance(d.get("shapes"), list)
+            and isinstance(d.get("edges"), list)):
+        die("not a v1 diagram document (need v:1, shapes[], edges[])")
+    ids = {}
+    for s in d["shapes"]:
+        if s.get("kind") not in KINDS: die("shape %r: unknown kind %r" % (s.get("id"), s.get("kind")))
+        if s["id"] in ids: die("duplicate shape id %r" % s["id"])
+        ids[s["id"]] = s
+    for e in d["edges"]:
+        for end in ("from", "to"):
+            if e.get(end) not in ids and not e.get(end + "Free"):
+                die("edge %s->%s: unknown shape %r" % (e.get("from"), e.get("to"), e.get(end)))
+        for k in ("a", "b"):
+            n = (e.get("nib") or {}).get(k)
+            if n is not None and n not in NIBS: die("edge %s->%s: unknown nib %r" % (e["from"], e["to"], n))
+    return d, ids
+
+def geom(s):
+    """bounding box (x,y,w,h) and centre for a shape, from its kind and label."""
+    L = len(s.get("label", "")); k = s["kind"]
+    if k == "decision": w = h = 40
+    elif k == "node":   w = h = 40
+    elif k == "actor":  w, h = 36, 56
+    elif k == "note":   w, h = max(60, 7 * L + 12), 24
+    else:               w, h = max(70, 7 * L + 2 * PAD), 46
+    return s["x"], s["y"], w, h
+
+def cp(s, side):
+    x, y, w, h = geom(s); cx, cy = x + w / 2, y + h / 2
+    return {"n": (cx, y), "s": (cx, y + h), "e": (x + w, cy), "w": (x, cy)}.get(side, (cx, cy))
+
+def esc(t):
+    return (t or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+def route(e, ids):
+    """the polyline an edge follows (same rules as render); returns list of points"""
+    a = ids.get(e["from"]); b = ids.get(e["to"])
+    p0 = cp(a, e.get("fromCP")) if a else (e["fromFree"]["x"], e["fromFree"]["y"])
+    p1 = cp(b, e.get("toCP")) if b else (e["toFree"]["x"], e["toFree"]["y"])
+    if a and b and not e.get("fromCP") and not e.get("toCP"):
+        p0 = cp(a, "e" if geom(b)[0] >= geom(a)[0] else "w"); p1 = cp(b, "w" if geom(b)[0] >= geom(a)[0] else "e")
+    pts = [p0]
+    if (e.get("fromCP") in ("n", "s")) and (e.get("toCP") in ("n", "s")) and abs(p0[0] - p1[0]) > 2:
+        if e.get("fromCP") == e.get("toCP"):
+            ymid = min(p0[1], p1[1]) - 30 if e.get("fromCP") == "n" else max(p0[1], p1[1]) + 30
+        else:
+            ymid = (p0[1] + p1[1]) / 2
+        pts += [(p0[0], ymid), (p1[0], ymid)]
+    elif (e.get("fromCP") in ("n", "s")) != (e.get("toCP") in ("n", "s")) and (e.get("fromCP") or e.get("toCP")):
+        pts += [(p0[0], p1[1])] if e.get("fromCP") in ("n", "s") else [(p1[0], p0[1])]
+    pts.append(p1)
+    return pts
+
+def label_box(e, pts):
+    """centre + size of an edge label: midpoint of the middle segment; a label wider than a short
+    horizontal segment sits 14px above it instead of across the endpoints' shapes"""
+    i = (len(pts) - 1) // 2; (ax, ay), (bx, by) = pts[i], pts[i + 1]
+    mx, my = (ax + bx) / 2, (ay + by) / 2; L = len(e["label"]); lw, lh = 7 * L + 10, 18
+    if abs(ay - by) < 2 and lw > abs(ax - bx): my -= 14
+    return mx, my, lw, lh
+
+def title_box(g, lab, box, d, ids):
+    """where a group's title goes: the first corner (TL, TR, BL, BR) free of shapes, edges and labels.
+    Returns (tx, ty, bbox). v1 documents (no colour/line on any system) always take TL, so they
+    render byte-identical."""
+    x0, y0, w, h = box; tw = 6.6 * len(lab); x1, y1 = x0 + w, y0 + h
+    if not any((d.get("systems", {}).get(k) or {}).get("color") or (d.get("systems", {}).get(k) or {}).get("line")
+               for k in (d.get("systems") or {})):
+        return x0 + 8, y0 + 14, (x0 + 8, y0 + 3, x0 + 8 + tw, y0 + 16)
+    def free(bb):
+        for sh in d["shapes"]:
+            gx, gy, gw, gh = geom(sh)
+            if not (bb[2] <= gx or gx + gw <= bb[0] or bb[3] <= gy or gy + gh <= bb[1]): return False
+        for e in d["edges"]:
+            pts = route(e, ids)
+            for k in range(len(pts) - 1):
+                for j in range(1, 24):
+                    t = j / 24; px = pts[k][0] + (pts[k+1][0] - pts[k][0]) * t; py = pts[k][1] + (pts[k+1][1] - pts[k][1]) * t
+                    if bb[0] < px < bb[2] and bb[1] < py < bb[3]: return False
+            if e.get("label"):
+                mx, my, lw, lh = label_box(e, pts)
+                if not (bb[2] <= mx - lw/2 or mx + lw/2 <= bb[0] or bb[3] <= my - lh/2 or my + lh/2 <= bb[1]): return False
+        return True
+    cands = [(x0 + 8, y0 + 14), (x1 - 8 - tw, y0 + 14), (x0 + 8, y1 - 8), (x1 - 8 - tw, y1 - 8)]
+    for tx, ty in cands:
+        bb = (tx, ty - 11, tx + tw, ty + 2)
+        if free(bb): return tx, ty, bb
+    tx, ty = cands[0]; return tx, ty, (tx, ty - 11, tx + tw, ty + 2)
+
+def text(d, ids):
+    """the same document as words: contexts, their members, then every relationship as 'A -> B: label'.
+    For readers who cannot or would rather not see the picture; also what a grep sees."""
+    out = []; prov = d.get("_provenance") or {}
+    out.append("# " + prov.get("title", "diagram"))
+    groups = {}
+    for s in d["shapes"]:
+        for g in ([s.get("group")] if s.get("group") else []) + list(s.get("groups") or []):
+            groups.setdefault(g, []).append(s)
+    KIND = {"actor": "actor", "box": "store/tool/skill", "node": "event", "note": "file or open question", "decision": "decision"}
+    for g, ss in groups.items():
+        lab = (d.get("systems", {}).get(g) or {}).get("_label", g)
+        out.append("\n## context: %s" % lab)
+        for s in ss:
+            more = [h for h in ([s.get("group")] if s.get("group") else []) + list(s.get("groups") or []) if h != g]
+            out.append("- %s (%s)%s" % (s.get("label", s["id"]), KIND.get(s["kind"], s["kind"]),
+                                       " — also in: " + ", ".join((d.get("systems", {}).get(h) or {}).get("_label", h) for h in more) if more else ""))
+    loose = [s for s in d["shapes"] if not s.get("group") and not s.get("groups")]
+    if loose:
+        out.append("\n## no context")
+        for s in loose: out.append("- %s (%s)" % (s.get("label", s["id"]), KIND.get(s["kind"], s["kind"])))
+    out.append("\n## relationships")
+    for e in d["edges"]:
+        a = ids[e["from"]].get("label", e["from"]); b = ids[e["to"]].get("label", e["to"])
+        kind = "boundary or question" if (e.get("style") or {}).get("dash") else "flow"
+        out.append("- %s -> %s: %s (%s)" % (a, b, e.get("label", ""), kind))
+    return "\n".join(out) + "\n"
+
+def lint(d, ids):
+    """layout faults a reader can find without eyes: label∩shape, edge-through-shape, shape∩shape"""
+    def box(s):
+        x, y, w, h = geom(s); return (x, y, x + w, y + h)
+    def hit(a, b):
+        return not (a[2] <= b[0] or b[2] <= a[0] or a[3] <= b[1] or b[3] <= a[1])
+    def seg_hits(p, q, r):   # axis-aligned or diagonal segment vs rect, sampled
+        n = 24
+        for k in range(1, n):
+            t = k / n; x = p[0] + (q[0] - p[0]) * t; y = p[1] + (q[1] - p[1]) * t
+            if r[0] < x < r[2] and r[1] < y < r[3]: return True
+        return False
+    faults = []
+    boxes = {s["id"]: box(s) for s in d["shapes"]}
+    for s in d["shapes"]:   # captions under node/actor/decision are text the reader must see too
+        if s["kind"] in ("node", "actor", "decision") and s.get("label"):
+            x, y, w, h = geom(s); cx = x + w / 2; L = len(s["label"]) * 3.5
+            boxes["caption:" + s["id"]] = (cx - L, y + h + 2, cx + L, y + h + 16)
+    ids_l = list(boxes)
+    for i, a in enumerate(ids_l):
+        for b in ids_l[i + 1:]:
+            if hit(boxes[a], boxes[b]): faults.append("shape %s overlaps shape %s" % (a, b))
+    for e in d["edges"]:
+        pts = route(e, ids)
+        for k in range(len(pts) - 1):
+            for sid, r in boxes.items():
+                if sid in (e["from"], e["to"], "caption:" + e["from"], "caption:" + e["to"]): continue
+                if seg_hits(pts[k], pts[k + 1], r): faults.append("edge %s->%s passes through %s" % (e["from"], e["to"], sid))
+        if e.get("label"):
+            mx, my, lw, lh = label_box(e, pts); lb = (mx - lw / 2, my - lh / 2, mx + lw / 2, my + lh / 2)
+            for sid, r in boxes.items():
+                if hit(lb, r): faults.append("label '%s' (%s->%s) overlaps shape %s" % (e["label"], e["from"], e["to"], sid))
+    # group titles vs shapes, edges, labels (the frame's own words must stay readable)
+    groups = {}
+    for sh in d["shapes"]:
+        for g in ([sh.get("group")] if sh.get("group") else []) + list(sh.get("groups") or []):
+            groups.setdefault(g, []).append(sh)
+    for g, ss in groups.items():
+        x0 = min(geom(t)[0] for t in ss) - 22; y0 = min(geom(t)[1] for t in ss) - 30
+        x1 = max(geom(t)[0] + geom(t)[2] for t in ss) + 22; y1 = max(geom(t)[1] + geom(t)[3] for t in ss) + 22
+        lab = (d.get("systems", {}).get(g) or {}).get("_label", g)
+        tx, ty, tb = title_box(g, lab, (x0, y0, x1 - x0, y1 - y0), d, ids)
+        for sid, r in boxes.items():
+            if hit(tb, r): faults.append("group title '%s' overlaps shape %s" % (g, sid))
+        for e in d["edges"]:
+            pts = route(e, ids)
+            for k in range(len(pts) - 1):
+                if seg_hits(pts[k], pts[k + 1], tb): faults.append("edge %s->%s passes through group title '%s'" % (e["from"], e["to"], g))
+            if e.get("label"):
+                mx, my, lw, lh = label_box(e, pts)
+                if hit(tb, (mx - lw/2, my - lh/2, mx + lw/2, my + lh/2)): faults.append("label '%s' overlaps group title '%s'" % (e["label"], g))
+    # labels vs labels
+    lbs = [(e, label_box(e, route(e, ids))) for e in d["edges"] if e.get("label")]
+    for i, (e1, (x1, y1, w1, h1)) in enumerate(lbs):
+        for e2, (x2, y2, w2, h2) in lbs[i + 1:]:
+            if hit((x1 - w1/2, y1 - h1/2, x1 + w1/2, y1 + h1/2), (x2 - w2/2, y2 - h2/2, x2 + w2/2, y2 + h2/2)):
+                faults.append("label '%s' overlaps label '%s'" % (e1["label"], e2["label"]))
+    return sorted(set(faults))
+
+def render(d, ids):
+    out = []
+    groups = {}
+    for s in d["shapes"]:
+        for g in ([s.get("group")] if s.get("group") else []) + list(s.get("groups") or []):
+            groups.setdefault(g, []).append(s)
+    xs = [geom(s)[0] + geom(s)[2] for s in d["shapes"]]; ys = [geom(s)[1] + geom(s)[3] for s in d["shapes"]]
+    W, H = int(max(xs) + 60), int(max(ys) + 40)
+    title = (d.get("_provenance") or {}).get("title", "diagram")
+    out.append('<svg xmlns="http://www.w3.org/2000/svg" role="img" width="%d" height="%d" viewBox="0 0 %d %d" '
+               'font-family="var(--c4-font, monospace)" font-size="12">' % (W, H, W, H))
+    out.append('<title>%s</title><desc>Rendered by dc1sv from the canonical diagram document; %d shapes, %d edges, %d systems. '
+               'Groups are drawn as labelled rectangles; every status is a word, never a hue alone.</desc>'
+               % (esc(title), len(d["shapes"]), len(d["edges"]), len(groups)))
+    out.append('<style>'
+               'rect.box{fill:var(--c4-box,#fffdf5);stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}'
+               'polygon.decision{fill:var(--c4-decision,#f1efe8);stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}'
+               'circle.node{fill:var(--c4-node,#ffffff);stroke:var(--c4-ink,#1a1a1a);stroke-width:2}'
+               'rect.note{fill:none;stroke:var(--c4-muted,#888780);stroke-dasharray:3 3;stroke-width:1}'
+               'text{fill:var(--c4-ink,#1a1a1a)}text.note{fill:var(--c4-muted,#5f5e5a);font-style:italic}'
+               'path.edge{fill:none;stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}path.dash{stroke-dasharray:6 4}'
+               'rect.sys{fill:var(--c4-sys,rgba(120,120,200,0.06));stroke:var(--c4-sysline,#6a67b8);stroke-width:1.5;stroke-dasharray:8 4}'
+               'rect.sys.core{fill:var(--c4-core,rgba(240,200,0,0.10));stroke:var(--c4-coreline,#b08800);stroke-dasharray:none}'
+               'text.sys{fill:var(--c4-sysline,#6a67b8);font-size:11px;font-weight:bold}'
+               + ('rect.lbl{fill:var(--c4-label-bg,#ffffff);stroke:var(--c4-muted,#888780);stroke-width:0.75}text.lbl{fill:var(--c4-ink,#1a1a1a);font-size:11px}'
+                  if any(e.get("label") for e in d["edges"]) else '') +
+               '</style>')
+    out.append('<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">'
+               '<path d="M0,0 L10,5 L0,10 z" fill="var(--c4-ink,#1a1a1a)"/></marker>'
+               '<marker id="open" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">'
+               '<path d="M0,0 L10,5 L0,10" fill="none" stroke="var(--c4-ink,#1a1a1a)"/></marker>'
+               '<marker id="circle" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7"><circle cx="5" cy="5" r="4" fill="var(--c4-ink,#1a1a1a)"/></marker>'
+               '<marker id="diamond" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,5 L5,0 L10,5 L5,10 z" fill="var(--c4-ink,#1a1a1a)"/></marker>'
+               + ('<pattern id="graph" width="20" height="20" patternUnits="userSpaceOnUse">'
+                  '<path d="M20,0 L0,0 L0,20" fill="none" stroke="var(--c4-grid,#c9d6e2)" stroke-width="0.6"/></pattern>'
+                  '<pattern id="graph5" width="100" height="100" patternUnits="userSpaceOnUse">'
+                  '<rect width="100" height="100" fill="url(#graph)"/><path d="M100,0 L0,0 L0,100" fill="none" stroke="var(--c4-grid5,#a9bccd)" stroke-width="1"/></pattern>'
+                  if d.get("paper") == "graph" else '')
+               + '</defs>')
+    if d.get("paper") == "graph":
+        # v2.1 (2026-09-06): "paper":"graph" -- a 20px grid with a heavier line every 100px, drawn FIRST so
+        # everything else sits on it; a character sheet on graph paper at the dungeon table. Said in words too.
+        out.append('<rect class="paper" width="%d" height="%d" fill="var(--c4-paper,#fbfdff)"/><rect class="paper grid" width="%d" height="%d" fill="url(#graph5)"/>'
+                   '<text class="note" x="%d" y="%d" text-anchor="end" font-size="10">graph paper · 20px squares, 100px majors</text>' % (W, H, W, H, W - 8, H - 8))
+    # systems (groups) first, outermost first: order by area descending
+    boxes = {}
+    for g, ss in groups.items():
+        x0 = min(geom(s)[0] for s in ss) - 22; y0 = min(geom(s)[1] for s in ss) - 30
+        x1 = max(geom(s)[0] + geom(s)[2] for s in ss) + 22; y1 = max(geom(s)[1] + geom(s)[3] for s in ss) + 22
+        boxes[g] = (x0, y0, x1 - x0, y1 - y0)
+    for g in sorted(boxes, key=lambda k: -boxes[k][2] * boxes[k][3]):
+        x, y, w, h = boxes[g]; sysd = d.get("systems", {}).get(g) or {}; lab = sysd.get("_label", g)
+        st = ""; ts = ""
+        if sysd.get("color") or sysd.get("line"):
+            col = sysd.get("color", "#6a67b8"); dash = "2 4" if sysd.get("line") == "dotted" else "8 4"
+            st = ' style="stroke:var(--c4-sys-%s,%s);stroke-dasharray:%s;fill:none"' % (g, col, dash)
+            ts = ' style="fill:var(--c4-systext-%s,%s)"' % (g, sysd.get("text", col))
+        out.append('<rect class="sys %s" x="%.0f" y="%.0f" width="%.0f" height="%.0f" rx="6"%s/>' % (g, x, y, w, h, st))
+        tx, ty, _ = title_box(g, lab, (x, y, w, h), d, ids)
+        out.append('<text class="sys" x="%.0f" y="%.0f"%s>%s</text>' % (tx, ty, ts, esc(lab)))
+    # edges (labels are collected here and emitted AFTER the shapes, so the opaque backing is on top)
+    labels = []
+    for e in d["edges"]:
+        pts = route(e, ids)
+        nib = e.get("nib") or {}; mb = nib.get("b", "arrow"); ma = nib.get("a", "none")
+        attrs = ' marker-end="url(#%s)"' % mb if mb != "none" else ""
+        attrs += ' marker-start="url(#%s)"' % ma if ma != "none" else ""
+        cls = "edge dash" if (e.get("style") or {}).get("dash") else "edge"
+        if e.get("color"): attrs += ' style="stroke:var(--c4-edge-%s-%s,%s)"' % (e["from"], e["to"], e["color"])
+        out.append('<path class="%s" d="M %s"%s/>' % (cls, " L ".join("%.0f,%.0f" % p for p in pts), attrs))
+        if e.get("label"):
+            mx, my, lw, lh = label_box(e, pts)
+            labels.append('<rect class="lbl" x="%.0f" y="%.0f" width="%d" height="%d" rx="3"/><text class="lbl" x="%.0f" y="%.0f" text-anchor="middle">%s</text>'
+                          % (mx - lw / 2, my - lh / 2, lw, lh, mx, my + 4, esc(e["label"])))
+    # shapes
+    for s in d["shapes"]:
+        x, y, w, h = geom(s); cx, cy = x + w / 2, y + h / 2; k = s["kind"]; lab = esc(s.get("label", ""))
+        if k == "box":
+            out.append('<rect class="box" x="%d" y="%d" width="%d" height="%d" rx="3"/><text x="%.0f" y="%.0f" text-anchor="middle">%s</text>' % (x, y, w, h, cx, cy + 4, lab))
+        elif k == "decision":
+            out.append('<polygon class="decision" points="%.0f,%d %d,%.0f %.0f,%d %d,%.0f"/>' % (cx, y, x + w, cy, cx, y + h, x, cy))
+            if lab: out.append('<text x="%.0f" y="%d" text-anchor="middle">%s</text>' % (cx, y + h + 14, lab))
+        elif k == "node":
+            out.append('<circle class="node" cx="%.0f" cy="%.0f" r="%d"/>' % (cx, cy, w // 2))
+            if lab: out.append('<text x="%.0f" y="%d" text-anchor="middle">%s</text>' % (cx, y + h + 14, lab))
+        elif k == "actor":
+            out.append('<circle class="node" cx="%.0f" cy="%d" r="8"/><path class="edge" d="M %.0f,%d L %.0f,%d M %d,%d L %d,%d M %.0f,%d L %d,%d M %.0f,%d L %d,%d"/>'
+                       % (cx, y + 8, cx, y + 16, cx, y + 36, x, y + 22, x + w, y + 22, cx, y + 36, x, y + h, cx, y + 36, x + w, y + h))
+            if lab: out.append('<text x="%.0f" y="%d" text-anchor="middle">%s</text>' % (cx, y + h + 14, lab))
+        else:  # note
+            out.append('<rect class="note" x="%d" y="%d" width="%d" height="%d"/><text class="note" x="%d" y="%d">%s</text>' % (x, y, w, h, x + 6, y + 16, lab))
+    out.extend(labels)
+    out.append('<!-- tally shapes %d edges %d groups %d -->' % (len(d["shapes"]), len(d["edges"]), len(groups)))
+    out.append("</svg>")
+    return "\n".join(out)
+
+def main(argv):
+    if not argv or argv[0] in ("-h", "--help"): die("usage: dc1sv DOC.json > out.svg | --tally DOC.json | --text DOC.json | --lint DOC.json | --prove-red", 2)
+    if argv[0] == "--prove-red":
+        bad = {"v": 1, "shapes": [{"id": "a", "label": "a", "kind": "box", "x": 0, "y": 0}], "edges": [{"from": "a", "to": "ghost"}]}
+        try:
+            ids = {s["id"]: s for s in bad["shapes"]}
+            for e in bad["edges"]:
+                if e["to"] not in ids: raise KeyError(e["to"])
+            print("FAIL: dc1sv did not refuse an edge to a missing shape"); sys.exit(1)
+        except KeyError:
+            print("PASS: dc1sv correctly refuses an edge to a missing shape (exit 1 on render)"); sys.exit(0)
+    if argv[0] == "--lint":
+        d, ids = load(argv[1]); f = lint(d, ids)
+        for line in f: print("LINT " + line)
+        print("lint faults %d" % len(f)); sys.exit(1 if f else 0)
+    if argv[0] == "--text":
+        d, ids = load(argv[1]); sys.stdout.write(text(d, ids)); return
+    if argv[0] == "--tally":
+        d, ids = load(argv[1]); groups = {g for s in d["shapes"] for g in ([s.get("group")] if s.get("group") else []) + list(s.get("groups") or [])}
+        print("tally shapes %d edges %d groups %d" % (len(d["shapes"]), len(d["edges"]), len(groups))); return
+    d, ids = load(argv[0]); sys.stdout.write(render(d, ids) + "\n")
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

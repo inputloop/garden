@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+#+title: Parity fixture: features both readers must treat alike
+#+property: header-args :tangle no :padline no :mkdirp yes
+
+Prose may mention =<<not-a-ref>>= and =#+begin_src= without effect.
+
+#+name: g-a
+#+begin_src text
+alpha
+beta  # a comment-looking tail stays
+#+end_src
+
+#+NAME: g-b
+#+BEGIN_SRC text
+gamma
+
+delta
+#+END_SRC
+
+#+begin_example
+#+begin_src text :tangle out/never.txt
+this is example text, not a block
+#+end_src
+#+end_example
+
+#+begin_src text :tangle out/p1.txt :noweb yes
+<<g-a>>
+<<g-b>>
+epsilon
+#+end_src
+
+#+begin_src text :tangle out/sub/p2.txt :noweb yes
+<<g-b>>
+#+end_src
+
+#+begin_src text :tangle out/p3.txt
+no noweb here: <<g-a>>
+#+end_src
+
+#+begin_src text :tangle out/p3.txt
+second block, same file
+#+end_src
+
+#+begin_src sh :tangle no
+never tangled
+#+end_src
+
+#+begin_src sh
+untagged: defaults to :tangle no
+#+end_src

@@ -1,0 +1,35 @@
+#!/bin/sh
+# hooks-tests.sh -- polygram/hooks.md: one countable row per hook, each naming a place that exists.
+# SPEC (2026-10-10, lane C task C5): "one countable row per hook named; a hook row whose act is not in
+# the tree is a fault."  Rows are the table lines under "## The hooks" whose first cell is a hook name.
+# --prove-red: a scratch copy with a row pointing at a missing folder must go red.
+# Authored by Mentat (for Corwin; claude-opus-5-5).
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+# SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later
+set -u
+here=$(cd "$(dirname "$0")/.." && pwd)
+pass=0; fail=0
+ok()  { pass=$((pass+1)); echo "ok   $1"; }
+bad() { fail=$((fail+1)); echo "FAIL $1 -- $2"; }
+rows() { awk -F'|' '/^## The hooks/ {f=1; next} /^## / {f=0} f && /^\| [a-z-]+ \|/ && $2 !~ /hook/ {
+  h=$2; gsub(/ /,"",h); w=$5; p=""; if (match(w, /`[^`]+`/)) p=substr(w, RSTART+1, RLENGTH-2); print h "\t" p }' "$1"; }
+check() { # check FILE -> prints faults; returns count
+  nf=0
+  rows "$1" > "${TMPDIR:-/tmp}/hk.$$"
+  while IFS='	' read -r h p; do
+    [ -n "$p" ] || continue
+    [ -e "$here/$p" ] || { echo "  row $h names $p, which is not in the tree"; nf=$((nf+1)); }
+  done < "${TMPDIR:-/tmp}/hk.$$"
+  rm -f "${TMPDIR:-/tmp}/hk.$$"; return $nf; }
+f="$here/polygram/hooks.md"
+n=$(rows "$f" | wc -l | tr -d ' ')
+[ "$n" -eq 5 ] && ok "hooks.md names 5 hooks: $(rows "$f" | cut -f1 | tr '\n' ' ')" || bad count "expected 5 hook rows, found $n"
+out=$(check "$f") && ok "every hook's act is in the tree" || bad places "$out"
+if [ "${1:-}" = --prove-red ]; then
+  t=$(mktemp -d); trap 'rm -rf "$t"' EXIT
+  sed 's#`skills/session-rotate/`#`skills/no-such-skill/`#' "$f" > "$t/hooks.md"
+  if check "$t/hooks.md" >/dev/null; then bad prove-red "a row naming a missing folder passed"
+  else ok "prove-red: a row naming a missing folder goes red"; fi
+fi
+echo "TOTAL pass=$pass fail=$fail"
+[ "$fail" -eq 0 ]

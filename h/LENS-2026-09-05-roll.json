@@ -1,0 +1,56 @@
+{
+ "seed": 20260905,
+ "metric": "distance from the author's stance (+5 defend authority .. 0 neutral .. -5 dismiss as flattery)",
+ "population": 36,
+ "ordered_head": [
+  [
+   "architect-defends-discipline",
+   5
+  ],
+  [
+   "standards-body-reviewer",
+   4
+  ],
+  [
+   "kit-maintainer",
+   4
+  ]
+ ],
+ "ordered_tail": [
+  [
+   "dismisses-it-as-self-help",
+   -4
+  ],
+  [
+   "cynic-about-AI-canon",
+   -5
+  ],
+  [
+   "rival-architect",
+   -5
+  ]
+ ],
+ "rack1_picks": [
+  [
+   "gnu-maintainer",
+   1
+  ],
+  [
+   "statistician",
+   0
+  ],
+  [
+   "pair-note-taker",
+   -1
+  ],
+  [
+   "kit-maintainer",
+   4
+  ]
+ ],
+ "fate_dice": [
+  5,
+  1
+ ],
+ "fate": "ne'er-do-well"
+}

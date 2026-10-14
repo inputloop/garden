@@ -1,0 +1,40 @@
+# R-ROWS from lane A (2026-10-10), for the conductor to fold into polygram/mcp/__main__.py's
+# --prove-red, after the R15/R16 block (inside the same `with tempfile... as td` scope, where
+# `want`, `td`, `Path` and `_os` exist). The words line first, then the code. Both were run in a
+# scratch harness against this tree: green as written, and red with the plant named under each.
+#
+# R17  A reset never yields a negative count: a token figure that rises is a reset, kept out of
+#      the totals, never subtracted.
+#      (Plant that turns it red: in spans.py `_is_reset`, return False.)
+# R18  Capture off writes no row: with usage.capture at its default (off), the frame file stays
+#      empty after a span start and a prompt.
+#      (Plant that turns it red: in spans.py `Frame.capture_on`, return True.)
+
+        # R17 -- a reset never yields a negative count (lane A, extension edition).
+        from . import spans as _sp17
+        _l17 = _sp17.Ledger(Path(td) / "r17.tsv", True, "prove-red")
+        _l17.append("start", "r17", "r17", 1000, "")
+        _l17.append("mark", "r17", "r17", 400, "")
+        _l17.append("mark", "r17", "r17", 5000, "")          # the figure rose: a new prompt
+        _l17.append("stop", "r17", "r17", 4900, "")
+        _s17 = next(s for s in _l17.spans() if s["span"] == "r17")
+        want("a reset never yields a negative count",
+             _s17["tokens_used"] == 700 and _s17["resets"] == 1,
+             f"tokens_used={_s17['tokens_used']} resets={_s17.get('resets')}")
+
+        # R18 -- capture off writes no row (lane A, extension edition).
+        _kp18 = _prefs.DEFAULT_PATH; _prefs.DEFAULT_PATH = Path(td) / "r18-prefs.tsv"
+        _fr18 = Path(td) / "r18-fr"; _fr18.write_text("", encoding="utf-8")
+        _old18 = _os.environ.get("MENTCACHED_FRAME"); _os.environ["MENTCACHED_FRAME"] = str(_fr18)
+        _os.environ.pop("MENTCACHED_PREFS", None)
+        try:
+            _f18 = _sp17.Frame("prove-red")
+            _f18.start("r18", 1000); _f18.prompt("r18", 5000); _f18.pref("tone.show", "words")
+            want("capture off writes no row", _fr18.read_text(encoding="utf-8") == "",
+                 f"{len(_fr18.read_text(encoding='utf-8').splitlines())} row(s) written")
+        finally:
+            _prefs.DEFAULT_PATH = _kp18
+            if _old18 is None:
+                _os.environ.pop("MENTCACHED_FRAME", None)
+            else:
+                _os.environ["MENTCACHED_FRAME"] = _old18

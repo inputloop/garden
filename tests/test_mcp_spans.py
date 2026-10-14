@@ -1,0 +1,313 @@
+# tier: smoke
+# polygram -- tests for span_start / span_mark / span_stop / span_report on mentcached.
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st>.  GPL-3.0-or-later.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+# This file is part of polygram.  polygram is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later version.  It is
+# distributed WITHOUT ANY WARRANTY; see <https://www.gnu.org/licenses/>.
+"""Time and tokens per span, from on-start / on-stop calls (Corwin, 2026-09-23).
+
+What is pinned here: the ledger is append-only and one row per EVENT; time is the
+server's and tokens are the caller's; a span with no token figures says "time only";
+stop refuses when nothing is open and refuses twice; the report's totals equal the
+sum of its spans; and a path the USER named is never created.
+"""
+
+from __future__ import annotations
+
+import os
+import tempfile
+import unittest
+from pathlib import Path
+
+from polygram.mcp import mentcached, spans
+from polygram.mcp.rpc import ToolError
+
+
+class SpanLedger(unittest.TestCase):
+    def setUp(self):
+        self.td = tempfile.TemporaryDirectory(); self.addCleanup(self.td.cleanup)
+        root = Path(self.td.name)
+        self.ledger = root / "stats" / "spans.tsv"
+        self._env = dict(os.environ)
+        os.environ["MENTCACHED_STATS"] = ""            # the default path, redirected below
+        spans.DEFAULT_LEDGER, self._dl = self.ledger, spans.DEFAULT_LEDGER
+        seat = root / "seat"; seat.mkdir()
+        self.srv = mentcached.build(by="test-by", seat=seat, jail=None)
+
+    def tearDown(self):
+        os.environ.clear(); os.environ.update(self._env)
+        spans.DEFAULT_LEDGER = self._dl
+
+    def call(self, name, **args):
+        return self.srv.call(name, args)
+
+    def test_start_mark_stop_is_three_rows_and_one_span(self):
+        s = self.call("span_start", label="build", tokens_left=1000)
+        self.assertIn("mode", s)
+        self.call("span_mark", tokens_left=700, note="half")
+        out = self.call("span_stop", tokens_left=400, outcome="done")
+        rows = [ln for ln in self.ledger.read_text(encoding="utf-8").splitlines()[1:] if ln]
+        self.assertEqual([r.split("\t")[1] for r in rows], ["start", "mark", "stop"])
+        self.assertEqual(out["tokens_used"], 600)
+        self.assertEqual(out["marks"], 1)
+        self.assertFalse(out["open"])
+        self.assertEqual(out["outcome"], "done")
+        self.assertIn("600 tokens", out["say"])
+        rep = self.call("span_report")
+        self.assertEqual(rep["count"], 1)
+        self.assertEqual(rep["tokens"], 600)
+        self.assertEqual(rep["by_label"][0]["label"], "build")
+
+    def test_nothing_is_ever_rewritten(self):
+        self.call("span_start", label="a", tokens_left=10)
+        before = self.ledger.read_bytes()
+        self.call("span_stop", tokens_left=5)
+        after = self.ledger.read_bytes()
+        self.assertTrue(after.startswith(before), "a stop must APPEND, not rewrite the start")
+
+    def test_time_only_when_no_token_figures(self):
+        self.call("span_start", label="think")
+        out = self.call("span_stop")
+        self.assertIsNone(out["tokens_used"])
+        self.assertIn("time only", out["say"])
+        self.assertGreaterEqual(out["seconds"], 0)
+
+    def test_stop_refuses_when_nothing_is_open_and_refuses_twice(self):
+        with self.assertRaises(ToolError) as cm:
+            self.call("span_stop")
+        self.assertIn("span_start first", str(cm.exception))
+        s = self.call("span_start", label="x")
+        self.call("span_stop")
+        with self.assertRaises(ToolError) as cm:
+            self.call("span_stop", span=s["span"])
+        self.assertIn("already stopped", str(cm.exception))
+
+    def test_two_open_spans_must_be_named(self):
+        a = self.call("span_start", label="a"); b = self.call("span_start", label="b")
+        self.assertEqual(b["also_open"], [f"{a['span']} a"])
+        with self.assertRaises(ToolError) as cm:
+            self.call("span_mark")
+        self.assertIn("more than one span is open", str(cm.exception))
+        self.call("span_stop", span=a["span"])
+        self.assertEqual(self.call("span_report")["open"], [b["span"]])
+
+    def test_tokens_must_be_whole_and_not_negative(self):
+        with self.assertRaises(ToolError):
+            self.call("span_start", label="x", tokens_left="lots")
+        with self.assertRaises(ToolError):
+            self.call("span_start", label="x", tokens_left=-1)
+
+    def test_label_is_required_and_fields_fold_to_one_line(self):
+        with self.assertRaises(ToolError):
+            self.call("span_start", label="   ")
+        self.call("span_start", label="two\twords\nhere", note="a\tb")
+        self.call("span_stop")
+        rows = self.ledger.read_text(encoding="utf-8").splitlines()
+        self.assertEqual(rows[1].split("\t")[3], "two words here")
+        self.assertEqual(rows[1].split("\t")[6], "a b")
+
+    def test_report_totals_equal_the_sum_of_spans_and_filters_narrow(self):
+        for lab, t0, t1 in (("a", 100, 90), ("a", 90, 70), ("b", 70, 65)):
+            self.call("span_start", label=lab, tokens_left=t0); self.call("span_stop", tokens_left=t1)
+        rep = self.call("span_report")
+        self.assertEqual(rep["count"], 3)
+        self.assertEqual(rep["tokens"], sum(s["tokens_used"] for s in rep["spans"]))
+        self.assertEqual(rep["seconds"], sum(s["seconds"] for s in rep["spans"]))
+        self.assertEqual({b["label"]: b["tokens"] for b in rep["by_label"]}, {"a": 30, "b": 5})
+        self.assertEqual(self.call("span_report", label="b")["count"], 1)
+        self.assertEqual(self.call("span_report", since="2999-01-01")["count"], 0)
+        self.assertEqual(len(self.call("span_report", limit=2)["spans"]), 2)
+
+    def test_a_user_named_path_is_never_created(self):
+        os.environ["MENTCACHED_STATS"] = str(Path(self.td.name) / "nowhere" / "spans.tsv")
+        srv = mentcached.build(by="t", seat=Path(self.td.name) / "seat", jail=None)
+        with self.assertRaises(ToolError) as cm:
+            srv.call("span_start", {"label": "x"})
+        self.assertIn("never creates", str(cm.exception))
+        self.assertFalse((Path(self.td.name) / "nowhere").exists())
+
+    def test_a_foreign_line_in_the_ledger_is_skipped_not_guessed_at(self):
+        self.call("span_start", label="a"); self.call("span_stop")
+        with self.ledger.open("a", encoding="utf-8") as fh:
+            fh.write("garbage line with no tabs\n")
+        self.assertEqual(self.call("span_report")["count"], 1)
+
+
+    # SPEC S-R1 (extension edition, A1, 2026-10-10): a rising token figure is a reset, never a
+    # negative count. The harness's figure goes UP when a new prompt begins (or when the app does
+    # its own housekeeping); the server cannot tell which, so it flags the leg and leaves it out.
+    def test_mark_after_a_reset_is_flagged_not_subtracted(self):
+        self.call("span_start", label="session", tokens_left=100000)
+        m1 = self.call("span_mark", tokens_left=90000)
+        self.assertEqual(m1["tokens_since_last"], 10000)
+        self.assertFalse(m1["reset"])
+        m2 = self.call("span_mark", tokens_left=118574, note="after a user message")
+        self.assertIsNone(m2["tokens_since_last"])
+        self.assertTrue(m2["reset"])
+        self.assertEqual(m2["tokens_since_start"], 10000)
+        self.assertIn("reset", m2["say"])
+        out = self.call("span_stop", tokens_left=110000)
+        self.assertEqual(out["tokens_used"], 18574)      # 10000 + 8574; the rising leg left out
+        self.assertEqual(out["resets"], 1)
+        rep = self.call("span_report")
+        self.assertEqual(rep["tokens"], 18574)
+        self.assertEqual(rep["resets"], 1)
+        self.assertIn("1 reset seen", rep["say"])
+        self.assertIn("counted from resets; the app's own housekeeping can add a reset, "
+                      "so this count may run high", rep["say"])
+        for s in rep["spans"]:
+            self.assertGreaterEqual(s["tokens_used"], 0)
+
+    def test_a_rise_at_stop_is_a_reset_too(self):
+        self.call("span_start", label="s", tokens_left=50)
+        out = self.call("span_stop", tokens_left=80)
+        self.assertEqual(out["tokens_used"], 0)
+        self.assertEqual(out["resets"], 1)
+
+    # SPEC (extension edition, A2): usage.capture off means no row; on means two counts and
+    # nothing else -- a start row and a prompt row, each carrying only TS, KIND, SESSION,
+    # TOKENS_LEFT and BY.
+    def _capture(self, value):
+        from polygram.mcp import prefs
+        self._kp = prefs.DEFAULT_PATH
+        prefs.DEFAULT_PATH = Path(self.td.name) / "prefs.tsv"
+        self.addCleanup(lambda: setattr(prefs, "DEFAULT_PATH", self._kp))
+        os.environ["MENTCACHED_PREFS"] = ""
+        # SPEC (F1, pass 2, P5 O1): the frame points at the temp folder BEFORE capture is turned
+        # on, because prefs.set_ mirrors its own row into the frame the moment capture is on.  The
+        # old order wrote "usage.capture on" (BY=test) into the user's real ~/.mentcached/stats/fr.
+        #frame-first
+        self.frame = Path(self.td.name) / "stats" / "fr"
+        spans.DEFAULT_FRAME, self._df = self.frame, spans.DEFAULT_FRAME
+        self.addCleanup(lambda: setattr(spans, "DEFAULT_FRAME", self._df))
+        self._fe = os.environ.get("MENTCACHED_FRAME")
+        os.environ["MENTCACHED_FRAME"] = ""       # unset: the (moved) default, which we may create
+        self.addCleanup(lambda: (os.environ.__setitem__("MENTCACHED_FRAME", self._fe)
+                                 if self._fe is not None else os.environ.pop("MENTCACHED_FRAME", None)))
+        #frame-first-end
+        if value is not None:
+            prefs.set_("usage.capture", value, "test", "")
+        self.srv = mentcached.build(by="test-by", seat=Path(self.td.name) / "seat", jail=None)
+
+    def test_capture_off_writes_no_row(self):
+        self._capture(None)                       # the default
+        self.call("span_start", label="s", tokens_left=100)
+        out = self.call("span_mark", tokens_left=120, prompt=True)
+        self.call("span_stop", tokens_left=200)
+        self.assertFalse(self.frame.exists(), "capture off must write no frame row")
+        self.assertIn("off", out["frame"])
+
+    def test_capture_on_writes_two_counts_and_nothing_else(self):
+        self._capture("on")
+        self.call("span_start", label="secret label", tokens_left=100, note="secret note")
+        self.call("span_mark", tokens_left=90, note="no prompt here")        # no row
+        self.call("span_mark", tokens_left=150, note="secret mark note")    # a reset: a prompt row
+        self.call("span_mark", tokens_left=140, prompt=True)                 # the caller says prompt
+        self.call("span_stop", tokens_left=130, outcome="secret outcome")   # no rise: no row
+        rows = [ln.split("\t") for ln in self.frame.read_text(encoding="utf-8").splitlines()]
+        # the first row is the turn-on itself, mirrored by prefs.set_ (it lands HERE, not at home)
+        self.assertEqual((rows[0][1], rows[0][7], rows[0][8]), ("pref", "usage.capture", "on"))
+        rows = rows[1:]
+        self.assertEqual([r[1] for r in rows], ["start", "prompt", "prompt"])
+        cols = spans.FRAME_COLUMNS
+        for r in rows:
+            self.assertEqual(len(r), 12)
+            filled = {cols[i] for i, v in enumerate(r) if v}
+            self.assertEqual(filled, {"TS", "KIND", "SESSION", "TOKENS_LEFT", "BY"})
+        self.assertEqual([r[5] for r in rows], ["100", "150", "140"])
+        self.assertNotIn("secret", self.frame.read_text(encoding="utf-8"))
+        names = spans.frame_names_path(self.frame)
+        self.assertEqual(names.read_text(encoding="utf-8").split(), list(cols))
+
+    # SPEC (F1, pass 2, P6 O4/J3, card 14): question_log writes the question rows qg1ck reads --
+    # KIND gauge, KEY question, LABEL id, VALUE one|two, LIKELIHOOD, CONFIDENCE, NOTE -- and a
+    # second_needed row after the answer; off writes nothing; one round trip writer -> qg1ck.
+    def test_question_log_writes_the_rows_qg1ck_reads(self):
+        import subprocess
+        self._capture("on")
+        self.call("question_log", question_id="q17", frame="two", question="Go on, and write it down?",
+                  likelihood="medium", confidence="17%")
+        self.call("question_log", question_id="q18", frame="two", question="Seat it, and sign it?",
+                  likelihood="high", confidence="0.18")
+        self.call("question_log", question_id="q17", second_needed="no")
+        rows = [ln.split("\t") for ln in self.frame.read_text(encoding="utf-8").splitlines()]
+        g = [r for r in rows if r[1] == "gauge"]
+        self.assertEqual(len(g), 3)
+        cols = spans.FRAME_COLUMNS
+        q = dict(zip(cols, g[0]))
+        self.assertEqual((q["KEY"], q["LABEL"], q["VALUE"], q["LIKELIHOOD"], q["CONFIDENCE"], q["NOTE"]),
+                         ("question", "q17", "two", "medium", "17%", "Go on, and write it down?"))
+        self.assertEqual((g[2][7], g[2][4], g[2][8]), ("second_needed", "q17", "no"))
+        root = Path(__file__).resolve().parent.parent
+        out = subprocess.run(["sh", str(root / "bin" / "qg1ck"), "--frame", str(self.frame),
+                              "--grammary", "/dev/null"], capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(out.returncode, 1, out.stdout)
+        self.assertIn("q18", out.stdout)
+        self.assertNotIn("question q17", out.stdout)              # 17% is AT the bar: passes
+        self.assertIn("2 question(s) logged, 2 framed two at a time", out.stdout)
+        self.assertIn("1 second question(s) turned out not to be needed", out.stdout)
+        with self.assertRaises(ToolError):
+            self.call("question_log", question_id="qx", frame="two", question="?", confidence="lots")
+
+    # SPEC (F3, pass 3, P6b J3/idea 2, card 13): the writer refuses a bare number above 1 as a
+    # confidence ("17" is a typing slip for 17%) and says how to write it: "write 17% or 0.17".
+    # Nothing is written for the refused call.  "17%", "0.17" and "1" are still accepted.
+    def test_question_log_refuses_a_bare_number_above_one(self):
+        self._capture("on")
+        with self.assertRaises(ToolError) as cm:
+            self.call("question_log", question_id="q17", frame="two", question="Go on?", confidence="17")
+        self.assertIn("write 17% or 0.17", str(cm.exception))
+        txt = self.frame.read_text(encoding="utf-8") if self.frame.exists() else ""
+        self.assertNotIn("q17", txt)
+        for ok in ("17%", "0.17", "1"):
+            self.call("question_log", question_id="ok" + ok, frame="two", question="Go on?", confidence=ok)
+
+    # SPEC (F3, pass 3, P6b J4/idea 3): second_needed names a question that was logged; an id
+    # never logged is refused (no orphan answer row, so qg1ck cannot count one answer for none).
+    def test_second_needed_refuses_an_id_never_logged(self):
+        self._capture("on")
+        with self.assertRaises(ToolError) as cm:
+            self.call("question_log", question_id="never", second_needed="yes")
+        self.assertIn("never logged", str(cm.exception))
+        txt = self.frame.read_text(encoding="utf-8") if self.frame.exists() else ""
+        self.assertNotIn("second_needed", txt)
+        self.call("question_log", question_id="q1", frame="one", question="Go on?")
+        self.call("question_log", question_id="q1", second_needed="no")
+        self.assertIn("second_needed", self.frame.read_text(encoding="utf-8"))
+
+    def test_question_log_off_writes_nothing(self):
+        self._capture(None)
+        out = self.call("question_log", question_id="q1", frame="one", question="Go on?")
+        self.assertFalse(self.frame.exists())
+        self.assertIn("off", out["frame"])
+
+    # SPEC (F1, pass 2, P5 J2): running these tests leaves the real default frame
+    # (~/.mentcached/stats/fr, as the module first set it) unchanged: same presence, size, mtime.
+    def test_capture_never_touches_the_real_frame(self):
+        real = _REAL_FRAME
+        def snap():
+            try:
+                st = real.stat()
+                return (True, st.st_size, st.st_mtime_ns)
+            except FileNotFoundError:
+                return (False, 0, 0)
+        before = snap()
+        self._capture("on")
+        self.assertNotEqual(self.frame, real)
+        self.call("span_start", label="s", tokens_left=100)
+        self.call("span_mark", tokens_left=150)
+        self.call("span_stop", tokens_left=140)
+        from polygram.mcp import prefs
+        prefs.set_("usage.capture", "off", "test", "")
+        self.assertEqual(snap(), before, f"a test wrote into the real frame {real}")
+
+
+#: the real default frame, taken before any test can move it
+_REAL_FRAME = spans.DEFAULT_FRAME
+
+
+if __name__ == "__main__":
+    unittest.main()

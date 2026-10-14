@@ -1,0 +1,199 @@
+#!/usr/bin/env python3
+# rf1bm -- ROLL FOR 1 BIAS MATRIX. Corwin's Roll-for-Bias, in real code, exactly as the method states
+#          (modelthisbook/news/METHOD-roll-for-bias.md v1.0.91, CC BY 4.0, Corwin Brust): ingest a scored
+#          population; FOLD to exactly 36 = half the extremes of the metric + half the most neutral (the
+#          messy middle is dropped on purpose); an ORDERED 6x6 numbered 1-36 with (1,1) the extreme
+#          maximum and (6,6) the neutral baseline; a RANDOMIZED 6x6 (same numbers, positions shuffled by
+#          a seeded RNG -- the load-bearing step); an INDEXED list keyed to the ordered matrix; a
+#          METHODOLOGY note naming the sources of the scores; and SELF-VALIDATION before returning
+#          (36 items; both tables 6x6; the randomized table holds 1..36 exactly once) -- regenerate,
+#          never ship a failed constraint. Fate dice per METHOD-lens-persona-seeds.md v1.0.90:
+#          double six or double one = villain; other doubles or 3 = badguy; 7 = malcontent; else
+#          ne'er-do-well. Nothing here is asserted by a model; the RNG is Python's, seeded, printed.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st>
+# This program is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.  See <https://www.gnu.org/licenses/>.
+# Method: CC BY 4.0, Corwin Brust (modelthisbook/news). Marked, as the method is marked:
+#   *for fiction or analysis -- no ship dates or licensing or publication dates specifically defined.*
+#
+# THE NAME (the AS4CE pattern, run-level in the slot): R ROLL · F FOR · 1 reads one file, writes one
+#   result · B BIAS · M MATRIX.
+#
+# v1.2 2026-09-06: fold ORDER fixed -- most-biased first (1..18), most-neutral last (19..36) -- HIS clarification.
+# usage: rf1bm POPULATION.tsv --metric NAME --seed N [--sources TEXT] [--pick K] [--fate | --fate-from ROLL.json] [--actor system|fiction] [--json OUT]
+#        rf1bm --prove-red      (a fold that returns 35 items must be refused)
+#   POPULATION.tsv  two columns: item <TAB> score (a number on the named metric; 0 = neutral). The
+#                   scores are the caller's judgement -- "a guess unless research is actually done":
+#                   say which in --sources. Header lines starting with # are ignored.
+#   --pick K        after the fold, draw K items from the RANDOMIZED matrix in reading order
+#                   (row-major) -- the de-ordered draw a downstream reader should use.
+#   --fate          also roll two d6 (seeded) and print the persona-seeds fate word.
+#   --fate-from R   REUSE the fate dice a prior --json roll R printed -- "you got your roll"; never re-roll.
+#   --actor KIND    system | fiction. A SYSTEM actor (software, host, place, anything more IRL than not)
+#                   ALWAYS takes the bad-guy stage: the fate's branch + parity reading, a GRAIN (4) of
+#                   "how does this inform my care/work/voice/line?" stems, and one more lens stage that
+#                   inverts the bad-guy shape. (HIS rule, 2026-09-06; v1.1 of this tool.)
+# Prints the six parts as markdown; --json writes the same as data. Exit 0 valid · 1 constraint failed
+# after regeneration · 2 usage.
+# Authored by Fable (Mentat/Vibrobeast) 2026-09-06 after applying a random sample where the method asked
+# for a fold -- this tool exists so that cannot happen quietly again.
+import sys, json, random
+
+def die(m, c=2): sys.stderr.write("rf1bm: %s\n" % m); sys.exit(c)
+
+def read_pop(path):
+    pop = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.rstrip("\n")
+            if not line or line.startswith("#"): continue
+            parts = line.split("\t")
+            if len(parts) < 2: die("bad row (need item<TAB>score): %r" % line)
+            try: pop.append((parts[0], float(parts[1])))
+            except ValueError: die("score not a number: %r" % line)
+    return pop
+
+def fold36(pop):
+    """half extremes (by |score|, largest first), half neutrals (smallest |score| first); 36 total."""
+    if len(pop) < 36: die("population has %d items; the fold needs at least 36" % len(pop))
+    by_abs = sorted(pop, key=lambda p: -abs(p[1]))
+    extremes = by_abs[:18]
+    rest = [p for p in pop if p not in extremes]
+    neutrals = sorted(rest, key=lambda p: abs(p[1]))[:18]
+    # ORDER (HIS clarification 2026-09-06): the table is evenly split -- the HIGHLY BIASED half at the
+    # beginning (1..18, most biased first, whichever direction the bias runs) and the MODERATE half at the
+    # end (19..36, most neutral LAST, at (6,6) -- METHOD: "(6,6) is the minimum or neutral baseline").
+    # v1.0 sorted by SIGNED score, which put the extreme negatives after the neutrals -- wrong; v1.2 is one
+    # monotone run: |score| descending across all 36, so 1 is the most biased and 36 the most neutral.
+    ordered = sorted(extremes + neutrals, key=lambda p: -abs(p[1]))
+    return ordered
+
+def matrices(ordered, rng):
+    nums = list(range(1, 37))
+    ordered_m = [nums[r*6:(r+1)*6] for r in range(6)]
+    shuffled = nums[:]; rng.shuffle(shuffled)
+    random_m = [shuffled[r*6:(r+1)*6] for r in range(6)]
+    return ordered_m, random_m
+
+def validate(ordered, ordered_m, random_m):
+    faults = []
+    if len(ordered) != 36: faults.append("items %d != 36" % len(ordered))
+    for name, m in (("ordered", ordered_m), ("randomized", random_m)):
+        if len(m) != 6 or any(len(r) != 6 for r in m): faults.append("%s matrix not 6x6" % name)
+    flat = sorted(n for r in random_m for n in r)
+    if flat != list(range(1, 37)): faults.append("randomized matrix does not hold 1..36 exactly once")
+    return faults
+
+def fate_word(d):
+    a, b = d; s = a + b
+    if (a == b == 6) or (a == b == 1): return "villain"
+    if a == b or s == 3: return "badguy"
+    if s == 7: return "malcontent"
+    return "ne'er-do-well"
+
+def fate(rng):
+    d = (rng.randint(1, 6), rng.randint(1, 6))
+    return d, fate_word(d)
+
+# The bad-guy stage (HIS rule, 2026-09-06, verbatim): "For actors that are system or software (or
+# otherwise non-fantasy/fiction/game/etc. non-IRL bad-guys are fine) then we always use a 'bad-guy'
+# roll to inform building a more informed (but voicier -- keep the voice!) perspective. Use one more
+# lens stage to reflect on inverting each 'bad-guy' shaped char rolled for such (more IRL than not)
+# purpose." And: "Don't re-roll in such cases: you got your roll. Use the roll and shape you got from
+# the first round and ask yourself a GRAIN worth of 'how does this inform my care/work/voice?' shaped
+# questions." The tool emits the SCAFFOLD (branch, parity reading, the four GRAIN stems, the inversion
+# stems); the voice is the persona's to write on the sheet. Parity reading is [MINE ~50%]: the method
+# says "pick from the short list, even/odd"; here even sum -> the first option, odd -> the second.
+GRAIN_STEMS = ["how does this fate inform my CARE (what I tend, what I let go)?",
+               "how does this fate inform my WORK (what I build, what I refuse to build)?",
+               "how does this fate inform my VOICE (what I say, how I say it, what I never say)?",
+               "how does this fate inform my LINE (what I hold under pressure; the break-character watch)?"]
+INVERT_STEMS = ["the inverse character: who is the %s turned inside out, and is that inverse a mirror or a line?",
+                "what did the bad-guy shape SEE that the straight sheet did not (keep it; compost the rest)?",
+                "which one trait, if inverted, would make this actor safer for the people it serves?",
+                "which one trait must NOT be inverted, because the inversion is the actual villain?"]
+
+def badguy_stage(fd, fw):
+    a, b = fd; s = a + b; asocial = (a == b) or (s == 7)
+    if asocial: branch, opts = "asocial (doubles or seven were NOT avoided)", ("an opportunity to redeem or make good", "acting out")
+    else:       branch, opts = "tragic (doubles and seven avoided): too far, too much, or fixed by evident fate or circumstance", ("a hopeful opportunity", "a predictable misfortune")
+    parity = "even" if s % 2 == 0 else "odd"
+    return {"rule": "system/software actor -> bad-guy roll informs the perspective; one more lens stage inverts it (HIS, 2026-09-06)",
+            "reroll": False, "fate_dice": list(fd), "fate": fw, "branch": branch,
+            "parity": parity, "parity_reading": opts[0] if parity == "even" else opts[1], "parity_confidence": "[MINE ~50%]",
+            "grain_questions": GRAIN_STEMS, "inversion_stage": [x.replace("%s", fw) for x in INVERT_STEMS]}
+
+def md_table(m):
+    return "\n".join("| " + " | ".join("%2d" % n for n in r) + " |" for r in m)
+
+def main(argv):
+    if not argv or argv[0] in ("-h", "--help"): die("usage: rf1bm POPULATION.tsv --metric NAME --seed N [--sources TEXT] [--pick K] [--fate] [--json OUT] | --prove-red")
+    if argv[0] == "--prove-red":
+        try:
+            fold36([("x%d" % i, float(i)) for i in range(35)]); print("FAIL: a 35-item population folded"); sys.exit(1)
+        except SystemExit as e:
+            if e.code == 2: print("PASS: rf1bm refuses a population that cannot fold to 36"); sys.exit(0)
+            raise
+    path = argv[0]; metric = None; seed = None; sources = "not stated -- treat the scores as a guess"; pick = 0; want_fate = False; jout = None
+    actor = None; fate_from = None
+    i = 1
+    while i < len(argv):
+        a = argv[i]
+        if a == "--metric": metric = argv[i+1]; i += 2
+        elif a == "--seed": seed = int(argv[i+1]); i += 2
+        elif a == "--sources": sources = argv[i+1]; i += 2
+        elif a == "--pick": pick = int(argv[i+1]); i += 2
+        elif a == "--fate": want_fate = True; i += 1
+        elif a == "--actor": actor = argv[i+1]; i += 2
+        elif a == "--fate-from": fate_from = argv[i+1]; want_fate = True; i += 2
+        elif a == "--json": jout = argv[i+1]; i += 2
+        else: die("unknown arg %s" % a)
+    if metric is None or seed is None: die("--metric and --seed are required (the seed is printed; a reader can reproduce the roll)")
+    if actor not in (None, "system", "fiction"): die("--actor must be system or fiction")
+    if actor == "system" and not want_fate: die("--actor system requires a fate: pass --fate, or --fate-from ROLL.json (never re-roll a roll you already have)")
+    pop = read_pop(path)
+    rng = random.Random(seed)
+    for attempt in range(3):   # self-healing: regenerate rather than ship a failed constraint
+        ordered = fold36(pop); om, rm = matrices(ordered, rng); faults = validate(ordered, om, rm)
+        if not faults: break
+    if faults: sys.stderr.write("rf1bm: constraint failed after regeneration: %s\n" % "; ".join(faults)); sys.exit(1)
+    picks = []
+    if pick:
+        order = [n for r in rm for n in r]
+        picks = [ordered[n-1][0] for n in order[:pick]]
+    if fate_from:
+        # "Don't re-roll: you got your roll." (HIS, 2026-09-06) -- reuse the dice a prior roll printed.
+        with open(fate_from, encoding="utf-8") as f: prior = json.load(f)
+        fd = prior.get("fate_dice")
+        if not fd: die("%s carries no fate_dice to reuse" % fate_from)
+        fd = tuple(fd); fw = fate_word(fd)
+    else:
+        fd, fw = fate(rng) if want_fate else (None, None)
+    badguy = badguy_stage(fd, fw) if actor == "system" else None
+    out = {"method": "Roll for Bias v1.0.91 (Corwin Brust, CC BY 4.0) -- fold half-extremes + half-neutrals to 36, ordered 6x6, randomized 6x6, indexed, methodology, validated",
+           "mark": "for fiction or analysis -- no ship dates or licensing or publication dates specifically defined",
+           "metric": metric, "seed": seed, "population": len(pop), "sources": sources,
+           "ordered": [{"n": k+1, "item": it, "score": sc} for k, (it, sc) in enumerate(ordered)],
+           "ordered_matrix": om, "randomized_matrix": rm, "picks": picks, "fate_dice": list(fd) if fd else None, "fate": fw,
+           "fate_from": fate_from, "actor": actor, "badguy": badguy, "validated": True}
+    print("# Roll for Bias -- metric: %s -- seed %d -- population %d -> 36" % (metric, seed, len(pop)))
+    print("*Marked: for fiction or analysis -- no ship dates or licensing or publication dates specifically defined.*\n")
+    print("## Ordered matrix ((1,1) = extreme max, (6,6) = neutral baseline)\n" + md_table(om))
+    print("\n## Randomized matrix (same numbers, order stripped; seed %d)\n" % seed + md_table(rm))
+    print("\n## Indexed output (keyed to the ordered matrix)")
+    for k, (it, sc) in enumerate(ordered): print("%2d. %s (%+g)" % (k+1, it, sc))
+    print("\n## Methodology note\nscores: %s" % sources)
+    if pick: print("\n## Picks (%d, from the randomized matrix in reading order)\n" % pick + "\n".join("- %s" % p for p in picks))
+    if want_fate: print("\n## Fate (persona seeds): dice %d+%d -> **%s**%s" % (fd[0], fd[1], fw, (" (reused from %s -- not re-rolled)" % fate_from) if fate_from else ""))
+    if badguy:
+        print("\n## Bad-guy perspective (system actor; the rule of 2026-09-06)\nbranch: %s\nparity: %s -> %s %s" % (badguy["branch"], badguy["parity"], badguy["parity_reading"], badguy["parity_confidence"]))
+        print("\n### A GRAIN of questions (4) -- the persona answers these on its sheet, in voice\n" + "\n".join("%d. %s" % (k+1, q) for k, q in enumerate(badguy["grain_questions"])))
+        print("\n### One more lens stage -- invert the bad-guy shape\n" + "\n".join("%d. %s" % (k+1, q) for k, q in enumerate(badguy["inversion_stage"])))
+    print("\nvalidated: 36 items · 6x6 · 6x6 · 1..36 once")
+    if jout:
+        with open(jout, "w", encoding="utf-8") as f: json.dump(out, f, indent=1, ensure_ascii=False)
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

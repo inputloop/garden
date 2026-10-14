@@ -1,0 +1,79 @@
+#!/bin/sh
+# ck1sk -- CHECK 1 SKIP: skip a slow check when literally nothing has changed since it last passed here.
+#
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st>.  Authored by Mentat (for Corwin).
+# SPDX-License-Identifier: GPL-3.0-or-later.  WITHOUT ANY WARRANTY; see <https://www.gnu.org/licenses/>.
+#
+# Why (his word, 2026-10-04): "Parts take a very long time.  Make we can consider skipping when literally nothing
+# has changed since we last got called to do the same checks."
+#
+# THE KEY is the content of the work tree as git sees it, plus the check's name: the tree `git add -A` would
+#   make now (tracked and untracked, not ignored), built in a throwaway index.  Committing does not change it;
+#   any edit to a tracked or untracked file, or to the check's own scripts (they are tracked), does.  Ignored files
+#   (dist/, caches) do not.
+# THE STAMP lives in the clone's own git dir (<git-dir>/ck1sk/NAME): never committed, never shared.  Only a PASS is
+# stamped; a failure is never remembered, so a red check always runs again.
+# OFF SWITCH: CK1SK=0 runs everything every time.  CK1SK_SALT=... adds anything else that should force a rerun
+# (an interpreter version, a host name).
+#
+# usage: ck1sk key NAME              print the key
+#        ck1sk seen NAME             exit 0 (and say so) when NAME passed for this exact key; else exit 1
+#        ck1sk pass NAME             stamp NAME as passed for the current key
+#        ck1sk run NAME -- CMD ...   seen? skip.  else run CMD; stamp on exit 0; exit with CMD's status
+#        ck1sk --prove-red           self-test in a throwaway repository
+set -u
+me=ck1sk
+sum() { if command -v sha256sum >/dev/null 2>&1; then sha256sum | cut -d' ' -f1; else shasum -a 256 | cut -d' ' -f1; fi; }
+tree() {
+  gd=$(git --no-optional-locks rev-parse --git-dir 2>/dev/null) || return 2
+  ti=$(mktemp "${TMPDIR:-/tmp}/ck1sk-index.XXXXXX") || return 2
+  [ -f "$gd/index" ] && cp "$gd/index" "$ti" || rm -f "$ti"
+  t=$(GIT_INDEX_FILE=$ti git add -A >/dev/null 2>&1 && GIT_INDEX_FILE=$ti git write-tree 2>/dev/null) || t=unknown
+  rm -f "$ti"; [ "$t" = unknown ] && return 2; printf '%s\n' "$t"
+}
+key() { # NAME   (CK1SK_TREE, when set, is the tree already computed by `ck1sk tree` for a run of many checks)
+  # The tree git WOULD commit if you ran `git add -A` now, built in a throwaway index (the real index is not
+  # touched): the same content gives the same key whether it is committed yet or not.
+  tree=${CK1SK_TREE:-$(tree)} || return 2
+  printf '%s\n' "name=$1 tree=$tree salt=${CK1SK_SALT:-}" | sum
+}
+stampdir() { d=$(git --no-optional-locks rev-parse --git-dir 2>/dev/null) || return 1; printf '%s/ck1sk' "$d"; }
+seen() { # NAME
+  [ "${CK1SK:-1}" = 0 ] && return 1
+  sd=$(stampdir) || return 1; [ -f "$sd/$1" ] || return 1
+  k=$(key "$1") || return 1
+  read -r sk when < "$sd/$1" || return 1
+  [ "$sk" = "$k" ] || return 1
+  printf '%s: %s skipped: nothing has changed since it passed at %s (CK1SK=0 runs it anyway)\n' "$me" "$1" "$when"
+}
+pass() { sd=$(stampdir) || return 1; mkdir -p "$sd" && printf '%s %s\n' "$(key "$1")" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$sd/$1"; }
+case ${1:-} in
+  key)  key "${2:?NAME}";;
+  tree) tree;;
+  seen) seen "${2:?NAME}";;
+  pass) pass "${2:?NAME}";;
+  run)  n=${2:?NAME}; shift 2; [ "${1:-}" = -- ] && shift
+        if seen "$n"; then exit 0; fi
+        "$@"; rc=$?; [ $rc -eq 0 ] && pass "$n"; exit $rc;;
+  --prove-red)
+        t=$(mktemp -d) || exit 2; trap 'rm -rf "$t"' EXIT; self=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/ck1sk
+        cd "$t" && git init -q && git config user.email t@t.invalid && git config user.name t && echo a > f && git add f && git commit -qm a || exit 2
+        ok=0; no() { echo "FAIL $1"; ok=1; }
+        n=$(sh "$self" run c -- sh -c 'echo ran' | grep -c '^ran$'); [ "$n" = 1 ] || no "first run did not run"
+        n=$(sh "$self" run c -- sh -c 'echo ran' | grep -c '^ran$'); [ "$n" = 0 ] || no "an unchanged second run ran again"
+        echo b > f; n=$(sh "$self" run c -- sh -c 'echo ran' | grep -c '^ran$'); [ "$n" = 1 ] || no "an edited tracked file did not rerun"
+        echo x > new; n=$(sh "$self" run c -- sh -c 'echo ran' | grep -c '^ran$'); [ "$n" = 1 ] || no "a new untracked file did not rerun"
+        echo y > new; n=$(sh "$self" run c -- sh -c 'echo ran' | grep -c '^ran$'); [ "$n" = 1 ] || no "an edited untracked file did not rerun"
+        n=$(CK1SK=0 sh "$self" run c -- sh -c 'echo ran' | grep -c '^ran$'); [ "$n" = 1 ] || no "CK1SK=0 did not run"
+        sh "$self" run d -- false >/dev/null; n=$(sh "$self" run d -- sh -c 'echo ran' | grep -c '^ran$'); [ "$n" = 1 ] || no "a failure was remembered"
+        n=$(sh "$self" run e -- sh -c 'echo ran' | grep -c '^ran$'); [ "$n" = 1 ] || no "another name shared a stamp"
+        echo z > .gitignore-me; printf '.gitignore-me\n' >> .git/info/exclude; sh "$self" pass c
+        echo zz > .gitignore-me; sh "$self" seen c >/dev/null || no "an ignored file forced a rerun"
+        # the planted break: a key that ignores the working tree must be caught by the edited-file case
+        sed 's/^  tree=\${CK1SK_TREE:-\$(tree)}.*/  tree=fixed/' "$self" > "$t/mutant"
+        echo c > f; sh "$t/mutant" pass m; echo d > f
+        if sh "$t/mutant" seen m >/dev/null; then echo "ok   prove-red: a key blind to edits would skip an edited tree (caught)"; else no "the planted mutant did not change behaviour"; fi
+        git add -A >/dev/null 2>&1; sh "$self" pass c; git commit -qm b; sh "$self" seen c >/dev/null || no "committing unchanged content forced a rerun"
+        [ $ok = 0 ] && echo "ok   ck1sk: runs once, skips when unchanged, reruns on any tracked or untracked change, never remembers a failure, CK1SK=0 forces" ; exit $ok;;
+  *) sed -n '2,28p' "$0" | sed 's/^# \{0,1\}//'; exit 2;;
+esac

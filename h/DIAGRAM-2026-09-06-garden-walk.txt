@@ -1,0 +1,55 @@
+# The Garden Walk — nine ideas, two readers each, one open (2026-09-06)
+
+## context: A · simple, ergonomic, non-contagious
+- A1 autoMemoryDirectory · HOLD (store/tool/skill)
+- row 1: enthusiast, tired (file or open question)
+- row 2: user-scope = contagious (file or open question)
+- A2 CLAUDE.md door · HOLD→door line (store/tool/skill)
+- row 1: terminal purist, tired (file or open question)
+- row 2: no @import; double-mount (file or open question)
+- A3 mechanical open · PASS (store/tool/skill)
+- row 1: poet, tired (file or open question)
+- row 2: exit words; who reminds? (file or open question)
+- A4 seat template · PASS (store/tool/skill)
+- row 1: speed reader, tired (file or open question)
+- row 2: emitted ≠ installed (file or open question)
+
+## context: B · shows us off, extends reach
+- B1 Memory Door · HOLD (store/tool/skill)
+- row 1: museum curator, tired (file or open question)
+- row 2: hosted egress; rot (file or open question)
+- B2 memory picture · PASS (store/tool/skill)
+- row 1: compliance officer, tired (file or open question)
+- row 2: a rendering ≠ a record (file or open question)
+- B3 the paper · PASS (store/tool/skill)
+- row 1: first-week intern, tired (file or open question)
+- row 2: story without artifact (file or open question)
+- B4 manifest on the wire · PASS narrowed (store/tool/skill)
+- row 1: security auditor, tired (file or open question)
+- row 2: names are topics (file or open question)
+
+## context: C · the ninth
+- C1 scheduled fleet gauge · HOLD (store/tool/skill)
+- row 1: color-blind reader, tired (file or open question)
+- row 2: third reader; decay (file or open question)
+
+## no context
+- se1sn · SEAT ENTER 1 SESSION NOTE · 26/26 (store/tool/skill)
+- minions ×2 (risk + opportunity) (event)
+- eclipse: PASS WITH REFRAME (event)
+- Corwin (keeper) · Q507: three forks (actor)
+- the CE set (ideas, MIT, no code) (file or open question)
+
+## relationships
+- row 2: user-scope = contagious -> se1sn · SEAT ENTER 1 SESSION NOTE · 26/26: companion (if honored) (flow)
+- row 2: no @import; double-mount -> se1sn · SEAT ENTER 1 SESSION NOTE · 26/26: door line (flow)
+- row 2: exit words; who reminds? -> se1sn · SEAT ENTER 1 SESSION NOTE · 26/26: IS the open (flow)
+- row 2: emitted ≠ installed -> se1sn · SEAT ENTER 1 SESSION NOTE · 26/26: template (next) (flow)
+- row 2: hosted egress; rot -> se1sn · SEAT ENTER 1 SESSION NOTE · 26/26: map face (later) (flow)
+- row 2: a rendering ≠ a record -> se1sn · SEAT ENTER 1 SESSION NOTE · 26/26: picture of (flow)
+- row 2: story without artifact -> se1sn · SEAT ENTER 1 SESSION NOTE · 26/26: paper of (flow)
+- row 2: names are topics -> se1sn · SEAT ENTER 1 SESSION NOTE · 26/26: root-line only (flow)
+- row 2: third reader; decay -> se1sn · SEAT ENTER 1 SESSION NOTE · 26/26: fold into omni-point (flow)
+- minions ×2 (risk + opportunity) -> se1sn · SEAT ENTER 1 SESSION NOTE · 26/26: picks (flow)
+- eclipse: PASS WITH REFRAME -> se1sn · SEAT ENTER 1 SESSION NOTE · 26/26: converges (flow)
+- se1sn · SEAT ENTER 1 SESSION NOTE · 26/26 -> Corwin (keeper) · Q507: three forks: C4 seat · scope · fence (flow)

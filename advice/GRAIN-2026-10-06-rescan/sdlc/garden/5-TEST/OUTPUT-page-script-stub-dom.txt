@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+# the first-run page's own script on a stand-in DOM (NOT a browser), for each profile and edition (also run inside C10 and C13)
+# saved 2026-10-06T08:52Z
+
+$ node stubdom.js ../4-BUILD/shell/first-run.html minimal base
+ids: try private chapter help
+$ node stubdom.js ../4-BUILD/shell/first-run.html minimal author
+ids: try private chapter help
+$ node stubdom.js ../4-BUILD/shell/first-run.html desktop base
+ids: try private chapter library write help
+$ node stubdom.js ../4-BUILD/shell/first-run.html desktop author
+ids: try private chapter library write help read listen fanwork stamp notice
+$ node stubdom.js ../4-BUILD/shell/first-run.html homelab base
+ids: try private chapter help
+$ node stubdom.js ../4-BUILD/shell/first-run.html homelab author
+ids: try private chapter help
+$ node stubdom.js ../4-BUILD/shell/first-run.html hardened base
+ids: try private chapter library write help
+$ node stubdom.js ../4-BUILD/shell/first-run.html hardened author
+ids: try private chapter library write help
+$ node stubdom.js ../4-BUILD/shell/first-run.html fullsink base
+ids: try private chapter library write help
+$ node stubdom.js ../4-BUILD/shell/first-run.html fullsink author
+ids: try private chapter library write help read listen fanwork stamp notice
+
+$ node stubdom.js ../4-BUILD/shell/first-run.html desktop author   (the colour buttons, in full)
+ids: try private chapter library write help read listen fanwork stamp notice
+theme-at-start: none
+theme-after-dark: dark
+theme-after-light: light
+theme-after-system: none
+pressed: system=true light=false dark=false
+
+[exit status 0]

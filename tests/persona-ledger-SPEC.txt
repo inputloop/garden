@@ -1,0 +1,51 @@
+persona-ledger-SPEC.txt -- what tests/persona-ledger-tests.sh (sh) and tests/persona-ledger-spec.awk
+(awk) check, in sentences.  Written before the runner and before the code, so a reader can check
+both against it.  Item name for gd1ck: persona-ledger.
+Written by Mentat (for Corwin; claude-opus-5-5), 2026-10-10, lane B of the extension edition
+(advice/EXTENSION-2026-10-10/DESIGN-extension-edition.md, task B3; card 19; agreements 29-32).
+
+The thing under test: the persona_ledger tool inside polygram/mcp/persona.py (Python), and its
+command-line face `python3 -m polygram.mcp persona --ledger [--proposed FILE ...]`, which prints
+LEDGER.md.  The checks are awk (the work is Python; the earlier persona tests are Python and Perl).
+Exit 0 all green, 1 any red, 2 kit broken.
+
+Corwin's ruling it serves: "Persona inverse should be carried by other Persona, like a boundary
+network ... forming this net in terms of falsifying knowledge held among participants (and not some
+additional stores they may keep)."  So the ledger is regenerated from the sheets, never hand-edited,
+and is never a store: it says nothing that no sheet (or, in its own marked section, no review file)
+says.
+
+L1  One row per served persona sheet, in a Markdown table under "## Sheets", with its name, actor
+    word, version line, full sha256 and byte count.  The read-back paragraph under "## Read-back in
+    words" says the same number of sheets in words and numerals, and holds no table.
+L2  Every row under "## Edges in the sheets" comes from a sheet's own "Whose inverse I carry"
+    section: its "where" cell names the sheet file and line, and that line of that file holds the
+    row's target name and its words.  (R20: "the ledger states nothing that no sheet says".)
+L3  A sheet line naming a persona that does not exist is a FAULT, listed under "## Faults" by name,
+    file and line, and is never shown as an edge.
+L4  A twin that differs (a second copy of a served sheet in another root, or left in the folder
+    beside a root) is shown as DIVERGED on that sheet's row, with both sha256s in full.  Which copy
+    is master is Corwin's pen; the ledger never picks one.
+L5  A third-party fact elsewhere in a sheet never appears in the ledger: only head lines, version
+    lines and the "Whose inverse I carry" lines are ever printed.
+L6  Person models (a "model" sheet whose own head does not say it is "not a person") are kept off:
+    counted, never named, never a row; an edge with a person model at either end is shown with its
+    words withheld, because the persona grant (records/2026-09/GRANT-persona-drive-2026-09-01.md)
+    keeps person models off Drive.
+L7  Edges read from review or study files are listed only under "## Proposed by review, not yet in
+    a sheet", each with its source file, and never in the sheet-edges table or the sheet columns.
+L8  The ledger ends with "## What the model was shown", a words read-back of what was read and
+    returned (agreement on egress to the AI vendor, DESIGN section 1).
+L9  (F1, pass 2, P5 O7/J6) Proposed edges are shown once per distinct (from, to, claim) triple,
+    with a "times" column, and the read-back says how many proposed lines were read, how many are
+    distinct edges, between how many (from, to) pairs, from how many source lines, and the
+    proposing hand(s) (from the sources' "for Corwin; <model>" line: "one model: claude-opus").
+    Plant (e) turns the dedupe off; L9 must go red.
+R   Prove-red (--prove-red), each plant on a scratch copy of persona.py: (a) the DIVERGED word
+    planted away turns L4 red; (b) the existence check planted away turns L3 red; (c) the person-
+    model test planted away turns L6 red; (d) a ledger planted to print the sheet's body turns L5
+    red.  All must go red, or the kit reports itself broken.
+
+Authored by Mentat (for Corwin; claude-opus-5-5).
+Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+SPDX-License-Identifier: CC-BY-SA-4.0

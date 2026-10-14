@@ -1,0 +1,102 @@
+#!/bin/sh
+# qg1ck -- QUESTION GAUGE 1 CHECK: reads the frame (FRAME.md) and checks the one-question rule.
+# SPEC QG1-QG3 in tests/lane-d-SPEC.txt; design §2 (the frame contract) and card 13.
+#
+# How it reads a `gauge` row (the frame fixes the columns, FRAME.md; this is qg1ck's reading of
+# them for questions, from Model W A3 (a)):
+#   KIND=gauge, KEY=question  one question put to a person; LABEL = the question id,
+#                             VALUE = the frame (`one` or `two`), LIKELIHOOD = the guessed
+#                             likelihood the second is needed, CONFIDENCE = how sure we were that
+#                             the second could be skipped, NOTE = the question text.
+#   KIND=gauge, KEY=second_needed   after the answer: VALUE yes, no or unasked.
+#   KIND=pref                 a preference act mirrored into the frame (counted, never acted on).
+# It is a CHECK on one line he ruled (Q573, ch.4 A3): two questions are framed together only when
+# the confidence that the second can be skipped is 0.17 or less. A two-question frame above the
+# bar, or with no number to compare, is a fault (exit 1). Everything else is a count, never a stop.
+# It counts GRAMMARY terms used in a logged question with no gloss on the same line (a gloss is
+# "(" or " - " or " — " or ": " right after the term), and the `pref` mirror rows. It only reads.
+#
+# Usage: qg1ck [--frame FILE] [--grammary FILE] [--bar N]
+#   --frame     default: $MENTCACHED_FRAME, else ~/.mentcached/stats/fr
+#   --grammary  default: GRAMMARY.md beside this bin/
+#   --bar       default 0.17 (his ruling, "17% or less"); a fraction (0.17) or a percent (17%).
+#               No preference sets it yet (a `questions.skip_bar` key is asked for, not built).
+# CONFIDENCE in a row is read the same way: 0.17 and 17% are the same number, and a row at
+# exactly the bar passes (SPEC F1-3, pass 2, P6 O5/J4). A bare number above 1 is not a percent.
+# Exit: 0 no fault; 1 a fault; 2 usage.
+#
+# Authored by Mentat (for Corwin; claude-opus-5-5).
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+# SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later
+set -u
+LC_ALL=C; export LC_ALL
+here=$(cd "$(dirname "$0")" && pwd -P)
+FRAME=${MENTCACHED_FRAME:-$HOME/.mentcached/stats/fr}
+GRAM=$(dirname "$here")/GRAMMARY.md
+BAR=0.17
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --frame) FRAME=$2; shift 2 ;;
+    --grammary) GRAM=$2; shift 2 ;;
+    --bar) BAR=$2; shift 2 ;;
+    -h|--help) sed -n '2,26p' "$0"; exit 0 ;;
+    *) echo "qg1ck: unknown argument $1" >&2; exit 2 ;;
+  esac
+done
+case "$BAR" in ''|*[!0-9.%]*|*%*%*|*%?*) echo "qg1ck: the bar must be a number, a fraction (0.17) or a percent (17%)" >&2; exit 2 ;; esac
+if [ ! -f "$FRAME" ]; then
+  echo "qg1ck: no frame at $FRAME; nothing to count (capture is off by default, FRAME.md). No fault."
+  exit 0
+fi
+[ -f "$GRAM" ] || GRAM=/dev/null
+
+awk -F'\t' -v bar="$BAR" -v gram="$GRAM" '
+  function lc(s) { return tolower(s) }
+  function frac(x) { if (x ~ /%$/) return substr(x, 1, length(x) - 1) / 100; return x + 0 } #guard:pct
+  BEGIN {
+    bar = frac(bar)
+    nt = 0
+    while ((getline l < gram) > 0) {
+      t = ""
+      if (match(l, /^- \*\*[^*]+\*\*/)) t = substr(l, RSTART + 4, RLENGTH - 6)
+      else if (l ~ /^### /) t = substr(l, 5)
+      if (t == "") continue
+      n = split(t, parts, / \/ /)
+      for (i = 1; i <= n; i++) { p = lc(parts[i]); gsub(/^[ `]+|[ `]+$/, "", p); if (length(p) >= 3 && !(p in term)) { term[p] = 1; nt++ } }
+    }
+  }
+  NF >= 2 {
+    rows++
+    if ($2 == "pref") { prefs++; if ($8 ~ /^skill\.seatkeeper\./) declines++ }
+    if ($2 != "gauge") next
+    if ($8 == "second_needed") { if ($9 == "no") misses++; else if ($9 == "yes") needed++; next }
+    if ($8 != "question") next
+    q++
+    if ($9 == "two") {
+      two++
+      raw = $11; c = frac(raw)
+      if (raw !~ /^[0-9]*\.?[0-9]+%?$/) { fault++; F = F sprintf("  FAULT  question %s is a two-question frame with no number for the skip confidence (\"%s\")\n", $5, raw) }
+      else if (c + 0 > bar + 0) { fault++; F = F sprintf("  FAULT  question %s is a two-question frame at skip confidence %s, above the bar %s\n", $5, raw, bar) } #guard:bar
+    }
+    note = " " lc($12) " "
+    for (t in term) {
+      s = note
+      while ((k = index(s, t)) > 0) {
+        before = substr(s, k - 1, 1); after = substr(s, k + length(t))
+        s = substr(s, k + length(t))
+        if (before ~ /[a-z0-9-]/ || after ~ /^[a-z0-9-]/) continue
+        a2 = after; sub(/^[`"*\047]+/, "", a2)
+        if (a2 ~ /^ ?\(/ || a2 ~ /^ (-|\342\200\224) / || a2 ~ /^: /) { glossed++; continue } #guard:gloss
+        unglossed++; U = U sprintf("  unglossed  \"%s\" in question %s\n", t, $5)
+      }
+    }
+  }
+  END {
+    printf "qg1ck: %d row(s) read; %d question(s) logged, %d framed two at a time; bar %s.\n", rows, q, two, bar
+    printf "  %d two-question frame(s) above the bar or without a number (each one is a fault).\n", fault + 0
+    printf "  %d second question(s) turned out not to be needed; %d were needed.\n", misses + 0, needed + 0
+    printf "  %d GRAMMARY term use(s) in questions with no gloss on the same line (%d glossed; %d terms known).\n", unglossed + 0, glossed + 0, nt
+    printf "  %d pref mirror row(s), %d of them a seatkeeper \"no\" (counted; only the preference acts).\n", prefs + 0, declines + 0
+    printf "%s%s", F, U
+    exit (fault > 0) ? 1 : 0
+  }' "$FRAME"

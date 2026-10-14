@@ -1,0 +1,7 @@
+#!/bin/sh
+# ask-scan FILE -- list and count the lines of a draft hand-back that read as asks.
+# exit 0 always; this is a reading aid, not a gate.
+[ $# -eq 1 ] && [ -r "$1" ] || { echo "usage: ask-scan FILE" >&2; exit 2; }
+grep -n -i -E '\?[[:space:]]*$|\?[)*_"]|your call|can you|need your|please confirm|which do you|do you want' -- "$1" || true
+n=$(grep -c -i -E '\?[[:space:]]*$|\?[)*_"]|your call|can you|need your|please confirm|which do you|do you want' -- "$1" || true)
+echo "ask-scan: ${n:-0} ask-shaped line(s) in $1 -- look for his words on disk before each one goes out"

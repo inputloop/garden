@@ -1,0 +1,584 @@
+#!/bin/sh
+# sp1ll -- SPELL 1 LIST.  What is hung, what fired, and what the ledger does not know.
+#
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st>.  Co-authored by Mentat (Claude, in Cowork).
+# GPL-3.0-or-later.  READS ONLY.  It writes to stdout and to a temp dir it makes and removes.
+# It never writes inside h/spells, never moves a spell, never edits a LEDGER.
+#
+# ---------------------------------------------------------------------------------------------
+# THE RULE THIS TOOL EXISTS TO SERVE, in Corwin's words, 2026-09-17:
+#
+#   "If you see opportunities to make working with the spells even more tool driven and pull
+#    truth toward movement and usage ... take them."
+#
+# Until today a spell rack was prose plus a LEDGER.tsv kept by hand.  A hand-kept ledger is one
+# reader of one truth, and the estate's own law (facts/, q/words/pub.md, at1pl) is that one
+# reader is not evidence.  So this program reads THREE witnesses for every spell and reports
+# where they disagree.  It never settles the disagreement -- firing and archiving are the
+# keeper's verbs.
+#
+#   SAID     what the spell file says about itself       an assertion, from the file
+#   SHOWN    whether the landing path it names exists     a fact, from the disk
+#   LEDGER   what the rack's LEDGER.tsv row says          a record, kept by hand
+#
+# and a verdict over the three: AGREE / DISAGREE / UNKNOWN.  UNKNOWN is first class.  A tool
+# that guesses a verdict it did not measure is worse than one that admits the gap -- the estate
+# spent 2026-09-16 and -17 finding five separate instances of a check asking a question adjacent
+# to the one that matters, and this is the countermeasure written down.
+#
+# ---------------------------------------------------------------------------------------------
+# WHAT COUNTS AS A SPELL, mechanically, so nobody has to decide by eye:
+#
+#   a rack   = a directory under h/spells whose name is YYYY-MM-DD
+#   a spell  = a *.md file directly inside a rack, except MODEL.md and README.md
+#   a binder = MODEL.md / README.md in a rack -- reported as BINDER, never counted as a spell
+#   loose    = a *.md at the h/spells root (SURVEY, term-use-sweep) -- reported as LOOSE
+#
+# A GHOST is a LEDGER row naming a spell that is not in the rack any more.  It is reported
+# because that is exactly the state the rack is in today: six spells were archived on 2026-09-16
+# and three ledgers still name them.  A ledger that names a file nobody can open is the
+# hand-kept-record failure this program exists to make visible.
+#
+# ---------------------------------------------------------------------------------------------
+# THE LANDING VERDICTS.  They are not a quality scale; they are five different facts.
+#
+#   FIRED      the landing path named in the spell EXISTS.  Something landed.  Whether the
+#              ledger knows is a separate column.
+#   UNFIRED    the landing path is named and is NOT there.  `ls` the parent was run first --
+#              an absence is reported only after an attempt (CLAUDE.md:43).
+#   TEMPLATE   the landing carries a <placeholder>.  A path with a hole in it cannot be checked
+#              by name, so only its directory is checked, and the verdict SAYS the hole is there
+#              rather than resolving it to something plausible.
+#   NOLANDING  the spell names no landing at all.  Not a fault -- several racks predate the form
+#              -- but it is the reason its firing can never be detected mechanically.
+#   DIRONLY    the landing resolves to a DIRECTORY.  `facts/` exists in any tree that ever held
+#              one fact, so calling that FIRED would answer the question next to the one that
+#              matters.  OBSERVED on values-baseline-byo-mutagens, where the first cut of this
+#              program did exactly that and had to be corrected.
+#   NOROOT     the landing names a file with no directory -- `reconcile.tsv`.  A name without a
+#              root is a hint, not a pointer, and picking a root for it would be this program
+#              inventing the answer it was asked to measure.
+#   OFFROOT    the landing names a volume this session does not reach -- `H:/pub/...`.  Not
+#              absent: unseeable.  The two are different claims and only one is a finding.
+#   REFUSED    the landing climbs (..) or is absolute outside the estate.  A landing that leaves
+#              the estate is not a landing, and the path is DATA: it is never expanded, never
+#              sourced, never eval'd, never handed to a shell.  Same law as profile.signing and
+#              ju1as: data that can run is not data.
+#
+# A NAME WITHOUT A ROOT IS A HINT, NOT A POINTER (h/RECIPE-2026-09-16-jit-find.md).  So every
+# landing is resolved against two declared roots -- the c4 root and the estate root above it --
+# and the row SAYS which root resolved it.  Corwin's own absolute spelling, /f/claude/..., is
+# mapped onto the estate root this session actually reaches, and that mapping is printed by
+# `sp1ll roots` so it is never silent.
+#
+# ---------------------------------------------------------------------------------------------
+# IT ALWAYS EXITS 0 WHEN IT COULD MEASURE.  A spell-rack checker that can fail a build is a
+# gate, and a gate is a thing people learn to route around.  Exit 2 is usage and environment
+# only: no spells directory, an unreadable root.
+#
+# DEFAULT OUTPUT IS THE SHORT ONE.  A reader who wants every row asks with --all or --tsv.
+# Easy to ask for more beats necessary to ask for less (PREFERENCES.md, the defaults lesson).
+#
+# ---------------------------------------------------------------------------------------------
+# usage:
+#   sp1ll list   [-s SPELLS] [--all] [--tsv]        every spell: SAID, SHOWN, LEDGER, verdict
+#   sp1ll fired  [-s SPELLS] [--tsv]                only the disagreements the ledger may not know
+#   sp1ll form   [-s SPELLS] [--all] [--tsv]        does each spell carry the required sections
+#   sp1ll racks  [-s SPELLS]                        one line per rack: files, ledger schema, ghosts
+#   sp1ll meta   RACK [-s SPELLS]                   an at1pl manifest for a rack, to stdout
+#   sp1ll fresh  [-s SPELLS]                        delegate staleness to bin/at1pl; never reinvent it
+#   sp1ll roots  [-s SPELLS]                        the two roots and the /f/claude mapping
+#   sp1ll --prove-red                               plant every fault; show them all red
+#   sp1ll -h                                        this header
+#
+# STALENESS IS NOT THIS PROGRAM'S JOB.  bin/at1pl already answers "did a constituent move since
+# the meta was collected", ships 39/39 and --prove-red, and ju1as already delegates to it rather
+# than re-deriving it.  `sp1ll fresh` does the same: it finds the meta, calls at1pl, and obeys
+# the verdict.  `sp1ll meta` prints the manifest at1pl wants, to stdout, because this program
+# does not write.
+# ---------------------------------------------------------------------------------------------
+
+set -u
+export LC_ALL=C
+me=sp1ll
+TAB=$(printf '\t')
+die() { printf '%s: %s\n' "$me" "$*" >&2 ; exit 2 ; }
+
+TMPD=${TMPDIR:-/tmp}/$me.$$
+mkdir -p "$TMPD" || die "cannot make $TMPD"
+trap 'rm -rf "$TMPD"' EXIT HUP INT TERM
+
+c4root() { CDPATH= cd -- "$(dirname -- "$0")/.." 2>/dev/null && pwd ; }
+
+# ---- argument reading -------------------------------------------------------------------------
+cmd=''; SPELLS=''; all=0; tsv=0; rackarg=''
+while [ $# -gt 0 ]; do
+	case "$1" in
+		-h|--help) sed -n '2,/^# ----.*-$/p' "$0" | sed -n '1,120p' | sed 's/^# \{0,1\}//' ; exit 0 ;;
+		--prove-red) cmd=provered ;;
+		--all) all=1 ;;
+		--tsv) tsv=1 ;;
+		-s) [ $# -ge 2 ] || die "-s needs a SPELLS directory" ; SPELLS=$2 ; shift ;;
+		-*) die "unknown option: $1" ;;
+		list|fired|form|racks|meta|fresh|roots) [ -n "$cmd" ] || cmd=$1 ;;
+		*) [ -n "$cmd" ] || die "unknown command: $1 -- the command comes first; see sp1ll -h"
+		   [ -n "$rackarg" ] && die "one RACK at a time" ; rackarg=$1 ;;
+	esac
+	shift
+done
+[ -n "$cmd" ] || { sed -n '/^# usage:/,/^# ----/p' "$0" | sed 's/^# \{0,1\}//' ; exit 0 ; }
+
+C4=$(c4root) || die "cannot find the c4 root from $0"
+[ -n "$SPELLS" ] || SPELLS=$C4/h/spells
+EST=$(CDPATH= cd -- "$C4/.." 2>/dev/null && pwd) || EST=$C4
+
+if [ "$cmd" != provered ]; then
+	[ -d "$SPELLS" ] || { ls -1 "$(dirname -- "$SPELLS")" >&2 2>/dev/null
+		die "no spells directory at $SPELLS -- listed its parent above; the name is not among its entries" ; }
+fi
+
+# ---- the pieces, each read with sed/grep/awk.  Nothing here executes a field. -----------------
+
+racks_in() {   # SPELLSDIR -> dated rack directories, sorted
+	find "$1" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort | while IFS= read -r d; do
+		case "$(basename -- "$d")" in
+			[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]) printf '%s\n' "$d" ;;
+		esac
+	done
+}
+
+spells_in() {  # RACKDIR -> spell files, sorted
+	find "$1" -mindepth 1 -maxdepth 1 -type f -name '*.md' 2>/dev/null | sort | while IFS= read -r f; do
+		case "$(basename -- "$f")" in MODEL.md|README.md) : ;; *) printf '%s\n' "$f" ;; esac
+	done
+}
+
+said_of() {    # SPELLFILE -> hung | fired | archived | OTHER | UNSTATED
+	s=$(grep -iE '^[[:space:]]*(>[[:space:]]*)?(\*\*)?status(\*\*)?[[:space:]]*:' "$1" 2>/dev/null | head -1)
+	[ -n "$s" ] || { printf 'UNSTATED\n' ; return ; }
+	l=$(printf '%s' "$s" | tr 'A-Z' 'a-z')
+	case "$l" in
+		*archiv*)  printf 'archived\n' ;;
+		*hung*)    printf 'hung\n' ;;
+		*unfired*) printf 'hung\n' ;;
+		*landed*)  printf 'fired\n' ;;
+		*fired*)   printf 'fired\n' ;;
+		*)         printf 'OTHER\n' ;;
+	esac
+}
+
+landing_text() {   # SPELLFILE -> the Landing section, or the lines that name a landing
+	t=$(awk '
+		/^#+[[:space:]]*[Ll][Aa][Nn][Dd][Ii][Nn][Gg]/ { inl=1 ; next }
+		inl && /^#+[[:space:]]/ { inl=0 }
+		inl { print }
+	' "$1" 2>/dev/null)
+	[ -n "$t" ] || t=$(grep -iE 'landing|lands at' "$1" 2>/dev/null)
+	printf '%s\n' "$t"
+}
+
+bt_spans() { awk -F'`' '{ for (i=2; i<=NF; i+=2) if ($i != "") print $i }' ; }
+
+path_like() {
+	case "$1" in
+		*' '*) return 1 ;;
+		*/*) return 0 ;;
+		*.md|*.tsv|*.txt|*.sh|*.el|*.json) return 0 ;;
+		*) return 1 ;;
+	esac
+}
+
+first_landing() {  # SPELLFILE -> the first path-shaped landing, or empty
+	landing_text "$1" | bt_spans | while IFS= read -r c; do
+		c=${c%%,*}
+		if path_like "$c"; then printf '%s\n' "$c" ; break ; fi
+	done | head -1
+}
+
+resolve_landing() {   # PATH -> VERDICT<TAB>WHERE   (WHERE is a note, never a command)
+	p=$1
+	[ -n "$p" ] || { printf 'NOLANDING\t-\n' ; return ; }
+	case "$p" in *..*) printf 'REFUSED\tclimbs out of a declared root\n' ; return ;; esac
+	# A DRIVE LETTER IS A VOLUME THIS SESSION MAY NOT REACH.  H:/pub is a real place on his
+	# machine and not a place here, so the honest verdict is "I cannot see that root", never
+	# "it is not there".  OBSERVED on edrx-mathforward-accessibility-research.
+	case "$p" in
+		[A-Za-z]:[/\\]*) printf 'OFFROOT\tnames a volume (%s) outside the two declared roots\n' \
+			"$(printf '%s' "$p" | cut -c1-2)" ; return ;;
+	esac
+	base=''
+	case "$p" in
+		/f/claude/*) p=${p#/f/claude/} ; base=$EST ;;
+		/*)          printf 'REFUSED\tabsolute and outside the estate root\n' ; return ;;
+		c4/*)        p=${p#c4/} ; base=$C4 ;;
+	esac
+	hole=0 ; case "$p" in *'<'*'>'*) hole=1 ;; esac
+	if [ "$hole" = 1 ]; then
+		d=$(printf '%s' "$p" | awk -F/ '{o="";for(i=1;i<NF;i++){if($i ~ /</) break; o=(o==""?$i:o"/"$i)} print o}')
+		for r in ${base:-"$C4" "$EST"}; do
+			[ -n "$d" ] || continue
+			[ -d "$r/$d" ] && { printf 'TEMPLATE\tdir %s exists under %s\n' "$d" "$r" ; return ; }
+		done
+		printf 'TEMPLATE\tdir %s not listed under either root\n' "${d:-.}"
+		return
+	fi
+	# A NAME WITHOUT A ROOT IS A HINT, NOT A POINTER.  `reconcile.tsv` names a file and not
+	# where it goes; resolving it against a root this program picked would be the program
+	# inventing the answer it was asked to measure.
+	case "$p" in
+		*/*) : ;;
+		*) printf 'NOROOT\tthe landing names a file but no directory; nothing can say where it went\n'
+		   return ;;
+	esac
+	for r in ${base:-"$C4" "$EST"}; do
+		if [ -d "$r/$p" ]; then
+			# A LANDING THAT IS A DIRECTORY NAMES A HOME, NOT AN ARTEFACT.  `facts/` exists in
+			# every tree that has ever had one fact in it, so calling this FIRED would report
+			# the question next to the one that matters -- the fault this estate caught five
+			# times on 2026-09-16 and -17.  OBSERVED: values-baseline-byo-mutagens.
+			printf 'DIRONLY\t%s is a directory holding %s entr(y/ies) -- the spell names a home, not a landed file\n' \
+				"$r/$p" "$(ls -1A "$r/$p" 2>/dev/null | wc -l | tr -d ' ')"
+			return
+		fi
+		if [ -e "$r/$p" ]; then printf 'FIRED\t%s\n' "$r/$p" ; return ; fi
+	done
+	# absence is reported only after listing the parent -- the 2026-09-16 lesson, mechanised
+	d=$(dirname -- "$p")
+	for r in ${base:-"$C4" "$EST"}; do
+		if [ -d "$r/$d" ]; then
+			printf 'UNFIRED\tlisted %s/%s (%s entries); the name is not among them\n' \
+				"$r" "$d" "$(ls -1 "$r/$d" 2>/dev/null | wc -l | tr -d ' ')"
+			return
+		fi
+	done
+	printf 'UNFIRED\tneither root holds the parent %s\n' "$d"
+}
+
+ledger_schema() {  # RACKDIR -> A | B | MIXED | NONE
+	L=$1/LEDGER.tsv ; [ -f "$L" ] || { printf 'NONE\n' ; return ; }
+	awk -F"$TAB" '
+		/^#/ { next } NF==0 { next }
+		{ if ($1 ~ /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/) b++ ; else a++ }
+		END { if (a && b) print "MIXED" ; else if (b) print "B" ; else if (a) print "A" ; else print "EMPTY" }
+	' "$L"
+}
+
+ledger_state() {   # RACKDIR SPELLBASE -> the recorded state, or NOROW / NOLEDGER
+	L=$1/LEDGER.tsv ; [ -f "$L" ] || { printf 'NOLEDGER\n' ; return ; }
+	awk -F"$TAB" -v b="$2" '
+		/^#/ { next } NF==0 { next }
+		{
+			if ($1 ~ /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/) { n=$2 ; st=$3 }
+			else { n=$1 ; st=$4 ; sub(/ .*/,"",st) }
+			sub(/\.md$/,"",n)
+			if (n == b) { print (st == "" ? "BLANK" : st) ; found=1 ; exit }
+		}
+		END { if (!found) print "NOROW" }
+	' "$L"
+}
+
+ledger_names() {   # RACKDIR -> every spell name the ledger claims
+	L=$1/LEDGER.tsv ; [ -f "$L" ] || return 0
+	awk -F"$TAB" '
+		/^#/ { next } NF==0 { next }
+		{ if ($1 ~ /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/) n=$2 ; else n=$1
+		  sub(/\.md$/,"",n) ; if (n != "") print n }
+	' "$L" | sort -u
+}
+
+ghosts_in() {      # SPELLSDIR -> RACK<TAB>NAME for every ledger row with no file in its rack
+	racks_in "$1" | while IFS= read -r rack; do
+		rb=$(basename -- "$rack")
+		ledger_names "$rack" | while IFS= read -r n; do
+			# a row may name a FIRING of a spell -- "00-campaign-roof-to-ship P4" -- so the
+			# bare first field is tried too.  A phase of a present spell is not a ghost.
+			b=${n%% *}
+			[ -f "$rack/$n.md" ] && continue
+			[ -f "$rack/$n" ] && continue
+			[ -f "$rack/$b.md" ] && continue
+			[ -f "$rack/$b" ] && continue
+			printf '%s\t%s\n' "$rb" "$n"
+		done
+	done
+}
+
+verdict_of() {     # SAID SHOWN LEDGER -> AGREE | DISAGREE | UNKNOWN
+	s=$1 ; w=$2 ; l=$3
+	case "$w" in NOLANDING|TEMPLATE|REFUSED|DIRONLY|NOROOT|OFFROOT) printf 'UNKNOWN\n' ; return ;; esac
+	case "$s" in UNSTATED|OTHER)
+		case "$l" in NOROW|NOLEDGER|BLANK) printf 'UNKNOWN\n' ; return ;; esac ;;
+	esac
+	fired=0 ; [ "$w" = FIRED ] && fired=1
+	claims=0
+	case "$s" in fired) claims=1 ;; esac
+	case "$l" in LANDED|BUILT+TESTED|FIRED|EFFECTED) claims=1 ;; esac
+	if [ "$fired" = "$claims" ]; then printf 'AGREE\n' ; else printf 'DISAGREE\n' ; fi
+}
+
+# ---- one row per spell, cached once, used by list/fired/form -----------------------------------
+ROWS=$TMPD/rows.tsv
+build_rows() {
+	: > "$ROWS"
+	racks_in "$SPELLS" | while IFS= read -r rack; do
+		rb=$(basename -- "$rack")
+		spells_in "$rack" | while IFS= read -r f; do
+			b=$(basename -- "$f") ; b=${b%.md}
+			said=$(said_of "$f")
+			lp=$(first_landing "$f")
+			rl=$(resolve_landing "$lp")
+			shown=${rl%%"$TAB"*} ; where=${rl#*"$TAB"}
+			led=$(ledger_state "$rack" "$b")
+			ver=$(verdict_of "$said" "$shown" "$led")
+			printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+				"$rb" "$b" "$said" "$shown" "$led" "$ver" "${lp:--}" "$where" >> "$ROWS"
+		done
+	done
+}
+
+# ---- list --------------------------------------------------------------------------------------
+cmd_list() {
+	build_rows
+	n=$(wc -l < "$ROWS" | tr -d ' ')
+	if [ "$tsv" = 1 ]; then
+		printf 'rack\tspell\tsaid\tshown\tledger\tverdict\tlanding\twhere\n'
+		cat "$ROWS" ; return 0
+	fi
+	if [ "$all" = 1 ]; then
+		printf '%-12s %-38s %-9s %-10s %-12s %s\n' RACK SPELL SAID SHOWN LEDGER VERDICT
+		awk -F"$TAB" '{ printf "%-12s %-38s %-9s %-10s %-12s %s\n", $1,$2,$3,$4,$5,$6 }' "$ROWS"
+		echo
+	fi
+	printf 'SPELLS %s in %s rack(s).\n' "$n" "$(racks_in "$SPELLS" | wc -l | tr -d ' ')"
+	printf '  SAID   : ' ; awk -F"$TAB" '{c[$3]++} END{for(k in c) printf "%s=%s ", k, c[k]; print ""}' "$ROWS"
+	printf '  SHOWN  : ' ; awk -F"$TAB" '{c[$4]++} END{for(k in c) printf "%s=%s ", k, c[k]; print ""}' "$ROWS"
+	printf '  VERDICT: ' ; awk -F"$TAB" '{c[$6]++} END{for(k in c) printf "%s=%s ", k, c[k]; print ""}' "$ROWS"
+	[ "$all" = 1 ] || echo '  (--all lists every row; --tsv gives the same as data)'
+	return 0
+}
+
+# ---- fired: only what the ledger may not know ---------------------------------------------------
+cmd_fired() {
+	build_rows
+	if [ "$tsv" = 1 ]; then
+		printf 'kind\track\tspell\tsaid\tshown\tledger\tdetail\n'
+		awk -F"$TAB" -v T="$TAB" '$6=="DISAGREE"{print "DISAGREE" T $1 T $2 T $3 T $4 T $5 T $8}' "$ROWS"
+	else
+		echo 'LANDING RECONCILIATION -- the spell file and the disk, against the hand-kept ledger.'
+		echo
+		echo 'FIRED but the file or the ledger does not say so:'
+		awk -F"$TAB" '$4=="FIRED" && $6=="DISAGREE" { printf "  %-12s %-38s said=%-9s ledger=%-12s -> %s\n", $1,$2,$3,$5,$8 }' "$ROWS"
+		awk -F"$TAB" '$4=="FIRED" && $6=="DISAGREE"' "$ROWS" | grep -q . || echo '  (none)'
+		echo
+		echo 'HUNG with a landing that is not there yet -- the spell has not fired:'
+		awk -F"$TAB" '$4=="UNFIRED" { printf "  %-12s %-38s %s\n", $1,$2,$7 }' "$ROWS"
+		awk -F"$TAB" '$4=="UNFIRED"' "$ROWS" | grep -q . || echo '  (none)'
+		echo
+		echo 'NOT MECHANICALLY CHECKABLE -- no landing named, or a landing with a hole in it:'
+		awk -F"$TAB" '$4=="NOLANDING" || $4=="TEMPLATE" || $4=="REFUSED" || $4=="DIRONLY" || $4=="NOROOT" || $4=="OFFROOT" { printf "  %-12s %-38s %-9s %s\n", $1,$2,$4,$8 }' "$ROWS"
+	fi
+	# GHOSTS: a ledger row naming a spell the rack no longer holds
+	echo
+	echo 'GHOSTS -- a LEDGER row naming a spell file that is not in its rack:'
+	ghosts_in "$SPELLS" > "$TMPD/ghosts.txt"
+	if [ -s "$TMPD/ghosts.txt" ]; then
+		awk -F"$TAB" '{ printf "  %-12s %s\n", $1, $2 }' "$TMPD/ghosts.txt"
+	else
+		echo '  (none)'
+	fi
+	return 0
+}
+
+# ---- form: does a spell carry the sections the 2026-09-17 form requires --------------------------
+SECTIONS='status rack model why prompt landing falsifier history journal'
+has_section() {   # FILE KEY -> 1/0
+	f=$1
+	case "$2" in
+		status)    grep -qiE '^[[:space:]]*(>[[:space:]]*)?(\*\*)?status(\*\*)?[[:space:]]*:' "$f" ;;
+		rack)      grep -qiE 'rack:' "$f" ;;
+		model)     grep -qiE 'minimum model|tier:' "$f" ;;
+		why)       grep -qiE '^#+.*why .*(hung|this exists)|^#+.*why this is' "$f" ;;
+		prompt)    grep -qiE '^#+.*prompt' "$f" && grep -qiE 'verbatim|paste' "$f" ;;
+		landing)   grep -qiE '^#+[[:space:]]*landing|landing law|lands at' "$f" ;;
+		falsifier) grep -qiE 'falsifier' "$f" ;;
+		history)   grep -qiE '^#+[[:space:]]*HISTORY' "$f" ;;
+		journal)   grep -qiE '^#+[[:space:]]*JOURNAL' "$f" ;;
+		*) return 1 ;;
+	esac
+}
+cmd_form() {
+	out=$TMPD/form.tsv ; : > "$out"
+	for rack in $(racks_in "$SPELLS"); do
+		rb=$(basename -- "$rack")
+		spells_in "$rack" | while IFS= read -r f; do
+			b=$(basename -- "$f") ; b=${b%.md} ; have='' ; miss='' ; n=0
+			for k in $SECTIONS; do
+				if has_section "$f" "$k"; then have="$have $k" ; n=$((n+1)) ; else miss="$miss $k" ; fi
+			done
+			printf '%s\t%s\t%s\t%s\t%s\n' "$rb" "$b" "$n" "${have# }" "${miss# }" >> "$out"
+		done
+	done
+	if [ "$tsv" = 1 ]; then
+		printf 'rack\tspell\thave_n\thave\tmissing\n' ; cat "$out" ; return 0
+	fi
+	tot=$(wc -l < "$out" | tr -d ' ')
+	full=$(awk -F"$TAB" '$3==9' "$out" | wc -l | tr -d ' ')
+	if [ "$all" = 1 ]; then
+		printf '%-12s %-38s %-4s %s\n' RACK SPELL HAVE MISSING
+		awk -F"$TAB" '{ printf "%-12s %-38s %-4s %s\n", $1,$2,$3"/9",($5==""?"-":$5) }' "$out"
+		echo
+	fi
+	printf 'FORM: %s of %s spell(s) carry all nine sections of the 2026-09-17 form.\n' "$full" "$tot"
+	printf '  most often missing: '
+	awk -F"$TAB" '{n=split($5,a," "); for(i=1;i<=n;i++) c[a[i]]++} END{for(k in c) printf "%s=%s ", k, c[k]; print ""}' "$out"
+	echo '  A rack that predates the form is not broken by missing a section -- this is a count,'
+	echo '  not a verdict, and the racks are dated so a reader can see which form they were cut to.'
+	[ "$all" = 1 ] || echo '  (--all lists every row; --tsv gives the same as data)'
+	return 0
+}
+
+# ---- racks ---------------------------------------------------------------------------------------
+cmd_racks() {
+	printf '%-12s %-7s %-7s %-8s %-7s %s\n' RACK SPELLS BINDERS LEDGER GHOSTS 'ledger rows'
+	for rack in $(racks_in "$SPELLS"); do
+		rb=$(basename -- "$rack")
+		ns=$(spells_in "$rack" | wc -l | tr -d ' ')
+		nb=$(find "$rack" -maxdepth 1 -type f \( -name MODEL.md -o -name README.md \) 2>/dev/null | wc -l | tr -d ' ')
+		sc=$(ledger_schema "$rack")
+		nr=$(ledger_names "$rack" | wc -l | tr -d ' ')
+		g=$(ghosts_in "$SPELLS" | awk -F"$TAB" -v r="$rb" '$1==r' | wc -l | tr -d ' ')
+		printf '%-12s %-7s %-7s %-8s %-7s %s\n' "$rb" "$ns" "$nb" "$sc" "$g" "$nr"
+	done
+	echo
+	l=$(find "$SPELLS" -maxdepth 1 -type f -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
+	printf 'LOOSE at the spells root (not in any rack, so in no ledger): %s\n' "$l"
+	find "$SPELLS" -maxdepth 1 -type f -name '*.md' 2>/dev/null | sort | sed 's|^|  |'
+	echo
+	echo 'LEDGER schema A = spell/est/actual/verdict.  B = date/spell/state/note.  Two schemas are'
+	echo 'in use in this collection; nothing reconciles them, and a reader cannot tell from a row'
+	echo 'which one they are holding.  Reported rather than normalised -- the schema is the keeper.'
+	return 0
+}
+
+# ---- roots ----------------------------------------------------------------------------------------
+cmd_roots() {
+	printf 'c4 root      %s\n' "$C4"
+	printf 'estate root  %s\n' "$EST"
+	printf 'spells       %s\n' "$SPELLS"
+	printf 'mapping      a landing spelled /f/claude/X is resolved as %s/X\n' "$EST"
+	printf 'law          a landing with .. or an absolute path outside these roots is REFUSED and\n'
+	printf '             never expanded.  A landing is DATA; data that can run is not data.\n'
+	return 0
+}
+
+# ---- meta / fresh: staleness is at1pl'"'"'s job -----------------------------------------------------
+find_at1pl() {
+	d=$(dirname -- "$0")
+	[ -f "$d/at1pl" ] && { printf '%s\n' "$d/at1pl" ; return 0 ; }
+	[ -f "$C4/bin/at1pl" ] && { printf '%s\n' "$C4/bin/at1pl" ; return 0 ; }
+	return 1
+}
+cmd_meta() {
+	[ -n "$rackarg" ] || die "meta needs a RACK (a YYYY-MM-DD directory under $SPELLS)"
+	rack=$SPELLS/$rackarg ; [ -d "$rack" ] || { ls -1 "$SPELLS" >&2 ; die "no rack $rackarg -- listed $SPELLS above" ; }
+	printf '# an at1pl manifest for the %s rack.  Rows: PATH<TAB>ROLE, relative to the rack.\n' "$rackarg"
+	printf '# The LEDGER is the MODEL here: the derived thing a reader trusts instead of the spells.\n'
+	printf '# Make the meta, then check it:\n'
+	printf '#   sh bin/sp1ll meta %s > /tmp/m.txt\n' "$rackarg"
+	printf '#   sh bin/at1pl collect /tmp/m.txt -r %s -m %s/LEDGER.tsv > %s/LEDGER.meta.tsv\n' "$rack" "$rack" "$rack"
+	printf '#   sh bin/at1pl check %s/LEDGER.meta.tsv\n' "$rack"
+	spells_in "$rack" | while IFS= read -r f; do printf '%s\t%s\n' "$(basename -- "$f")" spell ; done
+	return 0
+}
+cmd_fresh() {
+	a=$(find_at1pl) || { echo 'sp1ll: no bin/at1pl beside me and none at the c4 root -- staleness is its job,'
+		echo '       and this program declines to re-derive it.  Listed:' ; ls -1 "$C4/bin" | head -5 ; return 0 ; }
+	printf 'staleness delegated to %s (it ships 39/39 and --prove-red; sp1ll does not re-derive it)\n\n' "$a"
+	any=0
+	for rack in $(racks_in "$SPELLS"); do
+		rb=$(basename -- "$rack")
+		if [ -f "$rack/LEDGER.meta.tsv" ]; then
+			any=1 ; printf '%-12s ' "$rb" ; sh "$a" check "$rack/LEDGER.meta.tsv" 2>&1 | head -3 | sed '2,$s/^/             /'
+		else
+			printf '%-12s NOMETA -- nothing has measured this rack yet.  `sp1ll meta %s` prints the manifest.\n' "$rb" "$rb"
+		fi
+	done
+	[ "$any" = 1 ] || echo '
+No rack carries a LEDGER.meta.tsv, so no rack can say whether its ledger is older than its
+spells.  That is the finding, not an error: the collection has kept its record by hand since
+2026-08-19 and nothing has ever measured the record against the files.'
+	return 0
+}
+
+# ---- --prove-red ------------------------------------------------------------------------------------
+cmd_provered() {
+	R=$TMPD/red ; mkdir -p "$R/2026-01-01" "$R/2026-02-02" "$R/landed-here"
+	# 1. a spell that says hung and whose landing is NOT there
+	{ echo '# SPELL -- a'; echo '**status:** hung, unfired'; echo '## Landing'; echo 'lands at `h/NO-SUCH-FILE-2026.md`'; } > "$R/2026-01-01/a-hung-unfired.md"
+	# 2. a spell that says hung and whose landing IS there -- it fired and nothing says so
+	{ echo '# SPELL -- b'; echo '**status:** hung, unfired'; echo '## Landing'; echo '`h/spells/SURVEY-2026-09-16.md`'; } > "$R/2026-01-01/b-hung-but-landed.md"
+	# 3. a spell with no status line at all
+	{ echo '# SPELL -- c'; echo 'no status anywhere'; echo '## Landing'; echo '`h/NO-SUCH-FILE-2026.md`'; } > "$R/2026-01-01/c-unstated.md"
+	# 4. a spell that names no landing
+	{ echo '# SPELL -- d'; echo '**status:** hung'; echo 'nothing about where it goes'; } > "$R/2026-01-01/d-nolanding.md"
+	# 5. a landing that climbs out of the root
+	{ echo '# SPELL -- e'; echo '**status:** hung'; echo '## Landing'; echo '`../../../etc/passwd`'; } > "$R/2026-02-02/e-climbs.md"
+	# 6. a landing with a hole in it
+	{ echo '# SPELL -- f'; echo '**status:** hung'; echo '## Landing'; echo '`h/spells/<date>-<title>.md`'; } > "$R/2026-02-02/f-template.md"
+	# 6b. a landing on a volume this session cannot reach
+	{ echo '# SPELL -- j'; echo '**status:** hung'; echo '## Landing'; echo '`H:/pub/nowhere/`'; } > "$R/2026-02-02/j-offroot.md"
+	# 7a. a landing that is a directory -- a home, not an artefact
+	{ echo '# SPELL -- h'; echo '**status:** hung'; echo '## Landing'; echo 'lands as a `bin/` tool'; } > "$R/2026-02-02/h-dironly.md"
+	# 7b. a landing with no directory at all -- a name without a root
+	{ echo '# SPELL -- i'; echo '**status:** hung'; echo '## Landing'; echo '`reconcile.tsv`'; } > "$R/2026-02-02/i-noroot.md"
+	# 7. a LEDGER naming a spell the rack does not hold, and one calling a landed spell HUNG
+	printf '2026-01-01\tb-hung-but-landed\tHUNG\tthe ledger has not noticed\n' >  "$R/2026-01-01/LEDGER.tsv"
+	printf '2026-01-01\tg-never-existed\tHUNG\tthis file is not in the rack\n' >> "$R/2026-01-01/LEDGER.tsv"
+	# 8. a rack whose ledger uses the OTHER schema
+	printf '# spells LEDGER\ne-climbs\test\tactual\tLANDED somewhere\n' > "$R/2026-02-02/LEDGER.tsv"
+	# 9. a directory that is not a dated rack -- must not be walked as one
+	mkdir -p "$R/not-a-rack" ; echo '# not a spell' > "$R/not-a-rack/x.md"
+
+	echo '--- sp1ll --prove-red : every fault planted, every one shown red -----------------------'
+	echo
+	echo '## 1. list --all : SAID vs SHOWN vs LEDGER'
+	( SPELLS=$R ; all=1 ; tsv=0 ; cmd_list )
+	echo
+	echo '## 2. fired : the reconciliation, including the GHOST and the refusal'
+	( SPELLS=$R ; tsv=0 ; cmd_fired )
+	echo
+	echo '## 3. form : the nine sections, over spells that carry almost none of them'
+	( SPELLS=$R ; all=1 ; tsv=0 ; cmd_form )
+	echo
+	echo '## 4. racks : two schemas in one collection, and the directory that is not a rack'
+	( SPELLS=$R ; cmd_racks )
+	echo
+	echo '--- what each planted fault proved ------------------------------------------------------'
+	cat <<'RED'
+  a-hung-unfired      says hung, landing absent          -> SHOWN=UNFIRED, and the parent was listed
+  b-hung-but-landed   says hung, landing PRESENT         -> SHOWN=FIRED, verdict DISAGREE
+  c-unstated          no status line at all              -> SAID=UNSTATED, never guessed at
+  d-nolanding         names no landing                   -> SHOWN=NOLANDING, verdict UNKNOWN
+  e-climbs            landing is ../../../etc/passwd     -> REFUSED, never expanded, never run
+  f-template          landing carries <date>-<title>     -> TEMPLATE, only the directory checked
+  j-offroot           landing is on the H: volume        -> OFFROOT: unseeable, not absent
+  h-dironly           landing is the directory bin/      -> DIRONLY, not mistaken for FIRED
+  i-noroot            landing is a bare reconcile.tsv    -> NOROOT, no root invented for it
+  g-never-existed     a LEDGER row with no file          -> GHOST
+  2026-02-02          a second LEDGER schema             -> reported as A beside B, not normalised
+  not-a-rack          a directory that is not YYYY-MM-DD -> not walked, its x.md never counted
+RED
+	return 0
+}
+
+case "$cmd" in
+	list) cmd_list ;;
+	fired) cmd_fired ;;
+	form) cmd_form ;;
+	racks) cmd_racks ;;
+	meta) cmd_meta ;;
+	fresh) cmd_fresh ;;
+	roots) cmd_roots ;;
+	provered) cmd_provered ;;
+	*) die "unknown command: $cmd" ;;
+esac
+exit 0

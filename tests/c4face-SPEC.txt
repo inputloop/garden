@@ -1,0 +1,58 @@
+c4face-SPEC.txt -- what tests/c4face-tests.sh checks, in sentences.  Written before the runner, in
+words, so a reader can check the runner against it.  Item name for gd1ck: c4face.
+Copyright 2026 Corwin Brust <corwin@bru.st> and Contributors.  CC-BY-SA-4.0.
+Written by Mentat (for Corwin; claude-opus-5-5), 2026-10-08.
+
+The thing under test: polygram/mcp/c4face.py (Python), which serves C4's own MCP server
+(<c4>/mcp/c4-mcp.js, Node, Corwin's) from the vibrobeast plugin out of the person's own C4 tree.
+The runner is POSIX sh and awk; the fixture C4 tree is a few lines of JavaScript.  Exit 0 all
+green, 1 any red, 2 kit broken.
+
+C1-C8 run with C4_ON=1 (on, as if asked); C9 and C10 check the switch itself.
+C1  Nothing found, said plainly.  With an empty home, no C4_ROOT, no seat and no preferences,
+    the server lists exactly one tool, c4_status; calling it says NO C4 TREE FOUND, names the
+    c4.root preference and pref_set (ask Claude; no JSON), and lists where it looked.  Nothing
+    is created in the home folder.
+C2  Proxied.  With C4_ROOT naming a fixture C4 tree (mcp/c4-mcp.js + lib/c4-model.js) and node
+    on PATH, initialize is answered by the fixture (serverInfo c4-fixture) and tools/list returns
+    the fixture's tool -- the plugin's own c4_status is gone, because C4 is answering.
+C3  The real thing.  When the real C4 tree is reachable (C4_ROOT, else ../../c4 or ~/mnt/c4 from
+    here), tools/list through c4face returns C4's tools, among them c4_fragments and
+    c4_diagram_new, and a tools/call c4_fragments answers.  When no real tree is here: SKIP, said.
+C4  Set by asking Claude.  After the mentcached server's pref_set sets c4.root to the fixture,
+    c4face finds it with no C4_ROOT, and says it was found by "preference c4.root".
+C5  Found near the seat.  With MENTCACHED_SEAT at <x>/AS4CE/AS4CE0001/seat and a C4 tree at
+    <x>/c4 (siblings, as on the author's machine), c4face finds it with nothing else set.
+C6  No node, said plainly.  With the fixture found and no node on PATH (and no VIBROBEAST_NODE),
+    the one tool says C4 FOUND, BUT NO NODE and names nodejs.org.
+C7  The call to serve C4 is checked every time.  When a lib file the fixture's c4-mcp.js names
+    asks for require('http'), c4face does not start it; c4_status says which file, which line and
+    which module, and that the call has to be made again.
+C8  c4face.py itself imports no network library (the same rule bin/tp2mt checks for every server
+    but llamabridge and tavernface).
+C9  Off until asked (2026-10-08, QA1 row 14).  With C4_ON unset and no c4.on preference, and the
+    fixture findable, the server lists exactly one tool, c4_status, which says OFF, names c4.on
+    and pref_set, says "Nothing to edit by hand" and that the check is a tripwire, not a fence;
+    no node is started.
+C10 Asked of Claude.  After the mentcached server's pref_set sets c4.on to on, is_on() is true
+    with C4_ON unset.
+C11 The allow-list holds against each evasion QA1 named and their cousins: require with a
+    backtick string, with a variable, through an alias; createRequire; process.binding (dotted
+    and bracketed), process.dlopen, process.mainModule; require of os, vm, worker_threads,
+    module, inspector, node:fs, child_process, a relative lib path; module.require; import();
+    eval; Function; globalThis; the constructor chain; a require inside a template's ${...};
+    a require after a regex holding a quote; and (2026-10-08, FOLD-QA2 row 7) names and strings
+    spelled with escapes -- require, process, eval, globalThis written with \uXXXX or \u{..};
+    "fs" and "constructor" written with \x, \u, \u{..} or octal, in quotes or a template;
+    process[`env`]; and an identifier escape that is not \u (a hit: a name it cannot read).  Each, appended once to mcp/c4-mcp.js and once to
+    lib/c4-model.js of a fixture copy, makes guard() report a hit.  And nothing in comments,
+    nothing in ordinary strings (escapes in them included), a regex holding \u, process.stderr, and the typeof-module/module.exports shape
+    C4's libs use makes a hit (no false alarm on what C4 really is; C3 shows the real tree
+    starts).
+M1  A real mint ships c4face.py, its .mcp.json names a c4face server, servers/launch.py --list
+    names c4face, and no __pycache__ appears.
+R   --prove-red: each of these planted into a copy turns its check red: the guard made to pass
+    everything (C7); the c4.root preference ignored (C4); the status server given a second tool
+    (C1); the guard put back to the first build's regex (C11, and it must be MISSED evasions
+    that turn it red); is_on() always true (C9); js_unescape made to return its input undecoded
+    (C11, again by MISSED evasions).

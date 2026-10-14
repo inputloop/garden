@@ -1,0 +1,51 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 the Larder software contributors
+#
+# fanmark -e EDITION_DIR [FILE]
+# Prints FILE (or stdin) with the "by permission" mark from EDITION_DIR/PERMISSION.md
+# at the top and the bottom. The mark text lives in the notice, not in this tool;
+# the tool only fills {ID}, the first 12 hex digits of the notice's SHA-256, so the
+# mark names the exact text it relied on. Works for plain text and Markdown; it
+# cannot judge content, only stamp it. A work that already opens with a mark is
+# passed through unchanged. A DRAFT notice is refused unless FANMARK_ALLOW_DRAFT=1.
+set -eu
+LC_ALL=C
+export LC_ALL
+
+die() { echo "fanmark: $1" >&2; exit "${2:-1}"; }
+ed=
+while getopts e: opt; do
+    case $opt in
+        e) ed=$OPTARG ;;
+        *) echo "usage: fanmark -e EDITION_DIR [FILE]" >&2; exit 64 ;;
+    esac
+done
+shift $((OPTIND - 1))
+[ -n "$ed" ] || die "usage: fanmark -e EDITION_DIR [FILE]" 64
+notice=$ed/PERMISSION.md
+[ -r "$notice" ] || die "cannot read $notice"
+
+if grep -q '^> \*\*DRAFT' "$notice" && [ -z "${FANMARK_ALLOW_DRAFT:-}" ]; then
+    die "the notice is still a DRAFT; a lawyer must review it first" 3
+fi
+
+id=$(sha256sum < "$notice" | cut -c1-12)
+mark=$(grep -m1 '^> \*\*FAN WORK' "$notice" | sed "s/{ID}/$id/") || true
+[ -n "$mark" ] || die "no mark line in $notice"
+
+work=$(mktemp)
+trap 'rm -f "$work"' EXIT
+cat -- "${1:--}" > "$work"
+[ -s "$work" ] || die "nothing to mark: input is empty" 2
+
+if head -n 1 "$work" | grep -q '^> \*\*FAN WORK'; then
+    [ "$(head -n 1 "$work")" = "$mark" ] || echo "fanmark: already marked, but not with this notice's id" >&2
+    cat "$work"
+    exit 0
+fi
+
+printf '%s\n\n' "$mark"
+cat "$work"
+[ -z "$(tail -c 1 "$work")" ] || echo
+printf '\n%s\n' "$mark"  # footer

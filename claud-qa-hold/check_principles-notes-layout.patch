@@ -1,0 +1,25 @@
+# QA-9 staged patch — minions notes() layout tolerance :CLAUD_QA_HOLD:
+# Target: skills/ethicsminions/scripts/check_principles.py (write-denied from
+# the sandbox — both file tool and bash EPERM; land from the host).
+# Why: first armed run of the drift check false-NOTICEd because the workspace
+# keeps MEMORY.md at root with notes in memory/ — the sweep saw only one level.
+# Apply: patch -p0 < claud-qa-hold/check_principles-notes-layout.patch
+--- skills/ethicsminions/scripts/check_principles.py
++++ skills/ethicsminions/scripts/check_principles.py
+@@ -14,8 +14,16 @@
+     except Exception: return ""
+
+ def notes(mem):
+-    return sorted(p for p in mem.glob("*.md") if p.name != "MEMORY.md")
++    # Layout-tolerant: a workspace keeps MEMORY.md at its root with notes in
++    # a memory/ subdir (the polygram/AS4CE shape); a bare notes dir has them
++    # flat. Sweep both so --memory works pointed at either level. (2026-07-04:
++    # the drift check false-NOTICEd on the split layout its first armed run.)
++    found = [p for p in mem.glob("*.md") if p.name != "MEMORY.md"]
++    sub = mem / "memory"
++    if sub.is_dir():
++        found += [p for p in sub.glob("*.md") if p.name != "MEMORY.md"]
++    return sorted(found)
+
+ def skill_texts(skills):
+     out = {}

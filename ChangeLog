@@ -1,0 +1,1703 @@
+2026-10-10  Mentat (for Corwin; claude-opus-5-5), conductor  <corwin@bru.st>
+
+	* SOFT-SKILLS/depth-overlap/SKILL.md: rolled in from the other session and rewritten on his
+	answers of 13:11 (h/ENHANCE-2026-10-10-depth-overlap.md, now carrying them verbatim): the name
+	kept; the six depths become the DEPTH lens graph (UNIVERSE <-> GRAIN, CONTAIN <-> LAYER, with
+	corner words offered as guesses); the observer a separate layer woven across (plaid); seats in
+	two readers linked both ways, branch-first.  The provisional draft is kept in
+	SOFT-SKILLS/_archive-2026-10-10/depth-overlap/.  Footer row seeded and minted.
+	* the ENHANCE note carried to c4/h/ as it asked.
+
+2026-10-10  Claude (Cowork, lane G of the extension edition, turn 2, swing 1)  for Corwin  <corwin@bru.st>
+
+	The conductor's swing on the garden view, after 6ee9b47.
+	* bin/gv1mt (ring_svg, layout, spread): The tensions get a track of their own, spread by a 1-D
+	placer so no two labels meet; the servers and personas sit in two columns; things named from
+	elsewhere move inward.  (compass_svg): Stacked points spread wider; the axis words sit past the
+	plotted area.  (read_servers, read_doorways): A gated server is "off by default (preference X)",
+	with state `gated`, and the page says this build cannot see the person's setting; a new Ask
+	Claude prompt reads it live with pref_list; the Tavern and C4 prompts read the setting before
+	changing it.  (public_copy, mask_text): New `--public`: writes OUT/public/ with drive letters,
+	msys paths, UNC hosts and claude.ai links masked, nothing dropped, counted in data.masked.
+	* Makefile (garden-view, dist): Pass --public.
+	* tests/gv1mt-SPEC.txt: Rows GV17 (no text boxes overlap), GV18 (no default shown as state) and
+	GV19 (the copy for sharing passes pb1ck).
+	* tests/gv1mt-browser.py: GV17, by getBBox and the separating-axis test; a fourth plant (a ring
+	label drawn twice).
+	* tests/gv1mt-spec.rb: GV18.
+	* tests/gv1mt-tests.sh: GV19 with C4's pb1ck; the public copy recounted and spec-checked; plants
+	for GV18 and GV19.
+
+2026-10-10  Claude (Cowork, lane G of the extension edition, turn 2)  for Corwin  <corwin@bru.st>
+
+	The garden view: Bryant's garden and ours, side by side, with the tensions between them.
+	* bin/gv1mt: New.  Rebuilds site/garden/ from the files as they are at build time, to the
+	garden-view/data v1 model (c4 spells/extension/runs/2026-10-10/turn2/study/S7, Part 3): Bryant's
+	Nexus Skill Tree (09-17) and newest Gauntlet Nexus Map, our skills and soft skills, the six
+	servers with their state words and tools (source-read), the persona ledger's sheets and checks
+	edges (proposed and withheld kept apart; person models counted, never drawn), the 27 option
+	cards and the open ERRATA entries as tensions, conventions/bryant-counterparts.tsv, and the S8
+	compass guesses.  Writes data.json (sealed: sha256 of the data without its seal, keys sorted),
+	index.html (one self-contained page), garden-view.facts (one line per thing) and pairs.txt.
+	* site/garden/index.html, site/garden/data.json, site/garden/garden-view.facts,
+	site/garden/pairs.txt: New, built by bin/gv1mt.  His ring redrawn beside ours; a compass with
+	his two axes; doorway cards for MCP, the Wire, the Tavern and C4 with copy-a-prompt actions and
+	two opt-in loopback probes (org-httpd 8042, c4-serve 8781); tensions as marks with words;
+	a text story of every node; light and dark from the system plus a manual switch; works with
+	JavaScript off; credits Bryant's graph by name as the starting point.
+	* Makefile (garden-view): New target.  (dist): Calls bin/gv1mt before rl2bp finish, so the page
+	is current at every build; a failure is said and never stops the mint.  `garden` is unchanged:
+	it is the sg1ck gauge that bin/gd1ck reads with make -n.
+	* tests/gv1mt-SPEC.txt: New, rows GV1-GV16.
+	* tests/gv1mt-recount.awk: New.  GV6, the recount in a second language.
+	* tests/gv1mt-spec.rb: New.  GV1-5, GV7, GV8, GV10, GV14, GV16 in Ruby.
+	* tests/gv1mt-browser.py: New.  GV9, GV12, GV13 and the page's own self-test in headless
+	Chromium with axe-core, light, dark and the manual switch; --prove-red plants three faults;
+	exits 77 NOT CHECKED without Playwright, Chromium or axe-core.
+	* tests/gv1mt-tests.sh: New.  Runs all of the above; --prove-red plants one fault per check.
+
+Authored by Mentat (for Corwin; claude-opus-5-5).
+Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+SPDX-License-Identifier: CC-BY-SA-4.0
+
+2026-10-10  Claude (Cowork, lane T of the extension edition, turn 2)  for Corwin  <corwin@bru.st>
+
+	The Terms, the voice and the README: one collection, two partners, first person.
+	* c4/man/licensing-defaults.md (TERMS block): v2.  Corwin Brust and Bryant Frankford offer
+	one shared collection together; code GPL-3.0-or-later OR LGPL-3.0-or-later; the collection's
+	credit line (Corwin, Bryant, K Smith as editor of the works she edited); what the tools make
+	for a user is the user's; Corwin's two permissions named as his.  Intro, "Why each default"
+	and a v2 change record updated.  v1.1 archived whole at
+	c4/archive/2026-10/licensing-defaults-v1.1_Archived-by-rcw-01kr4zwy9ba6fvw5z6kd8cei.md
+	(sha16 ffccfe82f9dbd5fa).
+	* c4/README.md, c4/GHOSTWHEEL.org, H:\pub/persona/README.org, AS4CE0001/book/CORWIN.md:
+	TERMS v2 carried by `tm1ck --carry` (H:\pub copy first kept at persona/.c4/README-before-terms-v2.org).
+	* bin/tp2mt: Terms prose rewritten ("Who made this" first; code under the OR form; what the
+	plugin makes for you is yours; "We change them together").  Privacy: Llama Bridge and Tavern
+	named as Bryant's; last line "part of our shared writing".  New: every --also copy gets a
+	PROVENANCE row in <place>/.c4/PROVENANCE.tsv (re-lift keeps the old hash in the note);
+	--row DIR writes the rows for a pair already there.
+	* H:\pub/persona/.c4/PROVENANCE.tsv: new, two rows for the 1.1.3 pair (tp2mt --row).
+	* tests/tp2mt-tests.sh: T5-T9.  tests/terms-v2-spec.awk: new (V1-V6).
+	* AUTHORS: Bryant Frankford added as co-author, with what he made; one line on the shared
+	collection.
+	* conventions/VOICE.md: new, the voice guide (S9 part B), in Corwin's words, with a falsifier.
+	* polygram/plugin.py (_README, _README_ROWS, _README_BROAD): plain opening (what it is, then
+	both partners); server, MCP and stdio unpacked; "the author" gone (twelve places in the 1.1.3
+	README); the unshipped marker reads "(in the source tree, not shipped)"; Corwin's
+	"We have defined memory, maybe we need words" now named as his; the licence line adds the
+	LGPL choice.  tests/readme-voice-spec.rb and tests/readme-voice-tests.sh: new (R1-R5).
+	* GRAMMARY.md: the 74 "(in the author's tree, not shipped)" are one glyph, †, with one legend
+	line; the two names read as partners; Corwin's line on GRAMMARY lifted to the top as a pull
+	quote; the byline form put in code type.  tests/grammary-paths-spec.awk and -tests.sh: the
+	marker is †, the legend is read by "marked †".
+	* bin/fp1gk: new, the first-person gauge.  tests/fp1gk-tests.sh: new.
+	* skills/{build-loop,inculcat-boxer,lens,mentat-skill,posix,reformat-prompt,sandboxer,
+	seatkeeper,topoforge-story,writing-forms}/SKILL.md, skills/ethicsminions/references/
+	AI_GUARD_PROVENANCE_CLAUDE.md, skills/llama-bridge/references/CARD-2026-10-05-bridge-cutover.md:
+	first-person pass (bracket tags, "the instrument" as self-name, mid-text bylines).  Each signed
+	copy kept at skills/<name>/.arc/<file>.signed-2026-10-10.
+
+	Heals of Corwin's words (exact words kept in the chat record and BRIEF-study.md):
+	GRAMMARY: "confusing the garden" -> "confusing, the garden".  VOICE.md: "multi context" ->
+	"multi-context"; "weighting down" -> "weighing down"; "work every item" capitalised at a
+	sentence start.  README: "we have defined memory" capitalised at a sentence start.
+
+2026-10-10  Mentat (for Corwin; claude-opus-5-5)  <corwin@bru.st>
+
+	Lane B, turn 2: Bryant's omni-tool and frugal-offload as soft
+	skills, the YAML-quote fix, and the C4QL tag resolver.
+
+	* SOFT-SKILLS/omni-tool/SKILL.md: New; Bryant's v1.11, byte for
+	byte from c4/from-bryant/2026-10-05-r3 (sha256 d6fc0216...).
+	* SOFT-SKILLS/omni-tool/NOTICE.md: New; thanks, provenance pin,
+	candor-gate's six lines read for the reader, sibling table.
+	* SOFT-SKILLS/frugal-offload/SKILL.md,
+	SOFT-SKILLS/frugal-offload/scripts/offload_gate.py: New; Bryant's,
+	byte for byte from the same bundle.
+	* SOFT-SKILLS/frugal-offload/NOTICE.md: New.
+	* SOFT-SKILLS/gauntlet/NOTICE.md: Sibling table: omni-tool and
+	frugal-offload are now here; takushi, mega-voltron, signet,
+	vitrine named; llama-bridge is in skills/ (the old row said it
+	was not in this garden).
+	* SOFT-SKILLS/parallax/NOTICE.md: "Reading it here" table: the
+	quoted name, the dated perspective files, the peer channel.
+	* polygram/mcp/softskills.py (_unquote): New.
+	(_frontmatter): Unquote a YAML-quoted flow scalar; blocks and plain
+	scalars unchanged.
+	* tests/softskills-quotes-SPEC.txt, tests/softskills-quotes-tests.sh,
+	tests/test_mcp_softskills_quotes.py: New; Q1-Q6, awk-judged, with
+	--prove-red.
+	* bin/tg1rs: New; the C4QL tag resolver (resolve, persona, scan,
+	sweep), POSIX sh and awk, read-only.
+	* conventions/c4ql-casts.tsv: New; the cast table tg1rs reads.
+	* conventions/C4QL-TAG.md: New; the tag, the five answers, the cost,
+	today's counts.
+	* tests/tg1rs-SPEC.txt, tests/tg1rs-spec.rb, tests/tg1rs-tests.sh:
+	New; T1-T11 in Ruby, 23 rows; --prove-red plants three faults.
+
+	Heals in quotes: Corwin's "dual-linked references, in the entry"
+	is quoted as written; his "likelyhood" is not quoted anywhere I
+	wrote.  No other spelling was changed in a quote.
+
+2026-10-10  Mentat (for Corwin; claude-opus-5-5)  <corwin@bru.st>
+
+	Lane D, turn 2: the family cut grows a garden cut and checks its
+	own holds; pb1ck learns claude.ai links and embargo words; the
+	shelves' READMEs and the pub recipe catch up with TERMS v1.1.
+
+	* conventions/FAMILY-HOLDS.tsv: New.  The garden's family-cut
+	holds: memory/, mainmem/ and MEMORY.md, class LOCAL, by Corwin's
+	signed per-item grant of 2026-07-05.
+	* conventions/SECRET-REVIEWED.tsv: New.  Nine secret-checker hits
+	read and found harmless (token variable names, test fixtures),
+	each bound to its path, line and line hash.
+	* SOFT-SKILLS/egress/SKILL.md, SOFT-SKILLS/family-shelf/SKILL.md:
+	Footers minted by bin/ft1mt (the other session's uncommitted
+	work, folded in; bodies unchanged).
+	* conventions/FOOTERS.org (egress): Re-dated by ft1mt mint.
+	* advice/EXTENSION-2026-10-10/turn2/INPUTLOOP-STAGES.md: New.
+
+	In the C4 tree (c4/; its own ChangeLog is not mine to edit):
+	* bin/fm1ct (classes_ok, set_tree): New.  A hold of any class
+	but BLIND, LOCAL or NEVER stops the cut.  --tree DIR cuts another
+	git tree (the garden) with its own conventions/FAMILY-HOLDS.tsv
+	and SECRET-REVIEWED.tsv, zip named DATE-garden-COMMIT.zip.
+	(do_cut): Records HOLDS-AT-CUT.tsv in the zip; MANIFEST says
+	writing CC-BY-SA-4.0, code GPL-3.0-or-later OR LGPL-3.0-or-later,
+	the TA model alone CC-BY-4.0.
+	(check): Judges a zip by the holds recorded in it; takes --tree.
+	(die): Prints its message only, not the exit code after it.
+	(--prove-red): New; runs tests/fm1ct-spec.py.
+	* tests/fm1ct-spec.py: Cases S12-S17 and five new mutants.
+	* bin/pb1ck (RE_CLAUDE, EM_HITS): A claude.ai link and an
+	embargoed word (em1bg over d/contexts) are each a LEAK; no
+	embargo rows reads NOT checked in the verdict.  Prove-red RED 7,
+	RED 8.
+
+	Outside both trees:
+	* G:\dist\README.md: The folder table says what is on disk and
+	what is planned; one bracket tag became a sentence; the family
+	shelf paragraph names the garden.  SHA256SUMS: its line.
+	* G:\dist-fam\README.md: The garden parcel, HOLDS-AT-CUT.tsv,
+	the commands; licence line CC-BY-SA-4.0.  SHA256SUMS: rewritten.
+	* G:\dist-fam\bryant\2026-10-10-garden-535d010.zip and .KEEPER.md:
+	New, the first garden cut.
+	* H:\pub\RECIPE.org: Corwin's file, edited and recorded here: the
+	four lc1ck faults (writing as CC BY 4.0) now say CC-BY-SA-4.0;
+	the old copy is .c4/RECIPE-2026-10-10-before-licence.org.
+
+2026-10-10  Claude (s1c session: double coverage by depth overlap)  for Corwin  <corwin@bru.st>
+
+	His asking: "I like the idea of double coverage by depth overlap. I'd like to model that out
+	with a soft skill in mind. We should base ENHANCE back toward the garden generally".
+	* SOFT-SKILLS/depth-overlap/SKILL.md: New, PROVISIONAL (working name).  Two kits, two depths,
+	one promise: the six depths, the observer rule (no shared verdict code), the procedure (map,
+	read, plant between the layers, probe with a control, name the opportunity), SEATS (a language
+	per kit as an open invitation, no person named until they say yes), falsifiers, LENS.  No
+	footer minted yet.
+	* h/ENHANCE-2026-10-10-depth-overlap.md: New.  Unapplied proposals: grand-test-manifest's GRAND
+	slots name a depth and an observer; ngen one cross-reference line; SEATS as a c/wf form (C4
+	side); questions Q-a to Q-d banked.  First test case inputloop/s1c tests/DEPTHS.md (fc7bad7):
+	three planted faults, two found a promise only layered on paper.  Same bytes owed to c4/h at
+	the next carry-in (C4 not connected this session).
+
+2026-10-10  Claude (Cowork, fix lane F3 of the extension edition: review pass 3)  for Corwin  <corwin@bru.st>
+
+	Folds review pass 3: C5b (the outside reader) J1-J5 and O8, P6b (Merlin by the Corwin model)
+	J2-J4 and ideas 1-3, C6 (the peer agent in Bryant's modes) O6-O8, O12-O14, section d, ideas 2,
+	3, 4, 6, 7 and 8 (the header half).
+	* bin/tp2mt (claims): Three new checked claims: the usage record (the frame) is kept in
+	~/.mentcached/stats/fr with its column names in stats/d/fr, MENTCACHED_FRAME moves it; it is
+	off by default (usage.capture "off" in prefs.py); while off every writer says so and writes
+	nothing.  (PRIVACY.md template): a "usage record (the frame)" row in the stores table (two
+	counts and a date; while on, also the preference mirror and logged questions), and how to stop
+	and remove it under "Your choices".  (TERMS-OF-SERVICE.md template): the Licenses bullet for
+	writing says Creative Commons Attribution-ShareAlike 4.0 (CC BY-SA 4.0); the TA model and
+	essays already published keep the licence the TERMS block names.
+	* tests/tp2mt-tests.sh: Four rows: the frame in PRIVACY.md, the BY-SA bullet, a moved frame
+	breaks its claim, usage.capture defaulting on breaks its claim.
+	* bin/lc1ck: the writing-licence fault (no ShareAlike, not beside the TA model) also matches the
+	licence's spelled-out name, with or without "International".
+	* tests/lc1ck-spec.rb: Three rows: the spelled-out form in a ToS bullet is a FAULT at its line,
+	the short form with spaces in a privacy text likewise, the ShareAlike name passes.
+	* GRAMMARY.md: Entries for buoyancy, steward (nongnu-steward) and altorewired; header count 89
+	(53 added to the seed's 36) with its parts adding up; one sentence saying what "(in the
+	author's tree, not shipped)" means, and that marker after every source-tree path the mint does
+	not hold (86 of 93); "optimisations" spelled "optimizations".
+	* tests/grammary-paths-spec.awk, tests/grammary-paths-tests.sh: New.  Every source-tree path
+	GRAMMARY names is in the mint or marked; no marker on a shipped path; the header says what the
+	marker means.
+	* polygram/plugin.py (_README): "Words this README uses" now comes before the server table
+	(under its own "The servers" heading), so "see Words, above" is true; "the project's own words
+	in it are explained in GRAMMARY.md" replaces "every word".  (_README_BROAD): placed above
+	Install ("read before you install") and says what to do after installing.  (readme_text): new
+	`broad` argument.  (mint_plugin): passes the broad names in instead of appending.
+	* tests/test_plugin.py, tests/test_plugin_broad.py: the order (words before the table, the
+	broad section before Install) and the softened sentence.
+	* polygram/mcp/prefs.py (KNOWN usage.capture): the text says the start and prompt rows hold two
+	counts and a date, and that while on the frame also mirrors preferences and logged questions.
+	* polygram/mcp/spans.py (Frame.question): a bare number above 1 as a confidence is refused:
+	"write 17% or 0.17".  (Frame.second_needed): refused, while capture is on, for a question id
+	never logged.  (Frame.logged): New.
+	* tests/test_mcp_spans.py: Two tests for those refusals.
+	* SOFT-SKILLS/question-economy/SKILL.md: New soft skill: one question, read the answer, then
+	decide; two together only at 17% or less; question_log with the likelihood and confidence pair
+	when usage.capture is on; no shop words in questions.  Corwin's rulings of 2026-10-09.
+	* tests/test_mcp_softskills.py (QuestionEconomy): New.  The loader finds it and its text says
+	the rule.
+	* conventions/FOOTERS.org: rows for question-economy and (by `ft1mt seed`) family-shelf.
+	* polygram/hooks.md: the delivered row says "not yet a hook: proposed"; the intro says so.
+	* tests/hooks-tests.sh: every row counted; a row with no place and no "proposed" words is a
+	fault; a count line; a second prove-red plant.
+	* bin/br1in (modes): a quote opens and closes beside a non-letter (apostrophes in words never
+	pair); "the run" matches as words; the title heading is not read as a mode; the description's
+	trigger sentence ends at ". " not at the dot in index.php.
+	* tests/br1in-modes-spec.rb, tests/br1in-modes-tests.sh: New.  Four fixtures shaped like C6's
+	cases (parallax, aetherflow-runner, connector-forge, aethernet-relay); four prove-red plants.
+	* advice/EXTENSION-2026-10-10/br1in/*.run-r2.{md,tsv,ACK.txt}: New.  Re-runs on the 10-05,
+	10-05-r2 and 10-05-r3 drops beside the old reports.
+	* UPGRADES.md: scope widened to his software that reads ours; U2 (signet reads a skill as
+	skill-sign does, says "hash only" for an unsigned one) and U3 (Alfred's map knows which names
+	are ours, and the vibrobeast: prefix).
+	* advice/EXTENSION-2026-10-10/NOTE-kid-glove-condition.md: New.
+	* advice/EXTENSION-2026-10-10/R-ROWS-F3.txt: New.  R27, R28.
+
+Authored by Mentat (for Corwin; claude-opus-5-5).
+Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+SPDX-License-Identifier: CC-BY-SA-4.0
+
+2026-10-10  Mentat (for Corwin; claude-opus-5-5)  <corwin@bru.st>
+
+	Fix lane F1 of the extension edition: folding review pass 2 (P5, P6, C5) into the code.
+
+	* tests/test_mcp_spans.py (_capture): Point the frame at the temp
+	folder before turning usage.capture on, so no test writes into the
+	real ~/.mentcached/stats/fr (P5 O1).
+	(test_capture_never_touches_the_real_frame): New guard.
+	(test_question_log_writes_the_rows_qg1ck_reads)
+	(test_question_log_off_writes_nothing): New.
+	* tests/frame-leak-tests.sh: New.  The guard under a scratch HOME,
+	with the old order planted.
+	* polygram/mcp/spans.py (Frame._row, Frame.write): Fill LABEL,
+	LIKELIHOOD, CONFIDENCE and NOTE.
+	(Frame.question, Frame.second_needed, confidence_value): New.
+	(register): New tool question_log on mentcached (P6 O4, card 14).
+	* bin/qg1ck: Read the bar and CONFIDENCE as a fraction or a percent;
+	a row at exactly 17% passes (P6 O5, card 13).  Say that no preference
+	sets the bar yet.
+	* tests/qg1ck-spec.tcl: Rows at 17%, 18% and --bar 17%.
+	* tests/qg1ck-tests.sh: Plant percent-blind; no tclsh exits 77.
+	* bin/rd1ck: READ only when one line was read back; new answers
+	READER PRESENT, NOT READ and PRESENT, NOT READ; new road kind
+	reader; name one road that serves two stores; never list a fenced
+	folder while reading back (P5 O6/J5).
+	* conventions/ROADS.md: Readers are kind reader; the account memory
+	road no longer names the seat's own folder; the usage frame's road
+	names the MENTCACHED_FRAME environment variable (no usage.store
+	setting exists); the frame's drop line says what a row really holds
+	(P5 O4/J3, C5 O7/J11).
+	* tests/rd1ck-spec.rb: RD6, RD7.  tests/rd1ck-tests.sh: three plants;
+	no ruby exits 77.  tests/fixtures/lane-d/roads/reader-and-shared.md
+	and its root files: New.
+	* polygram/mcp/prefs.py (writer): The room.<tavern> writer rule:
+	the keeper's turn, or a named participant in that room's turn (P5 O5).
+	(set_, unset_, pref_set, pref_unset): Take room.
+	(quote): Take turn; a person sees only their own person rows.
+	(KNOWN): tavern.as says its real fallback; the restart rows point at
+	the README's Words; usage.capture says FRAME.md is beside the README.
+	* tests/prefs-declared-spec.rb: D12.  tests/prefs-declared-tests.sh:
+	two room plants; no ruby exits 77.
+	* polygram/mcp/mentcached.py (seat_mode): Quote prefs.quote() in the
+	status line; take turn (P5 J7, cards 06 and 12).
+	* tests/test_mcp_f1_open.py: New.
+	* tests/f1-python-plants-tests.sh: New.  Plants for the writer, the
+	open quote and the own-rows rule.
+	* bin/gm1gk: Spelling by pyspellchecker, the unknown words by name per
+	file, minus GRAMMARY's words and labels.tsv; else NOT CHECKED.  A LOOK
+	line when a count is not zero; --kit exits 1 after it.  Still never
+	fails (P6 O7/O8/J8).
+	* tests/gm1gk-spec.tcl: New (G5-G7).  tests/gm1gk-tests.sh: G3 by
+	GM1GK_PYTHON; runs the Tcl spec; two more plants.
+	* bin/gd1ck: Exit 77 is LOOK with "NOT CHECKED here" in its detail;
+	new gauge leg grammary (gm1gk --kit on the live GRAMMARY); prove-red
+	checks both (P6 O3/J2).
+	* tests/pr1ef-tests.sh, tests/spans-reset-tests.sh,
+	tests/arc-never-ships-tests.sh, tests/mcp-tests.sh,
+	tests/br1in-tests.sh: A missing interpreter is NOT CHECKED, exit 77.
+	* tests/interp-77-tests.sh: New.  Holds every runner to that rule.
+	* bin/lc1ck: Also read book/, report-only: each stale line is OWED,
+	"re-sign owed, his pen"; --book DIR, --no-book (P6 O10).
+	* tests/lc1ck-spec.rb, tests/lc1ck-tests.sh: The book row and two
+	plants; the NOT CHECKED words.
+	* polygram/mcp/persona.py (ledger): Dedupe proposed edges to distinct
+	(from, to, claim) triples on their true ends; a times column; the
+	read-back counts raw rows, distinct edges, pairs, source lines and
+	the proposing hand (P5 O7/J6, card 19).
+	* tests/persona-ledger-tests.sh, tests/persona-ledger-spec.awk,
+	tests/persona-ledger-SPEC.txt: L9 and plant (e).
+	* advice/EXTENSION-2026-10-10/persona-ledger/LEDGER-2026-10-10-r2.md:
+	New, regenerated; the first ledger is kept.
+
+2026-10-10  Claude (Cowork, fix lane F2 of the extension edition: docs and what ships)  for Corwin  <corwin@bru.st>
+
+	Folds review pass 2: C5 (the outside reader) J1-J14, P6 (Merlin by the Corwin model) #4,
+	P5 (Vanth by Ilunga) J1.
+	* polygram/plugin.py (SHIPPED_DOCS): New.  GRAMMARY.md and FRAME.md ship beside README.md in
+	every mint, copied as bytes and listed in MANIFEST; one missing at the source root is a
+	problem said in the result, like COPYING.  The module docstring's tree lists both.
+	(_README): A "Words this README uses" section before Install: GRAMMARY.md for every term,
+	FRAME.md for the usage record, and plain-words glosses of switch, restart the plugin (quit
+	Claude and open it again, or turn the plugin off and on), the keeper, people.named (starts as
+	corwin; how a new user gets their own name kept), persona, seat, garden, mint.  Verify: what an
+	unsigned build shows (TREE CHANGED for the changed skills, expected).  Before the first run: a
+	missing Python is fixed by installing one from python.org and turning off the Store aliases,
+	with no source checkout; re-minting is the second road, for those who keep one.
+	(_README_ROWS): the persona row says what a persona is and what the server does.
+	* tests/test_plugin.py (TheGlossaryAndTheFrameShip): New.  Both documents ship byte for byte,
+	are in MANIFEST and the .plugin, and the README names both.
+	(TheReadmeServesAStranger.test_a_stranger_is_told_the_words_and_the_steps): New.
+	(TheLicenceReachesTheRecipient.test_a_missing_licence_is_reported_not_silently_omitted): also
+	requires GRAMMARY.md and FRAME.md to be reported when missing.
+	* FRAME.md: a "Leaving" section (rows stay, no expiry, how to remove them, off writes no row);
+	CONFIDENCE is a number from 0 to 1 (17% is 0.17); "one rule, two numbers" says 83% and 0.17
+	are the same rule.
+	* GRAMMARY.md: the header's count matches bin/gm1gk: 47 entries added to the seed's 36, 83 in
+	all (41 new words, 5 pointer entries, one seed line given its own entry).
+	* NEWS (1.1.0): the first paragraph says what changes, in plain words; an "Unsigned" bullet; the
+	fourth new key is people.named; GRAMMARY count 47 added / 83 in all; TA glossed; the 83%
+	rule tied to FRAME.md's 0.17; the licence-block cleanup named.
+	* README.org (Copying): documentation is CC-BY-SA-4.0 (was CC-BY-4.0; bin/lc1ck faulted it).
+	* INSTALL: the floor is eight (drift added), pointed at editions.FLOOR; `make dist SIZE=grain`
+	said to be the same as `make edition SIZE=grain` after the full mint.
+	* INDEX.md: FRAME.md listed beside GRAMMARY.md.
+	* skills/*/SKILL.md, SOFT-SKILLS/*/SKILL.md (54 skills, not egress or family-shelf): the old
+	typed GPL licence block above the minted footer removed (the footer already says writing
+	CC-BY-SA, scripts GPL-3.0-or-later); build-loop's one provenance sentence inside that block kept
+	as prose; foaf's scoped block (text BY-SA, code GPL) kept.  Old copies, signatures and manifests
+	in .arc/2026-10/<folder>/<skill>/*_pre-licence-block-2026-10-10*.
+	* conventions/FOOTERS.org: `sh bin/ft1mt mint` re-dated the 53 mint rows those edits touched
+	(version 1.1.0, revised from 1.0.1, 2026-10-10); old table in
+	.arc/2026-10/FOOTERS.org_pre-licence-block-2026-10-10.  This also re-dated seatkeeper, whose
+	body lane A had changed.
+
+2026-10-10  Mentat (for Corwin; claude-opus-5-5), conductor  <corwin@bru.st>
+
+	The extension edition, the first firing of c4/spells/extension (a HEAVY lens).  Four lanes
+	built in parallel on disjoint files; the conductor folded their rows and fixed what fell
+	between them.  Design: advice/EXTENSION-2026-10-10/DESIGN-extension-edition.md; run record:
+	c4/spells/extension/runs/2026-10-10-mentat.md.
+	* polygram/mcp/__main__.py (_prove_red): R17-R24 folded in from the four lanes' R-ROWS
+	files; 26 refusals fire.  Its new write_text and subprocess calls name newline= and
+	encoding= (test_bytes_boundary B2/B4).  The pre-edit copy is in .arc/2026-10/.
+	* tests/test_mcp_persona.py (line 442): write_text names newline= (B2).
+	* Makefile (dist): after tp2mt, report-only prose gauges: bin/release --gauge (NEWS lag) and
+	bin/lc1ck dist/vibrobeast.  bin/release is where they refuse.
+	* bin/tp2mt: PRIVACY.md now ends naming its licence, CC-BY-SA-4.0 (lane C's request 3).
+	* GRAMMARY.md: entries for RECIPE and carry-in, the two tree words gm1gk found without one.
+	* NEWS: two spelling heals in the 2026-07 entries ("approach", "restore"), found by a
+	dictionary pass (pyspellchecker, installed in the device VM for the pass).
+	* c4/man/attribution-ladder.md, c4/man/attribution-and-licensing.md: say TERMS v1.1, under
+	which writing is CC BY-SA 4.0 (lane C's request 5).
+
+2026-10-10  Mentat (for Corwin; claude-opus-5-5)  <corwin@bru.st>
+
+	Lane A of the extension edition: preferences, spans and the frame.
+
+	* polygram/mcp/spans.py (_is_reset, _legs, _resets_words): A rising token
+	figure is a reset, never a negative count (A1, R17).  span_mark returns
+	tokens_since_last null and reset true; spend is the sum of the falling
+	legs; span_report and span_stop say "N resets seen" in words.
+	(Frame, frame_path, frame_names_path, FRAME_COLUMNS, FRAME_KINDS): The
+	usage frame (A2, R18).  With usage.capture on, span_start writes a start
+	row and a reset or a flagged mark writes a prompt row (date, kind, span,
+	count, by, nothing else); Frame.pref mirrors a preference set as a pref
+	row.  Off by default: no row, no file.
+	* bin/sp1rp: The same reset rule in awk; "N resets seen" in the summary.
+	* polygram/mcp/prefs.py (classify, ignored, unset_, pref_unset): A row is
+	reported or applied, never dropped (A3); unknown rows listed under
+	ignored:.  pref_unset appends an (unset) row.  --classify for the spec.
+	(KNOWN): usage.capture (off), tone.dial (0/0, 0/0), tone.show (words),
+	people.named (corwin).
+	(PREFIXES, reader, writer, seat_hash, declined, quote, applied): Declared
+	keys, the person./room./skill. prefixes with a named reader and a name
+	check, the person writer rule (own turn, the keeper's turn for a named
+	participant, or a consent row's id), held at write and at read; rows gain
+	turn and consent columns.  The seatkeeper "no" is
+	skill.seatkeeper.<hash> = "no: <path>", hash checked at write;
+	pref_list reads it back as the path (A4).  A third party's person row
+	never goes into the frame.
+	(current): Known keys read without a skill scan, so softskills.roots()
+	cannot recurse.
+	* polygram/mcp/softskills.py (preferences_declared, declared,
+	OWN_SKILLS): Gather the preferences: lists from SOFT-SKILLS roots and the
+	plugin's own skills/ folder.
+	* bin/pr1ef: New.  The preferences file read with awk: the same
+	classification as prefs.py, including declared keys, prefixes and the
+	writer rule.
+	* skills/seatkeeper/SKILL.md: Declare skill.seatkeeper.<hash>; a section
+	on the remembered "no".  Signed copy archived under .arc/2026-10/.
+	* FRAME.md: New.  The twelve columns in words.
+	* tests/spans-reset-spec.tcl, tests/spans-reset-tests.sh: New Tcl spec,
+	with --prove-red planting the old subtraction in Python and in awk.
+	* tests/pr1ef-spec.rb, tests/pr1ef-tests.sh: New Ruby spec; Python and
+	awk agree row by row; --prove-red plants a dropped row in each.
+	* tests/prefs-declared-spec.rb, tests/prefs-declared-tests.sh: New Ruby
+	spec, D1-D11; --prove-red plants seven faults.
+	* tests/test_mcp_spans.py: Reset and capture tests.
+	* tests/fixtures/lane-a/: New fixtures.
+
+2026-10-10  Mentat (for Corwin; claude-opus-5-5)  <corwin@bru.st>
+
+	Lane B of the extension edition: the Tavern face, the plain voice
+	and the persona ledger (DESIGN-extension-edition.md, tasks B1-B3).
+
+	* polygram/mcp/tavernface.py (agent_and_source, _owner_agent)
+	(_cfg, build_of, ROADS_STOCK, ROADS_GP): New.
+	(agent_name): tavern.as, when the person never set it, falls back
+	to the first agent in config.json under this machine's first
+	person whose model is claude, then claude (SPEC F6).
+	(status): Name the build (stock 2.3.1, gp.1, or what VERSION
+	says), the Tavern by its own name before its address, and the
+	roads that need gp.1; never print the join code, Tavern id, ip or
+	token (SPEC F5).
+	* tests/tavernface-SPEC.txt: Rows F5, F6; prove-red plants (d), (e).
+	* tests/tavernface-tests.sh: F5, F6 and their plants; 9/9.
+	* tests/fixtures/lane-b/: New; an invented Tavern config.json.
+	* polygram/mcp/persona.py (default_voice, TONE_ORIGIN): New.
+	persona_resolve, when no sheet resolves, returns default_voice:
+	one plain line at the origin of the tone dial, numbers only when
+	tone.show is not words (card 11).
+	(ledger, persona_ledger): New read-only tool and CLI face
+	(python3 -m polygram.mcp persona --ledger [--proposed FILE]):
+	LEDGER.md from each sheet's own "Whose inverse I carry" section,
+	twins that DIVERGED with both sha256s, faults, person models
+	counted not named, proposed edges apart, and a words read-back
+	of what the model was shown (card 19).
+	(main): Accept --ledger.
+	* tests/test_mcp_persona.py (APersonaLessActorStillSpeaks): New.
+	* tests/persona-ledger-SPEC.txt: New; rows L1-L8 and R.
+	* tests/persona-ledger-tests.sh, tests/persona-ledger-spec.awk:
+	New; the awk reading of the SPEC, 9/9, four plants go red.
+	* advice/EXTENSION-2026-10-10/persona-ledger/: New; the first
+	ledger (LEDGER-2026-10-10.md) and its proposed-edge pointers.
+
+2026-10-10  Claude (Cowork, lane C of the extension edition: docs, licence and release)  for Corwin  <corwin@bru.st>
+
+	* c4/man/licensing-defaults.md: TERMS v1.1.  The writing line says CC-BY-SA-4.0, with the TA
+	model and already-published essays named as the CC BY 4.0 exceptions; "Why each default" and
+	the partner line follow; a change record.  The v1 text is kept whole at
+	c4/archive/2026-10/licensing-defaults-2026-10-10_Archived-by-*.md (aw2ri keep).  The carriers
+	still hold v1 (tm1ck: 5 DIFFERS, 1 MISSING) until re-carried; CORWIN.md is his to re-sign.
+	* bin/lc1ck: New.  The licence check: writing says CC-BY-SA-4.0, no prose file carries a code
+	licence, a terms or privacy text names BY-SA; counts the short CC-BY-SA4 footers.
+	* tests/lc1ck-spec.rb, tests/lc1ck-tests.sh: New.  Ruby spec, 11 rows; --prove-red.
+	* bin/release: --news-reason=WHY (the reason line: written into NEWS when the version has no
+	entry, else into the tag message), --prose-gates, --gauge (the NEWS-lag gauge).  Two new
+	refusals, each passable with the reason line: a retired bracket tag in shipped prose, and a
+	licence fault in shipped prose (lc1ck).  The NEWS gate now also matches a bare "Version X"
+	heading.
+	* tests/release-gate-spec.tcl, tests/release-gate-tests.sh: New.  Tcl spec, 13 rows; --prove-red
+	plants three broken copies.
+	* NEWS: entries for 1.0.2, 1.0.3, 1.0.4 and 1.0.5, from releases/, the ChangeLog and git.
+	* polygram/plugin.py (readme_text, readme_facts, _README_ROWS): the README's server count and
+	table come from SERVERS, a new switches table from prefs.KNOWN, and a floor line from
+	editions.FLOOR.  The cmd mint's README says the servers start through launch.cmd; the
+	hand-edit line for .mcp.json and the stale "three servers" lines are gone; the module
+	docstring and launch.py say no fixed count.
+	* tests/readme-count-spec.awk, tests/readme-count-tests.sh: New.  awk spec (C1-C3), a planted
+	seventh server, the prose-count gauge (--gauge); --prove-red five plants.
+	* tests/test_plugin.py: the README test reads plugin.readme_text().
+	* GRAMMARY.md: line 1 says it is a made word; forty-one new entries, each with a "Whose word"
+	line (twelve from the other lanes' requests); pointer entries for Tavern, Wire and garden-pony,
+	crediting Bryant; the seed's confusing passages reworded (S2 B5), the NO4C entry split and
+	pointed at models/SEMAPHORES.md and Avalon's bin/lift.sh; the footer minted by ft1mt.
+	* bin/gm1gk: New.  The GRAMMARY gauge: entries, entries with no "Whose word" line, tree words
+	with no entry, spelling NOT CHECKED with no dictionary; --words mints the headword list.
+	* conventions/TREE-WORDS.md: New.  The tree words gm1gk counts, seeded from S2 B3.
+	* tests/gm1gk-tests.sh: New.  G1-G4; --prove-red.
+	* UPGRADES.md: New.  The suggestion book for Bryant's software; U1, the bridge's queue fields.
+	* polygram/hooks.md: New.  Five hooks named from acts that already run; reached and worn modes.
+	* tests/hooks-tests.sh, tests/notice-version-tests.sh: New.
+	* SOFT-SKILLS/gauntlet/NOTICE.md: version 1.5, as its SKILL.md carries.
+	* README.org: the servers named without a typed count; the floor of eight.
+	* INDEX.md: CORWIN.md 1.4-sa; the persona sheets named as they are; rows for peers/, pub/, the
+	pasted chats and UPGRADES.md.
+	* PROJECT.md: no session trailer in commits (his rule of 2026-10-05); pushes by the dedicated
+	key since 2026-10-04, public pushes and releases his.
+
+2026-10-10  Mentat (for Corwin; claude-opus-5-5)  <corwin@bru.st>
+
+	Lane D of the extension edition: four new tools.
+
+	* bin/br1in: New.  The Bryant drop intake, read-only (D4, enlarged at
+	Corwin's ask).  Checks every SHA256SUMS beside and inside the drop;
+	reads each signature's issuer against the pinned key (verifies only
+	with --keyring); hashes every file; unpacks every .zip and .skill into
+	scratch outside the mounts; finds each skill's prior copy in the
+	earlier dated drops and notes copies in externs/claude-bryant and the
+	Bryant folder; says NEW, UNCHANGED, CHANGED or DROPPED with a one-line
+	summary (version, SKILL.md bytes, description, headings, files); maps
+	each to our counterpart; extracts modes of work, marked extracted, not
+	judged; lists mechanical open questions; writes a words report, a TSV
+	and an ACK of hashes and a verdict.  Refuses an --out inside a drop
+	(exit 3); never reads under a fenced path; never runs his code.
+	* conventions/bryant-counterparts.tsv: New.  34 rows seeded from study
+	S1 sections 1-5.
+	* bin/rd1ck: New.  The roads checker (D2): walks conventions/ROADS.md
+	and prints READ, NOT REACHED or FENCED per road, never "absent"; a NOT
+	REACHED row names the seat, the parent it listed and the request.
+	--tsv mints the tool TSV from the Markdown.
+	* conventions/ROADS.md: New.  Eleven stores, W's roads less the fenced
+	one, with T's per-class Tavern drop marks.
+	* bin/qg1ck: New.  The question gauge (D3): a two-question frame above
+	the 0.17 bar, or with no number, is a fault; counts unglossed GRAMMARY
+	terms in logged questions and pref mirror rows; only reads.
+	* bin/st1dt: New.  The seating detector (D1): the nearest .gate, the
+	markers, one grain, one question, a remembered "no"; secret-class
+	entries as a count only; never writes; ends with a words read-back.
+	* tests/br1in-tests.sh, tests/br1in-noedit-spec.rb,
+	tests/br1in-real-tests.sh, tests/fixtures/lane-d/br1in/mkdrops.sh: New.
+	* tests/rd1ck-spec.rb, tests/rd1ck-tests.sh,
+	tests/fixtures/lane-d/roads/: New.
+	* tests/qg1ck-spec.tcl, tests/qg1ck-tests.sh,
+	tests/fixtures/lane-d/qg1ck/GRAMMARY.md: New.
+	* tests/st1dt-tests.sh: New.
+	* tests/lane-d-SPEC.txt: The SPEC lines ST1-ST6, RD1-RD5, QG1-QG3,
+	BR1-BR8, written before the tests.
+
+2026-10-08  Claude (Cowork, fixer FP of the ship build loop, QA pass 1)  for Corwin  <corwin@bru.st>
+
+	* polygram/launch.cmd: one Python floor, 3.10, for every server (Tavern's floor; QA1 row
+	13).  An older Python that runs is remembered, and the last sentence then says "too old",
+	what to install and "restart Claude": never re-mint, never JSON.  Copyright line names
+	Bryant Frankford first, then Corwin Brust (his finder lines; row 19).
+	* polygram/plugin.py: probe_python, check-interpreter.sh and the README ask for 3.10+ too.
+	A cmd mint's plugin.json description and README say it is made for Windows only and name
+	dist/posix/vibrobeast.plugin (WINDOWS_ONLY; row 15).  The tavernface README row says it is
+	Bryant's stock Tavern 2.3.1, without garden-pony, and where the patched build lives
+	(row 18).  c4face is off until asked (SERVERS, README row).
+	* polygram/cli.py: 3.10+ in --launch help; a cmd mint prints "made for Windows only".
+	* polygram/mcp/c4face.py: the guard is an allow-list read by a small JavaScript lexer
+	(js_tokens, scan_js, ALLOW_MODULES, DENY_NAMES, PROCESS_OK), not a regex: it catches
+	backtick and variable requires, aliases, createRequire, process.binding/dlopen/mainModule,
+	os, vm, worker_threads, module, inspector, import, eval, Function, globalThis and the
+	constructor chain (row 14).  No static check of JavaScript is sound, so it is a tripwire,
+	and c4face is now OFF until the person asks Claude to set c4.on (is_on, MEANS, HOW_ON).
+	* polygram/mcp/prefs.py: c4.on (default off).
+	* polygram/mcp/tavernface.py: every tavern_status answer carries CARRIES (stock 2.3.1, no
+	tool registry, no receipt marking; projects/garden-pony now, github.com/inputloop/tavern
+	once published).  The too-old sentence says install 3.10+ and restart Claude.
+	* Makefile: export PYTHONDONTWRITEBYTECODE = 1 (the dist step's own `$(PYTHON) -m
+	polygram dist` wrote polygram/__pycache__ at 08:05:18; row 16).  When the mint is the cmd
+	shape, make dist mints the python shape beside it in dist/posix/ (row 15).
+	* bin/tp2mt: c4face claims: off until c4.on; the allow-list, worded as a tripwire.
+	* tests/makefile-bytecode-tests.sh: New.  B1-B3 (the export, a recipe's environment, the
+	dist recipe's python lines); --prove-red removes the export.
+	* tests/launch-cmd-SPEC.txt, tests/launch-cmd-tests.sh: L6 3.10, L9 copyright, L10 too
+	old said plainly, M5 Windows-only said and the dist/posix twin; --prove-red 11 plants plus
+	the twin removed.
+	* tests/c4face-SPEC.txt, tests/c4face-tests.sh: C9 off until asked, C10 pref_set c4.on,
+	C11 24 evasions planted in c4-mcp.js and in a lib (and five clean shapes); --prove-red adds
+	the first build's regex (32 of 48 plants missed) and on-by-default.
+	* tests/tavernface-SPEC.txt, tests/tavernface-tests.sh: F1 and M1 check the stock-2.3.1
+	sentence.  tests/tp2mt-tests.sh: the widened allow-list and the lost c4.on switch go red.
+
+2026-10-08  Claude (Cowork, builder P2 of the ship build loop)  for Corwin  <corwin@bru.st>
+
+	* polygram/launch.cmd: New.  Starts one server on Windows and finds a Python 3.8+ by itself:
+	VIBROBEAST_PYTHON, py -3, python3/python on PATH (never under WindowsApps), the MSYS2
+	trees, python.org installs; says on stderr which, or what to install.  ASCII, CRLF.
+	Modeled on Bryant Frankford's Tavern-Setup (:TVL_FIND/:TVL_TRY), credited in it.
+	* polygram/plugin.py (LAUNCHES, host_is_windows, resolve_launch, _mcp_json, mint_plugin,
+	_validate_cmd, validate, check-interpreter.sh, README): a mint on a Windows host starts
+	the servers as cmd /d /c ${CLAUDE_PLUGIN_ROOT}\servers\launch.cmd NAME (no /s);
+	every mint ships servers/launch.cmd; --launch python brings the old shape back.
+	* polygram/cli.py, Makefile: --launch auto|python|cmd; make dist LAUNCH=...
+	* polygram/mcp/c4face.py: New.  C4's own MCP server (c4/mcp/c4-mcp.js), run with node from
+	the person's C4 tree (C4_ROOT, pref c4.root, pref words.root, near the seat or shelf, the
+	usual places); one tool, c4_status, when C4 or node is missing; on by default, and refuses
+	to start a C4 server that asks for a network, process or file module.
+	* polygram/mcp/prefs.py: c4.root.  polygram/mcp/__init__.py, __main__.py: c4face.
+	* bin/tp2mt: two checked claims for c4face; six servers in the Words block.
+	* tests/launch-cmd-SPEC.txt, tests/launch-cmd-tests.sh: New.  Text checks of launch.cmd and
+	the mint's JSON (no cmd.exe on the bench), --prove-red plants eight faults.
+	* tests/c4face-SPEC.txt, tests/c4face-tests.sh, tests/fixtures/c4face/: New.  Nine cases,
+	--prove-red plants three faults.
+	* tests/test_plugin.py, tests/test_plugin_imports.py: six servers; the cmd shape.
+	* tests/mcp-smoke.pl: a cmd-shape server is run only on Windows (said, not counted,
+	elsewhere); c4face may answer as C4's own server.
+	* tests/tp2mt-tests.sh: c4face's guard and no-write claims each go red when broken.
+
+2026-10-08  Claude (Cowork, builder P1 of the topo-pony LENS)  for Corwin  <corwin@bru.st>
+
+	* polygram/mcp/tavern_upstream.py: New.  Bryant Frankford's Tavern 2.3.1 (written with
+	Alfred), byte for byte (sha256 6ffaa566...e78c); never edited here.
+	* polygram/mcp/NOTICE-tavern: New.  Its pin, licence (GPL-3.0-or-later OR LGPL-3.0-or-later),
+	how to verify, where updates come from, and seven byte-boundary findings for Bryant.
+	* polygram/mcp/tavernface.py: New.  The switch: off until tavern.on (set by asking Claude,
+	pref_set); finds this computer's Tavern by itself (TAVERN_DATA, pref tavern.data, the
+	installer's ~/Tavern, the usual download folders); runs Tavern's own MCP face in-process
+	with the name from pref tavern.as.  Nothing to edit by hand (Corwin's D3).
+	* polygram/mcp/prefs.py: tavern.on, tavern.as, tavern.data.
+	* polygram/plugin.py (SERVERS, _SERVER_FILES), polygram/mcp/__init__.py, __main__.py: the
+	tavernface server, off by default.
+	* bin/pn1ck: New.  Checks vendored bytes against the sha256 their NOTICE pins, then leaves
+	only them out of the secrets scan (Tavern's agent_token variables read as secrets).
+	* Makefile (dist): runs pn1ck before sb1rn.
+	* tests/tavernface-SPEC.txt, tests/tavernface-tests.sh: New.  Seven cases, POSIX sh + awk,
+	--prove-red plants three faults.
+	* tests/test_plugin_imports.py: the minted tavernface starts off and the vendored hash ships.
+	* tests/test_plugin.py: five servers.  tests/test_bytes_boundary.py: skips the pinned file.
+	* skills/garden-pony/SKILL.md, skills/topoforge-story/SKILL.md: New (D4).
+	* conventions/MAKERS.org: Bryant first on both (his software is their subject).
+	* conventions/FOOTERS.org: rows seeded and minted by ft1mt (seed also added SOFT-SKILLS/intake).
+
+2026-10-05  Claude (Cowork, the GRAIN lens)  for Corwin  <corwin@bru.st>
+
+	* advice/GRAIN-2026-10-05/: New.  Four commissioned papers (A people's expectations, B Free
+	Software practice, C AI memory, D the skeptic's view), each 1.0.1 with errata; the burn-down
+	(two planted faults per paper; a local 12B model and Haiku through two windows); five weaves
+	(author, editor, systemic, human, control); the census of the public forge; the ethicsminions
+	pass; his ethics-redundancy asks with a clean-room eclipse; the plan; and the two-gardens map,
+	a version of Bryant's map with merge controls for the pending steps.
+	* journal/2026-10-05-graders-tales-008.md, journal/README.md: The story of it.
+	* Inbox/HANDBACK-2026-10-05-night-grain.md (+ .sha256): The hand-back.
+	* skills/lens/SKILL.md, skills/mentat-skill/SKILL.md: No bracketed concern tags (his rule of
+	2026-09-24; the papers had followed the stale line).
+	* conventions/FOOTERS.org: lens and mentat-skill re-dated by ft1mt.
+
+2026-10-05  Claude (Cowork, the papers' finding)  for Corwin  <corwin@bru.st>
+
+	* SOFT-SKILLS/public-stage/SKILL.md: Step 1 no longer asks for a session trailer;
+	commits carry the attribution the keeper asked for, never a link to a vendor's session
+	pages.  Three of the four GRAIN papers found the old line repeating the card-games slip.
+	* conventions/FOOTERS.org: public-stage re-dated by ft1mt.
+
+2026-10-05  Claude (Cowork, his rules of the night)  for Corwin  <corwin@bru.st>
+
+	* memory/work-and-story-2026-10-05.md: New.  His rules of 10-05 in his words, with a
+	labelled reading: the work leads with its subject and the story goes to the journal;
+	nothing aimed at Claude in a shippable unless that is what ships; no claude.ai links in
+	work product unless asked; delete only our own mistakes and no-ops; minimum noise; a
+	persona used as a skill through LENS; the six conditions for curating a persona; an
+	authorial voice noted only to an editor that already exists.
+	* MEMORY.md: Its line.
+	* skills/persona-engine/SKILL.md: Curating a new persona, and noting an authorial voice.
+	Refusals 1 and 2 stand.  Version 0.3.
+	* skills/mentat-skill/SKILL.md: The work and the story.
+	* conventions/FOOTERS.org: mentat-skill re-dated by ft1mt.
+
+2026-10-05  Claude (Cowork, foaf by Corwin's word)  for Corwin  <corwin@bru.st>
+
+	* skills/foaf/SKILL.md: Credits: Bryant is its author.  It began as his prompt, written to go
+	with his Bastion drop when he was out of tokens; Corwin touched it up and named it, and this
+	garden minted it first (2026-06-27).  The central idea (the other user's context around a prompt;
+	the friend who helps keeps a small, well-defined part and ships the rest back) is his.
+	* conventions/MAKERS.org: foaf's row says so, with MeshFeed (955 lines, evidence v3).
+	* conventions/FOOTERS.org: foaf re-dated by ft1mt.
+	* advice/FINDING-2026-10-05-who-made-what-rounded.md: 1.1.0, his four answers: foaf is
+	Bryant's; Bryant was on screen; LGPL first raised by Corwin, with C4, then with TA; the letter
+	tidies the spelling of his quoted lines.  The lesson: a mint is not authorship.
+	* Inbox/HANDBACK-2026-10-05-evening-provenance.md: 1.1.0, the same; .sha256 renewed.
+	* Inbox/HANDBACK-2026-10-05-gauntlet-nexus.md: its corrected foaf line corrected again.
+
+2026-10-05  Claude (Cowork, provenance from every store)  for Corwin  <corwin@bru.st>
+
+	* advice/FINDING-2026-10-05-who-made-what-rounded.md: new.  Is "first seen" a rounded answer
+	to who made what?  No: the record's horizon (2026-06-26), moves, hand crossings and lagging
+	commits; the kinds of evidence, strongest first.  foaf (the skill text his, MeshFeed and Bastion
+	Bryant's), token-optimizer and aethernet-relay (Bryant's), the ten skills (his), LGPL (proven,
+	not provable, my reading: the idea his, the form Bryant's), the name Vibrobeast (2026-06-29);
+	the credits he gave today; three questions for him.
+	* advice/DESIGN-2026-10-05-a-light-shelf.md: new.  A light, universal starter shelf for notes
+	(door and ways, words, ideas, subjects), with prompt-engineering's context lessons and his
+	track; prototype c4 bin/sh1lf.
+	* advice/DESIGN-2026-10-05-the-track.md: item 3 gains a candidate for the four prongs (C4's
+	register roles: a thing, a set, an act, a label), until he names them.
+	* conventions/MAKERS.org: foaf names Bryant (his MeshFeed, 949 lines, in its assets);
+	token-optimizer's row cites its own version notes.
+	* conventions/FOOTERS.org: vibrobeast's spine is its name's founding, 2026-06-29.
+	* skills/foaf/SKILL.md: re-minted footer (Bryant and Corwin).
+	* skills/mentat-skill/SKILL.md, skills/session-rotate/SKILL.md, skills/token-optimizer/SKILL.md:
+	Credits: Bryant's three ideas, in Corwin's words (memory and notes; token-wise; the static
+	model).
+	* skills/vibrobeast/SKILL.md, FROM: 1.0.1.  The name's founding record (named by Corwin and
+	Bryant, 2026-06-29; instrument-comrade; the ethics redundancy) in place of "held in trust".
+	* Inbox/HANDBACK-2026-10-05-evening-provenance.md: new, with its .sha256.
+	* Inbox/HANDBACK-2026-10-05-gauntlet-nexus.md: 1.0.1, the foaf line corrected; .sha256 renewed.
+
+2026-10-05  Claude (Cowork, the gauntlet nexus drops)  for Corwin  <corwin@bru.st>
+
+	* polygram/mcp/llama_bridge.py: Bryant's Llama Bridge 1.4.0 becomes 1.4.0-vb.1, for him to
+	merge as he thinks best: `think' (sent only to a model that can think) and `options' on
+	delegate_task and delegate_async; a context window sized to the prompt for models whose own
+	is very large (num_ctx_auto, floor 8192, doubling); generate calls one at a time, so a queued
+	job's 600 s starts when it runs, and delegate_result says "queued"; warm_model at the window
+	the next call uses; the cache key carries think and options only when set; ollama_status says
+	when a model spilled out of GPU memory; `llama_bridge.py config' for the settings.
+	* polygram/mcp/NOTICE-llama_bridge: upstream's hash and ours; where the diff is.
+	* tests/test_llama_bridge_vb.py: new.  19 checks from a fresh spec against the shipped stand-in
+	Ollama; --prove-red: a green control, then six planted faults.
+	* tests/test_mcp_llamabridge.py: the byte test reads both hashes and refuses upstream's bytes.
+	* skills/llama-bridge: new.  The delegation skill: Bryant's v1.4 manual carried whole between
+	markers, then this garden's vb.1 additions; scripts/fake_ollama.py (a stand-in Ollama that
+	writes down every request) and scripts/bridge_smoke.py (the bridge end to end, in words,
+	against the stand-in or a real Ollama; it works on his 1.4.0 too), at Corwin's word;
+	references/KIT.md (every part of the llama kit and where it lives), the cutover card, the
+	diff against 1.4.0, and the speed probe of 2026-10-04 (from hello-taxgnomes, byte for byte).
+	* SOFT-SKILLS/houseboxer: new, provisional (his working name).  Know the machine cheaply and
+	fit local agents to it; his words verbatim; suggests by default, acts only with authority.
+	* skills/vibrobeast: new.  The garden's direction, the counterpart of Bryant's alfred: first
+	moves, who speaks (Mentat the persona of last resort; Vibrobeast directs and may grow a sheet
+	from the work, or not), persona with, for, applied to and withheld from others' work, the
+	standing laws, the map.
+	* advice/DESIGN-2026-10-05-the-track.md: new.  His track (verbatim), each item read, with what
+	already pushes it, its falsifier and a first experiment.
+	* peers/: new shelf: what our peers need, rendered beside what we wear; not in the plugin.
+	* peers/bryant/colophon: Bryant's colophon 1.1, garden edition: the attribution ladder (ideas
+	credited, words attributed), no one's terms in the code (a parties file), --sources line
+	evidence (at1ld), credits sections read as credit, a SKILL.md notice kept to its own file,
+	NOT CHECKED when one reader is all there is, no fetch without --fetch.  His selftest passes
+	(36; 8 faults caught); tests.sh 14 checks, 7 planted faults after a green control.
+	* bin/ft1mt, conventions/MAKERS.org: co-makers in minted footers (the ladder's rung 1);
+	aethernet-relay and token-optimizer now name Bryant first (91 and 89 lines first seen in his
+	drop of 2026-08-05).  --prove-red gains three checks.
+	* skills/color-theory/tool.py, tests.sh, SKILL.md: an audit that read no pairs is NOT CHECKED,
+	exit 2, and every audit says how many it read (Bryant's rule, from his 1.1, credited).
+	* SOFT-SKILLS/gauntlet: Bryant's v1.5, byte for byte; NOTICE: CC-BY-SA-4.0 as he now declares.
+	* SOFT-SKILLS/parallax: new, provisional: Bryant's parallax 1.0, byte for byte, with a NOTICE.
+	* SOFT-SKILLS/outside-reader/scripts/or1ky: Alfred's F6.  True answers are quoted, and the
+	key's own gaps say KEY-NOT-CHECKED (Q5's true answer is "NOT CHECKED (not present)"); a gap
+	names the repository and the file the key reads (from the parcel, field-comic).  Q6 no longer
+	reads COPYING: it reads REUSE.toml, .reuse/dep5, SPDX-License-Identifier lines and the house's
+	copyright lines, splits the code from the prose, one line per repository.  OR1KY_AWK.
+	* SOFT-SKILLS/outside-reader/tests.sh: new.  Five made-up repositories, 17 checks under every
+	awk on hand; --prove-red plants eight faults, all caught; OR1KY_CHECKOUTS=DIR runs the key on
+	real checkouts.
+	* SOFT-SKILLS/outside-reader/FROM: new (Alfred's F11).  Written in place here; there is no
+	literate recipe for this soft skill yet.
+	* SOFT-SKILLS/outside-reader/SKILL.md: the key needs all five repositories and names a missing
+	one; KEY-NOT-CHECKED is the key's gap, not a disagreement; Q6 asks for the prose too.  Footer
+	re-minted by ft1mt.
+	* skills/kid-glove, skills/drift, skills/persona-engine: re-seated from their projects
+	(kid-glove 048c02a, drift db22c6e, persona-engine 6e94b55: Alfred's F2, F3, F4, F8, F10, F14);
+	FROM files name the commits.  Their seals are stale until the next make dist signs them.
+	* conventions/FOOTERS.org: rows for llama-bridge, houseboxer, parallax, vibrobeast;
+	persona-engine is now `recipe' (its recipe writes its footer).
+
+2026-10-05  Claude (Cowork, after the Avalon restart: hello-taxgnomes' east drafts)  for Corwin  <corwin@bru.st>
+
+	* Inbox/HANDBACK-2026-10-05-east-drafts.md, .sha256: new.  All 192 east readings in
+	(hello-taxgnomes ab7e186); why the drafts were slow; the models on Avalon's Ollama; sl1gk on
+	the session: lost 0, quiet 80 of 97 (a miss, owned).
+	* advice/20261004-ENHANCE-llama-bridge-think.md: new.  Offer-back for Bryant's bridge: pass
+	`think' and `options' (num_ctx above all) through; measured on Avalon.
+	* advice/20261005-ENHANCE-houseboxer.md: new.  His idea, verbatim, with a reading and this
+	session as its worked example; the model scout; llmconfigurator.com read against Avalon.
+
+2026-10-04  Claude (Cowork, the crash read, continued)  for Corwin  <corwin@bru.st>
+
+	* skills/altorewired/scripts/sl1gk: new.  SILENCE 1 GAUGE: counts grown 03's two misses in a
+	saved transcript (two waits with no word between; a job id written nowhere); python3 and awk
+	read the same events and must agree; --strict, --wait, SL1GK_AWK; --prove-red (dash; mawk,
+	gawk, busybox awk).
+	* skills/altorewired/SKILL.md: grown 03 names the gauge, and his word, restartability.
+	* polygram/mcp/llamabridge.py: field note: the bridge's 600 s per call, and jobs queued on one
+	GPU timing out while they wait.
+
+2026-10-04  Claude (Cowork, the crash read; waiting is not silence)  for Corwin  <corwin@bru.st>
+
+	* skills/altorewired/SKILL.md: grown 03, waiting is not silence.  The crashed run handed the
+	hello-taxgnomes east drafts to the local model through Llama Bridge and went quiet while it
+	waited (5 delegations, average 273 s, 2 failures); the drafts never landed and the job ids
+	died with it.  Five rules and a falsifier.  Footer re-dated by ft1mt; needs his re-sign.
+	* polygram/mcp/llamabridge.py: the field note says the same, pointing at grown 03.
+	* Llama Bridge as the plugin's fourth server, off until llamabridge.on (left uncommitted by
+	the crashed run, committed here as it stood after tests): polygram/mcp/llamabridge.py,
+	llama_bridge.py (Bryant's v1.4.0, byte for byte), NOTICE-llama_bridge, __init__.py,
+	__main__.py, prefs.py (llamabridge.on), polygram/plugin.py, bin/tp2mt and its tests,
+	tests/test_mcp_llamabridge.py, tests/test_plugin.py.  64 unit tests OK; tp2mt 13/13.
+
+2026-10-04  Claude (Cowork, build-loop ruled)  for Corwin  <corwin@bru.st>
+
+	* skills/build-loop/SKILL.md: the question it carried is ruled.  His words: "I intended to
+	redesign once as once per cause but final swing only once per try at the full build-loop."
+	New section on iterating, stops for questions, and the swing at other scales (a LENS or
+	MICROSCOPE opportunity, left to be seen).
+	* skills/build-loop/scripts/sw1ng: refreshed from c4/bin/sw1ng, which now decides per cause
+	(it used to refuse with exit 9 where the two readings differed); sha256 matches the canon.
+	* conventions/FOOTERS.org: build-loop's row names skills/, not SOFT-SKILLS.
+	* DRIFT.log: new; the opening checkpoint of this turn (the plan and its prediction).
+	The signed soft copy in SOFT-SKILLS/build-loop is left as it was (shadowed).
+
+2026-10-04  Corwin Brust  <corwin@bru.st>
+
+	Releases 1.0.1 and 1.0.2 (make dist, signed with his key).
+	* polygram/__init__.py (__version__): 1.0.2.
+	* skills/*/.signature.asc, skills/*/.skill-manifest: re-signed for the release.
+	* releases/1.0.1, releases/1.0.2: the release records.
+	* advice/20261004-143932Z-dist-polygram-curation.md,
+	advice/20261004-165142Z-dist-polygram-curation.md: the dist mint records (61 skills).
+	* skills/build-loop/: graduated from SOFT-SKILLS by ss2gr (the soft copy stays, signed and
+	shadowed).  (Committed for him by Claude.)
+
+2026-10-04  Claude (Cowork, outside-reader)  for Corwin  <corwin@bru.st>
+
+	* SOFT-SKILLS/outside-reader/: new.  A reader from outside both gardens answers six fixed
+	questions from our public repositories, cold; scripts/or1ky computes the answer key from
+	local checkouts with our own tools (never by hand); disagreements are findings.
+	* conventions/FOOTERS.org: its row; footer minted.
+
+2026-10-04  Claude (Cowork, the skills tried)  for Corwin  <corwin@bru.st>
+
+	* skills/kid-glove/: copied again from its recipe: one file under two names is one house
+	file (Avalon's case-blind mount listed CHANGELOG and ChangeLog twice).
+	* skills/drift/: copied again: a named source that is not there is NOT CHECKED, not zero.
+	Both found by trying the skills on ghostwheel-nodes, 2026-10-04.
+
+2026-10-04  Claude (Cowork, persona-engine)  for Corwin  <corwin@bru.st>
+
+	* skills/persona-engine/: new, copied from F:\claude\projects\persona-engine at 2069a63.
+	The persona model as one careful skill: is a persona warranted (four uses), the six steps,
+	the five refusals, the cost rules, the nine context models, plain files when no MCP; and
+	pe1gt, a gate answering GO, WAIT, HOLD or STOP (sh+awk, Python twin; 16 cases, prove-red).
+	* polygram/mcp/persona.py: the comment above REFUSALS says which refusals are mt1pl's and
+	where the others come from (it claimed word-for-word).  test_mcp_persona OK.
+	* advice/20261004-ENHANCE-persona-engine-gaps.md: seven places the sources disagree.
+	* conventions/FOOTERS.org: a row for persona-engine; footer minted.
+
+2026-10-04  Claude (Cowork, accommodations)  for Corwin  <corwin@bru.st>
+
+	* SOFT-SKILLS/reformat-session/SKILL.md: "Accommodations, downstream": the log stays
+	verbatim; what is produced from it corrects his spelling, lists each correction, keeps minted
+	words and load-bearing errors (his rule, 2026-10-04).
+	* SOFT-SKILLS/comic-avatars/SKILL.md: his quote shown with spelling corrected, source named.
+	* conventions/FOOTERS.org: both re-dated by ft1mt (bodies changed).
+
+2026-10-04  Claude (Cowork, the session log and its rewrite)  for Corwin  <corwin@bru.st>
+
+	* fix-comic-rewrite-session-improve-orgvm.REWRITE.txt: new.  His stopped prompt, rewritten in
+	six steps so it can run to the end (his original beside it is his, untracked).
+	* SOFT-SKILLS/reformat-session/: new.  A session written up as his words broken into chunks,
+	each with a plain reading, then what was done and what was told him, verbatim; built from the
+	transcript by script and checked verbatim and for coverage.  First run: field-comic
+	.house/session/2026-10-04 (four sub-agents drafted; the check is ours).
+	* SOFT-SKILLS/comic-avatars/: new.  A sticky avatar for the person, and mood only by a plain
+	"mood: WHO WORD" hint; a person's mood is theirs to hint.  First cut in field-comic (T-MOOD).
+	* conventions/FOOTERS.org: rows for both; footers minted.  sk1in 0 RED; ft1mt check clean.
+
+2026-10-04  Claude (Cowork, kid-glove 0.2 copied in; the offer to modelthisbook)  for Corwin  <corwin@bru.st>
+
+	* skills/kid-glove/: 0.2 from its recipe (house rules in instructions files, operating models,
+	and a README that says how the folder works; learned on modelthisbook).
+	* Outside this tree, noted here: F:\claude\modelthisbook\IMPROVE-2026-10-04-offer-back.md, an
+	offer of gates, tunnels, lifts, reminting, persona layers, the kid glove, the persona shelf and
+	the field comic, each with the skill that carries it (proposal only, the house's own rule);
+	F:\claude\projects\field-comic (Volume 2 of the field comic, 25/25 inline tests).
+
+2026-10-04  Claude (Cowork, persona sheets signed at make dist; CORWIN.md 1.4-sa)  for Corwin  <corwin@bru.st>
+
+	* bin/ps1sg: new.  check / sign / --prove-red (a throwaway key in a temporary keyring).
+	Signs each listed persona sheet whose signature is not GOOD (detached, armoured, FILE.asc);
+	a BAD signature moves to .arc/ beside the file first; copies named in /also/ must be byte-equal.
+	* conventions/SIGNED-PERSONAS.org: new.  CORWIN.md (home modelthisbook, seat copy book/CORWIN.md:
+	he signed .6 and .7) and the persona shelf's SHA256SUMS (sent to Bryant).  Strike a row to stop.
+	* conventions/house.env: SIGN_KEY (the key skill-sign already defaults to).
+	* Makefile (dist): ps1sg sign after the skills are signed; ps1sg check under UNSIGNED=1.
+	* tests/test_ps1sg.py: new.
+	* book/CORWIN.md: version 1.4-sa (the licence and the footer); F:\claude\modelthisbook\CORWIN.md
+	is the same bytes now, 1.4 archived there as corwin/CORWIN.md.8.  His words: "Please do keep
+	CORWIN.md in good shape."
+
+2026-10-04  Claude (Cowork, persona sheets licensed; ft1mt stamp; sentinels stay last)  for Corwin  <corwin@bru.st>
+
+	* bin/ft1mt: stamp FILE ... mints the footer into any other file.  When a file ends on a
+	"sentinel:" line (the author's own end mark), the footer goes just before it and the sentinel
+	stays last; minting twice changes nothing (both in --prove-red).  candor-gate re-minted so.
+	* tests/test_ft1mt.py: also holds where the footer sits.
+	* h/persona/{CHARACTER-2026-09-06-mentat,CHARACTER-2026-09-05-shopgarden,PERSONA-gw7}.md,
+	book/{ILUNGA,PELL,ROUX-ABARA,VANTH,SOLBERG-MAAS,MERLIN,CORWIN}.md: the footer stamped (text
+	CC BY-SA 4.0; tools GPL-3.0-or-later, LGPL-3.0-or-later offered), his word: "Persona sheets: off
+	they go".  CORWIN.md's license: line now CC-BY-SA-4.0 (its TERMS v1 block, synced from C4, still
+	says CC BY 4.0 for writing: C4's to roll).  c4's byte copies refreshed; cs1gk reads each as
+	before (VANTH better).  The bundle for Bryant: F:\claude\projects\persona-shelf\out\.
+
+2026-10-04  Claude (Cowork, the common footer; kid-glove and drift seated)  for Corwin  <corwin@bru.st>
+
+	* conventions/house.env: new.  Who, which licence (prose CC-BY-SA4, code GPL-3.0-or-later,
+	LGPL-3.0-or-later for linking), persona, principal, model, and LOCAL_TZ (America/Chicago,
+	from his stated home): the one place a local time is read; tools write UTC.
+	* conventions/FOOTERS.org: new.  One row per skill (73): how the footer is made (mint, recipe,
+	verbatim), version, revised-from, revised, spine and where the spine was found (the earliest
+	of: the ChangeLog, the skill's .arc, the dates its text names), body hash.
+	* bin/ft1mt: new.  seed, mint, check, line, footer, utc, --prove-red (dash; mawk, gawk,
+	busybox awk).  A skill is re-dated only when its body changed.
+	* tests/test_ft1mt.py: new.  Python second reader of every minted footer and body hash.
+	* skills/*/SKILL.md, SOFT-SKILLS/*/SKILL.md: the footer minted into 70 (kid-glove and drift
+	carry their recipes' own; gauntlet is Bryant's bytes, kept whole).  candor-gate and foaf:
+	their body licence lines now say CC BY-SA 4.0, as the footer does.  These skills read CHANGED
+	against their signatures until the next signed build (tests.test_dist's prove-red needs it).
+	* skills/kid-glove/, skills/drift/: new, copied from F:\claude\projects (FROM says the commit).
+	* polygram/editions.py, tests/editions-tests.sh: the floor is eight, drift the eighth.  Today
+	GRAIN installs 17 with a C4 tree (population 213: 8 + 9 picks) and 11 without.
+	* INDEX.md: conventions/.  NEWS: the footer, the floor of eight.
+	* bin/sk1in, records/2026-10/LICENSE-DIRECTION-2026-10-04.md: Bryant's work shares our
+	licence (his word, verbatim in the record); my earlier separate-terms reading withdrawn.
+
+2026-10-04  Claude (Cowork, the sweep three ways, and the first drift page)  for Corwin  <corwin@bru.st>
+
+	* advice/20261004-ENHANCE-sweep-three-ways.md: new.  The last two weeks (backward), Bryant's
+	r2 drop, and the card; a verdict per item (DONE, SEED, MULCH) and where it lands.
+	* records/2026-10/DRIFT-2026-09-19-to-10-04.md, .capsule.txt, .drift/: new.  Pulled by the
+	drift skill's dr1pg (F:\claude\projects\drift); read true by dr1ck (links both ways, all 17
+	commits in the window cited, the capsule's hash recorded).  Three editions; the first two kept.
+	* NEWS (1.0.1): sk1in, the two new skills beside the garden, records/2026-10.
+	* tests/test_ck1sk.py, tests/test_sk1in.py: name their encoding (open, subprocess), as
+	test_bytes_boundary requires; it caught both.  test_ck1sk came in earlier today without a
+	full-suite run: owned, and the full suite has now run (36 modules OK; 38 shell suites, the
+	two helpers excepted, green).
+
+2026-10-04  Claude (Cowork, Bryant's skill-integrity gate)  for Corwin  <corwin@bru.st>
+
+	* bin/sk1in: new.  Bryant's five checks for every SKILL.md a build ships (BRYANT-INFLUENCER
+	r2, offer 2.3): no NUL bytes; the last line closes (a sentence, markup, or a "sentinel:" line
+	such as candor-gate's); balanced fences; description <= 1024 characters; a dated version
+	note; the packaged SKILL.md equals the authored one (.skill-manifest, dist bundle).  RED for
+	the first three, HOLD for the last two; --prove-red plants one fault per check (dash, mawk,
+	gawk, busybox awk).  Credit and thanks in the header.
+	* tests/test_sk1in.py: new.  Python second reader; agrees with sk1in on every skill in the
+	garden and on planted faults.
+	* records/2026-10/LICENSE-DIRECTION-2026-10-04.md: new.  -SA going forward; Bryant's terms
+	where he set them; the TA model stays CC BY 4.0; his footer form.
+	First run over the garden: 71 skills, 0 RED; principles and token-optimizer read CHANGED
+	against their in-tree .skill-manifest (their dist bundles match); 65 carry no dated version
+	note (HOLD).
+
+2026-10-04  Claude (Cowork, soft skills and the day's ENHANCE notes)  for Corwin  <corwin@bru.st>
+
+	* SOFT-SKILLS/public-stage/SKILL.md: New.  The standard form for a
+	standalone project (code.bru.st, GitHub mirror, .house/ private,
+	three models, GPL-3.0-or-later and CC BY-SA 4.0, literate where it
+	makes sense, checks that can go red and switch off).
+	* SOFT-SKILLS/gauntlet/: New.  Bryant's Gauntlet orchestrator (1.4),
+	byte for byte from his 2026-09-17 snapshot, with NOTICE.md: thanks,
+	provenance, licence, candor-gate's holds, the siblings it names.
+	* advice/20261004-ENHANCE-notes.md: New; eleven notes.
+
+2026-10-04  Claude (Cowork, skip a slow check when nothing changed)  for Corwin  <corwin@bru.st>
+
+	* bin/ck1sk: New.  Keys a passing check on the content `git add -A`
+	would commit (built in a throwaway index, so committing does not
+	change it), the check's name and a salt; stamps only a pass, in the
+	clone's git dir.  CK1SK=0 runs everything.  --prove-red.
+	* bin/release (secrets and tests gates): Skip when nothing changed
+	since they last passed here, and say so; the secrets key includes
+	the checkers' own bytes, the tests key the Python version.
+	* bin/gt1sp (R5): make check and each tests/*.sh skip the same way;
+	the tree is computed once per run (CK1SK_TREE).
+	* tests/ck1sk-tests.sh, tests/test_ck1sk.py: New (sh self-test; a
+	second spec in Python).
+	Asked for 2026-10-04: "Parts take a very long time.  Make we can
+	consider skipping when literally nothing has changed".
+
+2026-10-04  Claude (Cowork, the public shelf staged)  for Corwin  <corwin@bru.st>
+
+	* tools/pub-stage.sh: New.  Copies a release's artifacts, bundles and
+	any detached signatures from dist/ into the shelf clone at
+	pub/releases/polygram-curation-VERSION/, with SHA256SUMS; --check
+	says what is missing.  Never signs, commits or pushes.
+	* .gitignore: /pub/, the detached clone of the public shelf.
+
+2026-10-04  Corwin Brust  <corwin@bru.st>
+
+	* Version 1.0.0 built and signed (releases/1.0.0, note "My claude
+	skills, as of Oct '26; Errors my own; thanks Bryant").  The
+	nineteen changed skills re-signed.
+	* .gitignore: .c4/leakwords, the private name list pb1ck reads.
+	(Committed for him by Claude, Cowork.)
+
+2026-10-04  Claude (Cowork, the hand-back)  for Corwin  <corwin@bru.st>
+
+	* Inbox/HANDBACK-2026-10-04-v1.md, .sha256: New.  His steps to
+	1.0.0 in order, what changed with receipts, the LENS.
+	* .last-prompt.md, last-response.md: Today's; the prior pair is in
+	.sessions/2026-09-29/.
+
+2026-10-04  Claude (Cowork, what a release rehearsal found)  for Corwin  <corwin@bru.st>
+
+	* .gitignore, .arc/corwin-wget-hardway---chrome-C-s/: Untracked (kept
+	on disk).  A saved Gemini share page: a private conversation, and
+	Google's page script, which bin/release's secrets gate read as three
+	assigned secrets.  It has been on the keeper-only remote since
+	26dfae3 (July); the public shelf never carried it.
+	* tests/gtmode-tests.sh: sb:allow on a test label ("no token: ...")
+	the gate read as a token.
+	* README.org, INSTALL: The public repository is a release shelf
+	(signed plugin, bundles, archives), not the source tree; say so, and
+	how to build from a checkout.  INSTALL: without C4 every skill is
+	still minted; RELEASE example 1.0.0.
+
+2026-10-04  Claude (Cowork, 1.0.0 readied)  for Corwin  <corwin@bru.st>
+
+	* NEWS: Version 1.0.0 (unreleased): the safety fixes, skills with or
+	without C4, run-card's guard, the root, E27.  The 0.8.90/0.8.91
+	section is kept below it as "Carried from the 0.8.90 and 0.8.91
+	builds".
+	* README.org: What you get, Quick start, With or without C4; the
+	layout block brought current; make dist described as it now is
+	(every skill minted from the garden).  Prior in archive/2026-10-04-v1/.
+	* model.md: v19 (v18 in .models/model-2026-10-04.md): Version row,
+	the git constraint superseded, the rulings of the day.
+	* PROJECT.md: Commits are Claude's, from the linked computer's
+	shell; pushes and releases stay with Corwin.  Prior in
+	archive/2026-10-04-v1/.
+	* ERRATA (E25): The answer for 1.0.0, derived from his word of the
+	day: no soft skills ship; which could, and why.
+
+2026-10-04  Claude (Cowork, the root redecorated)  for Corwin  <corwin@bru.st>
+
+	* records/: New.  Forty-three dated working records moved off the
+	root with git mv, by month, signatures beside them; records/README.md
+	says what is where.  The stale INDEX.md.asc (it signed the
+	2026-08-17 map) went with them as records/2026-08/INDEX-2026-08-17.md.asc.
+	outputs/ (two nongnu-steward eval pages) folded into records/2026-09/.
+	* gpl-3.0.txt: Removed; an older copy of the GPLv3 text beside COPYING.
+	* verify-say.skill: Removed; a stale 2026-08-19 bundle at the root
+	(make dist mints the current one into dist/).
+	* INDEX.md: records/, the live registers and desks at the root, and
+	h/persona/ as the one shelf in h/; the 2026-10-04 amendment.
+	* skills/altorewired/SKILL.md: Its two receipts are in records/2026-08/.
+
+2026-10-04  Claude (Cowork, the garden makes sense with or without C4)  for Corwin  <corwin@bru.st>
+
+	* skills/{containment-during-exec, fantasy-operational-boundary,
+	guarded-visibility, hooks-to-knowledge, layered-assurance,
+	magic-words-persona, md-org-canonicity, pencil-your-own,
+	prove-a-promise, rewire-order, signing-model, tool-lifecycle,
+	values-baseline}/SKILL.md: The description says what the skill is
+	for ("A design rule for ...") instead of opening on "C4 canon": a
+	reader without C4 was being told it was the authority.  The body's
+	provenance line ("Refined from the C4 canon deck ...") stays; that
+	is credit.  Priors in each skill's .arc/2026-10/.
+	* skills/boundscheck, run-card, posix-gotchas (SKILL.md): The copy
+	that ships is complete on its own; a difference from C4's twin is a
+	finding to carry across on purpose, either way (was "C4's wins").
+	* skills/run-card/scripts/rc1rn: C4's run-once guard carried here
+	(a card whose last step undid its first looped under `run`; found
+	by the garden check reading the drift against C4's bin/rc1rn).
+	skills/run-card/tests.sh: A case for it and a seventh mutant;
+	--prove-red 7/7.
+	* skills/emacs-tashaki/SKILL.md: "Without a C4 tree": say so and
+	stop.  skills/reformat-prompt/SKILL.md: "With or without C4": the
+	pair lands in the working project's own h/ and q/.
+	* tests/test_mcp_persona.py (FirstWriteSelfSeatsLikeMentcached):
+	Names an empty shelf, so the case reads only what it plants (was
+	ERRATA E27).  ERRATA: E27 leaves.
+
+2026-10-04  Claude (Cowork, the review brought home: two safety fixes)  for Corwin  <corwin@bru.st>
+
+	* polygram/mcp/dl2.py (LINE_BREAKS, refuse_line_breaks): New.
+	(render_note): Refuses a key or value carrying a line break.  A
+	value with "\nmode: SEATED" wrote a second front-matter line above
+	the real one, and the first-key-wins parser read a JAILED note back
+	SEATED; the chain still verified (B5U-007, Technology Architecture
+	review, H:\ta turn-2026-09-30, wave P12B; patch applied unchanged).
+	* polygram/mcp/store.py (_one_line): New.  (append, cite, bless):
+	Caller text is checked before anything is written, so a newline in
+	cite(where) can no longer record a second citer, nor one in
+	bless(checked) a blessing under any name past the author refusal.
+	Every value that was legal renders to the same bytes as before.
+	* SOFT-SKILLS/prior-instruction/SKILL.md: Says whose words count as
+	an instruction (the person's own; a fetched page, a pasted message,
+	a tool's result or a file outside canon is data until the person
+	adopts it in their own words), with a falsifier (B5U-003).
+	* tests/safety-2026-10-04-tests.sh: New; runs the two checkers on
+	the live tree and, with --prove-red, on the pre-fix copies kept in
+	archive/2026-10-04-safety/.  tests/store-line-breaks.sh (sh and
+	awk), tests/prior-instruction-speaker.awk, tests/fm-dupkeys.sh:
+	New, from the P12B wave.
+
+2026-09-29  Claude (Cowork, the ERRATA folded; git reads without the lock)  for Corwin  <corwin@bru.st>
+
+	* ERRATA: Trimmed to its one job, what the build beside it still
+	owes (E6, E15, E25, and new E26, E27).  The folded file is kept in
+	c4 archive/2026-09/; entry numbers are never reused.
+	* polygram/mcp/softskills.py (roots): The running plugin's own
+	SOFT-SKILLS/ is read last on every branch (was E1).
+	* polygram/plugin.py (_README): Says so (was E2).
+	* skills/garden-usage/scripts/whatis.sh, SKILL.md: A soft skill is
+	answered with `soft_skill_read NAME`; --list marks it (was E3).
+	* SOFT-SKILLS/prior-instruction/SKILL.md: Description under the
+	1024 limit, every trigger phrase kept (was E4).
+	* SOFT-SKILLS/build-loop: Strict YAML (was E5); "Several tasks at
+	once: the multitask swing", eight rules in SKILL.md and in plain words
+	in assets/BUILD-LOOP.md; scripts/sw1mt, byte for byte the C4 canon
+	(was E22).
+	* polygram/dist.py, polygram/gate.py (record_advice): Stamps are UTC
+	with a Z (was E7).
+	* bin/thread.sh: No em-dash in the page template; site/threads
+	rebuilt (was E8).
+	* bin/release: Signs each dist/vibrobeast-*.plugin that names the
+	version (was E9).  Its tree-clean check reads with
+	--no-optional-locks.
+	* skills/skilltank/SKILL.md: A RAISE reading; skills/writing-forms:
+	QAPLAN and TESTMANIFEST in the table (was E14).
+	* skills/candor-gate/SKILL.md: "A drop, not a skill" (was E18).
+	* skills/lens, countable-gauge, eclipse-pass (SKILL.md): "Land it
+	before you show it" (was E19).
+	* skills/ethicsminions, principles, lens, guarded-visibility;
+	polygram/mcp/words.py; model.md (v18): The values canon lives on the
+	pub shelf, canon/principles/ (was E24).
+	* skills/sandboxer/SKILL.md: Status and diff on a mount only with
+	--no-optional-locks: a plain status leaves .git/index.lock where
+	deletes are refused.  skills/instrument-panel/scripts/panel.sh: G5
+	reads with the flag and reports a lock that is present.
+	* tests/git-read-locks-tests.sh, tests/test_git_read_locks.py: New;
+	every shipped git status/diff/describe carries the flag (sh, and a
+	second spec in Python; both prove red).
+	* tests: Cases for each change above (test_mcp_softskills,
+	test_garden_usage, test_dist, test_polygram, test_thread,
+	release-gates-tests.sh).
+
+2026-09-28  Claude (Cowork, sized editions and the ERRATA)  for Corwin  <corwin@bru.st>
+
+	* polygram/editions.py: New.  Sized editions of the plugin (GRAIN,
+	GREAT, GRAND: the floor of seven plus 4, 9, 17 percent of the
+	population beyond it, ranked by distinct days used in 90, health
+	first, the shorter description on a tie) and his fourth option,
+	RANDOM (the floor plus a seeded draw; stacks with a size).  Broad
+	and door-held skills and RED ones are never picked; everything not
+	installed goes to the edition's SOFT-SKILLS/, said in its README.
+	* polygram/plugin.py (mint_plugin): SOFT and README_EXTRA keywords;
+	with their defaults the full edition's bytes do not change (minted
+	before and after: diff -r identical).  A sized edition's launcher
+	points mentcached at its SOFT-SKILLS.
+	* polygram/cli.py (cmd_edition): New `polygram edition`.
+	* Makefile (edition): New target; SIZE, RANDOM, SEED, SIZE_GRAIN,
+	SIZE_GREAT, SIZE_GRAND, FLOOR, USAGE_DIRS.  (dist): calls it only
+	when SIZE or RANDOM is given.
+	* tests/test_editions.py, tests/editions-tests.sh: New (13 and 20;
+	the shell one's --prove-red plants four mutants).
+	* ERRATA: New.  The changes owed to the checked 0.8.90 build, held
+	for the C4 ON rebuild.  INDEX.md: Its row.  INSTALL: `make edition`.
+
+2026-09-28  Claude (Cowork, rulings of 09-28 and the named-not-done list)  for Corwin  <corwin@bru.st>
+
+	* skills/foaf/SKILL.md: License in Bryant's form (BRYANT v3.0.1-public):
+	text CC-BY-4.0, code GPL-3.0-or-later with the LGPL permission for
+	linking; Copyright (C) 2026 Bryant Frankford and Corwin Brust.  Its
+	signature, now stale, moved into .arc; express manifest.
+	* book/CORWIN.md: 1.4 from the modelthisbook master (a license: line,
+	Copyright (C) 2026 Corwin Brust and Bryant Frankford).
+	book/.licensed-copies.log: The 1.4 copy.
+	* polygram/plugin.py (_manifest_json): Author e-mail corwin@bru.st.
+	(fires_broadly, _README_BROAD): New.  The README names the skills
+	that fire broadly, by candor-gate's engagement rule.
+	* polygram, bin, tests, skills, AUTHORS, README.org: Copyright lines
+	read Corwin Brust <corwin@bru.st> (62 files; ChangeLog history and
+	records left as they were).
+	* skills/containment-during-exec, fantasy-operational-boundary,
+	guarded-visibility, hooks-to-knowledge, layered-assurance,
+	magic-words-persona, md-org-canonicity, prove-a-promise,
+	rewire-order, signing-model, tool-lifecycle, values-baseline: New in
+	the garden, copied byte for byte from C4's dist/skills, so every
+	garden skill is minted and signed here.
+	* polygram/dist.py (minted_elsewhere): New.  polygram/cli.py
+	(cmd_dist): Say each skill minted from another root, and each garden
+	copy that has moved on from one.  Makefile (dist): Comment.
+	* skills/candor-gate/scripts/candor_gate.sh: --travel (the sender's
+	read: engagement is NOTICE).  An .asc under .arc/ is not provenance.
+	A URL on a line with no fetch or send verb is a citation, not egress;
+	"egress" is matched as a word.  (prove_red): Seven cases.
+	skills/candor-gate/SKILL.md: Gate 2 names whose door the hold is at;
+	--travel; two falsifiers.
+	* bin/sb1aw, bin/sb1pl, bin/sb1rn: Re-vendored from C4: SB_GAUGE /
+	--gauge 1 4 9 17 for what could not be read (quiet, warn, a line per
+	path with its reason, stop); exits unchanged save the stop.
+	* bin/gd1ck: Runs every self-check a skill carries (tests-*.sh,
+	tests*.py, tests/selftest.sh).  tests/gd1ck-tests.sh: A case.
+	* bin/thread.sh: Index subject escaped; count only NNN-FROM.md;
+	clearsigned messages read (not verified); a message with no header
+	gets its own article; CRLF.  site/threads: Rebuilt.
+	* skills/sandboxer/tests-sig-fresh.py: Short keyring folder when the
+	temp root is deep (gpg-agent's socket path limit).
+	* skills/run-card/tests.sh, skills/color-theory/tests.sh,
+	skills/lens/tests.sh, tests/test_freshen.py, tests/test_thread.py,
+	tests/test_minted_here.py, tests/test_plugin_broad.py: New.
+	* doc/polygram.info: Rebuilt from doc/polygram.texi (makeinfo 7.1).
+	* .c4/examples: New.  Paths and addresses that travel as examples,
+	read by C4's pb1ck.
+	* C4 (its files, for the record): bin/pb1ck (.c4/examples, reserved
+	mail domains read NOTE, a plugin's author e-mail is declared,
+	mail-ok read upward), bin/sb1aw, sb1pl, sb1rn (the gauge),
+	tests/sb-kit-py.py W14, tests/sb-kit-js.mjs L16, tests/
+	sb-falsifiers.txt, h/DESIGN-2026-09-26-secrets-at-the-boundary.md,
+	h/LENS-2026-09-28-always-on-hold-user-freedom.md (new).
+	modelthisbook: CORWIN.md 1.4; 1.3 and its signature at
+	corwin/CORWIN.md.7 and .7.asc.  pub: persona/corwin re-landed by
+	pb2ps --scrub.
+
+2026-09-27  Claude (Cowork, polish toward 0.8.90)  for Corwin  <mplscorwin@gmail.com>
+
+	* bin/rl2bp (start): --note TEXT adds one `note` line to the
+	release file (fresh start, restart or re-mint).  (--prove-red): 10.
+	* polygram/mcp/seatnote.py: New.  One note into Mentat's seat from a
+	shell, through store.Store; $MENTCACHED_SEAT, ~, then $USERPROFILE as
+	msys2/WSL see it; never creates a seat; --where; --prove-red.
+	* polygram/plugin.py (_SERVER_FILES): Ship seatnote.py.
+	* Makefile (dist): NOTE, exported; passed to rl2bp start; offered to
+	the seat after rl2bp finish, never stopping the build.
+	* tests/release-note-tests.sh: New.
+	* polygram/mcp/mentcached.py (seat_append): Explain the missing field.
+	* tests/test_seat_append_messages.py: New.
+	* skills/consent-gate/scripts/verify_consent.sh (iso): GNU date, BSD
+	date, then perl.  (ts): Likewise.  (prove_red): A no-`date -d` case.
+	* bin/sb1aw, bin/sb1pl, bin/sb1rn: Re-vendored from C4 (UNREAD
+	folders; a .git FILE is read).
+	* skills/sandboxer/scripts/validators.py (_validate_py): Bytecode
+	cache in a temporary directory.  skills/rolls/scripts/
+	check_vocab_sync.py: Whole words; annotations from __future__.
+	* skills/release-runbook/tests.sh, skills/sandboxer/tests-validators.sh,
+	skills/sandboxer/tests-sig-fresh.py, skills/ethicsminions/tests.sh,
+	skills/rolls/tests.sh, skills/posix/tests.sh,
+	skills/skill-metrics/tests/test_sh1lib.py: New self-checks.
+	* skills/{release-runbook,sandboxer,ethicsminions,rolls,posix,
+	skill-metrics}/SKILL.md: Name the self-check.
+	* skills/sandboxer/scripts/sig-fresh.sh.asc,
+	skills/instrument-panel/tests/selftest.sh.asc: BAD against their
+	files, no named reader; moved into each skill's .arc as the record.
+	* INSTALL: RELEASE and NOTE; seatnote --where.  NEWS: 0.8.90.
+	* C4 (its files, for the record): bin/sb1aw, sb1pl (UNREAD folders;
+	sb1aw reads a .git file), bin/sb1rn, bin/cl1ck (not checked apart
+	from SEAM), tests/sb-kit-py.py W12 W13, tests/sb-kit-js.mjs L14 L15,
+	tests/sb-falsifiers.txt, h/DESIGN-2026-09-26-secrets-at-the-boundary.md.
+
+2026-09-27  Claude (Cowork, hardening for a second garden)  for Corwin  <mplscorwin@gmail.com>
+
+	Four read-only audits (skills as they travel; the in/out boundary
+	tools; the shipped plugin read as a stranger; the newcomer's path and
+	the tests), then four fix passes on separate files.  Every fix was
+	reproduced first and has a planted mutant that a test catches.
+	Priors: archive/2026-09-27-hardening/, each skill's
+	.arc/2026-09/*-2026-09-27_pre-*, and C4's archive/2026-09/.
+
+	* skills/skill-sign/scripts/skill-sign.sh (cmd_bundle): Refuse
+	symlinks; drop .git .arc __pycache__ from the staged copy; zip -y.
+	Find sb1rn in C4 then the garden bin/, honour SB1RN; no checker stops
+	unless SKILL_SIGN_ACCEPT_SECRET.  (build_manifest): Take root names to
+	skip.  (cmd_verify): Report unlisted root check.sh/SAYS-SO as helpers
+	not covered by the signature, compared with the verifier's copy; say
+	"key not in keyring".  (cmd_sign): Decide "current" by content only.
+	(hash256, need_sha256, fpr_spaced): New.
+	* skills/skill-sign/scripts/check.sh: shasum fallback; --prove-red usage.
+	* skills/skill-sign/scripts/SAYS-SO, SKILL.md: Helpers are unsigned; the
+	real key file, fingerprint and second sources.
+	* tests/skill-sign-roundtrip-tests.sh: New (bundle, unbundle, verify).
+	* bin/release: sha256 fallback; sb1rn in bin/ and SB1RN; no checker
+	stops unless --accept-secret; sign dist/vibrobeast.plugin with the
+	archives, refusing a plugin that names another version.
+	* tests/release-gates-tests.sh: No-checker, garden-bin, sha256, plugin
+	signing and stale-plugin cases; SKIP exits 77.
+	* bin/sb1aw, bin/sb1pl, bin/sb1rn: New, vendored from C4 (equal bytes).
+	* tests/sb-vendored-tests.sh: New; keeps bin/ equal to C4, and checks
+	the vendored copies alone.
+	* Makefile (dist): sb1rn from C4, else bin/; exit 1 and exit 2/3 told
+	apart; no checker refuses to mint.  pb1ck note after the mint.
+	(garden): Skip when sg1ck is absent.
+	* polygram/plugin.py (mint_plugin): Unix zip entries, 0755 for "#!"
+	files; an express manifest for a skill that has none.  (_README):
+	Install, Verify, what it reads and writes; no author paths.
+	* polygram/externs.py (Manifest.triage, Manifest._findings): New.
+	* polygram/cli.py (cmd_doctor): An extern never fetched is a note.
+	(cmd_dist): Name a missing --skills-source.
+	* bin/tp2mt: Check and list the words root; zip entries 0644.
+	* bin/gd1ck: Exit 77 is SKIPPED; the garden leg NOT CHECKED without sg1ck.
+	* tests/boundary-secrets-tests.sh: New.  tests/test_boundary_secrets.rb,
+	tests/freshness-tests.sh, tests/mcp-tests.sh: Exit 77 when they cannot
+	run here.  tests/dc1sv-tests.sh: C4_ROOT for the a11y check; fixtures
+	from tests/fixtures.  tests/test_garden_usage.py,
+	tests/test_skill_sign_noop.py: encoding= (test_bytes_boundary).
+	tests/test_plugin.py, test_dist.py, test_externs_review.py,
+	gd1ck-tests.sh, tp2mt-tests.sh, makefile-c4root-tests.sh: New cases.
+	* README.org, INSTALL, INDEX.md, PROJECT.md, doc/polygram.texi,
+	site/index.html: sh bin/...; no pinned version or test counts; INSTALL
+	gains the source, first-run order, Verify (skills and the .plugin's
+	detached signature) and requirements; keeper-only lines marked.
+	doc/polygram.info not rebuilt (no makeinfo here).
+	* skills/candor-gate/scripts/candor_gate.sh: The egress check ignores
+	the licence footer URL; the engagement check matches broad-firing
+	instructions, not negated mentions.  (prove_red): New.
+	* skills/consent-gate/scripts/verify_consent.sh: G3 hashes the payload
+	without its own payload_sha256 line (a filled record could never
+	pass); a template placeholder reads as not filled; licence header;
+	(prove_red): New, with bound-hash and wrong-hash cases.
+	* skills/consent-gate/references/CONSENT-RECORD-TEMPLATE.md: Say which
+	line the hash leaves out.
+	* skills/boundscheck/scripts/ot1rd, skills/run-card/scripts/rc1rn:
+	New, copied from C4 (the tools those skills run).
+	* skills/writing-forms/scripts/wf-check.sh (prove_red): A fixture
+	register in the temp dir, so it runs without C4.
+	* skills/sandboxer/scripts/safe_write.py, verify.py (selftest): New.
+	* skills/session-rotate/scripts/rotate_session.sh: Licence header.
+	* skills/*/SKILL.md: "How this skill can fail" in 26 skills; keeper
+	paths named by role; a SAVANNAH-absent line in principles and
+	ethicsminions; third-party remarks trimmed in mentat-skill and
+	medley-review; session-rotate no longer triggers on its own read that
+	a session is ending.
+	* skills/two-columns/tests.sh: A neutral name in a fixture.
+	* C4 (its own files, for the record here): bin/sb1aw, sb1pl, sb1rn
+	(UNREAD, exit 2); bin/secret-sweep (NOT checked; no grep -Z);
+	bin/pb1ck (one sb1rn call, binaries named, hash fallback); bin/intake
+	(SHA256SUMS CR and binary mode, binary count, 64-byte terms floor);
+	bin/nm1fl (the edition is its own plugin, no signatures it cannot
+	carry, fresh manifests, Unix zip modes); their tests.  Four test rows
+	a baseline run wrote into evidence/provenance.tsv were removed.
+
+2026-09-27  Claude (Cowork, lens family)  for Corwin  <mplscorwin@gmail.com>
+
+	* skills/lens/scripts/doubled_nine.py (new): the doubled-nine kit, grown
+	from c4 writing/two-readers/arms/.  Reproduces that experiment's
+	measure-output.json (both runs), posthoc-views output, and its
+	decision counts (cross 8/16, within 4/6 and 4/6).  selftest 12,
+	--prove-red plants a floorless excess and an unseeded draw.
+	* skills/lens/SKILL.md: "Optional: the doubled-nine mode"; portability
+	clause says the mode travels with its kit.  CLAUD_QA_HOLD.md: QA-10
+	promoted on his word, moved to Resolved.
+	* Makefile (dist): the sb1rn secrets scan is the first command, before
+	rl2bp start; a hit stops the build.  Applied from
+	Makefile-dist-secrets.patch (now in archive/2026-09-27-lens-family/, with
+	the prior Makefile).  tests/test_boundary_secrets.rb 17/17 (was 15/17,
+	B5 red), --prove-red OK.  Scan of what ships: clean, 591 read, 3 allowed.
+	* skills/lens/scripts/lens.py: the run joins a reading's identity (was
+	(subject_sha, model, view), so a rerun replaced the first reading);
+	--run N corrects one run; converge prints SPLIT-WITHIN / STEADY / ONE-RUN
+	beside CONVERGE / DIVERGE; a lens.tsv without the run column reads as
+	run 1.  selftest 17 checks, selftest --prove-red plants the old identity.
+	Receipt: c4 writing/second-user/lens-rerun-probe.sh case 1 printed
+	CONVERGE, now DIVERGE + SPLIT-WITHIN.
+	* skills/lens/SKILL.md: "Two parties in the room, and when the answer is
+	a choice"; "Reruns count" in the script section; trigger "weigh two
+	people's views"; two falsifiers.  Per his second-user-D5 and
+	two-readers-D5 (both A).
+	* skills/eclipse-pass/SKILL.md: move 3 reruns a diverging bias before
+	reading a divergence as an unstable claim; a falsifier that would drop it.
+	* skills/skilltank/scripts/scan_candidates.py: extensionless text notes
+	are read and skipped files are counted; --titles; --prove-red.
+	selftest 16.  references/stopwords: fact, facts.
+	* skills/skilltank/SKILL.md: the options, the sharper noise falsifier;
+	the desk "records" rather than "adjudicates" (his rings-D1).
+	* skills/writing-forms/SKILL.md: technique 5, his words (his
+	execute-brief-lens-D5 = A, quoted verbatim).
+	* CLAUD_QA_HOLD.md: QA-10, the doubled-nine kit on HOLD with its promote
+	trigger; a labelled reading of the desk under rings-D1 beside its header.
+	Priors: each skill's .arc/2026-09/*-2026-09-27_pre-lens-family*, and
+	archive/2026-09-27-lens-family/ for the three root files.
+
+2026-09-25  Claude (Cowork, skill fixes)  for Corwin  <mplscorwin@gmail.com>
+
+	* skills/shell-tooling, skills/project-memory: retired to .arc/skills/, carrying out
+	receipts D-1 and D-2 of REMOVAL-PASS-2026-08-17.md; REJECT rows in advice/ so the gate
+	does not re-synthesize them.
+	* skills/session-rotate/scripts/rotate_session.sh: the bump now replaces vN only as a whole
+	token (v1 no longer matches inside v13), moves "prior vN" along with it, and names the
+	snapshot actually written; tests/session-rotate-tests.sh (7, prove-red).  Express manifest
+	written; the old signature is parked in the skill's .arc (re-sign to restore tier 2).
+	* polygram/mcp/persona.py: persona_list reports a SPLIT when one file name serves under two
+	names (a stale twin of a renamed sheet); a sheet with no heading takes its first H1 as
+	title.  3 tests.
+
+2026-09-12  Claude (Cowork, push-readiness pass)  for Corwin  <mplscorwin@gmail.com>
+
+	* bin/gt1sp (new, unsigned): GIT TRANSPORT run1 SHIP PUSH -- one step from
+	a clean tree to a pushed commit.  Two guards that REFUSE (a present
+	.git/index.lock; being run against the sandbox mount, per
+	memory/git-fails-on-windows-mount) and four reports that never refuse
+	(stale detached signatures; untracked files naming an individual
+	memory/sharing-policy calls check-first; `make check`; the tests/*.sh
+	harnesses), then add/commit/push and a transport receipt appended to
+	h/TRANSPORT.log -- GIT-TRANSPORT-AREA inferred need (ii), kept by the
+	keeper 2026-08-17.  `--check` prints the three plain-git commands and
+	changes nothing; `--prove-red` 7/7 in a scratch repo.  The bend is named
+	in the header per A3 [UNUSUAL]: plain git is untouched, no alias, no hook.
+	* skills/ECE77CF417C76C1ACFCE7C2B5B6135511580F007.asc: RESTORED from HEAD
+	(3817 bytes, byte-identical).  The pinned public key was deleted from the
+	working tree, and unlike everything else the 2026-09-11 garden sweep
+	retired, no archived copy exists anywhere on the two mounts -- only git
+	had it.  Committing the deletion would have shipped a signed tree whose
+	signatures no reader could check.  Found because a fresh sandbox keyring
+	made `skill-sign verify` short-circuit to SIGNATURE FAILED on all 44
+	skills; importing the key from HEAD turned that into 44/44 Good.
+	* .gitignore: two entries so a single `git add -A` is safe -- `Claude
+	outputs/` (Claude Desktop's per-turn spill; measured 14 of 22 files
+	byte-duplicates of h/, 5 SKILL.md drafts either identical to the garden
+	copy or already archived pre-edit states, and the 3 with no other home
+	copied into h/ first) and `.pytest_cache/`.  Nothing deleted; the
+	directory stays on disk, untracked.  Pre-edit copy .arc/2026-09/
+	.gitignore-2026-09-12_Archived-by-... (sha16 91c7b3ee544e6aec).
+	`.gitignore.asc` stale until re-signed -- SIGN-QUEUE row 34.
+	* h/SEALED-2026-09-09-hypothesis-vibrobeast-arm.md (rescued): the sealed
+	plaintext, whose own receipt (h/SEAL-2026-09-09-hypothesis-vibrobeast
+	.sha256) says "the plaintext is NOT on disk", was in fact sitting in the
+	untracked spill directory.  Copied beside its receipt and re-verified:
+	sha256 201fffdf7f37f1ae... matches the seal exactly.  The receipt is left
+	as written -- it was true when sealed, and it is the record.  Also rescued:
+	h/PROMPT-2026-09-09-works-wave0-wave1.md, h/RECIPE-2026-09-11-pub.org.
+	* memory/corwin-legacy-2026-08-30.md: trailing newline added; it was the
+	one NOTICE in the ethicsminions guard report (possible truncation).  Guard
+	now reads RISK 0 notices except that one cleared; drift PASS (all three
+	attestations present -- o48's falsifier is green).
+	* memory/sandbox-ephemeral-per-session.md: two fingerprints from this
+	session -- the first `git status` of a sandbox session leaves a
+	.git/index.lock the mount will not let anyone unlink (harmless for reads,
+	fatal for the keeper's next `git add`), and an empty sandbox keyring makes
+	`skill-sign verify` cry SIGNATURE FAILED before it ever reports tree drift.
+	The untested cure for the first (`git --no-optional-locks status` as the
+	session's first git call) is written down WITH its falsifier, not as a
+	claim: proving it needs the lock gone first, and this seat cannot delete.
+	* h/PUSH-2026-09-12-commit-msg.txt (new): the commit message for the
+	2026-08-17..2026-09-12 catch-up, ready for `git commit -F`.
+	* Measured green at this commit, all from this session's own runs:
+	`make check` 100/100; nine tests/*.sh harnesses 166/166; `make garden`
+	SAME 44, DRIFT 0, INSTALLED-ONLY 0, STRAY 0, MINT 0; `skill-sign verify`
+	44/44 Good against the pinned key; `skill-lint` 44/44 ok.
+
+2026-09-12  Claude (Cowork, C4_ROOT sandbox-portability fix)  for Corwin  <mplscorwin@gmail.com>
+
+	* Makefile: C4_ROOT changed from a plain `=` to
+	`?= $(if $(wildcard /f/claude/c4/.),/f/claude/c4,$(HOME)/mnt/c4)` (SIGN-QUEUE
+	row 33) -- his own next-steps note that the hard-coded host-only default
+	kills every sandboxed session's first `make garden`. Prefers the real host
+	path when present, falls back to a mounted sandbox copy otherwise; either an
+	environment variable or the existing command-line override still wins over
+	both (was `=`, silently ignoring the environment; now `?=`). Verified against
+	the live Makefile in all four cases, including a sed-substituted copy
+	standing in for the real host path. `make check` (100 tests) unaffected.
+	* tests/makefile-c4root-tests.sh (new): 4/4, --prove-red clean. Proves the
+	auto-detect and both override forms against the live Makefile, not a
+	reimplementation.
+	* README.org: new "* Makefile targets" section documenting check/dist/garden/
+	skills/info/clean, the C4_ROOT auto-detect, both override forms, and the new
+	test; qualifies (does not delete) the old "supersedes a hand-rolled packaging
+	Makefile" line -- true for plain packaging, not for the cross-tree `garden`
+	gauge, which bin/polygram has no equivalent for.
+	* Pre-edit copies archived via aw2ri (temporarily reverted, archived,
+	restored, since both files already carried unrelated uncommitted changes
+	from earlier this session): .arc/2026-09/Makefile-2026-09-12_Archived-by-...
+	(sha16 de29e6442e7c811f), .arc/2026-09/README-2026-09-12_Archived-by-....org
+	(sha16 54f0bacc2e8c0f5d). .asc stale on both until re-signed.
+
+2026-09-12  Claude (Cowork, eclipse_pass.sh race-condition fix)  for Corwin  <mplscorwin@gmail.com>
+
+	* skills/eclipse-pass/scripts/eclipse_pass.sh: fixed the TOCTOU race in the
+	increment-dir collision guard found by the QA-stresstest matrix's Lane A1
+	(SIGN-QUEUE row 32). check-then-act (`[ -e ] then mkdir -p`) replaced with a
+	bare `mkdir` retry loop (POSIX-atomic). New tests/eclipse-pass-tests.sh
+	(13/13, --prove-red clean); its concurrency test proves the bug empirically:
+	20 real concurrent arms landed in 3 directories on the pre-patch script, 20
+	distinct directories on the patched one. Pre-edit copy archived via aw2ri
+	(skills/eclipse-pass/.arc/2026-09/, sha16 794f6fc5bae8d412). Correction noted
+	in the same SIGN-QUEUE row: a first-drafted hash for the new file was
+	typed before sha256sum actually ran and was wrong; caught and fixed before
+	handback, not after. .asc/.skill-manifest stale until re-signed; make dist
+	owed after.
+
+2026-09-12  Claude (Cowork, QA-stresstest turn: persona + 16-agent matrix)  for Corwin  <mplscorwin@gmail.com>
+
+	* pub/method/h/PENUMBRA.md, PENUMBRA.tsv (new): a persona sheet built from the
+	real, un-re-rolled rf1bm fate roll (pub/method/.task/h/roll-1.json,
+	roll-1-badguy.json); cs1gk-gauged clean (OK 17, WARN 0, FAULT 0). Registered
+	in PERSONA-CORPUS.md as held, not harvested.
+	* PERSONA-CORPUS.md: one line added under "Sheets registered" for the above.
+	* pub/method/sonnet-win-qa-stresstest-2026-09-12.md,
+	phase4-verification-2026-09-12.md (new): the win-story and verification pass
+	for a 16-agent, 4-lane sub-agent matrix run against the eclipse-pass
+	multi-arm ENHANCE and the new persona. Real finding, unpatched, routed for
+	his call: scripts/eclipse_pass.sh's increment-dir collision guard is
+	check-then-act, not atomic (two same-second arms can share a directory);
+	concrete fix written up, not applied. No signed file touched this turn.
+	* memory/qa-stresstest-persona-matrix-2026-09-12.md (new): durable MEMORY
+	note, reusable pattern = verify the verifiers (a matrix lane that re-applies
+	the house's own concern-tag convention to the other lanes' own findings, as
+	an inter-rater check) plus keep-the-mistake-in-the-record.
+
+2026-09-11  Claude (Cowork, description-length repair turn, pass 2)  for Corwin  <mplscorwin@gmail.com>
+
+	* skills/release-runbook/SKILL.md: description converted plain-scalar ->
+	block scalar (`>`); fixes a real YAML parse failure (bare "discipline):
+	"cut a release"" colon-space, confirmed with PyYAML as a second reader)
+	that predates this edit. Same 844 chars, verbatim. SIGN-QUEUE 31, .asc
+	stale until re-signed.
+	* skills/foaf/SKILL.md, skills/instrument-panel/SKILL.md,
+	skills/token-optimizer/SKILL.md: same YAML-colon fault as above, same
+	fix, unsigned mints -- body untouched, diff-confirmed.
+	* skills/emacs-tashaki/SKILL.md, skills/hand-test/SKILL.md,
+	skills/reformat-prompt/SKILL.md: different fault -- quoted name:/
+	description: defeated skill-lint.sh's bare-string L2 name check.
+	Round-tripped through PyYAML to clean name:/description: >  form;
+	embedded escaped quotes resolved correctly by the parser, not by hand.
+	* Full garden sweep (skill-lint.sh + PyYAML, 44 skills): zero frontmatter
+	faults remain of either kind.
+
+2026-09-11  Claude (Cowork, description-length repair turn)  for Corwin  <mplscorwin@gmail.com>
+
+	* skills/sandboxer/SKILL.md: description slimmed 1369 -> 985/1024 chars
+	(load limit; the row-20 extension had pushed it over). Trigger phrases
+	verbatim; body untouched. SIGN-QUEUE 30, .asc stale until re-signed.
+	* skills/pencil-your-own/SKILL.md: description slimmed 1321 -> 955/1024
+	chars. Unsigned mint; body untouched, tests.sh 10/10.
+	* skills/pocket-mentat/SKILL.md: description slimmed 1212 -> 978/1024
+	chars. Unsigned mint; body untouched, tests.sh 13/13.
+	* skills/countable-gauge/SKILL.md, skills/fortress-palace/SKILL.md: same
+	fault, same mint batch, found by sweeping the whole garden while fixing
+	the three he named -- not named by him. Slimmed 1151->976 and
+	1185->992/1024 respectively; tests.sh 16/16 and 9/9.
+	* Full skill-lint.sh sweep across skills/: zero L4 failures remain.
+	Three unrelated L2 (name-mismatch) faults untouched: emacs-tashaki,
+	hand-test, reformat-prompt -- named in SIGN-QUEUE, not fixed.
+	* make dist not run this turn -- his own next step, per his instruction.
+
+2026-09-11  Claude (Cowork, eclipse-pass ENHANCE turn)  for Corwin  <mplscorwin@gmail.com>
+
+	* skills/eclipse-pass/SKILL.md: folded the routed ENHANCE draft
+	c4/dist/skills/eclipse-pass-ENHANCE-multiarm-draft.md (skilltank verdict
+	2026-07-27) into move 3 as new item 3b, Multi-arm mode: arm-marking,
+	disjoint seeds, CONTRAST-doc-after-not-before, environment-delta
+	receipts, guest etiquette to skilltank; one new falsifier. No script
+	change -- eclipse_pass.sh's increment-dir auto-suffix already satisfies
+	the draft's no-clobber claim. skill-lint.sh: description 993/1024
+	chars, clean. .asc stale until re-signed (SIGN-QUEUE 29).
+	* dist/: whole garden reminted via `make dist` (58 skills; unrelated to
+	this edit, his standing --all-installed behavior).
+
+2026-09-11  Claude (Fable, Cowork on1gw turn)  for Corwin  <mplscorwin@gmail.com>
+
+	* polygram/dist.py (collect): new include_workspace= and names= keywords
+	so a mint can be scoped to the --skills-source roots alone, or to named
+	skills; default unchanged (workspace + family-filtered installed). Fixes
+	o36 / memory/c4-forge-mint-2026-09-04.md:28 (21 workspace skills swept
+	into skills/dist-2026-09-04/ on a mint meant for a few new ones).
+	* polygram/cli.py (dist): --sources-only, --only NAME (repeatable);
+	--sources-only with no source is exit 2; an --only name found in no
+	root is exit 1 and named.
+	* tests/test_dist.py: 3 tests (sources-only skips workspace; --only
+	scopes every root and outranks the family allowlist; default unchanged).
+	39/39 on Avalon, python3 -m unittest tests.test_dist.
+	* skills/color-theory/tool.py (audit): '#rrggbb' lines were read as
+	comments, so an audit of hex pairs passed over nothing (exit 0, no
+	output). Comment is now '#'+whitespace only; `selftest` subcommand
+	proves the mutant. .skill-manifest row stale until re-signed
+	(SIGN-QUEUE 15).
+	* h/lens.py (import-json): a reading's declared subject_sha is now
+	compared to the pin; mismatch is REFUSED and receipted, undeclared is
+	accepted and receipted as declared=none; `selftest` proves it. Before,
+	the pin's sha was stamped over every import (o12 / queue Q12).
+
+2026-07-05  Corwin  <mplscorwin@gmail.com>  (w/ wide fingers &Mentat/Cowork)
+
+	* release fresh vibes - 19 locally hatched/free range farm fed skils
+	* skills/*/{.skill-manifest,.signature.asc}: per-skill provenance
+	LIVE — all 13 curated trees signed in place via skill-sign.sh (QA-7
+	whole-tree scheme: sha256 every file, SKILL.md canonicalized, pinned
+	ECE77CF417C76C1ACFCE7C2B5B6135511580F007). Verified 13/13 valid, 2/2
+	independent: keeper bench (Avalon 13:59 CDT) + instrument through the
+	freshened mount. A standing verify now answers "is this really mine?"
+	per skill, not just per release.
+	* skills/color-theory/.signature.asc: legacy lone signature (pre-QA-7,
+	no manifest) superseded by the manifest scheme.
+	* claud-qa-hold/QA-10-skilltank-0.6.1-remint.md: new — the 0.6.0
+	skilltank .skill bundle carried STALE pre-release bytes (mint-time
+	mount-reader fault, not tamper: installed==bundle==MANIFEST all held
+	the 06-29 text while workspace==git HEAD held the reading-room text).
+	Core closed same day by the in-place tree signing above; 0.6.1 mint
+	carries the fix. Lesson pinned: certification sweeps hash git objects
+	or file-tool reads, NEVER the bash mount; mint from a git-clean tree.
+	* gated/core-ethics-pack-2026-06-29.tgz: found corrupt (gzip CRC,
+	confirmed independently keeper-side and sandbox-side). Excluded as a
+	fill source; awaits regrow from backup. Nothing depended on it.
+	* model.md: revision-history table noted truncated at v4 (dangling
+	pipe, carried in snapshots since >=07-02); repair rides next rotation.
+	* NEWS, polygram/__init__.py: 0.6.1.
+
+2026-07-04  Corwin  <mplscorwin@gmail.com>  (with Mentat/Cowork)
+
+	* polygram/gate.py (past_rejects, apply_durable_rejects): REJECT is
+	durable — the advice history is the ledger, latest terminal decision
+	(PASS/REJECT) per label wins, HOLD never overrides; a re-surfaced
+	rejected candidate lands HOLD with the history named; review
+	--promote (a later PASS) is the one way through. Wired into cmd_gate,
+	cmd_synth, review.build. Closes the "concise came back" gap.
+	* tests/test_durable_reject.py: new — 6 tests incl. the
+	HOLD-must-not-erase-the-ledger case. 76 total.
+	* labels.tsv: new — pinned label registry (label/meaning/owner/
+	consumer/since); rule: no consumer, no label. GRAMMARY.md gained the
+	LABELS section as the human truth the tsv must agree with.
+	* skills/ethicsminions/references/attestations.txt: new — arms the
+	minions --expect drift check (was SKIPping since birth); pins stable
+	blessed-principle phrases; canon remains SAVANNAH.
+	* skills/ethicsminions/scripts/check_principles.py: notes() layout
+	patch STAGED at claud-qa-hold/ (QA-9) — file write-denied from the
+	sandbox; land from host.
+	* skills/skill-sign: adopted (QA-7, Haiku lineage) — whole-tree
+	manifest signing, pinned verify, dotfile-safe bundles, zip-slip guard.
+	* skills/security-digest: adopted (QA-8) — Haiku's digest + "Report,
+	never act" autonomy line.
+	* skills/ethicsminions/references/AI_GUARD_PROVENANCE_CLAUDE.md:
+	QA-5 landed (rider satisfied; Corwin present and initiating).
+
+2026-07-02  Corwin  <mplscorwin@gmail.com>  (with Mentat/Cowork)
+
+	* bin/release: new — host-run release turnaround (gate: clean tree,
+	artifacts, MANIFEST stray-free, NEWS entry, tests, tag-free; then
+	sign/tag with --apply, Forgejo release + assets with --push).
+	Dry-run default; token via $FORGEJO_TOKEN only.
+	* skills/{sandboxer,session-rotate,skilltank}: fold installed reality
+	back into the curation of record — sandboxer gains the read-side
+	desync section; session-rotate ships rotate_session.sh (rotate.py
+	retired); skilltank drops the renounced torture dialect, torture.py,
+	and the consent_gate.py absorbed by the consent-gate skill. Repo had
+	lagged the live skills; 0.5.4 shipped the stale trio. Next mint
+	(0.5.5, curation-only) carries the current set.
+
+2026-07-02  Corwin  <mplscorwin@gmail.com>  (with Mentat/Cowork)
+
+	* polygram 0.5.4 (respin: 0.5.3 shipped mint residue, no leak)
+	* polygram/dist.py (_is_tmp_stray, _is_junk): filter sed -i mkstemp
+	strays (digit/uppercase suffix guard vs real words), vim swaps,
+	emacs lockfiles. Root cause of sedx44W4d in the 0.5.3 archives.
+	* polygram/cli.py (dist): --version accepted as alias for
+	--dist-version (argparse scopes it to the subcommand).
+	* polygram/dist.py (_rel): replace Path.relative_to with an
+	os.path.relpath helper — mingw/msys Python 3.14 hands pathlib
+	mixed separators (skills\name/SKILL.md) and relative_to refuses
+	them; relpath normalizes, so host and sandbox mint identically.
+	* polygram/__init__.py: 0.5.4.
+	* tests/test_dist.py: stray unit + bundle coverage incl.
+	false-positive check ("sediments" ships); dist --version parse test.
+
+2026-07-02  Corwin  <mplscorwin@gmail.com>  (with Mentat/Cowork)
+
+	* polygram 0.5.3 (curation-only)
+	* skills/principles: new — frozen PRINCIPLES v1.0 (blessed statement).
+	* skills/ethicsminions/SKILL.md: description spelling fixes.
+	* skills/ethicsminions/SKILL.md: slim description 1023 -> 747 chars
+	(1024 load limit); trigger phrases verbatim; body untouched. PMO #82
+	closed, #94 executed; remint held for #91 (advice 20260702-034933).
+
+2026-06-27  Corwin  <mplscorwin@gmail.com>  (with Mentat/Cowork)
+
+	* polygram 0.5.2
+	* polygram/cli.py (_default_skills_sources): read $POLYGRAM_SKILLS_SOURCE
+	when --skills-source is omitted.
+	* polygram/review.py (build): externs feed candidates only via their
+	own memory/ notes, not arbitrary repo docs.
+	* polygram/memory.py (_is_noise_tag): drop hex-colour tokens (e.g.
+	ffcc00) from candidate generation.
+	* polygram/dist.py: per-skill .skill bundle minting + shared junk filter.
+	* skills/: folded in mentat-skill, ethicsminions, sandboxer, skilltank;
+	shipped color-theory (WCAG contrast tool); removed QC-rejected
+	concise/ffcc00.
+	* GNU packaging: COPYING, AUTHORS, NEWS, ChangeLog, INSTALL, README.org,
+	doc/polygram.texi, site/index.html, model.md.
+
+	See NEWS for the user-visible summary and git history for detail.

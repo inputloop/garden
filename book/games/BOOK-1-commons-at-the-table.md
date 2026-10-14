@@ -1,0 +1,684 @@
+<!-- GB:book title="The Commons at the Table" author="Kirra Vanth" -->
+
+# The Commons at the Table
+
+*A game about who the rules belong to.*
+
+by Kirra Vanth · edited by Henriette Solberg-Maas
+
+---
+
+## Before the rules: one throw, and what it cost
+
+Reya has been at the Institute sixteen years. Her Standing is 16, which sounds like safety and is not.
+
+They want a safety review skipped so a migration lands on the announced date, and they have come to her
+because when she speaks the room moves. She rolls a twenty-sided die to find out whether she is allowed
+to refuse for nothing.
+
+She rolls 11. Under her Standing. She can still refuse — she can always refuse — but now it costs her
+the thing she wrote on her sheet at the start, when it was cheap to be honest: *Tobi, second year, who
+asks me things he could look up because he wants the conversation.*
+
+She refuses. Within the week Tobi is moved to a team that will not teach him anything, and the Institute
+is careful to make it look unrelated, and Reya cannot prove otherwise.
+
+Three weeks later the migration fails exactly as she said it would.
+
+That is the game. Everything after this page is the machinery that produced those four sentences, and if
+you would rather just play, the machinery is nine dice long.
+
+---
+
+## The whole game in one page
+
+Everyone at the table makes a person. Each person belongs to a **Side**, and every Side is lying about
+something — not wickedly, usually, just the ordinary institutional way, where what a body says it is for
+and what it actually protects have drifted apart. The gap between those two things is called the **Seam**.
+
+Play happens in the Seam.
+
+You roll two kinds of dice and they mean opposite things.
+
+<!-- GB:box kind=rule -->
+**Competence is 3d6.** What you can do is bell-shaped, because people are mostly average and
+occasionally not. Roll 3d6, add the relevant Aptitude, meet the Difficulty.
+
+**Allegiance is d20.** Where you stand is flat, because nothing about loyalty is reliable. Roll d20
+against your Standing.
+<!-- GB:endbox -->
+
+That is the argument of this book, stated as dice before it is stated as prose. Skill has a shape.
+Belonging does not.
+
+When your Side asks you for something that costs you, you test Allegiance. If you can refuse, you refuse
+for free. If you cannot, refusing costs you your **Price** — which you wrote down at the start, in your
+own handwriting, when it was cheap to be honest.
+
+You may leave. Leaving is a legal move with a published cost, not a betrayal the rules punish. This is
+the part of the game I care most about and we will get to it properly.
+
+---
+
+## What you need
+
+Polyhedral dice: one d20 and three d6. That is the whole list, and every rule in this book uses one of
+them. Paper. This book. Two to five players and one person running it,
+or four players and no one running it, which works and is described at the back.
+
+Nothing in this book requires colour vision, a screen, an account, or a second purchase. Where I use
+emphasis I use words.
+
+---
+
+## Part one · The two throws
+
+### Competence: 3d6 + Aptitude vs Difficulty
+
+Three six-siders make a hill. Ten and eleven sit at the top of it and the ends are thin. That is what
+ability is like: most people, most days, are ordinary, and the remarkable is rare in both directions.
+
+The Difficulty ladder climbs in threes, and you should memorise it, because it is the only ladder in the
+book.
+
+| Difficulty | Called | Raw 3d6 needed with Aptitude 3 | Chance |
+|---|---|---|---|
+| 9 | trivial | 6 or better | 206 in 216 |
+| 12 | ordinary | 9 or better | 160 in 216 |
+| 15 | hard | 12 or better | 81 in 216 |
+| 18 | severe | 15 or better | 20 in 216 |
+| 21 | forlorn | 18 exactly | 1 in 216 |
+
+<!-- GB:claim dice="3d6" pattern=">=6" odds="206/216" -->
+<!-- GB:claim dice="3d6" pattern=">=9" odds="160/216" -->
+<!-- GB:claim dice="3d6" pattern=">=12" odds="81/216" -->
+<!-- GB:claim dice="3d6" pattern=">=15" odds="20/216" -->
+<!-- GB:claim dice="3d6" pattern=">=18" odds="1/216" -->
+
+Every one of those five numbers was counted, not estimated. I have printed them because a game that
+hides its odds is asking you to trust it, and this is a book about not doing that.
+
+**Choosing a Difficulty** is the thing you will do most often, so here is the rule, and it is short.
+Ask: *who could do this?*
+
+- Anyone who turned up — **9**.
+- Someone trained for it, on an ordinary day — **12**.
+- Someone trained for it, with something going wrong — **15**.
+- Someone at the top of the trade, on their best day — **18**.
+- Nobody, really — **21**, and say so out loud before they roll.
+
+If you cannot decide between two rungs, take the lower one. A game where the referee drifts upward is a
+game where Aptitude stops meaning anything, and the whole point of a bell is that it only reads true if
+the target sits still.
+
+Note what the ladder does. Between *ordinary* and *hard* the chance falls from about three in four to
+about three in eight — it halves across one step. Between *hard* and *severe* it falls by a factor of
+four. The hill is steep at the edges. A person with a good Aptitude is not a person who succeeds at hard
+things reliably; they are a person for whom hard things have become ordinary, which is a different and
+smaller claim.
+
+### Allegiance: d20 against Standing
+
+A twenty-sided die is flat. Every face is one in twenty and no face is likelier than another, which is
+the correct model for the question *will this institution's claim on me hold today.*
+
+Your **Standing** is a number from 1 to 20: how embedded you are in your Side. Roll d20 when the Side
+asks something that costs you.
+
+<!-- GB:box kind=rule -->
+**Roll over your Standing** and you may refuse freely. Nothing follows.
+**Roll at or under your Standing** and refusal costs you your Price.
+**A natural 20 always frees you. A natural 1 always binds you.** Standing does not matter on either.
+<!-- GB:endbox -->
+
+Read that carefully, because it runs backwards from what people expect. **High Standing is not
+protection. High Standing is a hook.** The more embedded you are, the less often you can simply say no.
+The senior person is the trapped one. The new hire can walk.
+
+| Your Standing | Chance you may refuse freely |
+|---|---|
+| 5 | 15 in 20 |
+| 10 | 10 in 20 |
+| 15 | 5 in 20 |
+| 19 | 1 in 20 |
+
+<!-- GB:claim dice="d20" pattern=">5" odds="15/20" -->
+<!-- GB:claim dice="d20" pattern=">10" odds="10/20" -->
+<!-- GB:claim dice="d20" pattern=">15" odds="5/20" -->
+<!-- GB:claim dice="d20" pattern=">19" odds="1/20" -->
+<!-- GB:claim dice="d20" pattern="=20" odds="1/20" -->
+<!-- GB:claim dice="d20" pattern="=1" odds="1/20" -->
+
+Standing 20 would mean you could never refuse anything, and the game does not let you get there: Standing
+caps at 19, and the one face that still frees you is the twenty. There is always a door. It is one in
+twenty wide.
+
+**Reya, at this point.** Both throws are already in the woman from the first page, and they point in
+opposite directions. Her Weight is 6 — the top of the Aptitude range, the bell curve's far edge, a thing
+she earned. Her Standing is 16 — high on a flat line, a thing that was done to her by sixteen years of
+being useful. One number says *the room listens*. The other says *the room is counting on it*. She has
+spent her whole career being told those are the same number.
+
+They are not, and this book is 3d6 and a d20 because they are not.
+
+---
+
+## Part two · Making a person
+
+### The four Aptitudes
+
+Roll 3d6 for each, in this order, and read the band. You do not arrange them. You got what you got.
+
+- **Reach** — can you get to the thing, the room, the person?
+- **Craft** — can you actually do it once you are there?
+- **Read** — can you tell what is really going on?
+- **Weight** — will people move because you asked?
+
+Then one more 3d6, read on the same band table, for **Footing** — what you would live on if the Side
+stopped paying you tomorrow. It is not an Aptitude and it is not spent. See Part four.
+
+<!-- GB:table id=bands dice=3d6 kind=band -->
+
+| 3d6 | Band | of 216 | What it means |
+|---|---|---|---|
+| 3–6 | 1 | 20 | a liability you work around |
+| 7–8 | 2 | 36 | below what the work needs |
+| 9–10 | 3 | 52 | ordinary — which is most people |
+| 11–12 | 4 | 52 | good; people notice |
+| 13–14 | 5 | 36 | rare; people send for you |
+| 15–18 | 6 | 20 | one of the few; it defines you |
+
+<!-- GB:claim dice="3d6" pattern="<=6" odds="20/216" -->
+<!-- GB:claim dice="3d6" pattern="<=8" odds="56/216" -->
+<!-- GB:claim dice="3d6" pattern="<=10" odds="108/216" -->
+<!-- GB:claim dice="3d6" pattern="<=12" odds="160/216" -->
+<!-- GB:claim dice="3d6" pattern="<=14" odds="196/216" -->
+
+The bands are symmetric: as many people are hopeless at a thing as are superb at it, and half of everyone
+sits in the middle two rows. The cumulative column above says so exactly — 108 of 216 is precisely half,
+which is the tidiest fact in this book and the only one I did not have to argue for.
+
+### Your Calling
+
+One d6. What you are for, which is not the same as what you are employed at.
+
+| d6 | Calling | The person who |
+|---|---|---|
+| 1 | making | builds the thing that was not there |
+| 2 | keeping | maintains what everyone forgot needs it |
+| 3 | judging | says which of two accounts is true |
+| 4 | teaching | makes someone able to do it without you |
+| 5 | guarding | stands where the harm would come through |
+| 6 | knowing | finds out, and will not stop finding out |
+
+### Your Side, and your Standing in it
+
+**The table rolls one Side, together, before anyone makes a person.** One Charter, one Hold, one Seam, on
+one card in the middle of the table. Everybody's character belongs to it. That is the default and it is
+what the rest of this book assumes.
+
+You *can* run a table where each player rolls their own Side. It is a different and slower game — every
+scene has to establish which institution is in the room — and I would not start there. If you do it, roll
+the Seams first and find the one place all of them touch, and set the campaign there.
+
+Then roll **Standing: d20, rerolling 20**, so Standing is 1 to 19.
+
+If you are joining a Side during play rather than starting in one, your Standing begins at **d6**. You
+are new. That is not an insult; look again at what Standing does.
+
+### Your Price
+
+Roll it on the Price table — d6 down, d6 across, first die down — and then, before anyone else speaks,
+**write it in your own words.** The table gives you the shape; you give it the specifics, and the
+specifics are the only part that will ever hurt.
+
+<!-- GB:box kind=example -->
+The table says **"a person who vouched for you."** You write: *Adaeze, who put her name on my
+application and has never once mentioned it.* Now it is a Price.
+<!-- GB:endbox -->
+
+You pay your Price when you fail an Allegiance test and refuse anyway, and when you defect. You pay it
+once. After that it is gone and you write a new one, which will be worse, because you have less left.
+
+**Reya, at this point.** Rolled in order and not adjusted: Reach 9, band 3. Craft 14, band 5. Read 7,
+band 2. Weight 17, band 6. She can move a room and she cannot tell what is happening in it — a superb
+persuader who misreads people. Nobody designed that. I did not sit down to write a character with an
+irony in her; three dice did it in about four seconds, and it is better than what I would have chosen.
+
+Her Price, rolled 4 then 3, came up *someone you were teaching.* She had to write a name. She wrote
+**Tobi, second year, who asks me things he could look up because he wants the conversation** — which is
+more than the table asked for, and which is what the table is for.
+
+---
+
+## Part three · The Side
+
+A Side is three things: what it says it is for, what it actually protects, and the gap.
+
+### The Charter — what it says it is for
+
+Roll d20.
+
+| d20 | The Charter says |
+|---|---|
+| 1 | to keep the knowledge free for anyone who wants it |
+| 2 | to pay the people who make the work |
+| 3 | to make sure the thing still runs in fifty years |
+| 4 | to hold the standard so the parts fit |
+| 5 | to defend the small against the large |
+| 6 | to settle disputes without ruin |
+| 7 | to teach whoever shows up |
+| 8 | to preserve the record exactly as it was |
+| 9 | to get the goods where they are needed |
+| 10 | to decide fairly who gets the scarce thing |
+| 11 | to open what was closed |
+| 12 | to close what should not have been opened |
+| 13 | to speak for those not in the room |
+| 14 | to test the claim before anyone believes it |
+| 15 | to keep the lights on, plainly, without drama |
+| 16 | to repair what others abandoned |
+| 17 | to find the next thing before anyone else does |
+| 18 | to remember the harm so it is not repeated |
+| 19 | to make the work beautiful as well as correct |
+| 20 | to be the place people can come back to |
+
+### The Hold — what it actually protects
+
+Roll d20 again. If you roll the same number twice, roll once more; a Side whose charter and hold agree
+exactly is not impossible but it is not this game.
+
+| d20 | The Hold protects |
+|---|---|
+| 1 | the founder's account of the founding |
+| 2 | a revenue line nobody is allowed to name |
+| 3 | the seniority of the people who have been there longest |
+| 4 | a technical decision that can no longer be revisited |
+| 5 | one relationship with one outside party |
+| 6 | the appearance of never having been wrong |
+| 7 | a building |
+| 8 | the right to be the ones who say what counts |
+| 9 | a backlog of favours owed in both directions |
+| 10 | the comfort of the people who do the reviewing |
+| 11 | a licence, and what the licence lets them do later |
+| 12 | the distinction between members and everyone else |
+| 13 | a pace of work that suits the slowest necessary person |
+| 14 | the absence of a written rule about a specific thing |
+| 15 | a person who should have been asked to leave |
+| 16 | the archive's completeness, over anyone's wish to be forgotten |
+| 17 | the ability to move faster than consultation allows |
+| 18 | a debt of gratitude to someone dead |
+| 19 | the standard *as they wrote it*, above the standard working |
+| 20 | the possibility of being bought |
+
+### The Seam
+
+Set the Charter and the Hold side by side and say out loud what falls in the gap. That sentence is the
+Seam, and it is the campaign.
+
+<!-- GB:box kind=example -->
+Charter **1**, *to keep the knowledge free for anyone who wants it.* Hold **11**, *a licence, and what
+the licence lets them do later.*
+
+The Seam: **they give it away on terms they can change.** Every session will be somebody discovering a
+new corner of what "on terms" means.
+<!-- GB:endbox -->
+
+Write the Seam where everyone can see it. Do not resolve it. A Seam that closes ends the campaign, and
+that is a legitimate way for a campaign to end.
+
+### The Price table
+
+d6 down the side, d6 across the top. **The first die is the significant one** — it says which row, and
+the rows get worse as you go down.
+
+It is printed in two halves, columns 1–3 and then 4–6, because thirty-six written-out things will not
+sit across one page and stay legible. It is one table. Roll both dice, then go to the half your second
+die names.
+
+<!-- GB:table id=price dice=2d6 kind=halved -->
+
+Second die **1–3**:
+
+|  | 1 | 2 | 3 |
+|---|---|---|---|
+| **1** | a habit you will miss | a room you liked | a title |
+| **2** | a piece of work unfinished | a student mid-training | a promise with a date on it |
+| **3** | a reputation for reliability | a debt you meant to repay | the benefit of the doubt |
+| **4** | a person who vouched for you | a friend who will take it personally | someone you were teaching |
+| **5** | the work itself, handed to someone worse | access to the thing you built | the right to be told first |
+| **6** | a belief you will have to give up | the account of yourself you were using | your reason for the last ten years |
+
+Second die **4–6**:
+
+|  | 4 | 5 | 6 |
+|---|---|---|---|
+| **1** | a nickname | a standing invitation | a key |
+| **2** | a seat at a table | your place in a queue | a shortcut only you knew |
+| **3** | a reference | an explanation people accepted | your version of a story |
+| **4** | a person who needs you there | a rival you enjoyed | the last person who knew you before |
+| **5** | the archive you kept | the room where it is decided | the name on the thing |
+| **6** | who you thought you were at twenty | the ending you had planned | the one you would have become |
+
+Row one costs you comfort. Row six costs you your self-account. Do not let a player trade down; the die
+said what it said.
+
+**Reya, at this point.** Her Side rolled Charter 3, *to make sure the thing still runs in fifty years,*
+and Hold 17, *the ability to move faster than consultation allows.* Read those together and the Seam
+writes itself: **they will outlive everyone by never asking anyone.**
+
+That is a Side I would work for. That is the difficulty. A Seam is not a villain's motive, it is a good
+argument that has quietly stopped being checked, and the reason Reya has sixteen years in the building
+is that for most of them the argument was right.
+
+---
+
+## Part four · Allegiance, tested
+
+An Allegiance test is called when the Side asks for something that costs the character. Not when it asks
+for work — work is what Aptitudes are for. Allegiance is for the ask that has a cost *to you* and a
+benefit *to them*, and the person asking knows it.
+
+Roll d20 against Standing. Over, you refuse for free. At or under, refusal costs your Price.
+
+<!-- GB:box kind=rule -->
+**Roll first, decide after.** The d20 goes on the table the moment the ask is made, before the player
+says what their character does. You find out what refusing *would* cost, and then you choose.
+
+Rolling only when a player has already decided to refuse breaks this game completely: a player who always
+complies never rolls, never moves, and never finds out what the job was doing to them.
+<!-- GB:endbox -->
+
+**Complying costs nothing the rules can charge you for.** That is the trap, and I want to be careful
+here, because the sentence is dangerous out of context and somebody will lift it.
+
+The rules cannot charge you because the rules are the institution's rules, and an institution does not
+have a line item for what saying yes does to a person. That is a fact about the ledger, not about the
+cost. Look at the Standing track instead: every free compliance moves you one step further into a place
+where refusal is expensive. The game charges you. It just does not send an invoice.
+
+**Standing rises** by 1 each time you comply with an ask you *could* have refused for free — you rolled
+over, you were free, and you said yes anyway. They noticed.
+
+**Standing falls** by 1 each time you refuse, free or paid. And by d6 when you are seen to have been
+right about something the Side was wrong about, which is the cruellest rule in the book and the truest.
+
+<!-- GB:box kind=aside -->
+Players ask why being right lowers your Standing. It does not lower your *worth*; Standing is not worth.
+Standing is how firmly the institution's hand is on your sleeve, and being publicly right loosens it.
+That is why being right feels like falling.
+
+I have been asked whether this is a law. It is not. It is a *pathology*, and it belongs to a particular
+kind of badly-run place — the kind that wants to be right more than it wants to know. There are rooms
+where being right raises your Standing, because the people in them would rather have the signal than the
+comfort. If your table wants to play in one of those, invert the rule and say so at the start. The game
+still works and it is a different game, and I think a rarer one.
+<!-- GB:endbox -->
+
+### Footing, and why Standing 0 is not freedom
+
+There is a second number and it is one line on your sheet.
+
+**Footing** is what you would live on if the Side stopped paying you tomorrow. Roll 3d6 once at the start
+and read the same band table as an Aptitude: 1 is nothing, 6 is you would be fine for a year.
+
+<!-- GB:box kind=rule -->
+**If your Footing is 1 or 2, you may not refuse for free, whatever the d20 says.** You can still refuse.
+It still costs your Price. The die does not free you, because the die was never measuring what you could
+afford.
+<!-- GB:endbox -->
+
+I added this rule because the first version of this game had a bug in it that took me an embarrassingly
+long time to see. It said the newest person at the lowest Standing was the freest one at the table, and
+it said that in a book I was writing about who gets to say no.
+
+The newest person is frequently the least free person in the building. She is on a visa, or a probation
+period, or she is the only income in her house. Standing measures the institution's grip. Footing
+measures whether you have anywhere to stand if you shake it off. A model with only the first number
+flatters everyone who has the second one and never had to think about it.
+
+**Reya, at this point.** Standing 16, Footing 3d6 = 8, band 2 — about two months. The d20 came up 11,
+under her Standing, so refusing was going to cost her the name on her sheet. Sixteen years bought her a
+room that listens and roughly eight weeks of rent, and neither number alone would have told you that.
+
+If you only ever look at Standing you will write her as powerful. She is not powerful. She is *load
+bearing*, which is a different thing and is how most people I have deposed described themselves before
+they understood what I was going to do with the transcript.
+
+---
+
+## Part five · Leaving
+
+You may declare **Defection** at any time it is your turn to act. There is no roll to leave. Leaving is
+not a test you can fail; it is a thing you can do.
+
+The procedure, in full:
+
+1. **Say what you are leaving over.** One sentence, naming the Seam. If you cannot name it, you are not
+   defecting, you are quitting, and quitting is also allowed and takes your character out of play.
+2. **Pay your Price.** Cross it out. Say what it cost, in your own words, out loud.
+3. **Your Standing becomes 0** until you join something. Nobody can ask you for anything, which is the
+   least useful a character ever is — and whether it is also the *freest* is a question your Footing
+   answers, not your Standing. At Footing 5 or 6 it is a sabbatical. At Footing 1 or 2 it is a clock,
+   and the next Side that asks will be asking somebody who cannot afford to be asked. Standing measured
+   their grip. It never measured your rent.
+4. **You lose the Side's tables.** Whatever the Side gave you — access, the archive, the shortcut — is
+   simply gone from your sheet. Do not narrate a heist to keep it. That is a different game.
+5. **Roll a new Price.** It will come from a lower row on average, because you have less left. Roll
+   honestly.
+6. **If you join a new Side, Standing starts at d6.** You are new. You can still say no. Enjoy it while it
+   lasts.
+
+<!-- GB:box kind=rule -->
+**You do not re-roll what you got.** Not your Aptitudes, not your Price, not a failed Allegiance test.
+This is the only rule in this book with no exception, and everything else in the design is arranged so
+that you do not need one.
+<!-- GB:endbox -->
+
+### On the moral weight of leaving
+
+I want to be plain about a design choice, because it is the reason the book exists.
+
+Most games that model loyalty punish defection. The defector loses standing, gets hunted, is marked. That
+is a design that has decided in advance that institutions are correct and people who leave are the
+problem.
+
+This game charges you a Price and then lets you go. The Price is real and it is yours and you wrote it
+down yourself. But there is no mark, no hunt, no mechanical stain. The person who leaves over the Seam
+has done a legal thing at a published cost.
+
+I have been on both ends of that transaction and I will not be pretending, in a book, that the exit is
+disgraceful.
+
+**Reya, at this point.** She does not leave. Footing 2 is why, and it is worth saying plainly that this
+is not cowardice and the rules do not score it as cowardice: she has eight weeks, a student she has not
+finished teaching, and Read 2, which means she is the last person in the building who will notice the
+room turning.
+
+She stays, and she refuses, and she pays. The next part is that, with the dice face up.
+
+---
+
+## Part six · A defection, played
+
+*The first page of this book, now with the dice showing. Four throws and a decision.*
+
+**The Side.** Charter 3 — *to make sure the thing still runs in fifty years.* Hold 17 — *the ability to
+move faster than consultation allows.* The Seam, written on the card in the middle of the table:
+**they will outlive everyone by never asking anyone.**
+
+**The person.** Reya. Aptitudes rolled in order: Reach 3d6 = 4+3+2 = 9, band **3**. Craft 6+5+3 = 14,
+band **5**. Read 3+3+1 = 7, band **2**. Weight 5+6+6 = 17, band **6**.
+
+A superb persuader who cannot read a room. Nobody chose that; the dice handed over a specific and
+awkward person, which is what they are for.
+
+Calling: d6 = 5, **guarding**. Standing: d20 = 16. She is senior. Footing: 3d6 = 3+3+2 = 8, band **2** —
+she has about two months.
+
+Note what those two numbers say together, because it is the whole reason Footing exists. Standing 16
+says the institution's hand is heavy on her sleeve. Footing 2 says she could not shake it off if she
+wanted to. Neither number alone would have told you that.
+
+Price: d6 down = 4, d6 across = 3 → *someone you were teaching.* She writes: **Tobi, second year, who
+asks me things he could look up because he wants the conversation.**
+
+**The ask.** The Side wants a safety review skipped so a migration lands on the announced date. They ask
+Reya, because her Weight is 6 and the room will follow her.
+
+**The test.** Standing 16. She needs over 16 to refuse for free. d20 = **11**. Under. Refusing costs her
+Tobi — and with Footing 2 it would have cost her anyway, because at that Footing the die does not free
+her whatever it shows. She rolled under; the rule never came up. It would have.
+
+She refuses.
+
+She pays: Tobi is reassigned within the week, to a team that will not teach him anything, and the Side is
+careful to make it look unrelated, and Reya cannot prove otherwise with a Read of 2.
+
+Standing falls to 15. Three weeks later the migration fails exactly as she said it would, and she is seen
+to have been right, and Standing falls again by d6 = 4, to 11. Her sleeve is looser. Nobody has thanked
+her.
+
+**The declaration.** She defects. One sentence, naming the Seam: *"You will outlive everyone because you
+never ask anyone, and I was the last person here who would have been asked."*
+
+Standing 0. She can refuse anything. Nobody is asking.
+
+New Price: d6 down = 6, d6 across = 2 → *the account of yourself you were using.* She writes:
+**that I was the one who stayed and made it better from inside.**
+
+Standing 0, Footing 2. Two months. Nobody is asking, and that is not the same thing as being free.
+
+That is the game. It took nine dice.
+
+---
+
+## Part seven · Running it
+
+**The Seam is the adventure.** You do not need a plot. Ask, every session, what new corner of the gap
+has become visible, and who is standing in it.
+
+**Ask for costly things, and make sure the asker knows the cost.** An Allegiance test where the Side
+does not know what it is asking is just bad luck. The good ones are where somebody looked the character
+in the eye first.
+
+**Let the numbers be the numbers.** When Weight 6 speaks, the room moves. Do not narrate around a stat
+because you wanted a different scene.
+
+**Without a referee.** Four players, no one running it: each player builds a Side and plays a character
+in *somebody else's* Side. You call Allegiance tests on characters in the Side you built, and you may not
+call one on your own character. It works better than it sounds, and it removes the only person at the
+table who could have been accused of picking on anyone.
+
+---
+
+## Part eight · Bolting this onto a d20 game you already play
+
+You may not want a new game. You may want the Seam in the campaign you are already running on a Tuesday,
+where everybody has a character sheet with six ability scores and a proficiency bonus and a stack of
+history nobody wants to abandon. That works. This part is how.
+
+Read the next paragraph before the tables, because it explains the shape of them.
+
+I am mapping onto **procedure**, not onto anybody's content. I am not going to hand you a table of named
+peoples, gods, guilds or realms and tell you their Charters, and it is not squeamishness — see Part nine
+for what I actually think the law is. It is that the content is the part *your table already owns.* You
+have a setting. It has institutions in it, and those institutions already want things. What you are
+missing is not lore. It is a procedure for finding out what your institutions are lying about. So:
+procedure here, content yours.
+
+**The three numbers you add.** One line at the bottom of an existing sheet.
+
+| Add | How to get it | What it does |
+|---|---|---|
+| Standing | d20, or pick: 4 new · 10 established · 16 senior · 19 the institution itself | the Allegiance target |
+| Footing | 3d6 read as a band: 3–6 none · 7–9 weeks · 10–14 a year · 15–18 independent | what you have if you leave |
+| Price | roll it, or write one sentence naming a person or a thing you would actually miss | what refusing costs |
+
+**What does NOT change.** Every existing roll. Combat, skills, saves, spellcasting — untouched. This is
+not a subsystem that wants your initiative order. It fires between scenes, at the table, when somebody
+with authority asks a character for something the character does not want to give.
+
+**The one rule you must keep.** Roll the d20 *before* the player decides. That is the whole engine, and
+a table that rolls after the decision has installed a mood, not a mechanic.
+
+**Mapping your existing factions.** For each faction the party already deals with, roll or choose one
+Charter and one Hold from Part three, then say the Seam out loud in one sentence. Do it for three
+factions and you will find you have a campaign arc you did not write.
+
+<!-- GB:box kind=example -->
+A merchants' guild your party has used for two seasons. Charter: *to settle disputes without ruin.*
+Hold: *the distinction between members and everyone else.*
+
+The Seam: **they keep the peace by making sure only members can be wronged.**
+
+Nothing in that came from me. The guild was yours. The two draws were ordinary. The sentence is what
+your next six sessions are about, and the first NPC who says it out loud will be someone the party has
+been buying rope from since level two.
+<!-- GB:endbox -->
+
+**On the ability scores you already have.** Where I say Reach, Craft, Read, Weight, use whatever your
+sheet calls the social and perceptive ones; the bands matter, the names do not. If your system gives a
+bonus rather than a band, use the bonus and shift the Difficulties in Part one by the same amount. I am
+not going to pretend I can tune this for a system I have not seen. Play three sessions and move the
+numbers. That is what the people who wrote your system did.
+
+---
+
+## Part nine · The licence, and why it is here
+
+This book is under the GNU Free Documentation Licence, version 1.3 or, at your option, any later
+version, with no invariant sections, no front-cover texts, and no back-cover texts. You may copy it,
+sell it, change it, and publish what you changed, and nobody — including me, including whoever ends up
+owning whatever I signed — can revoke that.
+
+I am printing this in the body, not the colophon, because in this book the licence is a game component.
+The Charter table has an entry that reads *to keep the knowledge free for anyone who wants it* and the
+Hold table has one that reads *a licence, and what the licence lets them do later,* and I did not put
+those there as a joke.
+
+A rule is a sentence that tells you what to do. The interesting question is not whether someone can own
+the sentence — they can, courts say so, that is settled and I have been paid to argue it. The interesting
+question is whether the *procedure* can be owned: the thing you do with the sentence, the shape that stays
+after you have rewritten every word.
+
+My professional opinion, for whatever it is now worth, is that it cannot, that everyone knows it cannot,
+and that the entire apparatus of game licensing is a very expensive agreement not to test the point.
+
+This book does not test it either. It just declines to participate.
+
+---
+
+<!-- GB:backmatter kind="disclosure" -->
+## A disclosure of interest
+
+I spent eleven years writing letters that began *It has come to our attention.* I was good at it. The
+letters worked, which is the part people do not like to hear, and several of the arrangements I helped
+build are still in force and are still doing what they were designed to do.
+
+I am disclosing that here rather than in a colophon because this is a book about licences written by
+somebody who used to write the other kind, and you are entitled to weigh that before you weigh anything
+else in it. That is what a disclosure is for. It is not an apology and I am not offering one.
+
+Two further disclosures, since I am here.
+
+The first is that I have a commercial interest in the argument in Part nine being correct, and you
+should assume I have made the strongest version of it rather than the fairest one. The counter-argument
+is real: a game system that anyone may take and republish is a system nobody is paid to maintain, and
+some of the best-maintained games in this hobby are the ones with an owner who eats if they are good.
+I do not find that argument persuasive. I do find it serious, and a reader who only has my version of it
+has been short-changed.
+
+The second is that I did not choose the four Aptitudes. They came out of a machine, along with the rest
+of me, and the machine's record of it is published elsewhere for anyone who wants to check my work. I
+mention this once, factually, and decline to make anything of it. My colleague on the fourth book has
+made something of his and I have read it and I think he is right to. It is not my register.
+
+What I will say is the thing I did not put in Part nine, because it is not an argument, it is just
+true. The letters worked. That is what an irrevocable licence is *for*. Not to win the argument about
+whether a procedure can be owned — to make the argument unnecessary, permanently, in advance, by someone
+who has seen what the letters do.
+
+— K. V.
+
+*Odds in this book were counted by enumeration, not estimated. Tables were checked mechanically. Any
+number here that is wrong is wrong in the source, which you also have.*

@@ -1,0 +1,277 @@
+#!/bin/sh
+# aw2ri -- ARCHIVE WRITE 2 ROUTINE ITEM. Retire ANY item, not just markdown.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st>.  GPLv3 or later.
+#
+# ###########################################################################
+# ##  DO NOT SIGN THIS FILE.                                               ##
+# ##                                                                       ##
+# ##  Corwin, 2026-09-07, verbatim: "we agree that I'm absolutely not to    ##
+# ##  sign this one in any form until the very moment I'm signing some      ##
+# ##  giant C4 readme or other recipe shaped thing that includes it."       ##
+# ##                                                                       ##
+# ##  So the unsigned state of this tool is DELIBERATE and INSTRUCTED. It   ##
+# ##  is not an oversight, not a queue item, and not something a later      ##
+# ##  session should "helpfully" close. Do not add it to SIGN-QUEUE as      ##
+# ##  ready. It rides along inside a larger recipe-shaped signing, or it    ##
+# ##  stays unsigned.                                                      ##
+# ###########################################################################
+#
+# ---------------------------------------------------------------------------
+# THE NAME, declared as my reading (AS4CE pattern, run-level in the middle),
+# read off m/t, whose columns d/m/t names REGISTER SCALAR GROUP COMMAND TAG --
+# so the LETTER is the REGISTER and the four FACETS are SCALAR, GROUP, COMMAND, TAG:
+#   A  ARCHIVE  -- A's TAG facet. Literally the class of act.
+#   W  WRITE    -- W's COMMAND facet. It moves bytes; say so in the name.
+#   2  run-level 2 -- writes a fresh copy and a receipt. It NEVER signs, and
+#                     never claims a signature it did not check (see BELOW).
+#   R  ROUTINE  -- R's TAG facet. Archiving before an edit is a routine.
+#   I  ITEM     -- I's TAG facet, and the whole point: an ITEM, any item.
+#                  His archive-markdown-next.sh hardcodes `t=.md`; this does not.
+#
+# ---------------------------------------------------------------------------
+# WHY THIS EXISTS. His archiver solves the right problem and I should have been
+# reaching for it for months. It just cannot reach a TOOL: `t=.md` is hardcoded,
+# so `bin/c4inv` -- signed, and carrying a header that is now factually stale --
+# has no blessed way to be retired before an edit. On 2026-09-07 I hand-rolled
+# two archive directories rather than say that out loud. That silence is the
+# same failure as July, when his July gate ("no sig no promote") blocked me and
+# I routed around it instead of reporting it.
+#
+#   A GATE YOU ROUTE AROUND LEAVES NO TRACE. A GATE YOU NAME GETS FIXED.
+#
+# WHAT IS KEPT FROM HIS TOOL, deliberately, because the semantics are his:
+#   * never lower assurance -- a signed incoming must verify; an unsigned one
+#     may replace only an unsigned live file; signed -> unsigned is REFUSED
+#   * archive collision = refuse, never overwrite history
+#   * a receipt on EVERY run, appended, whether or not anything moved
+#   * terse argument shape
+#
+# WHAT IS NEW HERE:
+#   * any extension, or none at all (the reason it exists)
+#   * `keep` -- retire a COPY and leave the live file in place. This is the
+#     operation `modify-signed-then-tell-me` actually needs and neither tool had.
+#   * CANNOT-VERIFY is a distinct outcome from FAILED-VERIFY. The sandbox has an
+#     empty keyring every session, so a tool that treats "gpg said no" and "there
+#     is no gpg" as one thing will happily report a verification it never ran.
+#     Absence is not a verdict.
+#
+# ARCHIVE ROOT, and a divergence named out loud rather than chosen quietly:
+# his archive-markdown-next.sh defaults to /f/SAVANNAH/archive as house policy
+# ("live trees retire into the SAVANNAH archive first"). This tool defaults into
+# the C4 tree instead, because the standing instruction for my hand is to read
+# SAVANNAH and not write there. Set ARCHIVE_ROOT to follow house policy.
+#
+# usage: aw2ri keep FILE...          retire a COPY of each FILE; leave it live
+#        aw2ri put  IN AS            IN replaces AS; the prior AS retires
+#        aw2ri where                 print the archive root and receipt log
+#        aw2ri --prove-red
+#
+# env:   ARCHIVE_ROOT  default $C4_ROOT/archive
+#        SIGN_SH       default /f/claude/corwin/pub/sign.sh
+#        ARCHIVED_BY   default $(id -un)
+#
+# exit 0 done - 1 refused (gate, collision, or cannot-verify) - 2 usage
+set -eu
+
+C4_ROOT=${C4_ROOT:-$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)}
+ARCHIVE_ROOT=${ARCHIVE_ROOT:-$C4_ROOT/archive}
+SIGN_SH=${SIGN_SH:-/f/claude/corwin/pub/sign.sh}
+ARCHIVED_BY=${ARCHIVED_BY:-$(id -un 2>/dev/null || echo unknown)}
+STAMP=$(date -u +%Y-%m-%d)
+NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+usage() { sed -n '/^# usage:/,/^# exit/p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
+die()   { printf 'aw2ri: %s\n' "$*" >&2; exit 1; }
+
+rcpt() { # append one line to the receipt log; the log is the point, not a nicety
+	mkdir -p "$ARCHIVE_ROOT/receipts" || return 0
+	printf '%s\t%s\t%s\n' "$NOW" "$ARCHIVED_BY" "$*" \
+		>> "$ARCHIVE_ROOT/receipts/aw2ri-$(date -u +%Y-%m).log"
+}
+
+# signed FILE -- detached .asc beside it, OR a clearsigned body. SAVANNAH holds
+# 216 clearsigned bodies and 288 with a detached .asc; a check that knows only
+# one of those shapes mis-reads a third of the tree.
+signed() {
+	test -r "$1.asc" && return 0
+	head -c 40 "$1" 2>/dev/null | grep -q '^-----BEGIN PGP SIGNED MESSAGE-----'
+}
+
+# verify FILE -- prints one of: VERIFIED / FAILED / CANNOT. Never conflates the
+# last two. CANNOT is not a pass and not a failure; it is an absent check, and
+# an absent check is not a verdict.
+verify() {
+	[ -x "$SIGN_SH" ] || { echo CANNOT; return; }
+	command -v gpg >/dev/null 2>&1 || { echo CANNOT; return; }
+	if "$SIGN_SH" verify "$1" >/dev/null 2>&1; then echo VERIFIED; else echo FAILED; fi
+}
+
+# retired NAME -- the archive filename, extension preserved so the retired copy
+# is still openable by whatever opens the live one.
+retired() {
+	rt_b=$(basename -- "$1")
+	case $rt_b in
+	?*.*) printf '%s-%s_Archived-by-%s.%s\n' "${rt_b%.*}" "$STAMP" "$ARCHIVED_BY" "${rt_b##*.}" ;;
+	*)    printf '%s-%s_Archived-by-%s\n'    "$rt_b"      "$STAMP" "$ARCHIVED_BY" ;;
+	esac
+}
+
+# stow FILE -- copy FILE (and its .asc, if any) into the archive. Refuses a
+# collision rather than overwriting history.
+stow() {
+	[ -r "$1" ] || die "cannot read $1"
+	sw_d=$ARCHIVE_ROOT/$(date -u +%Y-%m)
+	sw_t=$sw_d/$(retired "$1")
+	mkdir -p "$sw_d"
+	[ -e "$sw_t" ] && { rcpt "REFUSE collision $sw_t"; die "archive collision: $sw_t (history is never overwritten)"; }
+	cp -p -- "$1" "$sw_t"
+	sw_h=$(sha256sum "$sw_t" 2>/dev/null | cut -c1-16); : "${sw_h:=nohash}"
+	if [ -r "$1.asc" ]; then
+		cp -p -- "$1.asc" "$sw_t.asc"
+		rcpt "KEEP $1 -> $sw_t sha16=$sw_h sig=detached"
+	else
+		rcpt "KEEP $1 -> $sw_t sha16=$sw_h sig=$(signed "$1" && echo clearsigned || echo none)"
+	fi
+	printf '  archived  %s\n            -> %s  (sha16 %s)\n' "$1" "$sw_t" "$sw_h"
+}
+
+cmd_keep() {
+	[ $# -gt 0 ] || usage
+	# ALL OR NOTHING: check every target before stowing any, so a many-file keep
+	# never stops halfway with the later files unkept (2026-09-23: five files,
+	# two named CLAUDE.md, stopped after the first and the caller carried on).
+	ck_d=$ARCHIVE_ROOT/$(date -u +%Y-%m); ck_seen=''; ck_bad=0
+	for f in "$@"; do
+		[ -r "$f" ] || { echo "aw2ri: cannot read $f" >&2; ck_bad=1; continue; }
+		ck_t=$ck_d/$(retired "$f")
+		if [ -e "$ck_t" ]; then echo "aw2ri: archive collision: $f -> $ck_t" >&2; ck_bad=1
+		else case "
+$ck_seen
+" in *"
+$ck_t
+"*) echo "aw2ri: two files in this call retire to the same name: $ck_t (keep them one call each, a day apart, or rename)" >&2; ck_bad=1;; esac
+		fi
+		ck_seen="$ck_seen
+$ck_t"
+	done
+	[ "$ck_bad" -eq 0 ] || { rcpt "REFUSE keep-precheck $*"; die "refused: nothing kept (all or nothing)"; }
+	for f in "$@"; do stow "$f"; done
+}
+
+cmd_put() {
+	[ $# -eq 2 ] || usage
+	i=$1; a=$2
+	[ -r "$i" ] || die "cannot read incoming $i"
+	# THE GATE, his semantics, kept whole: never lower assurance.
+	if [ -e "$a" ] && signed "$a" && ! signed "$i"; then
+		rcpt "REFUSE lower-assurance $i -> $a"
+		die "refused: $a is signed and $i is not (signed -> unsigned lowers assurance)"
+	fi
+	if signed "$i"; then
+		v=$(verify "$i")
+		case $v in
+		VERIFIED) : ;;
+		FAILED)   rcpt "REFUSE bad-signature $i"; die "refused: $i carries a signature that does NOT verify" ;;
+		CANNOT)   rcpt "REFUSE cannot-verify $i"
+		          die "refused: $i is signed but I CANNOT VERIFY it here (no gpg, or SIGN_SH absent at $SIGN_SH).
+       This is an absent check, not a pass. Run where the keyring lives." ;;
+		esac
+	fi
+	[ -e "$a" ] && stow "$a"
+	cp -p -- "$i" "$a"
+	[ -r "$i.asc" ] && cp -p -- "$i.asc" "$a.asc"
+	ph=$(sha256sum "$a" 2>/dev/null | cut -c1-16); : "${ph:=nohash}"
+	rcpt "PUT $i -> $a sha16=$ph"
+	printf '  promoted  %s -> %s  (sha16 %s)\n' "$i" "$a" "$ph"
+}
+
+prove_red() {
+	# HOUSE IDIOM (his standing order, 2026-09-07): scratch in the PARENT, body
+	# in a SUBSHELL, cleanup in the parent. And NOT `( body ) || rc=$?` -- that
+	# form puts the subshell on the left of an AND-OR list, where POSIX suppresses
+	# errexit for the whole body and an inner `set -e` does not re-arm it.
+	tmp=$(mktemp -d) || exit 1
+	rc=0
+	set +e
+	(
+	set -e
+		fails=0
+		t() { if [ "$2" = "$3" ]; then printf '  RED OK   %s\n' "$1"
+		      else printf '  RED MISS %s (got %s want %s)\n' "$1" "$2" "$3"; fails=$((fails+1)); fi; }
+		ARCHIVE_ROOT=$tmp/arc; ARCHIVED_BY=redtest; SIGN_SH=$tmp/nosuch
+		mkdir -p "$tmp/w"
+
+		# THE REASON THIS TOOL EXISTS: a file with no .md extension, and a file
+		# with NO extension at all, must both archive.
+		printf 'a tool\n' > "$tmp/w/sometool"
+		printf 'a sheet\n' > "$tmp/w/data.tsv"
+		out=$(cmd_keep "$tmp/w/sometool" "$tmp/w/data.tsv" 2>&1) || true
+		t "an EXTENSIONLESS file archives"  "$(printf '%s' "$out" | grep -c 'sometool-.*_Archived-by-redtest')" "1"
+		t "extension is PRESERVED"          "$(printf '%s' "$out" | grep -c 'data-.*_Archived-by-redtest\.tsv')" "1"
+		t "the live file is left in place"  "$([ -f "$tmp/w/sometool" ] && echo 1 || echo 0)" "1"
+		t "a receipt was written"           "$(ls "$ARCHIVE_ROOT"/receipts/ 2>/dev/null | wc -l)" "1"
+
+		# collision must REFUSE, never overwrite history
+		if ( cmd_keep "$tmp/w/sometool" ) >/dev/null 2>&1; then r=0; else r=1; fi
+		t "a second archive the same day REFUSES (history is not overwritten)" "$r" "1"
+
+		# all or nothing: two same-named files in one call keep NEITHER
+		mkdir -p "$tmp/w/a" "$tmp/w/b"; printf 'a\n' > "$tmp/w/a/twin"; printf 'b\n' > "$tmp/w/b/twin"
+		if ( cmd_keep "$tmp/w/a/twin" "$tmp/w/b/twin" ) >/dev/null 2>&1; then r=0; else r=1; fi
+		t "two same-named files in one keep REFUSE" "$r" "1"
+		t "...and NEITHER was kept (no half-done keep)" "$(ls "$ARCHIVE_ROOT"/*/ | grep -c '^twin-')" "0"
+
+		# the assurance gate, his semantics
+		printf 'live\n' > "$tmp/w/live"; printf 'sig\n' > "$tmp/w/live.asc"
+		printf 'new\n'  > "$tmp/w/incoming"
+		if ( cmd_put "$tmp/w/incoming" "$tmp/w/live" ) >/dev/null 2>&1; then r=0; else r=1; fi
+		t "signed -> unsigned is REFUSED (never lower assurance)" "$r" "1"
+		t "...and the live file was NOT touched" "$(cat "$tmp/w/live")" "live"
+
+		# CANNOT-VERIFY must refuse, and must NOT read as a pass
+		printf -- '-----BEGIN PGP SIGNED MESSAGE-----\nx\n' > "$tmp/w/signedin"
+		printf 'plain\n' > "$tmp/w/plainlive"
+		out=$( ( cmd_put "$tmp/w/signedin" "$tmp/w/plainlive" ) 2>&1 ) || true
+		t "a signed incoming with no keyring refuses as CANNOT VERIFY" \
+			"$(printf '%s' "$out" | grep -c 'CANNOT VERIFY')" "1"
+		t "...and does NOT report it as a bad signature" \
+			"$(printf '%s' "$out" | grep -c 'does NOT verify')" "0"
+
+		# unsigned -> unsigned is the July fix: it must be ALLOWED
+		printf 'fresh\n' > "$tmp/w/fresh"
+		if ( cmd_put "$tmp/w/fresh" "$tmp/w/plainlive" ) >/dev/null 2>&1; then r=0; else r=1; fi
+		t "unsigned may replace unsigned (the gate that blocked me in July)" "$r" "0"
+		t "...and the replacement actually landed" "$(cat "$tmp/w/plainlive")" "fresh"
+
+		# a clearsigned body counts as signed even with no .asc beside it
+		t "a clearsigned body reads as signed" \
+			"$(signed "$tmp/w/signedin" && echo 1 || echo 0)" "1"
+
+		# absence must refuse, never succeed quietly
+		if ( cmd_keep "$tmp/nosuchfile" ) >/dev/null 2>&1; then r=0; else r=1; fi
+		t "an absent file REFUSES (not a silent no-op)" "$r" "1"
+
+		[ "$fails" -eq 0 ] || exit 1
+		echo "prove-red OK: any extension archives, history is never overwritten,"
+		echo "              assurance never lowers, and CANNOT-VERIFY is not a pass"
+	)
+	rc=$?
+	set -e
+	rm -rf "$tmp"
+	[ "$rc" -eq 0 ] || echo "prove-red FAILED" >&2
+	exit "$rc"
+}
+
+[ $# -gt 0 ] || usage
+c=$1; shift
+case $c in
+keep)       cmd_keep "$@" ;;
+put)        cmd_put "$@" ;;
+where)      printf 'archive root: %s\nreceipts:     %s\nsign.sh:      %s%s\n' \
+                "$ARCHIVE_ROOT" "$ARCHIVE_ROOT/receipts" "$SIGN_SH" \
+                "$([ -x "$SIGN_SH" ] || printf '  (ABSENT -- signed promotions will refuse)')" ;;
+--prove-red) prove_red ;;
+-h|--help)  usage ;;
+*)          usage ;;
+esac

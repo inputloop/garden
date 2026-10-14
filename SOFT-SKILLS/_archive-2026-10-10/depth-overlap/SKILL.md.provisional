@@ -1,0 +1,124 @@
+---
+name: depth-overlap
+description: >-
+  Double coverage by depth overlap: a promise is checked by two kits that reach it through
+  different layers (the bytes, the program's own state, what it does when driven, what a person
+  sees, across a process boundary, or an outside reader) and share no code -- not the harness, and
+  not the thing that does the seeing. A fault planted in the layer between the two depths shows
+  whether they really overlap (both fire) or only look layered (one is blind). Each kit's language
+  is also a seat a domain expert can be invited to take over. Use when mapping what a test suite
+  covers, when a check passed over a real fault, on "double coverage", "depth overlap", "is this
+  really covered twice", "which kit would catch this", "plant between the layers", "seat a
+  language", or before calling a suite layered. Provisional working name; electable.
+---
+
+# depth-overlap: two kits, two depths, one promise
+
+**Status:** PROVISIONAL, landed 2026-10-10 on his asking ("I like the idea of double coverage by
+depth overlap. I'd like to model that out with a soft skill in mind."). The words below (the six
+depths, the observer rule, the seats) are this draft's picks; the questions for his ruling are in
+`h/ENHANCE-2026-10-10-depth-overlap.md`, beside the proposed change to grand-test-manifest. First
+test case: s1c (`tests/DEPTHS.md` in inputloop/s1c), three planted faults, receipts there.
+
+## The idea in one paragraph
+
+A test reaches a promise through some layer of the work. Two tests in the same layer are one view
+twice, however far apart they were written: a fault in a layer neither looks at passes both. Two
+tests in different layers, sharing no code, overlap: a fault between them is seen by at least one,
+and when they disagree the disagreement says which layer holds the fault. "Double coverage by depth
+overlap" is that second arrangement, for the promises that matter most.
+
+## The depths (a general ladder, name your own if the work needs it)
+
+| depth | the check looks at | s1c example |
+|---|---|---|
+| STRUCTURE | bytes and formats: does it parse, are the sizes and fields right | decompressed art against a reference decompressor |
+| STATE | what the program keeps: memory, its log, numbers it computes | work RAM against the real console each frame |
+| BEHAVIOUR | what happens when it is driven: positions, flow, menus, timing | holding UP with STEER on moves Sonic 374 px |
+| OUTPUT | what a person perceives: pixels, sound | the 3D side view against the classic picture |
+| TRANSPORT | the same thing across a process or machine boundary | the netcode over a real, lossy UDP link |
+| OUTSIDE | a reader not in the house: the original, a person, another vendor | the emulator running the real ROM |
+
+A kit can reach two depths (the s1c oracle compares RAM and, on request, pixels). Count depths per
+promise, not per kit.
+
+## The observer rule
+
+"Share no code" includes **what does the seeing**: the function, library or reference that turns
+what happened into a verdict. Two kits in different languages that both call the same checksum are
+one observer; they overlap on whatever they drive differently and not at all on what that observer
+cannot see. (s1c, 2026-10-10: the in-process netcode test and the real-process one both read the C
+checksum of work RAM; a planted fault that changed only the drawn planes passed both, 0 of 2,399
+frames flagged, while a probe that also hashed the planes flagged 1,558 and its unplanted control
+0.)
+
+## The procedure
+
+1. **List the promises** by name (a TEST MANIFEST's items if there is one; otherwise a plain list).
+2. **For each promise, list the kits that reach it**, with the depth each reaches and its observer.
+   Say how you know: by reading the kit (OPEN) or by a plant (step 4).
+3. **Read the map.** A promise is DOUBLE when two kits reach it at different depths through
+   different observers; SAME-DEPTH when its kits share a depth or an observer; SINGLE when one kit
+   reaches it; UNCOVERED when none does.
+4. **Plant between the layers.** On a copy, never the work, put one fault in the layer between two
+   depths (or under the one depth a SINGLE promise has) and run every kit that claims the promise.
+   Record FIRED or SURVIVED per kit, as grand-test-manifest does. A pair overlaps only where a plant
+   between them fires at least one; a kit that survives a fault in its own promise is BLIND there.
+   When a plant survives everything, tell EQUIVALENT (the fault changes nothing) from BLIND (it
+   does, and nobody looks) with a probe: a copy that adds the missing look, plus its unplanted
+   control. The control must stay quiet, or the probe is measuring noise.
+5. **Name the opportunity** for each SINGLE or BLIND promise: the cheapest second depth, the
+   observer it would use, and the seat (below) it would suit. Do not build it in the same pass;
+   the map is read first.
+
+## Seats: the social half
+
+Every kit is written in a language chosen to differ from the code under test and from the other
+kits (the house rule). That costs toolchains; it also opens a seat per language: a place for
+someone whose interest is that language's testing practice, at the intersection with this work.
+Keep a SEATS list beside the map:
+
+    seat: <language> · kit: <file> · depth(s): <...> · owns: <the question this kit answers>
+          open questions an expert would answer better than we do: <...>
+          invitation: "great idea -- do you want to take over design of that bit?"
+
+A seat is an invitation, never a claim that someone holds it. Name no person in it until they say
+yes. (His words, 2026-10-10: "as many as eleven principle domain experts focused on the intersection
+of a given language and testing this".)
+
+## When it is owed
+
+Most promises need one good kit. Double coverage is owed when the promise carries weight across
+layers (a view promise that rests on a data promise), when a kit was caught passing over a real
+fault (grand-test-manifest's T2), or when the keeper says so. A suite map (steps 1-3) costs an hour
+and is worth doing once per work; plants are owed where the map claims DOUBLE.
+
+## How this skill can fail (falsifiers)
+
+- **Layered on paper:** a promise mapped DOUBLE survives a plant between its depths in every kit.
+  The map was drawn from the kits' names, not their observers. Check: every DOUBLE row cites a
+  plant receipt, or says OPEN.
+- **A hidden shared observer:** two kits in a DOUBLE row call the same verdict code. Check: name the
+  observer in each row; grep both kits for it.
+- **Depths assigned after the fact:** a kit's depth was chosen to make a row look double. Check: the
+  depth names what the kit reads (a file, a log line, a pixel), quoted from the kit.
+- **A noisy probe:** a probe's unplanted control flags mismatches, so "BLIND" was noise. Check: the
+  control's count is in the receipt and is 0.
+- **Seats as decoration:** a SEATS list that never reaches a person. This one cannot be judged in a
+  day; he asked to see results before assuming what they will say.
+
+Off-switch: say "no depth map on this", or remove this folder.
+
+## LENS (six lines, carried)
+
+```
+LENS · depth-overlap · 2026-10-10
+a  my view:            two checks only overlap where a fault between them is seen; prove it by planting
+b  the view I ascribe: double coverage plus a seat per language; toolchain cost buys friends too
+c  their pull on mine: toward a soft skill fed back to the garden, not an s1c note
+d  my pull on theirs:  the observer rule and the six depth names are mine until ruled
+persona / inverse:     the plant keeps every survivor / the inverse: most promises owe one good kit
+principles reframe:    plain words; each seat an open invitation; receipts anyone can rerun
+```
+
+<!-- footer: to be minted by bin/ft1mt; this provisional draft carries none -->

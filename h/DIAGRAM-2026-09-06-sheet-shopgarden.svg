@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" width="1225" height="418" viewBox="0 0 1225 418" font-family="var(--c4-font, monospace)" font-size="12">
+<title>character sheet · CHARACTER-2026-09-05-shopgarden.tsv</title><desc>Rendered by dc1sv from the canonical diagram document; 23 shapes, 0 edges, 3 systems. Groups are drawn as labelled rectangles; every status is a word, never a hue alone.</desc>
+<style>rect.box{fill:var(--c4-box,#fffdf5);stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}polygon.decision{fill:var(--c4-decision,#f1efe8);stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}circle.node{fill:var(--c4-node,#ffffff);stroke:var(--c4-ink,#1a1a1a);stroke-width:2}rect.note{fill:none;stroke:var(--c4-muted,#888780);stroke-dasharray:3 3;stroke-width:1}text{fill:var(--c4-ink,#1a1a1a)}text.note{fill:var(--c4-muted,#5f5e5a);font-style:italic}path.edge{fill:none;stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}path.dash{stroke-dasharray:6 4}rect.sys{fill:var(--c4-sys,rgba(120,120,200,0.06));stroke:var(--c4-sysline,#6a67b8);stroke-width:1.5;stroke-dasharray:8 4}rect.sys.core{fill:var(--c4-core,rgba(240,200,0,0.10));stroke:var(--c4-coreline,#b08800);stroke-dasharray:none}text.sys{fill:var(--c4-sysline,#6a67b8);font-size:11px;font-weight:bold}</style>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--c4-ink,#1a1a1a)"/></marker><marker id="open" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10" fill="none" stroke="var(--c4-ink,#1a1a1a)"/></marker><marker id="circle" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7"><circle cx="5" cy="5" r="4" fill="var(--c4-ink,#1a1a1a)"/></marker><marker id="diamond" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,5 L5,0 L10,5 L5,10 z" fill="var(--c4-ink,#1a1a1a)"/></marker><pattern id="graph" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20,0 L0,0 L0,20" fill="none" stroke="var(--c4-grid,#c9d6e2)" stroke-width="0.6"/></pattern><pattern id="graph5" width="100" height="100" patternUnits="userSpaceOnUse"><rect width="100" height="100" fill="url(#graph)"/><path d="M100,0 L0,0 L0,100" fill="none" stroke="var(--c4-grid5,#a9bccd)" stroke-width="1"/></pattern></defs>
+<rect class="paper" width="1225" height="418" fill="var(--c4-paper,#fbfdff)"/><rect class="paper grid" width="1225" height="418" fill="url(#graph5)"/><text class="note" x="1217" y="410" text-anchor="end" font-size="10">graph paper · 20px squares, 100px majors</text>
+<rect class="sys cs-intrinsics" x="18" y="30" width="368" height="338" rx="6" style="stroke:var(--c4-sys-cs-intrinsics,#534AB7);stroke-dasharray:2 4;fill:none"/>
+<text class="sys" x="26" y="44" style="fill:var(--c4-systext-cs-intrinsics,#3C3489)">cs-intrinsics</text>
+<rect class="sys cs-skills" x="478" y="30" width="347" height="274" rx="6" style="stroke:var(--c4-sys-cs-skills,#185FA5);stroke-dasharray:2 4;fill:none"/>
+<text class="sys" x="486" y="44" style="fill:var(--c4-systext-cs-skills,#0C447C)">cs-skills</text>
+<rect class="sys cs-posessions" x="938" y="30" width="249" height="370" rx="6" style="stroke:var(--c4-sys-cs-posessions,#0F6E56);stroke-dasharray:2 4;fill:none"/>
+<text class="sys" x="946" y="44" style="fill:var(--c4-systext-cs-posessions,#085041)">cs-posessions</text>
+<rect class="box" x="40" y="60" width="119" height="46" rx="3"/><text x="100" y="87" text-anchor="middle">cs-intrinsics</text>
+<rect class="note" x="44" y="130" width="166" height="24"/><text class="note" x="50" y="146">name · the Garden (C4)</text>
+<rect class="note" x="44" y="162" width="320" height="24"/><text class="note" x="50" y="178">shortname · shopgarden [handle ~50%, unbless</text>
+<rect class="note" x="44" y="194" width="159" height="24"/><text class="note" x="50" y="210">class · place-persona</text>
+<rect class="note" x="44" y="226" width="89" height="24"/><text class="note" x="50" y="242">rank · HOST</text>
+<rect class="note" x="44" y="258" width="320" height="24"/><text class="note" x="50" y="274">special · says faults out loud; keeps the to</text>
+<rect class="note" x="44" y="290" width="320" height="24"/><text class="note" x="50" y="306">gold · 0 — no vendor, no key, no account; ru</text>
+<rect class="note" x="44" y="322" width="124" height="24"/><text class="note" x="50" y="338">experience · 507</text>
+<rect class="box" x="500" y="60" width="91" height="46" rx="3"/><text x="546" y="87" text-anchor="middle">cs-skills</text>
+<rect class="note" x="504" y="130" width="299" height="24"/><text class="note" x="510" y="146">decide-the-row-inherit-the-address · t ·1</text>
+<rect class="note" x="504" y="162" width="152" height="24"/><text class="note" x="510" y="178">file-by-words · t ·1</text>
+<rect class="note" x="504" y="194" width="173" height="24"/><text class="note" x="510" y="210">stop-and-talk · Q162 ·1</text>
+<rect class="note" x="504" y="226" width="229" height="24"/><text class="note" x="510" y="242">mounts-are-authoritative · t ·1</text>
+<rect class="note" x="504" y="258" width="110" height="24"/><text class="note" x="510" y="274">nogrant · t ·1</text>
+<rect class="box" x="960" y="60" width="119" height="46" rx="3"/><text x="1020" y="87" text-anchor="middle">cs-posessions</text>
+<rect class="note" x="964" y="130" width="131" height="24"/><text class="note" x="970" y="146">bank · Q1–Q507 ·1</text>
+<rect class="note" x="964" y="162" width="187" height="24"/><text class="note" x="970" y="178">palace · SEAM·PIN·FORT ·1</text>
+<rect class="note" x="964" y="194" width="124" height="24"/><text class="note" x="970" y="210">door · signed ·1</text>
+<rect class="note" x="964" y="226" width="194" height="24"/><text class="note" x="970" y="242">dealer · w0rk over w0sh ·1</text>
+<rect class="note" x="964" y="258" width="138" height="24"/><text class="note" x="970" y="274">brief · c4prime ·1</text>
+<rect class="note" x="964" y="290" width="124" height="24"/><text class="note" x="970" y="306">gauge · words ·1</text>
+<rect class="note" x="964" y="322" width="201" height="24"/><text class="note" x="970" y="338">picture-floor · 7 checks ·1</text>
+<rect class="note" x="964" y="354" width="166" height="24"/><text class="note" x="970" y="370">tombstone · 0 bytes ·1</text>
+<!-- tally shapes 23 edges 0 groups 3 -->
+</svg>

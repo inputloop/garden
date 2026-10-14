@@ -1,0 +1,17 @@
+ts	key	value	by	why	turn	consent
+2026-10-10T02:00:00Z	people.named	corwin, bryant	fixture	he named bryant	corwin	
+2026-10-10T02:00:01Z	answers.short	yes	fixture	declared by demo	corwin	
+2026-10-10T02:00:02Z	answers.long	yes	fixture	no skill declares this	corwin	
+2026-10-10T02:00:03Z	skill.demo.colour	blue	fixture	demo declares skill.demo.<anything>	corwin	
+2026-10-10T02:00:04Z	skill.quiet.colour	red	fixture	quiet declares nothing	corwin	
+2026-10-10T02:00:05Z	skill.nosuch.colour	red	fixture	no such skill	corwin	
+2026-10-10T02:00:06Z	person.corwin.answers	short	fixture	his own turn	corwin	
+2026-10-10T02:00:07Z	person.corwin.narration	none	fixture	hand-written: another speaker	bryant	
+2026-10-10T02:00:08Z	person.bryant.answers	long	fixture	keeper's turn, a named participant	corwin	
+2026-10-10T02:00:09Z	person.stranger.answers	long	fixture	nobody named stranger	stranger	
+2026-10-10T02:00:10Z	person.bryant.narration	brief	fixture	another turn, but a consent row	alfred	consent-0004
+2026-10-10T02:00:10Z	person.dee.answers	long	fixture	not named: a consent id does not name her	corwin	consent-0005
+2026-10-10T02:00:11Z	room.lounge.answers	short	fixture	a room wish	corwin	
+2026-10-10T02:00:12Z	skill.seatkeeper.30d4759dac96	no: /srv/garden/wheels	fixture	he said no	corwin	
+2026-10-10T02:00:13Z	skill.seatkeeper.a730a41c2961	yes	fixture	not the no shape	corwin	
+2026-10-10T02:00:14Z	person.Bad Name.x	1	fixture	not the shape	corwin	

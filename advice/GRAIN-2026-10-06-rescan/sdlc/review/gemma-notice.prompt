@@ -1,0 +1,113 @@
+You are reviewing two drafts, X and Y, of a short permission notice an author would put on a USB edition of their own books. It lets readers publish fan works under a "by permission" watermark without the author reading them first. Neither is legal advice; both are drafts for the author and their lawyer.
+Score each 1 to 5 on: (a) clear to a fan who is not a lawyer; (b) clear about what is allowed and what is not; (c) honest about its own status (draft, needs the author's and counsel's approval); (d) protects the author (can be withdrawn, no endorsement implied, the author's other rights kept); (e) short.
+Then say which you would give the author to start from, and the single most important fix for each.
+Answer in JSON only: {"X":{"a":n,"b":n,"c":n,"d":n,"e":n,"fix":"..."},"Y":{...},"prefer":"X or Y","why":"one sentence"}
+
+=== X ===
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+<!-- TEMPLATE NOTE (removed when rendered)
+This text is a template by non-lawyers, CC BY-SA 4.0. The books it names are NOT
+covered by that licence. It is not legal advice. Before an author uses it:
+  1. have a lawyer in your jurisdiction read it, and your publisher contract
+     (does the publisher hold electronic or derivative rights?);
+  2. decide the choices marked in edition.conf notes: money, AI training,
+     content limits, and whether a withdrawal reaches works already marked;
+  3. only then set LEGAL_REVIEW=yes, which removes the DRAFT banner.
+-->
+# Fan Works Permission Notice, version {{VERSION}}
+
+From {{AUTHOR}}, about {{TITLES}} ("the Books").
+
+**In short:** you may write and share fan works about the Books, free of charge, if you keep the mark below on them. I will not read them and I will not approve them.
+
+## Grant
+
+I give everyone permission to make and share fan works that use the characters, places and events of the Books, in any form, anywhere, free of charge. This permission is not exclusive, and I keep every other right in the Books.
+
+## Mark
+
+Every copy of a fan work must open with this mark, unchanged. The tool `fanmark` fills in the id, which is the first 12 characters of the SHA-256 of this notice, so that anyone can check which notice a work relied on.
+
+> **FAN WORK — published by permission of {{AUTHOR}}** under the Fan Works Permission Notice v{{VERSION}} (id {ID}). Not official, not endorsed, not read by the author.
+
+A copy without the mark is not covered by this permission.
+
+## Not read
+
+I do not read fan works and I do not accept them. Please do not send them to me. If one reaches me anyway, I may delete it unread, and you give me permission to use any idea in it without credit or payment.
+
+## No money
+
+Do not sell fan works, put them behind a paywall, or earn money from them in any other way. Do not use them to train an AI model.
+
+## Yours and mine
+
+You keep the rights in what you add. You get no rights in the Books, and you may not use their titles, covers or my name as a brand, or to suggest that I wrote or approved your work.
+
+## Changes
+
+I may change or withdraw this notice for works made after the change. Works already marked with an earlier id keep that permission. The current notice is at {{CONTACT}}.
+
+
+=== Y ===
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+# Permission notice for fan works
+
+**DRAFT. Prepared by the technology team for the author and his counsel. It is not in force, it
+grants nothing, and it is not legal advice. Until the author signs a final version, nothing on this
+stick lets anyone publish anything.**
+
+STATUS: DRAFT
+VERSION: 0.1
+AUTHOR: [the author's name, as he wants it printed]
+SIGNED: no
+
+## What this notice would say, once signed (in plain words)
+
+1. **You may** write new stories set in the world of the titles in Schedule A and share them [CHOOSE
+   ONE: with other owners of this stick | with the public (only after the author's separate signed
+   contract)], free of charge, with the mark below on every copy.
+2. **You may not** sell them or use them for any commercial purpose; copy more than [N] words of the
+   author's text; use his name or cover art as if the work were his; or touch anything Schedule A
+   leaves out (translations, audio, film, games: [AUTHOR TO CHOOSE]).
+3. **The mark.** Every copy carries the text under "The mark" below.
+4. **The author does not read fan works.** He does not read, review, approve or endorse them and owes
+   nothing for them. You agree he may write anything, including something like your story, without
+   owing you. Please do not send fan works to him. [COUNSEL TO CONFIRM]
+5. **Taking it back.** The author may withdraw this permission for future works by a dated notice at
+   [WHERE]. Works already shared stay as they are unless they break these terms. [COUNSEL TO CONFIRM]
+6. **Works made with AI help.** [CHOOSE ONE: allowed, if the work says so | allowed, if none of the
+   author's text was given to the AI | not allowed]. This stick can start with or without AI; this
+   is where the author says which applies.
+7. **Only what the author owns is covered.** Schedule A lists titles and rights the author has checked
+   he still holds. A right he sold, for example audio, is not covered whatever this notice says.
+
+## The mark (the stamp tool prints exactly this, with the braces filled in)
+
+<!-- watermark -->
+Published by permission of {AUTHOR} under permission notice v{VERSION}.
+{AUTHOR} has not read, reviewed or endorsed this work.
+<!-- /watermark -->
+
+The second line is the point. "By permission" alone could be taken to mean the author approved the
+story; he did not read it. The stamp tool will not print a mark unless this notice is marked in
+force AND the author's own signature on it verifies.
+
+## Schedule A (to be filled in by the author; the book list lives in books.org)
+
+Titles and rights covered: [NONE YET].
+
+## Questions for the author and counsel (not part of the notice)
+
+- Is a standing permission, given once for a class of works, the "written OK" the author wants
+  before anything derived from his books is published? Or does he want to see each one?
+- Who is covered: any owner of a stick, or only people he names? How far may a work travel?
+- How is the permission withdrawn, and what happens to works already out?
+- Do publishers or other contracts limit what he may allow? (He holds the rights his publishers do
+  not; each title and each right still has to be checked.)
+- What is his position on AI-assisted writing, and on his books being given to an AI at all?
+- Voice: this draft says "the author" on purpose. He or counsel may prefer "I".
+
+The SPDX line at the top covers this drafting only. It grants nothing in any work of the author.
+
+DRAFT, not in force.

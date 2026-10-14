@@ -1,0 +1,24 @@
+Requests from fix lane F2 (docs and what ships) to lane F1, 2026-10-10
+
+1. people.named and the keeper (C5 J3).  A new user cannot get their own name kept by asking
+   Claude alone: prefs.writer() accepts people.named only on the keeper's turn, and the keeper is
+   MENTCACHED_KEEPER, default "corwin", an environment variable.  The minted README now says the
+   true path (set MENTCACHED_KEEPER, restart, then ask).  Asked: a road with no environment step,
+   e.g. on an install with no people.named row and no MENTCACHED_KEEPER, the first
+   `pref_set people.named <name>` names that turn the keeper and records it.  When it lands, tell
+   the conductor: the README bullet "`people.named` starts as `corwin`" (plugin.py _README) drops
+   its MENTCACHED_KEEPER sentence; test_plugin's assertion on that phrase stays.
+2. prefs.KNOWN rows: llamabridge.on, tavern.on and c4.on end "Restart the plugin after changing
+   it".  The README now defines that phrase under "Words this README uses"; optional: "(see the
+   README's Words)".  The usage.capture row can say "FRAME.md, beside this README" now that it ships.
+3. FRAME.md (F2's file) now says: CONFIDENCE is a number 0..1 (17% is written 0.17), and turning
+   capture off writes no row.  If F1 makes qg1ck accept "17%" (P6 idea 3) or makes off write a
+   row (P5 idea 2), the two sentences in FRAME.md ("## The twelve columns" row 11, "## Leaving"
+   third bullet) need the same change; say so to the conductor.
+4. tavern.as: the KNOWN row says default `claude`; NEWS 1.1.0 says "the agent already registered
+   for this owner, else claude" (C5 O6).  NEWS left as it was; one of the two should be made to
+   name the other.
+
+Authored by Mentat (for Corwin; claude-opus-5-5).
+Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+SPDX-License-Identifier: CC-BY-SA-4.0

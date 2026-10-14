@@ -1,0 +1,48 @@
+RED
+TopoForge in a real browser from file:// -- written by tests/browser/topoforge.browser.mjs (do not edit by hand)
+Licence of this note: CC-BY-SA-4.0
+Run at: 2026-10-08T09:20:08.414Z on Linux 6.18.44-fc-v80, node v22.22.0
+File tested: index.html sha256 3aec51107b4e03841a6825a1e873d2b34a4d227bc1069c8ed0506a570927b6cc
+Upstream beside it: upstream/topoforge-1.5.html sha256 6a76e9ca66e6a2733a35677c11599114b4009529568580526d90427fa08a9e2a
+Kit: tests/browser/topoforge.browser.mjs sha256 18d3bf54255d6dbb5bcc2181344deb5179090d96e51854375fb1c2cc7be1492d
+Result: 24 checks passed, 9 failed. Exit 1 (0 green, 1 red, 2 kit broken).
+A check fails on any critical or serious axe finding; moderate and minor findings are listed but do not fail.
+
+CHECKS
+NOTE browser 141.0.7390.37, playwright 1.56.0, axe-core 4.14.0
+PASS loads from file:// and exposes TopoForge :: TF_VERSION=1.6
+FAIL axe main: no critical/serious violations :: critical aria-required-children x1 [#menubar] ;; serious color-contrast x8 [.sec:nth-child(1) > h3 | .sec:nth-child(2) > h3 | .sec:nth-child(2) > p | .sec:nth-child(3) > h3 | .sec:nth-child(3) > p | .opt:nth-child(1)] ;; critical label x3 [input[data-path="doc.name"] | input[data-path="page.name"] | input[type="number"]] ;; moderate page-has-heading-one x1 [html] ;; critical select-name x1 [select]
+PASS palette clicks added 9 shapes :: nodes=9
+PASS every shape and link has data.tf_ref :: dmz-bw7h,vlan-m34n,router-7fax,firewall-pxdq,server-hzdd,server-8ob3,switch-t8k0,desktop-3xkt,desktop-q29x,link-rm3n,link-6gb6,link-dmgf,link-3bzs,link-t06d,link-10d5
+PASS tf_refs unique
+FAIL axe props-selected: no critical/serious violations :: serious color-contrast x8 [.sec:nth-child(1) > h3 | .sec:nth-child(2) > h3 | .sec:nth-child(3) > h3 | button[data-cmd="adddata"] | .sec:nth-child(4) > h3 | .row:nth-child(2) > div > .color > .auto] ;; serious label-title-only x2 [input[value="tf_ref"] | input[value="firewall-pxdq"]] ;; critical label x10 [textarea[data-path="n.text"] | input[data-path="n.props.model"] | textarea[data-path="n.props.notes"] | input[data-path="n.style.stroke"] | input[data-path="n.style.fill"] | input[data-path="n.style.color"]] ;; critical select-name x3 [select[data-path="n.type"] | select[data-path="n.layer"] | select[data-path="n.props.status"]]
+FAIL menu bar has no menubar role; each menu button says it opens a menu :: {"role":"menubar","pop":false}
+FAIL Enter opens the File menu with focus inside; Escape closes it and returns focus to File :: {"mo":{"exp":null,"inMenu":true},"mc":{"exp":null,"back":"BODY"}}
+FAIL axe main-dark: no critical/serious violations :: critical aria-required-children x1 [#menubar] ;; serious color-contrast x7 [.sec:nth-child(1) > h3 | .sec:nth-child(2) > h3 | .sec:nth-child(2) > p | .sec:nth-child(3) > h3 | .sec:nth-child(3) > p | #status > span:nth-child(2)] ;; critical label x3 [input[data-path="doc.name"] | input[data-path="page.name"] | input[type="number"]] ;; moderate page-has-heading-one x1 [html] ;; critical select-name x1 [select]
+FAIL axe props-selected-dark: no critical/serious violations :: serious color-contrast x8 [.sec:nth-child(1) > h3 | .sec:nth-child(2) > h3 | .sec:nth-child(3) > h3 | button[data-cmd="adddata"] | .sec:nth-child(4) > h3 | .row:nth-child(2) > div > .color > .auto] ;; serious label-title-only x2 [input[value="tf_ref"] | input[value="firewall-pxdq"]] ;; critical label x10 [textarea[data-path="n.text"] | input[data-path="n.props.model"] | textarea[data-path="n.props.notes"] | input[data-path="n.style.stroke"] | input[data-path="n.style.fill"] | input[data-path="n.style.color"]] ;; critical select-name x3 [select[data-path="n.type"] | select[data-path="n.layer"] | select[data-path="n.props.status"]]
+PASS Tab reaches the inspector tab row :: after 77 Tab presses (at tabbtn-props)
+PASS focus visible on tab :: ok
+PASS Right arrow reaches Story tab
+PASS Enter on Story tab shows Story panel :: {"sel":"true","hidden":false}
+PASS focus visible on Story tab :: ok
+PASS Space on tabs activates (Home->Properties, End->Story) and does not start panning :: props=true story={"sel":"true","hidden":false,"panning":false}
+PASS Story aria-live region exists (role=status, polite) :: {"role":"status","live":"polite"}
+PASS Story says it is a text alternative
+PASS Story names the drawn shapes :: refBtns=58
+PASS Story updates after an edit and announces it :: live="Story updated: “PC 2” renamed “Reception PC”. And 1 more."
+FAIL axe story-page: no critical/serious violations :: critical aria-required-children x1 [#menubar] ;; serious color-contrast x5 [#storyAbout | code | .opt:nth-child(1) | #status > span:nth-child(2) | .opt:nth-child(3)] ;; moderate page-has-heading-one x1 [html]
+FAIL axe story-panel: no critical/serious violations :: serious color-contrast x2 [#storyAbout | code]
+FAIL axe story-panel-dark: no critical/serious violations :: serious color-contrast x2 [#storyAbout | code]
+PASS Tab reaches Download story button
+PASS focus visible on Download button :: ok
+PASS Enter on Download saves .json and -story.md :: Untitled topology.json,Untitled topology-story.md
+PASS Space on Download also saves :: Untitled topology.json,Untitled topology-story.md
+PASS story .md has exactly one facts block :: facts fences=1
+PASS story .md header carries sha256 lines :: > story v=1 fence=facts-9r9h drawing-sha256=85f112226b04d7d3f2cd1af22f036b2d8449537311f92aae295a4c53bb36b2be facts-sha256=1cdaec3b800b349e4949e3b48c572ae005244556b97546a1a8a661e2d50cfb13 / > Drawing f
+PASS story .md has a Gaps section
+PASS story header names the saved JSON by its sha256 :: 85f112226b04d7d3
+PASS no keyboard trap (focus keeps moving under Tab) :: distinct stops=98
+PASS no console errors
+
+NOT TESTED HERE
+- A real screen reader (NVDA, Narrator, Orca); Windows browsers; Visio round trip.

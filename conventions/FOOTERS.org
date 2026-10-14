@@ -1,0 +1,101 @@
+#+TITLE: Footers: one row per skill
+#+STARTUP: showall
+
+Read by bin/ft1mt, which mints each skill's footer from this table and conventions/house.env.
+Edit a row's /spine/ or /how/ by hand if it is wrong; ft1mt keeps /version/, /from/, /revised/ and
+/body/ up to date itself (a skill is re-dated only when its body changes).  /how/: mint (ft1mt
+writes the footer), recipe (the skill's own literate recipe writes it), verbatim (someone else's
+bytes, kept whole).  /spine from/ says where the spine date was found.
+
+| skill                        | folder      | how      | version | from  | revised    | spine      | spine from                       | body         |
+|------------------------------+-------------+----------+---------+-------+------------+------------+----------------------------------+--------------|
+| aethernet-relay              | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-08-05 | the earliest date its text names | cca8babda278 |
+| altorewired                  | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-08-17 | the earliest date its text names | 24fc7a0c52c8 |
+| boundscheck                  | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-11 | the earliest date its text names | b6b9445458bc |
+| build-loop                   | SOFT-SKILLS | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-22 | the earliest date its text names | e208cb80167b |
+| build-loop                   | skills      | mint     | 1.1.2   | 1.1.0 | 2026-10-10 | 2026-09-22 | the earliest date its text names | 746384b9760e |
+| candor-gate                  | skills      | mint     | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-09-23 | its .arc                         | cebd24e42e5d |
+| color-theory                 | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-07-05 | the ChangeLog                    | 8902694d2ade |
+| comic-avatars                | SOFT-SKILLS | mint     | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-10-04 | the earliest date its text names | 9824d1b010d4 |
+| consent-gate                 | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-07-08 | the earliest date its text names | 5f6b78b34441 |
+| considerate-reader           | SOFT-SKILLS | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-23 | the earliest date its text names | b0173ae49a07 |
+| containment-during-exec      | skills      | mint     | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-07-27 | the earliest date its text names | f44f3e16d12a |
+| countable-gauge              | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-03 | the earliest date its text names | eb484f253712 |
+| depth-overlap                | SOFT-SKILLS | mint     | 1.1.4   | 1.1.3 | 2026-10-10 | 2026-10-10 | the ChangeLog                    | 95602d0a7ae8 |
+| drawer-vs-door               | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-08-08 | the earliest date its text names | 821f53aae9c8 |
+| drift                        | skills      | recipe   | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-10-04 | the earliest date its text names | fa0faba56794 |
+| eclipse-pass                 | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-06-29 | the earliest date its text names | 7b6f2353d27d |
+| egress                       | SOFT-SKILLS | mint     | 1.1.2   | 1.0.1 | 2026-10-10 | 2026-09-26 | the earliest date its text names | c2fb3074e58c |
+| emacs-tashaki                | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-11 | its .arc                         | 3ec960f71370 |
+| ethicsminions                | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-07-02 | the ChangeLog                    | 79ea3f52f12f |
+| family-shelf                 | SOFT-SKILLS | mint     | 1.1.1   | 1.0.5 | 2026-10-10 | 2026-10-10 | the earliest date its text names | 410e9110bc6b |
+| fantasy-operational-boundary | skills      | mint     | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-07-27 | the earliest date its text names | 25e60f8fd431 |
+| foaf                         | skills      | mint     | 1.0.1   | 1.0.0 | 2026-10-05 | 2026-09-11 | its .arc                         | 40cde2b3ed6f |
+| fortress-palace              | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-03 | the earliest date its text names | 80e8134dfe9c |
+| frugal-offload               | SOFT-SKILLS | verbatim | 1.1.2   | 1.0.5 | 2026-10-10 | 2026-10-10 | none found (the seed date)       | 8ecda65de33c |
+| garden-pony                  | skills      | mint     | 1.0.1   | 1.0.0 | 2026-10-08 | 2026-10-08 | the earliest date its text names | 423934998e43 |
+| garden-usage                 | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-27 | its .arc                         | 06560701c16e |
+| gauntlet                     | SOFT-SKILLS | verbatim | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-07-04 | the earliest date its text names | 44900b8f15c6 |
+| grand-test-manifest          | SOFT-SKILLS | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-28 | the earliest date its text names | 01eb874911a5 |
+| guarded-visibility           | skills      | mint     | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-07-27 | the earliest date its text names | fc10aee1bcae |
+| hand-test                    | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-11 | its .arc                         | 147badbfddce |
+| hooks-to-knowledge           | skills      | mint     | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-07-27 | the earliest date its text names | 4b843e4ff0f9 |
+| houseboxer                   | SOFT-SKILLS | recipe   | 1.0.1   | 1.0.0 | 2026-10-05 | 2026-10-04 | the earliest date its text names | b85dd6d7b8f7 |
+| hui                          | SOFT-SKILLS | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-29 | the earliest date its text names | ee130c500658 |
+| inculcat-boxer               | skills      | mint     | 1.1.2   | 1.1.0 | 2026-10-10 | 2026-07-01 | the earliest date its text names | 8f9f7a7c826f |
+| instrument-panel             | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-07-12 | its .arc                         | c6b273b76bea |
+| intake                       | SOFT-SKILLS | recipe   | 1.0.1   | 1.0.0 | 2026-10-08 | 2026-10-06 | the earliest date its text names | 1dc22db466be |
+| intern                       | SOFT-SKILLS | mint     | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-10-04 | none found (the seed date)       | 4257f5fe48da |
+| kid-glove                    | skills      | recipe   | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-10-04 | the earliest date its text names | 70bdb80aca08 |
+| layered-assurance            | skills      | mint     | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-07-27 | the earliest date its text names | f169277b47a5 |
+| lens                         | skills      | mint     | 1.1.2   | 1.1.0 | 2026-10-10 | 2026-09-01 | the earliest date its text names | 05ec2c2b538f |
+| llama-bridge                 | skills      | recipe   | 1.0.1   | 1.0.0 | 2026-10-05 | 2026-07-04 | the earliest date its text names | 2fc01b751f11 |
+| magic-words-persona          | skills      | mint     | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-07-27 | the earliest date its text names | 27757e761d39 |
+| md-org-canonicity            | skills      | mint     | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-07-27 | the earliest date its text names | 1a98de45a605 |
+| medley-review                | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-23 | its .arc                         | f88940cb035a |
+| mentat-skill                 | skills      | mint     | 1.1.2   | 1.1.0 | 2026-10-10 | 2026-09-04 | the earliest date its text names | 97fef3d5d3bf |
+| ngen                         | SOFT-SKILLS | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-29 | the earliest date its text names | 6b350cd86d4b |
+| nongnu-steward               | SOFT-SKILLS | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-23 | the earliest date its text names | a3058774bbac |
+| omni-tool                    | SOFT-SKILLS | verbatim | 1.1.2   | 1.0.5 | 2026-10-10 | 2026-07-02 | the earliest date its text names | 9de39451e4de |
+| outside-reader               | SOFT-SKILLS | mint     | 1.0.1   | 1.0.0 | 2026-10-05 | 2026-10-04 | the earliest date its text names | 42e7761946d2 |
+| parallax                     | SOFT-SKILLS | verbatim | 1.0.1   | 1.0.0 | 2026-10-05 | 2026-10-01 | the earliest date its text names | ce93218a3688 |
+| pencil-your-own              | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-08-29 | the earliest date its text names | db1a97dc0439 |
+| persona-engine               | skills      | recipe   | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-10-04 | none found (the seed date)       | 9c2338995dd2 |
+| pmo                          | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-23 | its .arc                         | b378e85a9531 |
+| pocket-mentat                | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-04 | the earliest date its text names | 041f8b7a932d |
+| posix                        | skills      | mint     | 1.1.2   | 1.1.0 | 2026-10-10 | 2026-07-04 | the earliest date its text names | 92c3c89dd1b4 |
+| posix-gotchas                | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-23 | its .arc                         | fa17b1fae313 |
+| principles                   | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-07-01 | the earliest date its text names | ad5df6d2ca00 |
+| prior-instruction            | SOFT-SKILLS | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-23 | the earliest date its text names | 7dabc073e8b1 |
+| prove-a-promise              | skills      | mint     | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-07-27 | the earliest date its text names | 15f21e1064ea |
+| public-stage                 | SOFT-SKILLS | mint     | 1.0.1   | 1.0.0 | 2026-10-05 | 2026-10-04 | the ChangeLog                    | 57f385bce0dd |
+| question-economy             | SOFT-SKILLS | mint     | 1.1.1   | 1.0.5 | 2026-10-10 | 2026-10-09 | the earliest date its text names | b871b4728c5f |
+| reformat-prompt              | skills      | mint     | 1.1.2   | 1.1.0 | 2026-10-10 | 2026-08-06 | the earliest date its text names | 04ee5024eb82 |
+| reformat-session             | SOFT-SKILLS | mint     | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-10-04 | the earliest date its text names | c6e150b7534b |
+| release-runbook              | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-11 | its .arc                         | ce9ea4347ea4 |
+| retro-apply                  | SOFT-SKILLS | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-10-04 | none found (the seed date)       | cf90788334c5 |
+| rewire-order                 | skills      | mint     | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-07-27 | the earliest date its text names | 7356cba7dc60 |
+| rolls                        | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-08-10 | the earliest date its text names | 054f09ad6108 |
+| run-card                     | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-23 | its .arc                         | 4a34045c4a3c |
+| sandboxer                    | skills      | mint     | 1.1.2   | 1.1.0 | 2026-10-10 | 2026-07-07 | the earliest date its text names | 6517438075bc |
+| savane-forensics             | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-23 | its .arc                         | f3d386b4d1e7 |
+| seams                        | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-07-05 | the earliest date its text names | 44d4622a4d17 |
+| seatkeeper                   | skills      | mint     | 1.1.2   | 1.1.0 | 2026-10-10 | 2026-09-01 | the earliest date its text names | db8509e939c0 |
+| security-digest              | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-07-03 | the earliest date its text names | 94a3e11ae448 |
+| session-rotate               | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-06-27 | the earliest date its text names | 5bb9c6264968 |
+| shelf-check                  | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-07-05 | the earliest date its text names | d821b69d0e27 |
+| signing-model                | skills      | mint     | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-07-28 | the earliest date its text names | d4c328fdfd1e |
+| skill-metrics                | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-22 | the earliest date its text names | 3ccd7fcfea14 |
+| skill-sign                   | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-07-03 | the earliest date its text names | d09e8392ab1b |
+| skilltank                    | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-07-06 | the earliest date its text names | 83cc14789962 |
+| soft-skills                  | SOFT-SKILLS | mint     | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-10-04 | none found (the seed date)       | 56b9c7e90a99 |
+| token-optimizer              | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-07-06 | the earliest date its text names | 94c714c22633 |
+| tool-lifecycle               | skills      | mint     | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-07-27 | the earliest date its text names | 2d2e3d5f8ab1 |
+| topoforge-story              | skills      | mint     | 1.1.2   | 1.0.1 | 2026-10-10 | 2026-10-08 | the earliest date its text names | 408657376557 |
+| two-columns                  | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-09-14 | the earliest date its text names | e8d3cfd517d4 |
+| values-baseline              | skills      | mint     | 1.0.1   | 1.0.0 | 2026-10-04 | 2026-07-27 | the earliest date its text names | 86c4c66eb176 |
+| verify-say                   | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-08-10 | the earliest date its text names | 62bc68b9dfac |
+| vibrobeast                   | skills      | mint     | 1.0.1   | 1.0.0 | 2026-10-05 | 2026-06-29 | its name's founding (MEMORY)     | 13f5f679e6e0 |
+| wire-connect                 | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-08-04 | the earliest date its text names | c7178c4eafa0 |
+| wire-ledger                  | skills      | mint     | 1.1.0   | 1.0.1 | 2026-10-10 | 2026-08-05 | the earliest date its text names | 2184bd0f311d |
+| writing-forms                | skills      | mint     | 1.1.2   | 1.1.0 | 2026-10-10 | 2026-08-09 | the earliest date its text names | edad43160586 |

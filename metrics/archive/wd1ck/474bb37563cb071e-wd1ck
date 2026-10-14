@@ -1,0 +1,251 @@
+#!/bin/sh
+# wd1ck -- WORD 1 CHECK.  Check a word file of q/words/ against its own form.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st>
+#
+# This program is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.  See <https://www.gnu.org/licenses/>.
+#
+# ---------------------------------------------------------------------------------------------
+# WHAT IT CHECKS -- five things, and nothing else.  The form is stated in q/words/README.md;
+# this program is that statement made mechanical, so nobody has to remember it at two in the
+# morning.  It does NOT judge whether a meaning is really a meaning: that is a reading, and a
+# reading is the writer's job.  It checks shape and it checks that the ground is really there.
+#
+#   C1 MEANINGS      at least two meanings           (### M<n> ...)
+#   C2 USAGES        at least two array lines per meaning
+#   C3 TAGGED        every array line carries at least one #tag
+#   C4 NOT-SELF      no array line tags its own filename word
+#   C5 CITED         every backticked `path:line` in the file resolves to a line that exists
+#
+# ---------------------------------------------------------------------------------------------
+# usage: wd1ck [-r ROOT]... [--tsv] [--prove-red] [FILE...]
+#   -r ROOT      a root to resolve citations against; repeatable, tried in order.
+#                Default: the file's ../.. and ../../.. (from q/words/: the c4 tree, then
+#                the estate above it).  A citation resolves if ANY root holds it.
+#   --tsv        one tab-separated row per finding, for a register instead of a reader
+#   --all        print every check, green ones included.  Off by default: a room of clean word
+#                files printed 18 'ok' lines and 2 RED ones (OBSERVED 2026-09-17 over q/words),
+#                which buries the two findings under the ninety per cent that are fine.  By
+#                default a file with nothing wrong gets ONE line and a file with a RED check
+#                gets its full block.  Make it easy to ask for more rather than necessary to
+#                ask for less.
+#   --prove-red  build a deliberately broken word file in $TMPDIR, check it, and show all
+#                five checks going red.  Proves the program can say no.
+#   -h, --help   this header
+#
+# IT READS AND NEVER WRITES into the tree it checks, and it ALWAYS EXITS 0 when it could read.
+# A form check that can fail a build is a gate, and a gate is a thing people learn to route
+# around.  Exit 2 is reserved for usage and environment trouble -- a file it cannot open.
+#
+# NOT CHECKED HERE, on purpose: README.md (it quotes broken examples so a reader can see them)
+# and *.ITEM.md (an item sibling is a character sheet, not a word file).  Both get a note.
+# ---------------------------------------------------------------------------------------------
+
+set -u
+tsv=0 ; red=0 ; all=0 ; roots=''
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -r) [ $# -ge 2 ] || { echo "wd1ck: -r needs a ROOT" >&2 ; exit 2 ; }
+        roots="$roots$2
+" ; shift 2 ;;
+    --tsv) tsv=1 ; shift ;;
+    --all) all=1 ; shift ;;
+    --prove-red) red=1 ; shift ;;
+    -h|--help) sed -n '2,40p' "$0" ; exit 0 ;;
+    --) shift ; break ;;
+    -*) echo "wd1ck: unknown option $1" >&2 ; exit 2 ;;
+    *) break ;;
+  esac
+done
+
+tmp=${TMPDIR:-/tmp}/wd1ck.$$
+mkdir -p "$tmp" || exit 2
+trap 'rm -rf "$tmp"' EXIT HUP INT TERM
+
+# --- --prove-red: plant a file that breaks all five, then check it ---------------------------
+if [ "$red" = 1 ]; then
+  mkdir -p "$tmp/red"
+  # Two planted files, because no single file can break all five at once: C1 (fewer than two
+  # meanings) forces one meaning, C2 (a meaning with fewer than two lines) forces one line --
+  # and one line cannot be both untagged (C3) and self-tagged (C4).  The pair covers all five.
+  cat > "$tmp/red/redone.md" <<'RED1'
+# redone -- one meaning, one usage, no tag, a citation that is not there
+
+### M1 . only-meaning . and it carries a single untagged line
+- a phrase with no tag at all, grounded on a file that does not exist `no/such/file.md:9`
+RED1
+  cat > "$tmp/red/redtwo.md" <<'RED2'
+# redtwo -- shape is fine; one line tags its own filename word
+
+### M1 . first-meaning
+- a phrase that is properly grounded `redone.md:1` #shape
+- a second phrase, same meaning, CONSTRUCTED for this test #shape
+
+### M2 . second-meaning
+- a phrase that tags its own filename word #redtwo #shape
+- a second phrase, CONSTRUCTED for this test #shape
+RED2
+  echo "wd1ck --prove-red: two planted files. Between them all five checks must go red."
+  echo
+  "$0" -r "$tmp/red" "$tmp/red/redone.md" "$tmp/red/redtwo.md"
+  echo
+  echo "wd1ck --prove-red: expect RED on MEANINGS, USAGES, TAGGED, CITED (redone) and"
+  echo "                   RED on NOT-SELF (redtwo).  Any of those reading 'ok' means"
+  echo "                   this program is not checking that rule."
+  exit 0
+fi
+
+# Bare invocation prints the header, not a single usage line. The exit stays 2 -- naming no
+# file IS usage trouble -- but a reader who types the name of a tool gets told what it can do
+# rather than told off.
+[ $# -gt 0 ] || { sed -n '2,46p' "$0" >&2 ; exit 2 ; }
+
+files_checked=0 ; files_red=0
+
+for f in "$@"; do
+  [ -f "$f" ] || { echo "wd1ck: cannot read $f" >&2 ; exit 2 ; }
+  base=$(basename "$f")
+  case "$base" in
+    README.md|README) echo "note  $f -- the room's README, not a word file; not checked" ; continue ;;
+    PAPER-*.md)       echo "note  $f -- a paper, not a word file; not checked" ; continue ;;
+    *.ITEM.md)        echo "note  $f -- an ITEM sibling, not a word file; not checked" ; continue ;;
+  esac
+  word=${base%.md}
+  files_checked=$((files_checked + 1))
+
+  # roots to resolve citations against
+  d=$(cd "$(dirname "$f")" && pwd) || exit 2
+  if [ -n "$roots" ]; then myroots=$roots
+  else
+    myroots=''
+    for up in ../.. ../../..; do
+      r=$(cd "$d/$up" 2>/dev/null && pwd) || continue
+      myroots="$myroots$r
+"
+    done
+    myroots="$myroots$d
+"
+  fi
+
+  # ---- parse: meanings and array lines -------------------------------------------------------
+  # A MEANING opens with '### M<n>'.  An ARRAY LINE is a '- ' line inside a meaning block.
+  awk -v W="$word" '
+    /^### M[0-9]+([ .]|$)/ { m++; mname[m]=$0; inm=1; next }
+    /^#/                   { inm=0; next }
+    inm && /^- / {
+      u[m]++; tot++
+      ntag = 0; self = 0
+      s = $0
+      while (match(s, /(^|[ (])#[a-z][a-z0-9-]*/)) {
+        t = substr(s, RSTART, RLENGTH); sub(/^[ (]/, "", t); sub(/^#/, "", t)
+        ntag++
+        if (t == tolower(W)) self = 1
+        s = substr(s, RSTART + RLENGTH)
+      }
+      if (ntag == 0) printf "NOTAG\t%d\t%s\n", NR, substr($0,1,70)
+      if (self)      printf "SELFTAG\t%d\t%s\n", NR, substr($0,1,70)
+    }
+    END {
+      printf "MEANINGS\t%d\n", m
+      for (i = 1; i <= m; i++) printf "USAGES\t%d\t%d\t%s\n", i, u[i]+0, mname[i]
+    }
+  ' "$f" > "$tmp/parse" || exit 2
+
+  # ---- parse: citations -- a citation is a BACKTICKED path:line ------------------------------
+  awk '
+    {
+      s = $0
+      while (match(s, /`[^` ]+:[0-9]+`/)) {
+        c = substr(s, RSTART+1, RLENGTH-2)
+        printf "CITE\t%d\t%s\n", NR, c
+        s = substr(s, RSTART + RLENGTH)
+      }
+    }
+  ' "$f" > "$tmp/cites" || exit 2
+
+  nmean=$(awk -F'\t' '$1=="MEANINGS"{print $2}' "$tmp/parse")
+  notag=$(grep -c '^NOTAG' "$tmp/parse" 2>/dev/null || true) ; notag=${notag:-0}
+  selft=$(grep -c '^SELFTAG' "$tmp/parse" 2>/dev/null || true) ; selft=${selft:-0}
+  thin=$(awk -F'\t' '$1=="USAGES" && $3<2' "$tmp/parse" | wc -l | tr -d ' ')
+  ncite=$(wc -l < "$tmp/cites" | tr -d ' ')
+
+  # ---- resolve every citation ----------------------------------------------------------------
+  : > "$tmp/badcites"
+  while IFS="	" read -r _ ln cite; do
+    [ -n "${cite:-}" ] || continue
+    p=${cite%:*} ; n=${cite##*:}
+    hit=0
+    printf '%s\n' "$myroots" | while IFS= read -r r; do
+      [ -n "$r" ] || continue
+      [ -f "$r/$p" ] || continue
+      have=$(wc -l < "$r/$p" 2>/dev/null | tr -d ' ')
+      [ -n "$have" ] || continue
+      [ "$n" -le "$have" ] 2>/dev/null && { echo hit > "$tmp/hit.$$" ; break ; }
+    done
+    [ -f "$tmp/hit.$$" ] && { rm -f "$tmp/hit.$$" ; hit=1 ; }
+    [ "$hit" = 1 ] || printf '%s\t%s\n' "$ln" "$cite" >> "$tmp/badcites"
+  done < "$tmp/cites"
+  badc=$(wc -l < "$tmp/badcites" | tr -d ' ')
+
+  # ---- say it ---------------------------------------------------------------------------------
+  red_here=0
+  say() { # NAME VERDICT DETAIL
+    if [ "$tsv" = 1 ]; then printf '%s\t%s\t%s\t%s\n' "$f" "$1" "$2" "$3"
+    else
+      if [ "$2" = ok ]; then printf 'ok    %-10s %s\n' "$1" "$3"
+      else printf 'RED   %-10s %s\n' "$1" "$3" ; fi
+    fi
+    [ "$2" = ok ] || red_here=1
+  }
+
+  # The five checks write into a buffer rather than straight to the reader, so the
+  # decision of whether this file is worth a block can be made AFTER measuring it.
+  # A brace group is not a subshell, so red_here still comes back out.
+  {
+  [ "$tsv" = 1 ] || printf '\n== %s  (word: %s)\n' "$f" "$word"
+
+  if [ "${nmean:-0}" -ge 2 ]; then say MEANINGS ok "$nmean meanings"
+  else say MEANINGS red "$nmean meaning(s) -- the form asks for at least two"; fi
+
+  if [ "$thin" = 0 ]; then say USAGES ok "every meaning carries 2+ array lines"
+  else
+    say USAGES red "$thin meaning(s) with fewer than two array lines"
+    [ "$tsv" = 1 ] || awk -F'\t' '$1=="USAGES" && $3<2 {printf "      thin: %s (%s line(s))\n", $4, $3}' "$tmp/parse"
+  fi
+
+  if [ "$notag" = 0 ]; then say TAGGED ok "every array line carries a #tag"
+  else
+    say TAGGED red "$notag array line(s) carry no #tag"
+    [ "$tsv" = 1 ] || awk -F'\t' '$1=="NOTAG"{printf "      line %s: %s\n", $2, $3}' "$tmp/parse"
+  fi
+
+  if [ "$selft" = 0 ]; then say NOT-SELF ok "no line tags #$word"
+  else
+    say NOT-SELF red "$selft line(s) tag their own filename word #$word"
+    [ "$tsv" = 1 ] || awk -F'\t' '$1=="SELFTAG"{printf "      line %s: %s\n", $2, $3}' "$tmp/parse"
+  fi
+
+  if [ "$badc" = 0 ]; then say CITED ok "$ncite citation(s), all resolve"
+  else
+    say CITED red "$badc of $ncite citation(s) do not resolve"
+    [ "$tsv" = 1 ] || awk -F'\t' '{printf "      line %s: %s\n", $1, $2}' "$tmp/badcites"
+  fi
+  } > "$tmp/say"
+
+  if [ "$tsv" = 1 ]; then cat "$tmp/say"
+  elif [ "$all" = 1 ] || grep -q '^RED ' "$tmp/say" 2>/dev/null; then cat "$tmp/say"
+  else printf 'ok    %s  (word: %s) -- all five checks green\n' "$f" "$word"
+  fi
+
+  [ "$red_here" = 0 ] || files_red=$((files_red + 1))
+done
+
+if [ "$tsv" = 1 ]; then printf 'TOTAL\tfiles\t%s\tred\t%s\n' "$files_checked" "$files_red"
+else
+  printf '\nwd1ck: %s file(s) checked, %s with a red check.\n' "$files_checked" "$files_red"
+  [ "$all" = 1 ] || [ "$files_checked" = "$files_red" ] || \
+    printf '       (clean files were collapsed to one line each; --all prints every check.)\n'
+fi
+exit 0

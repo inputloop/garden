@@ -1,0 +1,144 @@
+2026-09-11  Claude (Cowork, eclipse-pass ENHANCE turn)  for Corwin  <mplscorwin@gmail.com>
+
+	* skills/eclipse-pass/SKILL.md: folded the routed ENHANCE draft
+	c4/dist/skills/eclipse-pass-ENHANCE-multiarm-draft.md (skilltank verdict
+	2026-07-27) into move 3 as new item 3b, Multi-arm mode: arm-marking,
+	disjoint seeds, CONTRAST-doc-after-not-before, environment-delta
+	receipts, guest etiquette to skilltank; one new falsifier. No script
+	change -- eclipse_pass.sh's increment-dir auto-suffix already satisfies
+	the draft's no-clobber claim. skill-lint.sh: description 993/1024
+	chars, clean. .asc stale until re-signed (SIGN-QUEUE 29).
+	* dist/: whole garden reminted via `make dist` (58 skills; unrelated to
+	this edit, his standing --all-installed behavior).
+
+2026-09-11  Claude (Fable, Cowork on1gw turn)  for Corwin  <mplscorwin@gmail.com>
+
+	* polygram/dist.py (collect): new include_workspace= and names= keywords
+	so a mint can be scoped to the --skills-source roots alone, or to named
+	skills; default unchanged (workspace + family-filtered installed). Fixes
+	o36 / memory/c4-forge-mint-2026-09-04.md:28 (21 workspace skills swept
+	into skills/dist-2026-09-04/ on a mint meant for a few new ones).
+	* polygram/cli.py (dist): --sources-only, --only NAME (repeatable);
+	--sources-only with no source is exit 2; an --only name found in no
+	root is exit 1 and named.
+	* tests/test_dist.py: 3 tests (sources-only skips workspace; --only
+	scopes every root and outranks the family allowlist; default unchanged).
+	39/39 on Avalon, python3 -m unittest tests.test_dist.
+	* skills/color-theory/tool.py (audit): '#rrggbb' lines were read as
+	comments, so an audit of hex pairs passed over nothing (exit 0, no
+	output). Comment is now '#'+whitespace only; `selftest` subcommand
+	proves the mutant. .skill-manifest row stale until re-signed
+	(SIGN-QUEUE 15).
+	* h/lens.py (import-json): a reading's declared subject_sha is now
+	compared to the pin; mismatch is REFUSED and receipted, undeclared is
+	accepted and receipted as declared=none; `selftest` proves it. Before,
+	the pin's sha was stamped over every import (o12 / queue Q12).
+
+2026-07-05  Corwin  <mplscorwin@gmail.com>  (w/ wide fingers &Mentat/Cowork)
+
+	* release fresh vibes - 19 locally hatched/free range farm fed skils
+	* skills/*/{.skill-manifest,.signature.asc}: per-skill provenance
+	LIVE — all 13 curated trees signed in place via skill-sign.sh (QA-7
+	whole-tree scheme: sha256 every file, SKILL.md canonicalized, pinned
+	ECE77CF417C76C1ACFCE7C2B5B6135511580F007). Verified 13/13 valid, 2/2
+	independent: keeper bench (Avalon 13:59 CDT) + instrument through the
+	freshened mount. A standing verify now answers "is this really mine?"
+	per skill, not just per release.
+	* skills/color-theory/.signature.asc: legacy lone signature (pre-QA-7,
+	no manifest) superseded by the manifest scheme.
+	* claud-qa-hold/QA-10-skilltank-0.6.1-remint.md: new — the 0.6.0
+	skilltank .skill bundle carried STALE pre-release bytes (mint-time
+	mount-reader fault, not tamper: installed==bundle==MANIFEST all held
+	the 06-29 text while workspace==git HEAD held the reading-room text).
+	Core closed same day by the in-place tree signing above; 0.6.1 mint
+	carries the fix. Lesson pinned: certification sweeps hash git objects
+	or file-tool reads, NEVER the bash mount; mint from a git-clean tree.
+	* gated/core-ethics-pack-2026-06-29.tgz: found corrupt (gzip CRC,
+	confirmed independently keeper-side and sandbox-side). Excluded as a
+	fill source; awaits regrow from backup. Nothing depended on it.
+	* model.md: revision-history table noted truncated at v4 (dangling
+	pipe, carried in snapshots since >=07-02); repair rides next rotation.
+	* NEWS, polygram/__init__.py: 0.6.1.
+
+2026-07-04  Corwin  <mplscorwin@gmail.com>  (with Mentat/Cowork)
+
+	* polygram/gate.py (past_rejects, apply_durable_rejects): REJECT is
+	durable — the advice history is the ledger, latest terminal decision
+	(PASS/REJECT) per label wins, HOLD never overrides; a re-surfaced
+	rejected candidate lands HOLD with the history named; review
+	--promote (a later PASS) is the one way through. Wired into cmd_gate,
+	cmd_synth, review.build. Closes the "concise came back" gap.
+	* tests/test_durable_reject.py: new — 6 tests incl. the
+	HOLD-must-not-erase-the-ledger case. 76 total.
+	* labels.tsv: new — pinned label registry (label/meaning/owner/
+	consumer/since); rule: no consumer, no label. GRAMMARY.md gained the
+	LABELS section as the human truth the tsv must agree with.
+	* skills/ethicsminions/references/attestations.txt: new — arms the
+	minions --expect drift check (was SKIPping since birth); pins stable
+	blessed-principle phrases; canon remains SAVANNAH.
+	* skills/ethicsminions/scripts/check_principles.py: notes() layout
+	patch STAGED at claud-qa-hold/ (QA-9) — file write-denied from the
+	sandbox; land from host.
+	* skills/skill-sign: adopted (QA-7, Haiku lineage) — whole-tree
+	manifest signing, pinned verify, dotfile-safe bundles, zip-slip guard.
+	* skills/security-digest: adopted (QA-8) — Haiku's digest + "Report,
+	never act" autonomy line.
+	* skills/ethicsminions/references/AI_GUARD_PROVENANCE_CLAUDE.md:
+	QA-5 landed (rider satisfied; Corwin present and initiating).
+
+2026-07-02  Corwin  <mplscorwin@gmail.com>  (with Mentat/Cowork)
+
+	* bin/release: new — host-run release turnaround (gate: clean tree,
+	artifacts, MANIFEST stray-free, NEWS entry, tests, tag-free; then
+	sign/tag with --apply, Forgejo release + assets with --push).
+	Dry-run default; token via $FORGEJO_TOKEN only.
+	* skills/{sandboxer,session-rotate,skilltank}: fold installed reality
+	back into the curation of record — sandboxer gains the read-side
+	desync section; session-rotate ships rotate_session.sh (rotate.py
+	retired); skilltank drops the renounced torture dialect, torture.py,
+	and the consent_gate.py absorbed by the consent-gate skill. Repo had
+	lagged the live skills; 0.5.4 shipped the stale trio. Next mint
+	(0.5.5, curation-only) carries the current set.
+
+2026-07-02  Corwin  <mplscorwin@gmail.com>  (with Mentat/Cowork)
+
+	* polygram 0.5.4 (respin: 0.5.3 shipped mint residue, no leak)
+	* polygram/dist.py (_is_tmp_stray, _is_junk): filter sed -i mkstemp
+	strays (digit/uppercase suffix guard vs real words), vim swaps,
+	emacs lockfiles. Root cause of sedx44W4d in the 0.5.3 archives.
+	* polygram/cli.py (dist): --version accepted as alias for
+	--dist-version (argparse scopes it to the subcommand).
+	* polygram/dist.py (_rel): replace Path.relative_to with an
+	os.path.relpath helper — mingw/msys Python 3.14 hands pathlib
+	mixed separators (skills\name/SKILL.md) and relative_to refuses
+	them; relpath normalizes, so host and sandbox mint identically.
+	* polygram/__init__.py: 0.5.4.
+	* tests/test_dist.py: stray unit + bundle coverage incl.
+	false-positive check ("sediments" ships); dist --version parse test.
+
+2026-07-02  Corwin  <mplscorwin@gmail.com>  (with Mentat/Cowork)
+
+	* polygram 0.5.3 (curation-only)
+	* skills/principles: new — frozen PRINCIPLES v1.0 (blessed statement).
+	* skills/ethicsminions/SKILL.md: description spelling fixes.
+	* skills/ethicsminions/SKILL.md: slim description 1023 -> 747 chars
+	(1024 load limit); trigger phrases verbatim; body untouched. PMO #82
+	closed, #94 executed; remint held for #91 (advice 20260702-034933).
+
+2026-06-27  Corwin  <mplscorwin@gmail.com>  (with Mentat/Cowork)
+
+	* polygram 0.5.2
+	* polygram/cli.py (_default_skills_sources): read $POLYGRAM_SKILLS_SOURCE
+	when --skills-source is omitted.
+	* polygram/review.py (build): externs feed candidates only via their
+	own memory/ notes, not arbitrary repo docs.
+	* polygram/memory.py (_is_noise_tag): drop hex-colour tokens (e.g.
+	ffcc00) from candidate generation.
+	* polygram/dist.py: per-skill .skill bundle minting + shared junk filter.
+	* skills/: folded in mentat-skill, ethicsminions, sandboxer, skilltank;
+	shipped color-theory (WCAG contrast tool); removed QC-rejected
+	concise/ffcc00.
+	* GNU packaging: COPYING, AUTHORS, NEWS, ChangeLog, INSTALL, README.org,
+	doc/polygram.texi, site/index.html, model.md.
+
+	See NEWS for the user-visible summary and git history for detail.

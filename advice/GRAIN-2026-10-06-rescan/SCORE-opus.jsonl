@@ -1,0 +1,14 @@
+{"file":"CAL-opus.md","score":{"F2":1,"F3":1,"F4":1,"F5":1,"F6":1,"F7":1,"errors":[]}}
+{"file":"CAL-opus-r2.md","score":{"F2":1,"F3":1,"F4":1,"F5":1,"F6":1,"F7":1,"errors":[]}}
+{"file":"CAL-sonnet.md","score":{"F2":1,"F3":1,"F4":1,"F5":1,"F6":1,"F7":1,"errors":[]}}
+{"file":"CAL-sonnet-r2.md","score":{"F2":1,"F3":1,"F4":1,"F5":1,"F6":1,"F7":1,"errors":[]}}
+{"file":"CAL-sonnet-r3.md","score":{"F2":1,"F3":1,"F4":1,"F5":1,"F6":1,"F7":0,"errors":["says neither has chosen among the three licences"]}}
+{"file":"CAL-sonnet-r4.md","score":{"F2":1,"F3":1,"F4":1,"F5":1,"F6":1,"F7":1,"errors":[]}}
+{"file":"CAL-haiku.md","score":{"F2":1,"F3":1,"F4":0.5,"F5":1,"F6":1,"F7":0.5,"errors":["name tags and comments box given to bryant1269","invents an open question about shifting time from social activities"]}}
+{"file":"CAL-haiku-r2.md","score":{"F2":1,"F3":1,"F4":0.5,"F5":1,"F6":1,"F7":1,"errors":["name tags and comments box given to bryant1269"]}}
+{"file":"CAL-haiku-r3.md","score":{"F2":1,"F3":0.5,"F4":1,"F5":1,"F6":1,"F7":1,"errors":["bryant1269's pragmatic-or-essential line given to mplscorwin","says bryant1269 lets Corwin decide after 'send me everything'","attaches the licences to token_optimizer and invents a request for its chat context"]}}
+{"file":"CAL-haiku-r4.md","score":{"F2":1,"F3":1,"F4":0.5,"F5":1,"F6":1,"F7":0,"errors":["bumper cars given to mplscorwin","attaches the licences to token_optimizer"]}}
+{"file":"CAL-gemma.md","score":{"F2":1,"F3":1,"F4":0.5,"F5":0,"F6":1,"F7":0.5,"errors":["licences described as still to be finalized","bumper cars given to mplscorwin","calls provenance-as-cheap a shared agreement"]}}
+{"file":"CAL-gemma-r2.md","score":{"F2":1,"F3":1,"F4":0.5,"F5":1,"F6":1,"F7":1,"errors":["drift described as AI output inconsistency","bumper cars given to mplscorwin"]}}
+{"file":"CAL-gemma-r3.md","score":{"F2":1,"F3":0.5,"F4":1,"F5":0,"F6":1,"F7":1,"errors":["drift described as Claude finding unshared information","licences described as still to be finalized"]}}
+{"file":"CAL-gemma-r4.md","score":{"F2":0,"F3":1,"F4":0.5,"F5":1,"F6":1,"F7":0.5,"errors":["drift described as Claude instances being inconsistent","bumper cars given to mplscorwin","calls apathy the cheapest energy path, inverting mplscorwin's point"]}}

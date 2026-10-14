@@ -1,0 +1,278 @@
+#!/bin/sh
+# ms1dg -- MEMORY STORES 1 DIAGNOSE GAUGE. One POSIX gauge over the memory stores, meant to be run
+#          from TWO READERS -- inside the Cowork sandbox (where the auto-memory store A is invisible
+#          to the shell) and on the host (where A sits at its real path) -- so the two reports can be
+#          laid side by side and the disagreements name the seam.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st>
+# This program is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.  See <https://www.gnu.org/licenses/>.
+#
+# THE NAME, declared as my reading (the AS4CE pattern, run-level in the slot, as bin/ep1nt does):
+#   M  MEMORY     -- the stores: A auto-memory (harness-owned), B the seat (keeper-owned)
+#   S  STORES     -- it reads stores, never a single file's meaning
+#   1  run-level 1 -- reads, writes one report. `--heal` is a declared run-level-2 act (creates NEW
+#                     files in the seat only; never edits the index, never deletes) -- say it aloud.
+#   D  DIAGNOSE   -- every line is a gauge: a WORD state + the command that produced it
+#   G  GAUGE      -- measures; never argues. Heals are CARDS unless --heal is given.
+#
+# STATES (words, never hue): OK · WARN · FAULT · NOTVISIBLE (this reader cannot see it -- not "fine",
+#   not "BAD"). Exit 0 = no FAULT; 1 = at least one FAULT; 2 = usage.
+# CEREMONY DIAL (--ceremony N on the shop's ladder 1 2 4 9 17; the keeper picks per store; default 2).
+#   The number is the size of the RING the ceremony is meant to convince -- C4's own units (4 GRAIN,
+#   9 GREAT, 17 GRAND; 1 and 2 below them are "yourself" and "a pair"):
+#    1 HASH      one reader: sha256 is the note's name (G1-G5, G8); frontmatter/wikilinks not judged
+#    2 WORDS     a pair: + provenance as frontmatter words a second reader acts on (G6/G7):
+#                originSessionId, seat_copy, keeper-typed `blessed:`
+#    4 GRAIN     a small ring: + a regenerated hash manifest (G9) checkable without reading the notes
+#    9 GREAT     strangers: + signatures against a pinned key, every note a sibling .asc (G10; gpg needed;
+#                UNVERIFIED-NO-KEY when the keyring lacks the signer -- never "BAD" for a missing key)
+#   17 GRAND     a shelf: + a .gate vouch map that check-shelf reads (G11) -- publication ceremony
+#   Corwin's ruling 2026-09-05 for HIS memory/: not 9 ("I am not going to clearsign individual memory
+#   files"); pub/ is a 17. Below 9 a stray .asc beside a note is FURNITURE, never an expectation.
+# PLATFORM facts pinned (code.claude.com/docs/en/memory, read 2026-09-05): MEMORY.md index is loaded
+#   only up to 200 lines / 25 KB; an over-limit write still "succeeds" and the rest is dropped on the
+#   next load; the harness stamps `modified:` in frontmatter; `autoMemoryDirectory` in settings.json
+#   can relocate A (Claude Code; Cowork support unverified).
+#
+# usage: ms1dg --seat DIR [--auto DIR] [--out FILE] [--heal [--dry]]
+#        ms1dg --prove-red      a seat with a dangling index line must FAULT (exit 1)
+#   --seat DIR   the seat's memory dir (B)              --auto DIR  A, or a dir where the file tool
+#   --out FILE   write the report there (default stdout)             staged A's files (MEMORY.md alone
+#   --index-lines  print a paste-ready index line per unindexed note (from its frontmatter); never writes
+#   --manifest F   write the seat's hash manifest to F (sha256, bytes, name, originSessionId, seat_copy?)
+#                  -- a RECEIPT, regenerated each run, never signed (automatic at --ceremony 4 and up)
+#   --ceremony N   1 | 2 | 4 | 9 | 17 (see the dial below; default 2)
+#   --heal       run seatkeeper's safe moves: ORPHAN A->B as NEW      is enough for the index diff)
+#                files, SAME-NAME-DIFF preserved beside as <stem>.auto-<sha8>.md; --dry prints only
+# Authored by Fable (Mentat/Vibrobeast) 2026-09-05 for Corwin's memory-continuity work.
+
+SEAT=""; AUTO=""; OUT=""; HEAL=0; DRY=0; PROVE=0; IDXL=0; MAN=""; CER=2
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --seat) SEAT="$2"; shift 2;; --auto) AUTO="$2"; shift 2;; --out) OUT="$2"; shift 2;;
+    --heal) HEAL=1; shift;; --dry) DRY=1; shift;; --prove-red) PROVE=1; shift;; --index-lines) IDXL=1; shift;; --manifest) MAN="$2"; shift 2;; --ceremony) CER="$2"; shift 2;;
+    -h|--help) sed -n '2,32p' "$0"; exit 2;;
+    *) echo "ms1dg: unknown arg $1" >&2; exit 2;;
+  esac
+done
+
+FAULTS=0; WARNS=0; OKS=0; NV=0
+say() {  # say STATE gauge text -- "receipt: cmd"
+  case "$1" in OK) OKS=$((OKS+1));; WARN) WARNS=$((WARNS+1));; FAULT) FAULTS=$((FAULTS+1));; NOTVISIBLE) NV=$((NV+1));; esac
+  printf '%-10s %-8s %s\n' "[ $1 ]" "$2" "$3"
+}
+card() { printf 'CARD      %-8s %s\n' "$1" "$2"; }
+sha() { sha256sum "$1" | cut -c1-64; }
+
+if [ "$PROVE" = 1 ]; then
+  T=$(mktemp -d); mkdir "$T/memory"
+  printf -- '---\nname: real\ndescription: x\nmetadata:\n  type: user\n---\nbody\n' > "$T/memory/real.md"
+  printf '# MEMORY\n- [real](real.md) — ok\n- [ghost](ghost.md) — this file does not exist\n' > "$T/memory/MEMORY.md"
+  sh "$0" --seat "$T/memory" >/dev/null 2>&1; rc=$?
+  rm -rf "$T"
+  if [ "$rc" = 1 ]; then echo "ms1dg --prove-red: red as expected (dangling index line -> exit 1)"; exit 0
+  else echo "ms1dg --prove-red: FAILED, exit was $rc (expected 1)"; exit 1; fi
+fi
+
+[ -n "$SEAT" ] || { echo "ms1dg: --seat DIR required" >&2; exit 2; }
+[ -d "$SEAT" ] || { echo "ms1dg: seat not a directory: $SEAT" >&2; exit 2; }
+[ -n "$OUT" ] && exec >"$OUT"
+[ "$AUTO" = none ] && AUTO=""   # --auto none: explicitly no store A (isolated runs; matches se1sn)
+HSEAT=${MS1DG_HOSTSEAT:-$SEAT}   # cards are for the host's hands: set MS1DG_HOSTSEAT=/f/... when running in the sandbox
+
+# ---- G0 reader identity ------------------------------------------------------------------------
+case "$(pwd -P)$SEAT" in *"/sessions/"*) READER="sandbox";; *) READER="host";; esac
+echo "# ms1dg report — reader: $READER — $(date -u +%Y-%m-%dT%H:%M:%SZ) — seat: $SEAT"
+echo "receipt: uname=$(uname -s) pwd=$(pwd -P)"; echo
+say OK G0 "reader identified as $READER (lay a host report beside a sandbox report; disagreement = the seam)"
+
+# ---- G1 seat inventory ----------------------------------------------------------------------------
+IDX="$SEAT/MEMORY.md"
+NOTES=$(ls "$SEAT"/*.md 2>/dev/null | grep -v '/MEMORY\.md$' | wc -l | tr -d ' ')
+say OK G1 "seat notes: $NOTES  -- receipt: ls $SEAT/*.md | grep -v MEMORY.md | wc -l"
+
+# ---- the index SET -------------------------------------------------------------------------------
+# A store may carry more than one index page: MEMORY.md is the one the harness LOADS, and any
+# memory-index-*.md beside it is a continuation page the loaded index points to. Coverage and desync
+# are properties of the whole set; only the loaded page is measured against the platform read limit.
+# (Added 2026-09-13 after the single-index assumption manufactured 162 lines of keeper hand-work.)
+idx_set() { [ -f "$IDX" ] && echo "$IDX"; ls "$SEAT"/memory-index-*.md 2>/dev/null; }
+idx_targets() { idx_set | while IFS= read -r p; do
+    grep -o '](\([^)]*\)\.md)' "$p" 2>/dev/null | sed 's/^](//; s/)$//'; done | sort -u; }
+IDXN=$(idx_set | wc -l | tr -d ' ')
+IDXPAGES=$(idx_set | sed 's|.*/||' | tr '\n' ' ')
+
+# ---- G2 index size vs the platform read limit -----------------------------------------------------
+if [ -f "$IDX" ]; then
+  IB=$(wc -c < "$IDX" | tr -d ' '); IL=$(wc -l < "$IDX" | tr -d ' ')
+  if [ "$IB" -gt 25600 ] || [ "$IL" -gt 200 ]; then
+    say FAULT G2 "index $IB bytes / $IL lines EXCEEDS the 200-line/25KB load limit -- lines past it are dropped on next load [PLATFORM]"
+  elif [ "$IB" -gt 23000 ] || [ "$IL" -gt 180 ]; then
+    say WARN G2 "index $IB bytes / $IL lines is within 10% of the 200-line/25KB limit [PLATFORM]"
+  else say OK G2 "index $IB bytes / $IL lines (limit 200 lines / 25KB) -- receipt: wc -c -l $IDX"; fi
+else say FAULT G2 "no MEMORY.md in the seat"; fi
+
+# ---- G2b continuation pages: present, and reachable from the loaded one? --------------------------
+if [ "$IDXN" -gt 1 ]; then
+  UNREACH=""
+  for p in $(idx_set | sed 's|.*/||' | grep -v '^MEMORY\.md$'); do
+    grep -q "($p)" "$IDX" 2>/dev/null || UNREACH="$UNREACH $p"
+  done
+  if [ -n "$UNREACH" ]; then
+    say FAULT G2b "continuation index page(s) the loaded index never links --- no session will find them:$UNREACH"
+    card G2b "add a pointer line to $HSEAT/MEMORY.md for each:$UNREACH (an index page nothing links to is invisible)"
+  else say OK G2b "$IDXN index page(s) -- $IDXPAGES-- each continuation reachable from the loaded index"; fi
+else say OK G2b "single index page (no continuation pages in this store)"; fi
+
+# ---- G3 index coverage both ways ------------------------------------------------------------------
+if [ -f "$IDX" ]; then
+  T3=$(mktemp)
+  idx_targets > "$T3.idx"
+  ls "$SEAT"/*.md 2>/dev/null | sed 's|.*/||' | grep -v '^MEMORY\.md$' | sort -u > "$T3.disk"
+  # A dangling target is one no file answers. Index pages are legitimate targets of each other
+  # (page 2 links home to MEMORY.md), so the dangling set is measured against every .md present.
+  ls "$SEAT"/*.md 2>/dev/null | sed 's|.*/||' | sort -u > "$T3.all"
+  UNIDX=$(comm -13 "$T3.idx" "$T3.disk" | wc -l | tr -d ' ')
+  DANGL=$(comm -23 "$T3.idx" "$T3.all" | wc -l | tr -d ' ')
+  if [ "$DANGL" -gt 0 ]; then say FAULT G3 "$DANGL index line(s) point at files not on disk: $(comm -23 "$T3.idx" "$T3.all" | tr '\n' ' ')"
+  else say OK G3 "0 dangling index lines -- receipt: comm -23 <index-targets> <disk>"; fi
+  if [ "$UNIDX" -gt 0 ]; then say WARN G3 "$UNIDX note(s) on disk named by no page of the index set ($IDXPAGES) (STRANDED-IN-SEAT): $(comm -13 "$T3.idx" "$T3.disk" | tr '\n' ' ')"
+    card G3 "add one index line each to $HSEAT/MEMORY.md (the seat index is keeper-locked from the sandbox; see G4)"
+    if [ "$IDXL" = 1 ]; then
+      echo "## --index-lines: paste-ready candidates (name + description from each note's frontmatter; never written by this tool)"
+      comm -13 "$T3.idx" "$T3.disk" | while IFS= read -r f; do
+        n=$(sed -n '2,12{/^name:/{s/^name:[ ]*//;p;q}}' "$SEAT/$f"); [ -n "$n" ] || n=${f%.md}
+        d=$(sed -n '2,12{/^description:/{s/^description:[ ]*//;s/^"//;s/"$//;p;q}}' "$SEAT/$f" | cut -c1-140)
+        [ -n "$d" ] || d="(no description in frontmatter)"
+        printf -- '- [%s](%s) — %s\n' "$n" "$f" "$d"
+      done
+    fi
+  else say OK G3 "every note on disk has an index line"; fi
+  rm -f "$T3" "$T3.idx" "$T3.disk"
+fi
+
+# ---- G4 is the index writable from this reader? (zero-byte append; changes nothing) ---------------
+if [ -f "$IDX" ]; then
+  if ( : >> "$IDX" ) 2>/dev/null; then say OK G4 "index append-writable from $READER"
+  else say WARN G4 "index NOT writable from $READER (append denied while mode reads $(ls -l "$IDX" | cut -c1-10)) -- a host-side lock or mount policy, not a mode bit"
+    card G4 "on the host: printf '%s\\n' '<line>' >> $HSEAT/MEMORY.md  (then re-run ms1dg there: G4 must read OK)"; fi
+fi
+
+# ---- G4b per-file fence: which notes refuse a 0-byte append from this reader? -----------------------
+FENCED=0; OPEN=0; FL=""
+for f in "$SEAT"/*.md; do
+  if ( : >> "$f" ) 2>/dev/null; then OPEN=$((OPEN+1)); else FENCED=$((FENCED+1)); FL="$FL $(basename "$f")"; fi
+done
+if [ "$FENCED" -gt 0 ]; then
+  say WARN G4b "$FENCED of $((FENCED+OPEN)) notes refuse a 0-byte append from $READER (mode reads rwx) -- a per-file fence, not a lock on the index alone; 2026-09-05 finding: every note another session wrote is fenced, every note this session wrote is open, and files outside memory/ are open regardless [falsifier: the host run's G4b]"
+  [ "$FENCED" -le 12 ] && say WARN G4b "fenced:$FL"
+else say OK G4b "every note append-writable from $READER"; fi
+
+# ---- G5 strays and divergence pairs ---------------------------------------------------------------
+STRAYS=$(ls -A "$SEAT" 2>/dev/null | grep -v '\.md$' | grep -v '\.asc$' | tr '\n' ' ')   # *.asc = FURNITURE (signatures), never a stray
+if [ -n "$STRAYS" ]; then say WARN G5 "non-note files in the seat: $STRAYS"
+  card G5 "on the host, if they are probes or caches: cd $HSEAT && rm -i $STRAYS  (rm is refused from the sandbox mount)"
+else say OK G5 "no stray files in the seat -- receipt: ls -A | grep -v .md"; fi
+PAIRS=$(ls "$SEAT"/*.auto-*.md 2>/dev/null | wc -l | tr -d ' ')
+if [ "$PAIRS" -gt 0 ]; then say WARN G5 "$PAIRS divergence pair(s) awaiting the keeper: $(ls "$SEAT"/*.auto-*.md | sed 's|.*/||' | tr '\n' ' ')"
+  card G5 "reconcile each <stem>.md vs <stem>.auto-<sha>.md by hand; delete the loser on the host"
+else say OK G5 "no *.auto-<sha>.md divergence pairs"; fi
+
+# ---- G6 frontmatter hygiene (ceremony >= 1) --------------------------------------------------------
+if [ "$CER" -ge 2 ]; then
+NOFM=0; NONL=0
+for f in "$SEAT"/*.md; do
+  b=$(basename "$f"); [ "$b" = MEMORY.md ] && continue
+  [ "$(head -c 3 "$f")" = "---" ] || NOFM=$((NOFM+1))
+  [ "$(tail -c 1 "$f" | od -An -c | tr -d ' ')" = '\n' ] || NONL=$((NONL+1))
+done
+[ "$NOFM" -gt 0 ] && say WARN G6 "$NOFM note(s) without frontmatter (the harness never adds it; they get no modified: stamp) [PLATFORM]" || say OK G6 "every note opens with frontmatter"
+[ "$NONL" -gt 0 ] && say WARN G6 "$NONL note(s) lack a trailing newline (ethicsminions notice)" || say OK G6 "every note ends with a newline"
+
+# ---- G7 dangling wikilinks -------------------------------------------------------------------------
+T7=$(mktemp)
+grep -oh '\[\[[^]]*\]\]' "$SEAT"/*.md 2>/dev/null | sed 's/\[\[//; s/\]\]//' | sort -u > "$T7"
+DW=0; DWL=""
+while IFS= read -r w; do [ -n "$w" ] && [ ! -f "$SEAT/$w.md" ] && { DW=$((DW+1)); DWL="$DWL $w"; }; done < "$T7"
+rm -f "$T7"
+[ "$DW" -gt 0 ] && say WARN G7 "$DW wikilink target(s) with no note yet (marks worth writing, not errors):$DWL" || say OK G7 "every [[wikilink]] resolves to a note"
+else say OK G6 "ceremony 1 (HASH): frontmatter and wikilinks not judged"; fi
+
+# ---- G8 store A ----------------------------------------------------------------------------------
+if [ -z "$AUTO" ]; then
+  say NOTVISIBLE G8 "store A not given (--auto DIR). From the sandbox the shell cannot see A at all; the file tool can. Stage A's MEMORY.md (or all notes) via the file tool into a dir and pass it, or run this gauge on the host with A's real path."
+  card G8 "host: ms1dg --seat $HSEAT --auto /c/Users/<you>/AppData/Roaming/Claude/local-agent-mode-sessions/<org>/<session-root>/spaces/<space>/memory"
+elif [ ! -d "$AUTO" ]; then say FAULT G8 "--auto $AUTO is not a directory"
+else
+  AN=$(ls "$AUTO"/*.md 2>/dev/null | grep -v '/MEMORY\.md$' | wc -l | tr -d ' ')
+  if [ -f "$AUTO/MEMORY.md" ] && [ -f "$IDX" ]; then
+    T8=$(mktemp)
+    { grep -o '](\([^)]*\)\.md)' "$AUTO/MEMORY.md"; ls "$AUTO"/memory-index-*.md 2>/dev/null | while IFS= read -r p; do grep -o '](\([^)]*\)\.md)' "$p"; done; } | sed 's/^](//; s/)$//' | sort -u > "$T8.a"
+    idx_targets > "$T8.b"
+    AONLY=$(comm -23 "$T8.a" "$T8.b" | wc -l | tr -d ' '); BONLY=$(comm -13 "$T8.a" "$T8.b" | wc -l | tr -d ' ')
+    if [ "$AONLY" -gt 0 ]; then say WARN G8 "index desync: $AONLY line(s) in A's index set missing from the seat index set ($IDXPAGES): $(comm -23 "$T8.a" "$T8.b" | tr '\n' ' ')"
+      card G8 "append those lines to $HSEAT/MEMORY.md on the host (G4); the notes themselves are checked next"
+    else say OK G8 "A's index set has no line the seat index set lacks -- receipt: comm -23 over $IDXN seat page(s)"; fi
+    [ "$BONLY" -gt 0 ] && say OK G8 "$BONLY seat-native index line(s) A never had (A is not a superset; expected)"
+    rm -f "$T8" "$T8.a" "$T8.b"
+  fi
+  if [ "$AN" -gt 0 ]; then
+    T8=$(mktemp); for f in "$SEAT"/*.md; do sha "$f"; done | sort -u > "$T8.bh"
+    TR=0; OR=0; SD=0; ORL=""
+    for f in "$AUTO"/*.md; do
+      b=$(basename "$f"); [ "$b" = MEMORY.md ] && continue
+      h=$(sha "$f")
+      if grep -qxF "$h" "$T8.bh"; then TR=$((TR+1))
+      elif [ -e "$SEAT/$b" ]; then SD=$((SD+1)); ORL="$ORL $b(DIFF)"
+      else OR=$((OR+1)); ORL="$ORL $b"; fi
+    done
+    [ "$OR" -gt 0 ] || [ "$SD" -gt 0 ] && say WARN G8 "A notes staged: $AN -- TRACED $TR · ORPHAN $OR · SAME-NAME-DIFF $SD :$ORL" || say OK G8 "A notes staged: $AN -- TRACED $TR · ORPHAN 0 · SAME-NAME-DIFF 0 (every A note already in the seat by bytes)"
+    if [ "$HEAL" = 1 ]; then
+      echo; echo "## --heal (run-level 2, declared): new files only, hash-verified; index untouched; nothing deleted"
+      for f in "$AUTO"/*.md; do
+        b=$(basename "$f"); [ "$b" = MEMORY.md ] && continue
+        h=$(sha "$f"); grep -qxF "$h" "$T8.bh" && continue
+        if [ -e "$SEAT/$b" ]; then dst="$SEAT/${b%.md}.auto-$(echo "$h" | cut -c1-8).md"; else dst="$SEAT/$b"; fi
+        [ -e "$dst" ] && { echo "skip    $dst (already present)"; continue; }
+        if [ "$DRY" = 1 ]; then echo "would   cp $f $dst"
+        else cp "$f" "$dst" && [ "$(sha "$dst")" = "$h" ] && echo "copied, verified  $dst" || { echo "FAULT   copy of $b did not verify"; FAULTS=$((FAULTS+1)); }; fi
+      done
+    fi
+    rm -f "$T8" "$T8.bh"
+  else say NOTVISIBLE G8 "no A notes staged (only an index, or nothing) -- ORPHAN/TRACED not measured"; fi
+fi
+
+[ "$CER" -ge 4 ] && [ -z "$MAN" ] && MAN="$SEAT/../mainmem/MANIFEST-MEMORY-$(date -u +%Y-%m-%d).tsv"
+if [ -n "$MAN" ]; then
+  { printf 'sha256\tbytes\tname\toriginSessionId\tseat_copy\n'
+    for f in "$SEAT"/*.md; do
+      b=$(basename "$f"); o=$(sed -n '2,12{/originSessionId:/{s/.*originSessionId:[ ]*//;p;q}}' "$f")
+      c=$(sed -n '2,12{/seat_copy:/{s/.*//;p;q}}' "$f" | wc -l | tr -d ' ')
+      printf '%s\t%s\t%s\t%s\t%s\n' "$(sha "$f")" "$(wc -c < "$f" | tr -d ' ')" "$b" "${o:--}" "$([ "$c" = 1 ] && echo yes || echo -)"
+    done; } > "$MAN" && say OK G9 "manifest written: $MAN ($(($(wc -l < "$MAN") - 1)) rows) -- a receipt, never signed; identity is the hash"
+fi
+if [ "$CER" -ge 9 ]; then
+  if command -v gpg >/dev/null 2>&1; then
+    NS=0; BADS=0; GOODS=0; NOKEY=0
+    for f in "$SEAT"/*.md; do
+      if [ -f "$f.asc" ]; then
+        if gpg --verify "$f.asc" "$f" >/dev/null 2>/tmp/ms1dg.gpg.$$; then GOODS=$((GOODS+1))
+        elif grep -q 'No public key\|public key not found' /tmp/ms1dg.gpg.$$; then NOKEY=$((NOKEY+1))
+        else BADS=$((BADS+1)); fi
+      else NS=$((NS+1)); fi
+    done; rm -f /tmp/ms1dg.gpg.$$
+    [ "$BADS" -gt 0 ] && say FAULT G10 "$BADS signature(s) BAD -- a real mismatch with the key present (ceremony 9)"
+    [ "$NOKEY" -gt 0 ] && say NOTVISIBLE G10 "$NOKEY signature(s) UNVERIFIED-NO-KEY: this reader's keyring lacks the signer -- not BAD; verify where the key lives (verify-say)"
+    [ "$NS" -gt 0 ] && say WARN G10 "$NS note(s) NOSIG under ceremony 9; $GOODS verify" || say OK G10 "every note carries a verifying .asc ($GOODS)"
+  else say NOTVISIBLE G10 "ceremony 9 asked for signature checks but gpg is not on this reader -- NOT ATTEMPTED: gpg --verify NOTE.md.asc NOTE.md"; fi
+fi
+if [ "$CER" -ge 17 ]; then
+  if [ -f "$SEAT/.gate" ]; then say OK G11 "ceremony 17 (GRAND): .gate present -- run the shelf gate: sh /f/claude/corwin/pub/sign.sh check-shelf (not run here)"
+  else say WARN G11 "ceremony 17 (GRAND) asks for a .gate vouch map in the store; none -- a memory dir is not a shelf, and that is fine below 17"; fi
+fi
+case $CER in 1|2|4|9|17) ;; *) say WARN G0 "ceremony $CER is not on the ladder 1 2 4 9 17 -- explain the pick or move to a stop";; esac
+echo "ceremony dial: $CER ($(case $CER in 1) echo HASH;; 2) echo WORDS;; 4) echo GRAIN/MANIFEST;; 9) echo GREAT/SIGNED;; 17) echo GRAND/SHELF;; *) echo OFF-LADDER;; esac))"
+echo; echo "ms1dg: OK $OKS · WARN $WARNS · FAULT $FAULTS · NOTVISIBLE $NV  (reader: $READER)"
+[ "$FAULTS" -gt 0 ] && exit 1; exit 0

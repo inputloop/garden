@@ -1,0 +1,81 @@
+#!/bin/sh
+# sb1rn -- SECRETS BOUNDARY 1, RUN. The one to call at a boundary. Picks one of the two checkers at
+#   random (sb1aw in awk, sb1pl in Perl; neither favored), and when the one picked finds a hit, runs
+#   the other too and compares: the same answer is printed once; a different answer is a SEAM.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st>.  Authored by Mentat (for Corwin).
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU
+# General Public License as published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.  SPDX-License-Identifier: GPL-3.0-or-later
+#
+# usage: sb1rn [--gauge N] [--both] [--] PATH...
+#   SB_PICK=aw|pl|both   force the pick (default: random)
+#   --gauge N, SB_GAUGE=N   how loudly a path not read is said (2026-09-28; Corwin: "1 is the quiet
+#     setting and 17 is the STOP"): 1 quiet, 4 warn (default), 9 a tab-separated line per path with
+#     its reason and a hint, 17 stop at the first. Passed to both checkers as SB_GAUGE; they check
+#     it. The exit does not follow the gauge, save the stop at 17 (exit 2). The checkers' stderr
+#     (the gauge-4 warning) is passed through, before their stdout.
+#   exit: 0 clean - 1 hits (both agree) - 2 NOT checked - 3 SEAM (the two checkers disagree)
+#   Exit 2 means the answer is not "clean": a usage error, no checker beside me, or (AMENDED
+#   2026-09-27) a file or folder that could not be read (its "UNREAD path" line -- "path/" for a
+#   folder -- and the summary go to stdout).
+#   The reason is always the last "sb1rn:" line on stderr.
+# Spec: h/DESIGN-2026-09-26-secrets-at-the-boundary.md.  It reads; the caller decides what a hit stops.
+set -u
+here=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd) || exit 2
+pick=${SB_PICK:-}
+while :; do
+  case ${1:-} in
+    --both) pick=both; shift ;;
+    --gauge) [ $# -ge 2 ] || { echo "sb1rn: --gauge wants a number (1 quiet, 4 warn, 9 downstream, 17 stop)" >&2; exit 2; }
+             SB_GAUGE=$2; export SB_GAUGE; shift 2 ;;
+    *) break ;;
+  esac
+done
+[ "${1:-}" = -- ] && shift
+case ${1:-} in ''|-h|--help) sed -n '2,/^set -u/p' "$0" | sed '$d; s/^# \{0,1\}//' >&2; exit 2 ;; esac
+
+have_aw=; have_pl=
+[ -f "$here/sb1aw" ] && have_aw=1
+[ -f "$here/sb1pl" ] && command -v perl >/dev/null 2>&1 && have_pl=1
+run_aw() { sh "$here/sb1aw" -- "$@"; }
+run_pl() { perl "$here/sb1pl" -- "$@"; }
+
+if [ -z "$have_aw$have_pl" ]; then echo "sb1rn: neither checker is present beside me" >&2; exit 2; fi
+if [ -z "$have_aw" ] || [ -z "$have_pl" ]; then
+  one=aw; [ -n "$have_pl" ] && one=pl
+  echo "sb1rn: only sb1$one is present; one reader, not two" >&2
+  run_$one "$@"; exit $?
+fi
+case $pick in
+  aw|pl|both) ;;
+  *) n=$(od -An -N1 -tu1 /dev/urandom 2>/dev/null | tr -d ' ')
+     [ -n "$n" ] || n=$(awk -v p=$$ 'BEGIN { srand(); print int(rand() * 256) + p }')
+     if [ $(( n % 2 )) -eq 0 ]; then pick=aw; else pick=pl; fi ;;
+esac
+
+t=$(mktemp -d) || exit 2; trap 'rm -rf "$t"' EXIT INT TERM
+if [ "$pick" = both ]; then first=aw; else first=$pick; fi
+other=pl; [ "$first" = pl ] && other=aw
+echo "sb1rn: reading with sb1$first" >&2
+run_$first "$@" > "$t/$first" 2> "$t/$first.err"; rc1=$?
+cat "$t/$first.err" >&2   # the checker's own stderr (a gauge-4 warning) goes through, first
+if [ "$rc1" -eq 2 ]; then
+  cat "$t/$first"
+  # the count comes from the summary, which every gauge prints ("UNREAD" lines are gauge-dependent)
+  nu=$(sed -n 's/^sb: .*, unread \([0-9][0-9]*\)$/\1/p' "$t/$first" | tail -1)
+  if grep -q '^sb: STOPPED at the first path not read' "$t/$first"; then
+    echo "sb1rn: stopped at the first file or folder that could not be read (SB_GAUGE=17); it and the rest were NOT checked" >&2
+  elif [ "${nu:-0}" -gt 0 ]; then echo "sb1rn: $nu file(s) or folder(s) could not be read; they were NOT checked" >&2
+  else echo "sb1rn: sb1$first stopped (usage, or a path that does not exist); nothing was checked" >&2; fi
+  exit 2
+fi
+if [ "$rc1" -eq 0 ] && [ "$pick" != both ]; then cat "$t/$first"; exit 0; fi
+
+echo "sb1rn: second reading with sb1$other" >&2
+run_$other "$@" > "$t/$other" 2> "$t/$other.err"; rc2=$?
+grep -vxF -f "$t/$first.err" "$t/$other.err" >&2 || :   # what the first did not already say, once
+if [ "$rc1" -eq "$rc2" ] && cmp -s "$t/$first" "$t/$other"; then cat "$t/$first"; exit "$rc1"; fi
+echo "SEAM: the two checkers disagree"
+for k in $first $other; do echo "--- sb1$k"; cat "$t/$k"; done
+exit 3

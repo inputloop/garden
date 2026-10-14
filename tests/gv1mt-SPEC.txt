@@ -1,0 +1,61 @@
+gv1mt SPEC -- the garden view (turn 2 of the extension edition, lane G)
+
+gv1mt (GARDEN VIEW 1 MINT) rebuilds one page that shows Bryant's garden and ours side by side, from the
+files as they are at build time.  Model: garden-view/data v1 (c4 spells/extension/runs/2026-10-10/turn2/
+study/S7-bryant-graph-and-ours.md, Part 3).  Page rules: S8 section 4.  Each row names its check.
+
+GV1  Every build reads its sources fresh and lists each one in data.sources with path, sha256 and bytes;
+     a source that cannot be read is listed with "missing": true and said in the build's words, never
+     skipped in silence.                                                   check: gv1mt-spec.rb GV1
+GV2  data.json has format "garden-view/data v1" and the keys format, built, sources, gardens, families,
+     nodes, edges, tensions, compass, doorways, terms, counts, seal.     check: gv1mt-spec.rb GV2
+GV3  Node ids are <prefix>:<name>; kind is one of skill, soft, server, persona, external; a person model
+     is never a node, only counts.people carries them.                   check: gv1mt-spec.rb GV3
+GV4  Edges are [from, to, type, label, extra]; type is one of counterpart, route, hand, use, slot, seam,
+     mention, vs, wraps, checks, derived-from, dangling, gap; a checks edge carries state sheet, proposed
+     or withheld.                                                        check: gv1mt-spec.rb GV4
+GV5  Tensions: one per option card and one per open ERRATA entry; a card is resolved when its edition
+     begins "this", open otherwise; every ERRATA entry is open.          check: gv1mt-spec.rb GV5
+GV6  The facts file (one line per source, node, edge and tension) recounted by awk equals data.counts,
+     and the page's story has one entry per node.                        check: gv1mt-recount.awk
+GV7  data.seal.sha256 is the sha256 of the data without its seal, keys sorted, compact; the page
+     recomputes it in the browser and says whether it matches.           check: gv1mt-spec.rb GV7, browser
+GV8  The page is one self-contained file: no outside fonts, stylesheets, scripts or images; the only
+     addresses in it are the two loopback probes (127.0.0.1:8042, 127.0.0.1:8781) and plain links.
+                                                                         check: gv1mt-spec.rb GV8
+GV9  With JavaScript off, the snapshot reads: the read-back in words, both rings, the compass, the four
+     doorways with their status as built, the tensions and the story.   check: gv1mt-browser.py GV9
+GV10 State is never carried by colour alone: every tension mark and every badge carries a word.
+                                                                         check: gv1mt-spec.rb GV10, browser
+GV11 Every colour pair the page uses passes WCAG AA in light and in dark (color-theory audit).
+                                                                         check: gv1mt-tests.sh GV11
+GV12 axe-core finds no critical or serious violation in light or in dark.  check: gv1mt-browser.py GV12
+GV13 The keyboard reaches the theme switch, every doorway action and every story entry, with a visible
+     focus ring.                                                         check: gv1mt-browser.py GV13
+GV14 The page credits Bryant Frankford's Nexus Skill Tree by name as its starting point, and names both
+     makers in credit order (Corwin Brust, then Bryant Frankford).       check: gv1mt-spec.rb GV14
+GV15 `make garden-view` builds the page, and `make dist` calls it, so the page is current at every build.
+     (`make garden` is the existing sg1ck gauge, read by gd1ck; it keeps its one command.)
+                                                                         check: gv1mt-tests.sh GV15
+GV16 Every probe badge reads one of the words "live", "as built" or "not reachable"; nothing probes
+     until the reader asks.                                              check: gv1mt-spec.rb GV16, browser
+
+GV17 No two text boxes overlap in the ring or the compass: every <text>'s box, taken from getBBox and
+     turned by its own transform, is tested against every other with the separating-axis test; an
+     overlap deeper than 0.5 user units is a fault.  (Swing 1, the conductor's ask: the tension labels
+     sat on our skill labels near one o'clock, and the compass labels collided.)
+                                                                         check: gv1mt-browser.py GV17
+GV18 A default is never shown as this machine's state.  A server gated by a preference reads "off by
+     default"; the page says the build cannot see the person's setting and offers an Ask Claude prompt
+     that reads it live; the words "as built: off" and "as built it is off" appear nowhere.
+                                                                         check: gv1mt-spec.rb GV18
+GV19 `gv1mt build --public` writes site/garden/public/: the same page and data with this machine's
+     paths masked (a drive letter D: becomes <D>:, an msys /d/ becomes <D>:/, a UNC host becomes
+     <UNC>) and every claude.ai link replaced by <claude.ai link>.  Masking drops nothing: the counts of
+     nodes, edges and tensions equal the private copy's, and data.masked counts every replacement.
+     C4's pb1ck reports no LEAK of kind drive-letter, msys-path, unc-path or claude-ai-link on it.
+                                                                         check: gv1mt-tests.sh GV19
+
+Authored by Mentat (for Corwin; claude-opus-5-5).
+Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+SPDX-License-Identifier: CC-BY-SA-4.0

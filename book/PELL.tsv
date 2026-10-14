@@ -1,0 +1,21 @@
+# CHARACTER TSV — Oscar Pell (author, Six Sides and a Pencil); dungeon-mode shape; double-entry: every row names its source
+table	key	count	value	treatment	source
+cs-intrinsics	name		Oscar Pell	identity	book/PELL.md s0
+cs-intrinsics	shortname		Pell	lineage	book/games/BOOK-2 byline
+cs-intrinsics	class		author (solo player)	tier	book/PELL.md s0
+cs-intrinsics	actor		fiction	kind	book/PELL.md header
+cs-intrinsics	gold		none named; he prints in black because it is cheaper	economy	book/PELL.md s3
+cs-intrinsics	special		will not require anything the reader would have to buy	specialness	book/PELL.md s4
+cs-intrinsics	need-to-belong	2	content on own (damped, low doubles)	trait	pg1rl roll seed 9
+cs-intrinsics	attachment-security	3	mostly secure, occasional doubt	trait	pg1rl roll seed 9
+cs-intrinsics	intellectual-humility	6	believes nothing firmly, deferential	trait	pg1rl roll seed 9
+cs-intrinsics	trust	1	assumes ill intent (damped, low doubles)	trait	pg1rl roll seed 9
+cs-intrinsics	news-bias		Jacobin, twice; fate die: ne'er-do-well, twice	stripe	pg1rl roll seed 9
+cs-skills	black-proof	1	print the whole book with no colour and play it	practice	book/PELL.md s3
+cs-skills	one-die-rewrite	1	every rule written so one die thrown twice is the same throw	practice	book/games/BOOK-2 what-you-need
+cs-skills	pacing-as-signal	1	staccato for rules, long and slow for the colour page	practice	book/PELL.md s2
+cs-skills	successors-eye	1	acquired gen 1; read your own map as somebody who inherits it	practice	book/PELL.md s9 gen 1
+cs-posessions	the-red-pips	1	the danger was red and only red; he had no answer	burden	book/PELL.md s5 founding
+cs-posessions	quad-ruled-paper	1	8x10 inches per level; the map is the record	tool	book/PELL.md s3
+cs-posessions	the-4-9-17-hinge	1	two rungs, one pattern, 24 + 12 = 36	mechanic	book/games/BOOK-2 the-ladder
+cs-posessions	a-borrowed-ladder	1	nineteen rungs; credited on the page, not owned	debt	book/games/BOOK-2 credit

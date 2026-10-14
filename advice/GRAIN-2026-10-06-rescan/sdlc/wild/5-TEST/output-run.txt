@@ -1,0 +1,38 @@
+# suite on /home/claude/rescan/sdlc/wild/4-BUILD (shell: dash)
+ok 1 - G01 gen.sh runs on the real recipes
+ok 2 - G02 five profiles, four lists each
+ok 3 - G03 every package name is a valid Debian or PyPI name
+ok 4 - G04 lists are sorted and have no duplicates
+ok 5 - G05 every profile carries boot, crypto, network and the mesh stack
+ok 6 - G06 fullsink holds every profile; minimal is the smallest; hardened holds desktop
+ok 7 - G07 denied packages are pinned -1 and not installed
+ok 8 - G08 non-free firmware is flagged, and FREE_ONLY=1 removes all of it
+ok 9 - G09 every file carries the right SPDX line
+ok 10 - G10 nine kinds of bad recipe are refused, with a message and no output
+ok 11 - G11 two runs give identical bytes, also into the same directory
+ok 12 - G14 no template marker (@@) survives into a generated file
+ok 13 - G12 the profile table in 3-DESIGN.md matches the generator
+ok 14 - G13 the shipped out/ is what gen.sh makes now
+ok 15 - F01 each profile has exactly the first-run pages it declares
+ok 16 - F02 a page's surface package is in its profile
+ok 17 - F03 buttons shown equal the buttons the profile can serve
+ok 18 - F04 3 to 10 buttons, setup first
+ok 19 - F05 html: no script, form, remote resource or handler; has lang, title, viewport
+ok 20 - F06 html: every button is a larder:// link with text; ampersands escaped
+ok 21 - F07 html: all text and button colours reach 7:1 contrast
+ok 22 - F08 html parses
+ok 23 - F09 el: byte-compiles clean, one button per choice, each click sends its id
+ok 24 - F10 larder-open names the right commands for every action
+ok 25 - F11 larder-open refuses 15 hostile or malformed arguments with exit 64
+ok 26 - F12 larder-open really execs the fallback, and never runs a non-action
+ok 27 - F13 larder-open and recipes.conf list the same actions
+ok 28 - F14 scripts parse under dash -n
+ok 29 - F15 button text equals the recipe's; <, >, &, quotes and a backslash survive both page kinds
+ok 30 - A01 the notice renders, is short, and has every clause
+ok 31 - A02 no LEGAL_REVIEW=yes, no way to lose the DRAFT banner
+ok 32 - A03 render-edition refuses placeholders, unsafe values, missing keys
+ok 33 - A04 fanmark: marks top and bottom, id = notice hash, body untouched, idempotent, fuses
+ok 34 - A05 stage documents carry SPDX CC-BY-SA-4.0
+ok 35 - A06 fanmark and render-edition refuse bad calls, for the right reason
+1..35
+# 35 checks, 0 failed, 0 skipped

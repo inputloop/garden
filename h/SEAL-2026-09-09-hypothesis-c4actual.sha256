@@ -1,0 +1,19 @@
+# SEAL receipt — c4-ACTUAL-arm hypothesis, 2026-09-09T21:03Z. Commitment; plaintext on disk ONLY as ciphertext.
+# Arm: Fable (claude-fable-5-1), Cowork project "c4-ACTUAL", session [claude.ai link removed at egress]
+# Never sent as a chat attachment; never through "Claude outputs"; never pasted in chat. Ciphertext (gpg AES256 symmetric, armored):
+#   AS4CE0001/.arc/2026-09-09-sealed-hypothesis-c4actual-arm/SEALED-2026-09-09-hypothesis-c4actual-arm.md.asc
+# Open at the final review, not before. The passphrase sits here in the clear on purpose: it is a gate, not a wall.
+#   Reading must be a deliberate act, not a stumble. To open and verify, from that .arc directory:
+#   gpg --batch --pinentry-mode loopback --passphrase 'open-at-the-final-review-not-before' --decrypt SEALED-2026-09-09-hypothesis-c4actual-arm.md.asc > SEALED-2026-09-09-hypothesis-c4actual-arm.md
+#   sha256sum SEALED-2026-09-09-hypothesis-c4actual-arm.md   -> must print the line below (8131 bytes)
+68f13777e7b07b03e8530c7919dde873025d2f9d1d1b4d6b9f318af03a4c25b6  SEALED-2026-09-09-hypothesis-c4actual-arm.md
+# The ciphertext as written, so the seal can be checked without opening it:
+86ec8a3267410667cf3f9dc41e768a3def9032dad290e0429e74415ce33dd2b2  SEALED-2026-09-09-hypothesis-c4actual-arm.md.asc
+# State reviewed: the same nine files the vibrobeast seal names, re-derived 2026-09-09T20:47Z; all nine sha16 matched:
+# e12925042aeed254 c4/c/ladder · 10d2a624856eb415 c4/c/p · 2fb262873974e6b8 c4/d/c/p · 3488a422a58dc15d c4/o/tr
+# b52f0bc3028dbe4c c4/h/MODEL-2026-09-09-the-ladder-and-the-works.md · 195f7d72366b03d9 c4/a/lab/ladder/prompts-AND-out_…GPT-5.txt
+# e7f92675d1c00fa8 c4/bin/it4c · fca252f46c2c13ab c4/c/w · 3acd4aae171e9c1a AS4CE0001/memory/the-ladder-and-the-eight-perspectives.md
+# Nothing with mtime > 2026-09-09T20:14Z was read by this arm. Cross-check of the vibrobeast commitment, hash only, unread:
+#   "AS4CE0001/Claude outputs/SEALED-2026-09-09-hypothesis-vibrobeast-arm.md" (7484 bytes, mtime 20:20:24Z) hashes to
+#   201fffdf7f37f1ae97c5dbb705f2d4ae529f14d1af435448a2eecd6c369677e1 exactly. The vibrobeast seal's "NOT on disk" line
+#   was true at 20:15Z and false by 20:20Z: SendUserFile mirrors into "<connected folder>/Claude outputs/".

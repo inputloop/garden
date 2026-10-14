@@ -1,0 +1,132 @@
+#+TITLE: polygram
+#+SUBTITLE: Gated agent-skill synthesis
+#+AUTHOR: Corwin, with Mentat (Cowork)
+#+LANGUAGE: en
+#+OPTIONS: toc:2 num:nil
+#+STARTUP: showall
+
+*Gated agent-skill synthesis.* A small, standard-library-only packaging and
+orchestration layer that curates Claude agent skills driven by /tags in
+MEMORY/. Notes captured the Mentat way accumulate tags; polygram reads those
+tags, evaluates each candidate at a *gate*, synthesizes skill skeletons only
+for the ones that pass, and mints installable bundles — leaving a growing disk
+history of "advice" behind every decision.
+
+#+begin_quote
+/It is by will alone I set my mind in motion./
+#+end_quote
+
+* Why
+- *Packaging / orchestration* over a collection of reusable, stdlib-only tools.
+- *Memory-driven*: the labels, phrases and keywords that matter to the project
+  (Mentat, shell-tooling, …) decide what becomes a skill.
+- *Gated*: nothing auto-promotes. Each candidate is scored on cheap, explainable
+  signals and the verdict is written to =advice/= as a dated file.
+- *POSIX-delegating*: a thin =sh= entry point so the same toolchain runs across
+  local environments.
+
+* Repository layout
+=init= creates only =.polygram=, =skills/=, =advice/=, =memory/=, =externs/=,
+and =MEMORY.md=; the rest below are repository files.
+#+begin_example
+.polygram        workspace marker
+model.md         operating model — read first to resume context
+MEMORY.md        one-line-per-note index
+memory/          one fact per markdown file; tags here drive synthesis
+skills/          synthesized / curated skills (SKILL.md + tool.py)
+advice/          growing history of gate / dist / operator verdicts
+dist/            minted archives + .skill bundles (gitignored)
+externs/         cloned upstream skill sources
+doc/polygram.texi  the Texinfo manual (make info)
+site/index.html  self-contained project site
+bin/polygram     POSIX shell entry point -> python -m polygram
+polygram/        the package (config, memory, gate, synth, review, externs, dist, cli)
+tests/           stdlib unittest suite
+#+end_example
+
+* The pipeline
+=memory notes → candidates → gate (PASS/HOLD/REJECT) → advice → skeleton synthesis → dist=
+
+A note earns a candidate through *tags*: org-style heading tags
+(=# Keep replies tight :SKILL:=) or inline hashtags (=delegates to shell #shell-tooling=).
+Control tags (=:SKILL:=, =#skill-candidate=, =#synth=) /promote a note's other
+tags/ rather than becoming skills themselves.
+
+** The gate
+| Signal                         | Effect |
+|--------------------------------+--------|
+| corroborated by >=2 notes      | +2     |
+| explicitly flagged by operator | surfaces only (no score) |
+| well-formed label (a word, or a hyphenated 4+-char label) | +1 |
+| overly generic label (misc, …) | -2     |
+
+=PASS= (>=3) synthesizes a skill; =HOLD= (>=1) records advice but waits;
+=REJECT= is logged and dropped. Every verdict lands in =advice/=.
+
+* Usage
+#+begin_src sh
+./bin/polygram init        # create the workspace here
+./bin/polygram doctor      # check python + POSIX runtime
+./bin/polygram scan        # show skill candidates from memory
+./bin/polygram gate        # evaluate candidates, write advice (no synth)
+./bin/polygram synth       # gate + synthesize everything that PASSes
+./bin/polygram review      # work the HOLD queue (--promote/--reject)
+./bin/polygram list        # list skills and recent advice
+./bin/polygram dist        # mint tar.gz + zip + .skill bundles
+#+end_src
+
+=PYTHON=python3.12 ./bin/polygram …= overrides the interpreter; =-C DIR= runs as
+if started elsewhere.
+
+* Dist — minting your curation
+=synth= leaves curated skills under =skills/=; =dist= packages them. It gathers
+the workspace plus any installed "Mentat & family" skills you point it at,
+writes a =MANIFEST= with a SHA-256 per file, and mints =.tar.gz=, =.zip=, and
+per-skill installable =.skill= bundles.
+
+#+begin_src sh
+./bin/polygram dist --format all                       # tar.gz + zip + .skill
+export POLYGRAM_SKILLS_SOURCE=~/.claude/skills         # set once…
+./bin/polygram dist --format skill                     # …then no flag needed
+#+end_src
+
+A =.skill= is a folder-rooted zip (=<name>/SKILL.md …=) the desktop app installs
+directly. Editor/build cruft (=__pycache__=, =*.pyc=, =*~=, =*.tmp=, emacs
+=#autosave#=, =.git=, =.DS_Store=) is excluded from every archive and bundle. On
+a name collision the workspace copy wins. This supersedes a hand-rolled
+packaging Makefile.
+
+* Externs and freeze
+Externs are upstream skill sources you clone in. An extern feeds candidates
+*only through its own =memory/= notes* — not arbitrary repo docs, which would
+let upstream noise surface as skills. *Freezing* pins an extern at a revision so
+=sync= skips it. A =local= extern is a hand-authored snapshot with no remote.
+
+#+begin_src sh
+./bin/polygram extern add up https://example.com/up.git --ref main
+./bin/polygram extern add snap "" --kind local      # hand-authored snapshot
+./bin/polygram extern freeze up --rev 9f1c2ab
+./bin/polygram extern list
+#+end_src
+
+* Tests
+#+begin_src sh
+python3 -m unittest discover -s tests -v
+#+end_src
+
+* Documentation
+The full manual is in Texinfo: =make info && info -f doc/polygram.info=. A
+self-contained overview site is in =site/index.html=. Read =model.md= first to
+resume project context quickly.
+
+* Copying
+polygram's *code* is free software under the GNU General Public License,
+version 3 or (at your option) any later version — see [[file:COPYING][COPYING]].
+Its *documentation* (this file, =model.md=, the manual, the site) is licensed
+=CC-BY-4.0=. Copyright (C) 2026 Corwin <mplscorwin@gmail.com>.
+
+* Status
+v0.5.2 — pipeline, HOLD review, frozen/local externs, the =dist= build pipeline
+(tar.gz/zip + installable =.skill= bundles + SHA-256 manifest), externs
+memory-only, and a sub-agent QC gate. 47 unittests passing. Synthesized
+skeletons are meant to be reviewed and tightened, not shipped blind.

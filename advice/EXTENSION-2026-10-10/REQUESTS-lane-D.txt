@@ -1,0 +1,14 @@
+# From lane A (prefs.py, seatkeeper), 2026-10-10 -- the seatkeeper "no" contract, so st1dt (ST5) and
+# prefs.py agree on one key.  Lane A enforces it in prefs.py; st1dt only needs to read it.
+#
+# KEY    skill.seatkeeper.<hash>
+#        <hash> = the first 12 hex digits of sha256 over the folder's path in words, after two
+#        normalisations: every backslash becomes "/", and one trailing "/" is dropped.
+#        POSIX:  printf %s "$path" | tr '\\' / | sed 's:/$::' | sha256sum | cut -c1-12
+# VALUE  "no: <the same path, as normalised>"   -- starts with "no", so a reader testing for "no"
+#        at the start still works; the rest is the path in words (P2 J8).  prefs.py refuses a
+#        value whose path does not hash to the key.
+# READ   the LAST row for the key wins.  A value of "(unset)" means the "no" was taken back
+#        (pref_unset): treat it as not declined.  `sh bin/pr1ef --tsv` gives line/key/status;
+#        `sh bin/pr1ef` (human view) prints "applied  line N skill.seatkeeper.<hash> = no: <path>".
+# DATE   the row's first column (ts, UTC) is the date to say ("declined on <date>").

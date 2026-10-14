@@ -1,0 +1,15 @@
+Garden edition of Bryant Frankford's colophon, made in Corwin Brust's garden (AS4CE0001,
+peers/bryant/colophon) on 2026-10-05, to hand back to Bryant. It is not part of the vibrobeast
+plugin Corwin wears: peers/ is the shelf for what our peers need, rendered beside what we use.
+
+Started from colophon 1.1 in Bryant's bundle gauntlet-nexus-skills-2026-10-05 (the third drop of
+that day; c4 intake from-bryant/2026-10-05-r3), byte for byte:
+  his scripts/colophon.py 1.1: sha256 a0f5c9391c61db93277cdeb0151233954a4f58c8e0b36fa449b68aaa579cb254
+                       (the change is references/colophon-1.1-garden.1.diff); his SKILL.md is
+                       references/colophon-1.1-SKILL.md, unchanged;
+                       scripts/LICENSES/ are his pinned steward copies, unchanged.
+Added here: scripts/at1ld.py (from C4's bin/at1ld.py, the attribution ladder's counter),
+references/parties.example.json, tests.sh, SKILL.md (new text), and the changes in the diff.
+
+Under the ladder this is rung 1 both ways: his words and code are most of it (his name is first on
+every file), ours are in it (Corwin's name is second). No literate recipe; edit here.

@@ -1,0 +1,878 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# lr1ck -- LaRder 1 ChecK: checks the garden prototype in ../4-BUILD, and can show itself failing.
+#
+#   lr1ck [--root DIR] [--only A1,B4,...] [--quiet]     run the checks (default: all)
+#   lr1ck [--root DIR] --prove-red                      a green control, then planted faults; each must be caught
+#   lr1ck --list                                        the checks and what they are
+#   lr1ck --crash                                       stop on purpose, to show the exit-3 path
+#
+# Exit:  0 every check passed         1 a check failed (or a planted fault was NOT caught)
+#        2 NOT CHECKED: a tool or file a check needs is missing; said loudly, never silently green
+#        3 stopped unexpectedly: prints a line to paste into a session to find the cause
+#
+# What counts as evidence here (the seams doctrine): one reader of a fact is data; two independent
+# readers that agree are evidence.  The facts and their readers:
+#   what recipes.org says       reader 1: bin/lr1tg (awk)       reader 2: org-babel-tangle in Emacs
+#   which choices an edition    lr1op (sh) | an awk rule | the Emacs shell | the page's own script (stub DOM)
+#   offers
+#   the colours                 the page's CSS               | Emacs' own Modus themes
+#   Debian package names        the lists                    | the signed Debian index (evidence/)
+# Tiebreakers: Org's own behaviour for tangling; Debian's index for names; the recipes for the choices.
+# Not checked by this script, by design: that anything boots, that an ISO builds, that the lists install,
+# a real browser, a real screen and mouse, awk other than the one on this machine.
+
+set -u
+LC_ALL=C; export LC_ALL
+HERE=$(cd "$(dirname "$0")" && pwd)
+SELF=$HERE/$(basename "$0")
+if [ -n "${BASH_VERSION:-}" ]; then RUNSH="$BASH --posix"; else RUNSH=$(command -v sh); fi
+ROOT=$HERE/../4-BUILD
+EVID=$HERE/evidence
+QUIET=0 PROVE=0 CRASH=0 ONLY= STEP=start DONE=0 PASSES=0 FAILS=0 SKIPS=0
+T=$(mktemp -d)
+
+CHECKS="A1 A2 A3 B1 B2 B3 B4 B5 B6 B7 B8 B9 B10 B11 B12 B13 B14 B15 B16 B17 C1 C2 C3 C4 C5 C6 C7 C8 C9 C10 C11 C12 C13 D1 D2 D3 D4 D5 E1 E2 E3 E4"
+
+finish() { DONE=1; exit "$1"; }
+on_exit() {
+    rc=$?
+    rm -rf "$T"
+    if [ "$DONE" -ne 1 ]; then
+        echo "" >&2
+        echo "lr1ck: STOPPED UNEXPECTEDLY (shell status $rc) while at step '$STEP'." >&2
+        echo "Paste this line and the command you ran into a session and ask it to find the cause, prove it red, then fix it:" >&2
+        echo "  lr1ck stopped unexpectedly at step $STEP (shell status $rc)" >&2
+        exit 3
+    fi
+}
+trap on_exit EXIT
+
+ok()   { PASSES=$((PASSES + 1)); [ "$QUIET" = 1 ] || printf '  ok    %-4s %s\n' "$1" "$2"; }
+bad()  { FAILS=$((FAILS + 1)); printf '  FAIL  %-4s %s\n' "$1" "$2"; }
+skip() { SKIPS=$((SKIPS + 1)); printf '  SKIP  %-4s %s -- NOT CHECKED\n' "$1" "$2"; }
+note() { [ "$QUIET" = 1 ] || printf '          %s\n' "$1"; }
+have() { command -v "$1" >/dev/null 2>&1; }
+
+usage() { sed -n '4,15p' "$SELF"; }
+list_checks() {
+cat <<'EOF'
+A1 every file has one SPDX line, and the right one       A2 tools refuse unknown options
+A3 every tool in bin/ is executable and starts with #!    
+B1 reader one (awk) tangles recipes.org                  B2 every <<ref>> has exactly one name (Org would stay silent)
+B3 reader two (Emacs) tangles recipes.org                B4 the two readers agree, byte for byte
+B5 change the recipe: both readers move together         B6 committed out/ is not stale
+B7 lists are data only (no ! lines), names well formed   B8 no package in two groups
+B9 every name exists in Debian 13.7 (right component)    B10 the four free profiles hold no non-free firmware
+B11 build flags exist in live-build                      B12 five profiles, nested sensibly
+B13 the profile table in the prose matches the blocks    B14 mesh add-on rows are complete and labelled
+B15 profile descriptions agree in two places             B16 each profile has what its first-run shell needs
+B17 each program a choice starts ships in the package it needs
+C1 choices file is well formed                           C2 every choice's package is in each profile offering it
+C3 the HTML page says what choices.txt says              C4 the page contacts nothing and is small
+C5 mouse alone: targets, links, no key-only handlers     C6 the light/dark pattern is complete
+C7 the two dark palettes are identical                   C8 contrast, measured, both themes
+C9 the colours equal Emacs' own Modus values             C10 the page script runs (stub DOM) and both theme overrides work
+C11 page tags balance                                    C12 Emacs shell compiles clean and its ERT tests pass
+C13 four readers agree on what each edition offers       D1 the notice is a draft and says so
+D2 the shipped book list lets nothing through            D3 the book gate refuses bad rows and passes a good one
+D4 the stamp refuses without a real signature            D5 no book content, and nothing else, in the author folder
+E1 the README says what was not checked                  E2 the design table equals out/ and the recipes
+E3 the stage documents have the parts the brief asks for E4 the dagger counts stated in 6-REVIEW are the real counts
+EOF
+}
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --root)  [ $# -ge 2 ] || { echo "lr1ck: --root needs a folder" >&2; finish 1; }; ROOT=$2; shift ;;
+        --only)  [ $# -ge 2 ] || { echo "lr1ck: --only needs a list" >&2; finish 1; }; ONLY=$(echo "$2" | tr ',' ' '); shift ;;
+        --quiet) QUIET=1 ;;
+        --prove-red) PROVE=1 ;;
+        --crash) CRASH=1 ;;
+        --list)  list_checks; finish 0 ;;
+        -h|--help) usage; finish 0 ;;
+        *) echo "lr1ck: unknown option $1 (see -h)" >&2; finish 1 ;;
+    esac
+    shift
+done
+[ -d "$ROOT" ] || { echo "lr1ck: no such folder $ROOT" >&2; finish 1; }
+R=$(cd "$ROOT" && pwd)
+RECIPES=$R/recipes.org
+HTML=$R/shell/first-run.html
+PROFILES="minimal desktop homelab hardened fullsink"
+FREE="minimal desktop homelab hardened"
+
+# ---------------------------------------------------------------- shared awk programs
+AWK_COLOR='
+function hx(c,   a, b) { a = index("0123456789abcdef", substr(c,1,1)) - 1; b = index("0123456789abcdef", substr(c,2,1)) - 1; return a * 16 + b }
+function lin(v) { v = v / 255; return (v <= 0.03928) ? v / 12.92 : exp(2.4 * log((v + 0.055) / 1.055)) }
+function lum(h) { h = tolower(h); return 0.2126 * lin(hx(substr(h,2,2))) + 0.7152 * lin(hx(substr(h,4,2))) + 0.0722 * lin(hx(substr(h,6,2))) }
+function ratio(a, b,   la, lb, t) { la = lum(a); lb = lum(b); if (la < lb) { t = la; la = lb; lb = t } return (la + 0.05) / (lb + 0.05) }'
+# tokens: prints "set name #hex modus-key" for the three palettes in the page
+AWK_TOKENS='
+/^:root\{/ { set = "light"; next }
+/^[ ]*:root:not\(\[data-theme="light"\]\)\{/ { set = "darkmedia"; next }
+/^:root\[data-theme="dark"\]\{/ { set = "darkattr"; next }
+/^[ ]*\}/ { set = ""; next }
+set != "" && /^[ ]*--[a-z]+:#[0-9a-fA-F]+;/ {
+    line = $0; sub(/^[ ]*--/, "", line); name = line; sub(/:.*/, "", name)
+    hex = line; sub(/^[a-z]+:/, "", hex); sub(/;.*/, "", hex)
+    key = "-"; if (match(line, /modus:[a-z-]+/)) key = substr(line, RSTART + 6, RLENGTH - 6)
+    print set, name, tolower(hex), key
+}'
+# html choices: prints id|edition|profiles|label|plain for each <li> of the page
+AWK_HTML_CHOICES='
+/^<li data-edition-only=/ {
+    n = split($0, f, "\"")
+    label = f[13]; sub(/^>/, "", label); sub(/<\/span><span class=$/, "", label)
+    plain = f[15]; sub(/^>/, "", plain); sub(/<\/span><\/a><\/li>$/, "", plain)
+    href = f[8]; sub(/^larder:/, "", href)
+    printf "%s|%s|%s|%s|%s\n", f[10], f[2], f[4], label, plain
+    if (href != f[10]) print "HREF-MISMATCH|" f[10] "|" f[8]
+}'
+# choices.txt: prints id|edition|profiles|label|plain
+AWK_CHOICES='-F|' ; AWK_CHOICES_PROG='/^#/ || NF == 0 { next } { printf "%s|%s|%s|%s|%s\n", $1, $2, $3, $5, $6 }'
+# which ids does an edition offer? (independent statement of the rule)  usage: -v P=profile -v E=edition
+AWK_OFFER='/^#/ || NF == 0 { next } ($2 == "base" || $2 == E) && ($3 == "*" || index(" " $3 " ", " " P " ") > 0) { printf "%s ", $1 } END { printf "\n" }'
+
+# ---------------------------------------------------------------- lazily built shared state
+TANGLED_AWK=0 TANGLED_ORG=0 AWKRC=99 ORGRC=99
+prep_awk() {
+    [ "$TANGLED_AWK" = 1 ] && return
+    TANGLED_AWK=1
+    mkdir -p "$T/awk" && cp "$RECIPES" "$T/awk/recipes.org"
+    "$R/bin/lr1tg" "$T/awk/recipes.org" >"$T/awk.out" 2>"$T/awk.err"; AWKRC=$?
+}
+prep_org() {
+    [ "$TANGLED_ORG" = 1 ] && return
+    TANGLED_ORG=1
+    have emacs || { ORGRC=127; return; }
+    mkdir -p "$T/org" && cp "$RECIPES" "$T/org/recipes.org"
+    ( cd "$T/org" && emacs --batch -Q --eval '(require (quote org))' --eval '(require (quote ob-tangle))' \
+        --eval '(org-babel-tangle-file "recipes.org")' ) >"$T/org.out" 2>&1; ORGRC=$?
+}
+names_ready=0
+prep_names() {
+    [ "$names_ready" = 1 ] && return
+    names_ready=1
+    if have zcat && [ -r "$EVID/trixie-13.7-main.names.gz" ] && [ -r "$EVID/trixie-13.7-nff.names" ]; then
+        zcat "$EVID/trixie-13.7-main.names.gz" | grep -v '^#' | sort -u > "$T/main.names"
+        grep -v '^#' "$EVID/trixie-13.7-nff.names" | sort -u > "$T/nff.names"
+    else
+        names_ready=2
+    fi
+}
+pk() { grep -v -e '^#' -e '^$' "$1" | sort -u; }          # the names in one list
+pkfile() { echo "$T/awk/out/$1.packages"; }
+
+# ================================================================ A: hygiene
+chk_A1() {
+    pat='SPDX-License-'"Identifier: "
+    { find "$R" "$HERE" -type f ! -name '*.gz' ! -name '*.elc'; ls "$HERE"/../[1-6]-*.md 2>/dev/null; } > "$T/files"
+    n=0; bads=
+    while IFS= read -r f; do
+        case $f in */bin/*|*/shell/*|*.el|*.awk|*.js|*/lr1ck) exp=GPL-3.0-or-later ;; *) exp=CC-BY-SA-4.0 ;; esac
+        got=$(grep "^[^A-Za-z0-9]*$pat" "$f" | sed -e "s/.*$pat//" -e 's/[ ]*-->.*//' -e 's/[ ]*\*\/.*//' -e 's/[ ]*$//' | sort -u)
+        cnt=$(grep -c "^[^A-Za-z0-9]*$pat" "$f")
+        n=$((n + 1))
+        if [ "$got" != "$exp" ]; then bads="$bads ${f#"$R"/}(has '$got', wants $exp)"
+        elif [ "$cnt" -ne 1 ] && [ "$(basename "$f")" != recipes.org ]; then bads="$bads ${f#"$R"/}($cnt lines)"; fi
+    done < "$T/files"
+    for g in "$EVID"/*.gz; do [ -e "$g" ] || continue; zcat "$g" | head -3 | grep -q "$pat""CC-BY-SA-4.0" || bads="$bads $(basename "$g")"; done
+    [ -z "$bads" ] && ok A1 "$n files, each with one SPDX line of the right kind" || bad A1 "SPDX line wrong in:$bads"
+}
+chk_A2() {
+    bads=
+    for t in lr1tg lr1op lr1st lr1bk; do
+        out=$("$R/bin/$t" --no-such-option 2>&1); rc=$?
+        [ "$rc" -eq 1 ] || bads="$bads $t(exit $rc, wanted 1)"
+        case $out in *nknown*|*sage*) : ;; *) bads="$bads $t(no explanation printed)" ;; esac
+    done
+    [ -z "$bads" ] && ok A2 "all four tools refuse an unknown option loudly" || bad A2 "an option was swallowed:$bads"
+}
+
+chk_A3() {
+    bads=; n=0
+    for f in "$R"/bin/*; do
+        n=$((n + 1))
+        case $f in *.awk) continue ;; esac
+        [ -x "$f" ] || bads="$bads ${f#"$R"/}(not executable)"
+        head -1 "$f" | grep -q '^#!' || bads="$bads ${f#"$R"/}(no #! line)"
+    done
+    [ -z "$bads" ] && ok A3 "every tool in bin/ is executable and says how to run it ($n files; the .awk program is read by its wrapper)" || bad A3 "$bads"
+}
+
+# ================================================================ B: the recipes and their two readers
+chk_B1() {
+    prep_awk
+    if [ "$AWKRC" -eq 0 ] && [ -s "$T/awk.out" ]; then ok B1 "reader one tangled $(wc -l < "$T/awk.out" | tr -d ' ') files"
+    else bad B1 "reader one (lr1tg) refused recipes.org: $(head -1 "$T/awk.err")"; fi
+}
+chk_B2() {
+    awk '
+    tolower($0) ~ /^#\+name:/ { n = $0; sub(/^#\+[Nn][Aa][Mm][Ee]:[ \t]*/, "", n); names[n]++; next }
+    tolower($0) ~ /^#\+begin_src/ { inb = 1; next }
+    tolower($0) ~ /^#\+end_src/ { inb = 0; next }
+    inb && /^<<[A-Za-z0-9_.-]+>>$/ { r = substr($0, 3, length($0) - 4); refs[r] = refs[r] " " FNR; nref++ }
+    END { for (r in refs) if (!(r in names)) { printf "no block is named %s (lines%s)\n", r, refs[r]; e++ }
+          for (n in names) if (names[n] > 1) { printf "name %s used %d times\n", n, names[n]; e++ }
+          printf "%d references, %d names\n", nref, length(names) > "/dev/stderr"; exit e ? 1 : 0 }' "$RECIPES" > "$T/b2.out" 2> "$T/b2.sum"
+    rc=$?
+    [ "$rc" -eq 0 ] && ok B2 "every reference has exactly one name ($(cat "$T/b2.sum"))" || bad B2 "$(head -2 "$T/b2.out" | tr '\n' ';')"
+}
+chk_B3() {
+    prep_org
+    if [ "$ORGRC" -eq 127 ]; then skip B3 "Emacs is not installed, so reader two cannot run"
+    elif [ "$ORGRC" -eq 0 ] && [ -d "$T/org/out" ]; then ok B3 "reader two (Emacs $(emacs --version | head -1 | sed 's/GNU Emacs //'), Org $(emacs --batch -Q --eval '(progn (require (quote org)) (princ (org-version)))' 2>/dev/null | tail -1)) tangled $(find "$T/org/out" -type f | wc -l | tr -d ' ') files"
+    else bad B3 "org-babel-tangle failed: $(tail -2 "$T/org.out" | tr '\n' ' ')"; fi
+}
+chk_B4() {
+    prep_awk; prep_org
+    if [ "$ORGRC" -eq 127 ]; then skip B4 "reader two is missing, so there is no second reader to agree with"; return; fi
+    if [ "$AWKRC" -ne 0 ] || [ "$ORGRC" -ne 0 ]; then bad B4 "a reader failed (awk $AWKRC, org $ORGRC)"; return; fi
+    if diff -r "$T/awk/out" "$T/org/out" >"$T/b4.diff" 2>&1; then
+        ok B4 "the two readers agree on every byte of $(find "$T/awk/out" -type f | wc -l | tr -d ' ') files (sha256 of all: $(find "$T/awk/out" -type f | sort | xargs cat | sha256sum | cut -c1-12))"
+    else bad B4 "the readers disagree: $(head -3 "$T/b4.diff" | tr '\n' ' ')"; fi
+}
+chk_B5() {
+    have emacs || { skip B5 "Emacs is not installed"; return; }
+    for r in a o; do mkdir -p "$T/pert$r"; done
+    awk '{ print } /^#\+name: g-core$/ { getline; print; print "zz-perturbation" }' "$RECIPES" > "$T/perta/recipes.org"
+    cp "$T/perta/recipes.org" "$T/perto/recipes.org"
+    "$R/bin/lr1tg" "$T/perta/recipes.org" >/dev/null 2>&1
+    ( cd "$T/perto" && emacs --batch -Q --eval '(require (quote org))' --eval '(require (quote ob-tangle))' --eval '(org-babel-tangle-file "recipes.org")' ) >/dev/null 2>&1
+    a=$(grep -l '^zz-perturbation$' "$T"/perta/out/*.packages 2>/dev/null | wc -l | tr -d ' ')
+    o=$(grep -l '^zz-perturbation$' "$T"/perto/out/*.packages 2>/dev/null | wc -l | tr -d ' ')
+    if [ "$a" -ge 5 ] && [ "$o" -eq "$a" ] && diff -r "$T/perta/out" "$T/perto/out" >/dev/null 2>&1; then
+        ok B5 "a new line in g-core appeared in $a lists from both readers, which still agree (they read the file, not a cache)"
+    else bad B5 "perturbation: awk moved $a lists, Emacs moved $o, or they now differ"; fi
+}
+chk_B6() {
+    prep_awk
+    if [ "$AWKRC" -ne 0 ]; then bad B6 "cannot compare: reader one failed"; return; fi
+    if diff -r "$R/out" "$T/awk/out" >"$T/b6.diff" 2>&1; then ok B6 "committed out/ equals a fresh tangle"
+    else bad B6 "out/ is stale or has stray files: $(head -2 "$T/b6.diff" | tr '\n' ' ')"; fi
+}
+chk_B7() {
+    prep_awk; bads=
+    for f in "$T"/awk/out/*.packages; do
+        grep -n '^!' "$f" >/dev/null && bads="$bads $(basename "$f")(a '!' line would be RUN by live-build)"
+        grep -v -e '^#' -e '^$' "$f" | grep -v -e '^[a-z0-9][a-z0-9+.-]*$' >/dev/null && bads="$bads $(basename "$f")(odd name)"
+        d=$(grep -v -e '^#' -e '^$' "$f" | sort | uniq -d | tr '\n' ' '); [ -z "$d" ] || bads="$bads $(basename "$f")(listed twice: $d)"
+    done
+    [ -z "$bads" ] && ok B7 "lists hold only plain names, once each, nothing live-build would run" || bad B7 "$bads"
+}
+chk_B8() {
+    awk '/^#\+name: g-/ { g = $2; next } /^#\+begin_src/ { if (g != "") inb = 1; next } /^#\+end_src/ { inb = 0; g = ""; next }
+         inb { if ($0 in w) { printf "%s is in %s and %s\n", $0, w[$0], g; e++ } else w[$0] = g }
+         END { exit e ? 1 : 0 }' "$RECIPES" > "$T/b8.out"
+    [ $? -eq 0 ] && ok B8 "no package is in two groups" || bad B8 "$(head -3 "$T/b8.out" | tr '\n' ';')"
+}
+chk_B9() {
+    prep_awk; prep_names
+    if [ "$names_ready" = 2 ]; then skip B9 "the Debian name lists in evidence/ are missing"; return; fi
+    bads=
+    for p in $FREE; do m=$(pk "$(pkfile $p)" | comm -23 - "$T/main.names" | tr '\n' ' '); [ -z "$m" ] || bads="$bads $p:[$m]"; done
+    m=$(pk "$(pkfile author)" | comm -23 - "$T/main.names" | tr '\n' ' '); [ -z "$m" ] || bads="$bads author:[$m]"
+    m=$(pk "$(pkfile addon-firmware)" | comm -23 - "$T/nff.names" | tr '\n' ' '); [ -z "$m" ] || bads="$bads addon-firmware:[$m]"
+    m=$(pk "$(pkfile fullsink)" | comm -23 - "$T/main.names" | comm -23 - "$T/nff.names" | tr '\n' ' '); [ -z "$m" ] || bads="$bads fullsink:[$m]"
+    both=$(comm -12 "$T/main.names" "$T/nff.names" | tr '\n' ' ')
+    [ -z "$both" ] || bads="$bads (a name is in both components: $both)"
+    total=$(cat "$T"/awk/out/*.packages | grep -v -e '^#' -e '^$' | sort -u | wc -l | tr -d ' ')
+    [ -z "$bads" ] && ok B9 "all $total distinct names exist in Debian 13.7 in the component the profile claims; main and non-free-firmware do not overlap" \
+                   || bad B9 "not in Debian 13.7 where claimed:$bads"
+}
+chk_B10() {
+    prep_awk; prep_names
+    if [ "$names_ready" = 2 ]; then skip B10 "the Debian name lists in evidence/ are missing"; return; fi
+    bads=
+    for p in $FREE; do
+        m=$(pk "$(pkfile $p)" | comm -12 - "$T/nff.names" | tr '\n' ' '); [ -z "$m" ] || bads="$bads $p holds non-free firmware: $m"
+        grep -qx -e '--archive-areas main' "$T/awk/out/$p.lbflags" || bads="$bads $p.lbflags is not main-only"
+        grep -qx -e '--firmware-chroot false' "$T/awk/out/$p.lbflags" && grep -qx -e '--firmware-binary false' "$T/awk/out/$p.lbflags" || bads="$bads $p.lbflags lets live-build add firmware"
+    done
+    grep -qx -e '--archive-areas main non-free-firmware' "$T/awk/out/fullsink.lbflags" || bads="$bads fullsink.lbflags does not name the firmware component it uses"
+    [ -z "$bads" ] && ok B10 "minimal, desktop, homelab and hardened are main-only with firmware off; fullsink names its extra component" || bad B10 "$bads"
+}
+chk_B11() {
+    prep_awk
+    if [ ! -r "$EVID/lb-config-options.txt" ]; then skip B11 "evidence/lb-config-options.txt is missing"; return; fi
+    grep -v '^#' "$EVID/lb-config-options.txt" | sort -u > "$T/lbopts"
+    bads=
+    for f in "$T"/awk/out/*.lbflags; do
+        grep -v -e '^#' -e '^$' "$f" | while read -r flag val; do
+            o=${flag#--}
+            grep -qx -- "$o" "$T/lbopts" || echo "$(basename "$f"): $flag is not an lb config option"
+            [ -n "$val" ] || echo "$(basename "$f"): $flag has no value"
+        done
+        d=$(grep -v -e '^#' -e '^$' "$f" | cut -d' ' -f1 | sort | uniq -d | tr '\n' ' '); [ -z "$d" ] || echo "$(basename "$f"): repeated $d"
+    done > "$T/b11.out"
+    grep -qx -e '--distribution trixie' "$T/awk/out/desktop.lbflags" || echo "desktop.lbflags does not pin trixie" >> "$T/b11.out"
+    for f in "$T"/awk/out/*.lbflags; do grep -qx -e '--architecture amd64' "$f" || echo "$(basename "$f") is not amd64 (trixie has no i386 kernel or installer)" >> "$T/b11.out"; done
+    [ -s "$T/b11.out" ] && bad B11 "$(head -3 "$T/b11.out" | tr '\n' ';')" || ok B11 "every flag is a real lb config option (from live-build's own option list), none repeated, trixie pinned, amd64 only"
+}
+chk_B12() {
+    prep_awk; bads=
+    got=$(grep -v -e '^#' "$T/awk/out/profiles.txt" | cut -d'|' -f1 | tr '\n' ' ')
+    [ "$got" = "minimal desktop homelab hardened fullsink " ] || bads="$bads profiles.txt lists [$got]"
+    for p in $PROFILES; do [ -s "$(pkfile $p)" ] && [ -s "$T/awk/out/$p.lbflags" ] || bads="$bads $p(missing a file)"; pk "$(pkfile $p)" > "$T/p.$p"; done
+    # the shared base (boot, core, token, console groups) is in all five; the console-mouse group is not (graphical profiles have no gpm)
+    awk '/^#\+name: g-(boot|core|token|console)$/ { g = 1; next } /^#\+begin_src/ { if (g) inb = 1; next } /^#\+end_src/ { inb = 0; g = 0; next } inb' "$RECIPES" | sort -u > "$T/base.names"
+    [ -s "$T/base.names" ] || bads="$bads could not read the base groups from recipes.org"
+    for p in $PROFILES; do m=$(comm -23 "$T/base.names" "$T/p.$p" | tr '\n' ' '); [ -z "$m" ] || bads="$bads $p lacks base packages: $m"; done
+    for p in minimal desktop homelab hardened; do m=$(comm -23 "$T/p.$p" "$T/p.fullsink" | tr '\n' ' '); [ -z "$m" ] || bads="$bads fullsink lacks $m from $p"; done
+    m=$(pk "$(pkfile author)" | comm -23 - "$T/p.fullsink" | tr '\n' ' '); [ -z "$m" ] || bads="$bads fullsink lacks author packages $m"
+    m=$(pk "$(pkfile addon-firmware)" | comm -23 - "$T/p.fullsink" | tr '\n' ' '); [ -z "$m" ] || bads="$bads fullsink lacks firmware $m"
+    [ -z "$bads" ] && ok B12 "five profiles in order, each with a list and flags; all share the $(wc -l < "$T/base.names" | tr -d ' ')-package base; fullsink holds everything (minimal is NOT inside desktop: it has the console mouse daemon, they do not)" || bad B12 "$bads"
+}
+chk_B13() {
+    awk '
+    /^#\+name: g-/ { allg[++ng] = $2 }
+    /^#\+begin_src/ { inb = 1; tp = ""; for (i = 1; i <= NF; i++) if ($i == ":tangle") tp = $(i + 1); next }
+    /^#\+end_src/ { inb = 0; tp = ""; next }
+    inb && tp ~ /^out\/(minimal|desktop|homelab|hardened|fullsink)\.packages$/ && /^<<g-/ { p = tp; sub(/^out\//, "", p); sub(/\.packages$/, "", p); blk[p] = blk[p] " " substr($0, 3, length($0) - 4) }
+    /^\| *(minimal|desktop|homelab|hardened|fullsink) / { split($0, c, "|"); p = c[2]; gsub(/ /, "", p); g = c[4]; gsub(/^ +| +$/, "", g); row[p] = g }
+    function sorted(s,   a, n, i, j, t, out) { n = split(s, a, " "); for (i = 1; i <= n; i++) for (j = i + 1; j <= n; j++) if (a[j] < a[i]) { t = a[i]; a[i] = a[j]; a[j] = t }
+                                               out = ""; for (i = 1; i <= n; i++) out = out " " a[i]; return out }
+    END {
+        for (p in blk) {
+            want = row[p]
+            if (want ~ /^every group/) { want = ""; for (i = 1; i <= ng; i++) want = want " " allg[i] }
+            else { n = split(want, w, " "); want = ""; for (i = 1; i <= n; i++) want = want " g-" w[i] }
+            if (sorted(want) != sorted(blk[p])) { printf "%s: table says [%s ] but the block uses [%s ]\n", p, sorted(want), sorted(blk[p]); e++ }
+            seen++
+        }
+        if (seen != 5) { print "expected five profile blocks, found " seen; e++ }
+        exit e ? 1 : 0 }' "$RECIPES" > "$T/b13.out"
+    [ $? -eq 0 ] && ok B13 "the table of groups in the prose matches the five profile blocks (fullsink = every group)" || bad B13 "$(head -2 "$T/b13.out" | tr '\n' ';')"
+}
+chk_B14() {
+    prep_awk; f=$T/awk/out/addon-mesh.external; bads=
+    grep -v -e '^#' -e '^$' "$f" | awk -F'|' '
+        NF != 5 { printf "row %d has %d fields; ", NR, NF; e++ }
+        $3 != "free" && $3 != "restricted" { printf "%s: standing must be free or restricted; ", $1; e++ }
+        $2 == "" { printf "%s: no licence; ", $1; e++ }
+        { have[$1] = 1; need[NR] = $4 }
+        END { for (i in need) { n = split(need[i], a, " "); for (j = 1; j <= n; j++) if (!(a[j] in have)) { printf "needs %s which has no row; ", a[j]; e++ } } exit e ? 1 : 0 }' > "$T/b14.out" || bads=$(cat "$T/b14.out")
+    cmp -s "$f" "$T/awk/out/fullsink.external" || bads="$bads fullsink.external differs from addon-mesh.external;"
+    for p in $FREE; do [ ! -e "$T/awk/out/$p.external" ] || bads="$bads $p has an external list;"; done
+    [ -z "$bads" ] && ok B14 "mesh add-on rows are complete, each says free or restricted, dependencies resolve, only fullsink carries them" || bad B14 "$bads"
+}
+chk_B15() {
+    prep_awk
+    awk -F'|' '/^\| *(minimal|desktop|homelab|hardened|fullsink) / { p = $2; w = $3; gsub(/^ +| +$/, "", p); gsub(/^ +| +$/, "", w); print p "|" w }' "$RECIPES" | sort > "$T/b15.a"
+    grep -v '^#' "$T/awk/out/profiles.txt" | awk -F'|' '{ print $1 "|" $3 }' | sort > "$T/b15.b"
+    if cmp -s "$T/b15.a" "$T/b15.b" && [ -s "$T/b15.a" ]; then ok B15 "\"for whom\" is the same text in the prose table and in profiles.txt"
+    else bad B15 "the two descriptions differ: $(diff "$T/b15.a" "$T/b15.b" | head -2 | tr '\n' ' ')"; fi
+}
+chk_B16() {
+    prep_awk; bads=
+    grep -v '^#' "$T/awk/out/profiles.txt" | while IFS='|' read -r p shell why; do
+        l=$(pkfile "$p")
+        case $shell in
+            html)  grep -qx xfce4 "$l" && grep -qx firefox-esr "$l" || echo "$p gets the HTML page but has no desktop or no browser" ;;
+            emacs) grep -qx emacs-nox "$l" && grep -qx gpm "$l" && ! grep -qx xfce4 "$l" || echo "$p gets the Emacs frame but lacks emacs-nox or gpm, or has a desktop" ;;
+            *) echo "$p: unknown shell '$shell'" ;;
+        esac
+    done > "$T/b16.out"
+    [ -s "$T/b16.out" ] && bad B16 "$(head -2 "$T/b16.out" | tr '\n' ';')" || ok B16 "graphical profiles have a desktop and browser for the HTML page; console profiles have emacs-nox and gpm for the Emacs frame"
+}
+
+chk_B17() {
+    prep_awk; f=$EVID/trixie-13.7-programs.txt
+    [ -r "$f" ] || { skip B17 "evidence/trixie-13.7-programs.txt is missing"; return; }
+    grep -v -e '^#' -e '^$' "$f" > "$T/programs"
+    grep -v -e '^#' -e '^$' "$T/awk/out/choices.txt" | while IFS='|' read -r id ed profs needs label plain cmd; do
+        prog=${cmd%% *}
+        case $prog in larder-*|lr1st) continue ;; esac
+        row=$(awk -F'|' -v p="$prog" '$1 == p' "$T/programs")
+        if [ -z "$row" ]; then echo "'$id' starts $prog, and the evidence has no row for it (a typo, or add its row)"; continue; fi
+        pkg=$(echo "$row" | cut -d'|' -f2)
+        case ",$pkg," in *",$needs,"*) : ;; *) echo "'$id' starts $prog, which Debian ships in $pkg, but the choice needs $needs" ;; esac
+    done > "$T/b17.out"
+    n=$(grep -v -e '^#' -e '^$' "$T/awk/out/choices.txt" | awk -F'|' '{ split($7, a, " "); if (a[1] !~ /^(larder-|lr1st$)/) c++ } END { print c + 0 }')
+    [ -s "$T/b17.out" ] && bad B17 "$(head -2 "$T/b17.out" | tr '\n' ';')" || ok B17 "the $n programs the choices start (the rest are larder-* or lr1st, not built or ours) are files in the package each choice needs, per Debian's own file lists"
+}
+
+# ================================================================ C: the first-run shell
+chk_C1() {
+    prep_awk; f=$T/awk/out/choices.txt
+    bads=$(grep -v -e '^#' -e '^$' "$f" | awk -F'|' '
+        NF != 7 { printf "row %d has %d fields; ", NR, NF; e++ }
+        $2 != "base" && $2 != "author" { printf "%s: edition must be base or author; ", $1; e++ }
+        ($1 in seen) { printf "%s repeated; ", $1; e++ } { seen[$1] = 1 }
+        { n = split($3, a, " "); for (i = 1; i <= n; i++) if (a[i] != "*" && a[i] !~ /^(minimal|desktop|homelab|hardened|fullsink)$/) { printf "%s: unknown profile %s; ", $1, a[i]; e++ } }
+        $5 == "" || $6 == "" || $7 == "" { printf "%s: an empty label, words or command; ", $1; e++ }')
+    [ -z "$bads" ] && ok C1 "choices.txt: $(grep -vc -e '^#' -e '^$' "$f") rows, seven fields each, known profiles, unique ids" || bad C1 "$bads"
+}
+chk_C2() {
+    prep_awk; bads=
+    grep -v -e '^#' -e '^$' "$T/awk/out/choices.txt" | while IFS='|' read -r id ed profs needs label plain cmd; do
+        [ "$needs" = "-" ] && continue
+        [ "$profs" = '*' ] && profs=$PROFILES
+        for p in $profs; do
+            grep -qx "$needs" "$(pkfile "$p")" && continue
+            [ "$ed" = author ] && grep -qx "$needs" "$(pkfile author)" && continue
+            echo "'$id' is offered on $p but needs $needs, which that profile does not have"
+        done
+    done > "$T/c2.out"
+    [ -s "$T/c2.out" ] && bad C2 "$(head -2 "$T/c2.out" | tr '\n' ';')" || ok C2 "every choice's package is in every profile that offers the choice (author choices may use author.packages)"
+}
+chk_C3() {
+    prep_awk
+    awk "$AWK_HTML_CHOICES" "$HTML" > "$T/c3.html"
+    awk -F'|' "$AWK_CHOICES_PROG" "$T/awk/out/choices.txt" > "$T/c3.txt"
+    if cmp -s "$T/c3.html" "$T/c3.txt" && [ -s "$T/c3.txt" ]; then ok C3 "the page lists the same $(wc -l < "$T/c3.txt" | tr -d ' ') choices as choices.txt: ids, order, editions, profiles, labels and words"
+    else bad C3 "page and choices.txt differ: $(diff "$T/c3.html" "$T/c3.txt" | grep '^[<>]' | head -2 | cut -c1-90 | tr '\n' ' ')"; fi
+}
+chk_C4() {
+    bads=; max=17408
+    grep -n -i -e 'https\?:' -e '<script[^>]* src=' -e '<link' -e '@import' -e 'url(' -e '<iframe' -e '<img' -e '<form' -e 'src="//' -e 'href="//' "$HTML" > "$T/c4.out" && bads="$bads reaches outwards: $(head -2 "$T/c4.out" | cut -c1-70 | tr '\n' ' ')"
+    grep -q "Content-Security-Policy.*default-src 'none'" "$HTML" || bads="$bads no restrictive Content-Security-Policy;"
+    size=$(wc -c < "$HTML" | tr -d ' ')
+    [ "$size" -le "$max" ] || bads="$bads $size bytes is over $max;"
+    [ -z "$bads" ] && ok C4 "no outside address, script, stylesheet, font or image; a locked-down CSP; $size bytes (cap $max = the house number 17 KiB, invented)" || bad C4 "$bads"
+}
+chk_C5() {
+    bads=
+    nch=$(grep -c 'data-choice=' "$HTML"); nhref=$(grep -c 'href="larder:' "$HTML")
+    [ "$nch" -gt 0 ] && [ "$nch" -eq "$nhref" ] || bads="$bads $nch choices but $nhref larder: links;"
+    grep -n -i -e 'onkey' -e 'accesskey' -e 'keydown' -e 'keypress' "$HTML" >/dev/null && bads="$bads a handler that needs the keyboard;"
+    awk '/^\.choice\{/ { if (match($0, /min-height:[0-9.]+rem/)) { v = substr($0, RSTART + 11, RLENGTH - 14) + 0; if (v < 3) bad = 1; ok = 1 } }
+         /^button\{/ { if (match($0, /min-height:[0-9.]+rem/)) { v = substr($0, RSTART + 11, RLENGTH - 14) + 0; if (v < 3) bad = 1; okb = 1 } }
+         END { exit (bad || !ok || !okb) ? 1 : 0 }' "$HTML" || bads="$bads click targets under 3rem tall, or not declared;"
+    grep -c '<button type="button"' "$HTML" | grep -qx 3 || bads="$bads the three colour controls are not real buttons;"
+    [ -z "$bads" ] && ok C5 "$nch choices are links, 3 colour controls are buttons, all targets at least 3rem tall (48px at the usual size), no key-only handler (a real mouse was not used)" || bad C5 "$bads"
+}
+chk_C6() {
+    bads=
+    grep -q '^html{color-scheme:light dark}' "$HTML" || bads="$bads no color-scheme;"
+    grep -q '@media (prefers-color-scheme:dark)' "$HTML" || bads="$bads no prefers-color-scheme rule;"
+    grep -q ':root:not(\[data-theme="light"\])' "$HTML" || bads="$bads dark-by-system does not stand down for an explicit light;"
+    grep -q '^:root\[data-theme="dark"\]' "$HTML" || bads="$bads no explicit dark;"
+    grep -q '^body{[^}]*background:var(--bg)' "$HTML" || bads="$bads body has no explicit background;"
+    grep -q 'data-theme-choice="system"' "$HTML" && grep -q 'data-theme-choice="light"' "$HTML" && grep -q 'data-theme-choice="dark"' "$HTML" || bads="$bads missing a colour control;"
+    [ -z "$bads" ] && ok C6 "complete light default; dark by system unless light was chosen; explicit dark; explicit body background; three controls" || bad C6 "$bads"
+}
+chk_C7() {
+    awk "$AWK_TOKENS" "$HTML" > "$T/tokens"
+    for s in light darkmedia darkattr; do awk -v s=$s '$1 == s { print $2, $3 }' "$T/tokens" | sort > "$T/tok.$s"; done
+    nl=$(wc -l < "$T/tok.light" | tr -d ' ')
+    if [ "$nl" -ge 7 ] && cmp -s "$T/tok.darkmedia" "$T/tok.darkattr" && [ "$(wc -l < "$T/tok.darkmedia" | tr -d ' ')" = "$nl" ]; then
+        ok C7 "the dark palette in the media query and in the explicit override match token for token ($nl tokens)"
+    else bad C7 "palettes differ (light $nl tokens): $(diff "$T/tok.darkmedia" "$T/tok.darkattr" | grep '^[<>]' | head -2 | tr '\n' ' ')"; fi
+}
+chk_C8() {
+    awk "$AWK_TOKENS" "$HTML" > "$T/tokens"
+    awk "$AWK_COLOR"'
+    { v[$1, $2] = $3 }
+    END {
+        np = split("fg:bg:7 fg:card:7 muted:bg:4.5 muted:card:4.5 accent:bg:4.5 accent:card:4.5 line:bg:3 line:card:3 focus:bg:3 focus:card:3", P, " ")
+        ns = split("light darkmedia darkattr", S, " ")
+        for (s = 1; s <= ns; s++) for (p = 1; p <= np; p++) {
+            split(P[p], q, ":"); a = v[S[s], q[1]]; b = v[S[s], q[2]]
+            if (a == "" || b == "") { printf "FAIL %s %s/%s missing\n", S[s], q[1], q[2]; e++; continue }
+            r = ratio(a, b); st = (r >= q[3]) ? "ok" : "FAIL"; if (st == "FAIL") e++
+            printf "%s %-9s %-6s on %-4s %6.2f : 1  (floor %s)\n", st, S[s], q[1], q[2], r, q[3]
+        }
+        exit e ? 1 : 0 }' "$T/tokens" > "$T/c8.out"
+    rc=$?
+    # smallest margin: ratio divided by its floor (1.00 would be exactly at the floor)
+    low=$(awk '{ f = $10; sub(/\)/, "", f); printf "%.2f %s %s on %s: %s:1 (floor %s)\n", $6 / f, $2, $3, $5, $6, f }' "$T/c8.out" | sort -n | head -1)
+    second="a second computation in node was not run (node is missing)"
+    if have node; then
+        node -e '
+const fs = require("fs"), tok = {};
+for (const l of fs.readFileSync(process.argv[1], "utf8").trim().split("\n")) { const [s, n, h] = l.split(" "); (tok[s] = tok[s] || {})[n] = h; }
+const lin = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+const L = (h) => { const v = [1, 3, 5].map((i) => lin(parseInt(h.substr(i, 2), 16))); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+const R = (a, b) => { let x = L(a), y = L(b); if (x < y) [x, y] = [y, x]; return (x + 0.05) / (y + 0.05); };
+const P = ["fg:bg", "fg:card", "muted:bg", "muted:card", "accent:bg", "accent:card", "line:bg", "line:card", "focus:bg", "focus:card"];
+for (const s of ["light", "darkmedia", "darkattr"]) for (const p of P) { const [a, b] = p.split(":"); console.log(s + " " + a + " " + b + " " + R(tok[s][a], tok[s][b]).toFixed(2)); }
+' "$T/tokens" | sort > "$T/c8.node"
+        awk '{ print $2, $3, $5, $6 }' "$T/c8.out" | sort > "$T/c8.awk"
+        if cmp -s "$T/c8.node" "$T/c8.awk"; then second="node, computing the same 30 ratios separately, agrees to two decimals"
+        else rc=1; echo "awk and node disagree on a contrast ratio: $(diff "$T/c8.awk" "$T/c8.node" | head -2 | tr '\n' ' ')" >> "$T/c8.out"; fi
+    fi
+    if [ "$rc" -eq 0 ]; then
+        ok C8 "30 pairs measured (WCAG 2.x formula) in light, dark-by-system and dark-by-choice: text 7:1, secondary text and links 4.5:1, borders and focus ring 3:1; thinnest margin: $(echo "$low" | cut -d' ' -f2-); $second"
+        [ "$QUIET" = 1 ] || awk '{ printf "          %s\n", $0 }' "$T/c8.out"
+    else bad C8 "$(grep -e '^FAIL' -e '^awk and node' "$T/c8.out" | head -2 | tr '\n' ';')"; fi
+}
+chk_C9() {
+    have emacs || { skip C9 "Emacs is not installed, so there is no second source for the colours"; return; }
+    emacs --batch -Q --eval '(progn (load-theme (quote modus-operandi) t) (load-theme (quote modus-vivendi) t)
+      (dolist (v (quote (modus-themes-operandi-colors modus-themes-vivendi-colors)))
+        (when (boundp v) (dolist (c (symbol-value v)) (when (stringp (cdr c)) (princ (format "%s %s %s\n" (if (eq v (quote modus-themes-operandi-colors)) "light" "dark") (car c) (cdr c))))))))' \
+      2>/dev/null | tr 'A-F' 'a-f' > "$T/modus"
+    if [ ! -s "$T/modus" ]; then skip C9 "this Emacs has no modus-themes-*-colors variables (older or newer Modus)"; return; fi
+    awk "$AWK_TOKENS" "$HTML" > "$T/tokens"
+    awk 'NR == FNR { m[$1, $2] = $3; next }
+         $4 != "-" { side = ($1 == "light") ? "light" : "dark"; want = m[side, $4]
+                     if (want == "") { printf "%s %s: Emacs has no colour %s; ", $1, $2, $4; e++ }
+                     else if (want != $3) { printf "%s %s is %s but Modus %s is %s; ", $1, $2, $3, $4, want; e++ }
+                     n++ }
+         END { printf "%d\n", n > "/dev/stderr"; exit e ? 1 : 0 }' "$T/modus" "$T/tokens" > "$T/c9.out" 2> "$T/c9.n"
+    [ $? -eq 0 ] && ok C9 "all $(cat "$T/c9.n" | tr -d '\n') tagged colours equal the values in Emacs' own Modus themes (second source)" || bad C9 "$(head -c 300 "$T/c9.out")"
+}
+chk_C10() {
+    have node || { skip C10 "node is not installed; the page script was not run"; return; }
+    node "$HERE/stubdom.js" "$HTML" desktop base > "$T/c10.out" 2>&1 || { bad C10 "the page script failed on the stub: $(head -2 "$T/c10.out" | tr '\n' ' ')"; return; }
+    want='theme-at-start: none
+theme-after-dark: dark
+theme-after-light: light
+theme-after-system: none
+pressed: system=true light=false dark=false'
+    got=$(grep -v '^ids:' "$T/c10.out")
+    [ "$got" = "$want" ] && ok C10 "the page script runs on a stand-in DOM (not a browser): dark and light overrides set, 'follow my computer' clears them" || bad C10 "theme behaviour differs: $(echo "$got" | tr '\n' ';')"
+}
+chk_C11() {
+    awk '
+    BEGIN { split("meta br hr link img input", v, " "); for (i in v) void[v[i]] = 1 }
+    /<style>/ { skip = 1 } /<\/style>/ { skip = 0; next } /<script>/ { skip = 1 } /<\/script>/ { skip = 0; next }
+    skip { next }
+    { s = $0
+      while (match(s, /<\/?[a-zA-Z0-9]+/)) {
+          tag = substr(s, RSTART, RLENGTH); s = substr(s, RSTART + RLENGTH)
+          if (substr(tag, 2, 1) == "/") { name = substr(tag, 3); if (sp < 1 || st[sp] != name) { printf "line %d: </%s> does not match %s\n", FNR, name, (sp ? st[sp] : "nothing"); e++ } else sp-- }
+          else { name = substr(tag, 2); if (!(name in void)) st[++sp] = name } } }
+    END { if (sp != 0) { printf "%d tags left open\n", sp; e++ } exit e ? 1 : 0 }' "$HTML" > "$T/c11.out"
+    [ $? -eq 0 ] && ok C11 "every opened tag is closed, in order" || bad C11 "$(head -2 "$T/c11.out" | tr '\n' ';')"
+}
+chk_C12() {
+    have emacs || { skip C12 "Emacs is not installed"; return; }
+    mkdir -p "$T/bc" && cp "$R/shell/larder-first-run.el" "$T/bc/"
+    ( cd "$T/bc" && emacs --batch -Q --eval '(setq byte-compile-error-on-warn t)' -f batch-byte-compile larder-first-run.el ) > "$T/c12.bc" 2>&1
+    if [ ! -s "$T/bc/larder-first-run.elc" ]; then bad C12 "byte-compile failed: $(grep -v '^Loading' "$T/c12.bc" | head -2 | tr '\n' ' ')"; return; fi
+    LARDER_ROOT=$R emacs --batch -Q -l ert -l "$HERE/larder-first-run-test.el" -f ert-run-tests-batch-and-exit > "$T/c12.ert" 2>&1; rc=$?
+    n=$(grep -c '^   passed' "$T/c12.ert")
+    if [ "$rc" -eq 0 ] && grep -q ' 0 unexpected' "$T/c12.ert"; then
+        ok C12 "compiles with warnings as errors; $n ERT tests pass, including pressing a button and reading what the dispatcher was handed"
+    else bad C12 "ERT: $(grep -E '^   FAILED|unexpected' "$T/c12.ert" | head -3 | tr '\n' ';')"; fi
+}
+chk_C13() {
+    prep_awk
+    if ! have emacs || ! have node; then skip C13 "needs Emacs and node for the third and fourth readers"; return; fi
+    emacs --batch -Q -l "$R/shell/larder-first-run.el" --eval '(dolist (p (quote ("minimal" "desktop" "homelab" "hardened" "fullsink")))
+        (dolist (e (quote ("base" "author")))
+          (let ((larder-first-run-profile p) (larder-first-run-edition e))
+            (princ (format "%s %s %s\n" p e (mapconcat (lambda (c) (plist-get c :id)) (larder-first-run-choices) " "))))))' \
+        2>/dev/null > "$T/c13.emacs"
+    bads=; n=0
+    for p in $PROFILES; do for e in base author; do
+        r1=$(LARDER_CHOICES=$T/awk/out/choices.txt LARDER_PROFILE=$p LARDER_EDITION=$e "$R/bin/lr1op" --list | cut -d'|' -f1 | tr '\n' ' ' | sed 's/ $//')
+        r2=$(awk -F'|' -v P=$p -v E=$e "$AWK_OFFER" "$T/awk/out/choices.txt" | sed 's/ *$//')
+        r3=$(grep "^$p $e " "$T/c13.emacs" | cut -d' ' -f3- | sed 's/ *$//')
+        r4=$(node "$HERE/stubdom.js" "$HTML" $p $e 2>/dev/null | sed -n 's/^ids: //p' | sed 's/ *$//')
+        n=$((n + 1))
+        if [ "$r1" != "$r2" ] || [ "$r1" != "$r3" ] || [ "$r1" != "$r4" ]; then bads="$bads [$p/$e: lr1op='$r1' awk='$r2' emacs='$r3' page='$r4']"; fi
+    done; done
+    [ -z "$bads" ] && ok C13 "lr1op (sh), an awk statement of the rule, the Emacs shell and the page's own script offer the same choices on all $n profile and edition pairs" || bad C13 "$bads"
+}
+
+# ================================================================ D: the author's edition
+chk_D1() {
+    f=$R/author/PERMISSION-NOTICE.md; bads=
+    [ -r "$f" ] || { bad D1 "the notice is missing"; return; }
+    grep -qx 'STATUS: DRAFT' "$f" || bads="$bads STATUS is not DRAFT;"
+    grep -qx 'SIGNED: no' "$f" || bads="$bads SIGNED is not no;"
+    grep -q 'not legal advice' "$f" || bads="$bads does not say it is not legal advice;"
+    grep -q 'grants nothing' "$f" || bads="$bads does not say it grants nothing;"
+    grep -q '^<!-- watermark -->' "$f" && grep -q '^<!-- /watermark -->' "$f" || bads="$bads no watermark markers;"
+    grep -q 'has not read, reviewed or endorsed' "$f" || bads="$bads the mark does not say the author has not read the work;"
+    grep -q '^AUTHOR: \[' "$f" || bads="$bads AUTHOR is filled in (the author has not confirmed a name);"
+    [ -e "$f.asc" ] && bads="$bads a signature file ships with a draft;"
+    [ -z "$bads" ] && ok D1 "the shipped notice is a draft, unsigned, grants nothing, and its mark says the author has not read the work" || bad D1 "$bads"
+}
+chk_D2() {
+    out=$("$R/bin/lr1bk" "$R/author/books.org" 2>"$T/d2.err"); rc=$?
+    [ "$rc" -eq 0 ] && [ -z "$out" ] && ok D2 "the shipped book list lets nothing through ($(cat "$T/d2.err" | sed 's/^lr1bk: //'))" || bad D2 "exit $rc, rows let through: '$out' $(head -1 "$T/d2.err")"
+}
+chk_D3() {
+    h='| slug | title | right | sold by author | checked by | date | include |
+|---+---+---+---+---+---+---|'
+    t() { printf '%s\n%s\n' "$h" "$1" > "$T/d3.org"; "$R/bin/lr1bk" "$T/d3.org" 2>/dev/null; }
+    bads=
+    t '| a-1 | x | audio | unknown |  |  | yes |' >/dev/null && bads="$bads sold=unknown let through;"
+    t '| a-1 | x | audio | yes | me | 2026-01-01 | yes |' >/dev/null && bads="$bads sold=yes let through;"
+    t '| a-1 | x | text | no |  | 2026-01-01 | yes |' >/dev/null && bads="$bads nobody named, let through;"
+    t '| a-1 | x | text | no | me | soon | yes |' >/dev/null && bads="$bads no real date, let through;"
+    t '| a-1 | x | film | no | me | 2026-01-01 | yes |' >/dev/null && bads="$bads unknown right let through;"
+    printf '%s\n| a-1 | x | text | no | me | 2026-01-01 | no |\n| a-1 | x | text | no | me | 2026-01-01 | no |\n' "$h" > "$T/d3.org"; "$R/bin/lr1bk" "$T/d3.org" >/dev/null 2>&1 && bads="$bads duplicate row let through;"
+    got=$(t '| a-1 | x | text | no | me | 2026-01-01 | yes |'); [ "$got" = "a-1 text" ] || bads="$bads a good row was not passed (got '$got');"
+    [ -z "$bads" ] && ok D3 "the gate refuses unknown, sold, unattended, undated, odd-right and duplicate rows, and passes one good row" || bad D3 "$bads"
+}
+chk_D4() {
+    work=$T/work.txt; echo "A made-up story, for the test only." > "$work"; bads=
+    out=$("$R/bin/lr1st" "$work" 2>&1); rc=$?
+    { [ "$rc" -eq 1 ] && echo "$out" | grep -q 'DRAFT'; } || bads="$bads the draft notice did not stop the stamp (exit $rc);"
+    if ! have gpg || ! have gpgv; then
+        [ -z "$bads" ] || { bad D4 "$bads"; return; }
+        skip D4 "gpg is not installed, so the signed-notice path was not run (the draft was refused, as it should)"; return
+    fi
+    export GNUPGHOME=$T/gh; mkdir -m700 "$GNUPGHOME"
+    gpg --batch --pinentry-mode loopback --passphrase '' --quick-generate-key fixture-author@example.invalid ed25519 sign never >/dev/null 2>&1
+    sed -e 's/^STATUS: DRAFT/STATUS: IN FORCE/' -e 's/^SIGNED: no/SIGNED: yes (fixture)/' -e 's/^AUTHOR: .*/AUTHOR: Fixture Author/' "$R/author/PERMISSION-NOTICE.md" > "$T/notice.md"
+    gpg --batch --pinentry-mode loopback --passphrase '' --detach-sign --output "$T/notice.md.asc" "$T/notice.md" >/dev/null 2>&1
+    gpg --export > "$T/author.gpg" 2>/dev/null
+    out=$(LARDER_AUTHOR_KEYRING=$T/author.gpg "$R/bin/lr1st" --notice "$T/notice.md" "$work" 2>&1); rc=$?
+    { [ "$rc" -eq 0 ] && echo "$out" | grep -q 'Published by permission of Fixture Author' && echo "$out" | grep -q 'has not read, reviewed or endorsed' && echo "$out" | grep -q 'A made-up story'; } || bads="$bads a properly signed notice did not stamp (exit $rc);"
+    echo "an edit after signing" >> "$T/notice.md"
+    LARDER_AUTHOR_KEYRING=$T/author.gpg "$R/bin/lr1st" --notice "$T/notice.md" "$work" >/dev/null 2>&1 && bads="$bads a notice edited after signing still stamped;"
+    rm -f "$T/notice.md.asc"
+    LARDER_AUTHOR_KEYRING=$T/author.gpg "$R/bin/lr1st" --notice "$T/notice.md" "$work" >/dev/null 2>&1 && bads="$bads 'IN FORCE' text with no signature still stamped;"
+    : > "$T/empty.gpg"; sed -e 's/^STATUS: DRAFT/STATUS: IN FORCE/' "$R/author/PERMISSION-NOTICE.md" > "$T/n2.md"; gpg --batch --pinentry-mode loopback --passphrase '' --detach-sign --output "$T/n2.md.asc" "$T/n2.md" >/dev/null 2>&1
+    LARDER_AUTHOR_KEYRING=$T/empty.gpg "$R/bin/lr1st" --notice "$T/n2.md" "$work" >/dev/null 2>&1 && bads="$bads a signature by a key the author does not hold still stamped;"
+    unset GNUPGHOME
+    [ -z "$bads" ] && ok D4 "no stamp for a draft; a stamp only when 'IN FORCE' AND the author's signature verifies; edited-after-signing, unsigned and wrong-key all refused" || bad D4 "$bads"
+}
+chk_D5() {
+    bads=
+    find "$R" -type f \( -iname '*.epub' -o -iname '*.mobi' -o -iname '*.azw*' -o -iname '*.pdf' -o -iname '*.mp3' -o -iname '*.m4a' -o -iname '*.m4b' -o -iname '*.ogg' -o -iname '*.flac' -o -iname '*.wav' -o -iname '*.docx' -o -iname '*.odt' -o -iname '*.djvu' \) > "$T/d5.out"
+    [ -s "$T/d5.out" ] && bads="$bads book-like files: $(head -2 "$T/d5.out" | tr '\n' ' ');"
+    have=$(ls "$R/author" | tr '\n' ' ')
+    [ "$have" = "PERMISSION-NOTICE.md books.org " ] || bads="$bads author/ holds [$have];"
+    size=$(cat "$R"/author/* | wc -c | tr -d ' ')
+    [ "$size" -le 17408 ] || bads="$bads author/ is $size bytes, too big to be only a notice and a list;"
+    [ -z "$bads" ] && ok D5 "author/ holds only the notice and the book list ($size bytes); no e-book, audio or document file anywhere in 4-BUILD" || bad D5 "$bads"
+}
+
+# ================================================================ E: honest status
+chk_E1() {
+    f=$R/README.md; bads=
+    [ -r "$f" ] || { bad E1 "README.md is missing"; return; }
+    grep -q '^## What was not checked' "$f" || bads="$bads no 'What was not checked' section;"
+    for w in 'booted' 'ISO' 'browser' 'apt' 'gawk'; do
+        awk '/^## What was not checked/ { s = 1; next } /^## / { s = 0 } s' "$f" | grep -q "$w" || bads="$bads the section does not mention $w;"
+    done
+    [ -z "$bads" ] && ok E1 "README names what was not checked: boot, ISO build, a real browser, an apt install, other awks" || bad E1 "$bads"
+}
+
+chk_E2() {
+    prep_awk; d=$R/../3-DESIGN.md
+    [ -r "$d" ] || { skip E2 "3-DESIGN.md is not there to compare"; return; }
+    awk -F'|' '/^\| *(minimal|desktop|homelab|hardened|fullsink) *\|/ { for (i = 2; i <= 7; i++) gsub(/^ +| +$/, "", $i); print $2 "|" $4 "|" $3 "|" $5 "|" $6 "|" $7 }' "$d" > "$T/e2.doc"
+    awk -F'|' '/^\| *(minimal|desktop|homelab|hardened|fullsink) *\|/ { for (i = 2; i <= 4; i++) gsub(/^ +| +$/, "", $i); print $2 "|" $4 }' "$RECIPES" > "$T/e2.groups"
+    : > "$T/e2.want"
+    for p in $PROFILES; do
+        n=$(grep -v -e '^#' -e '^$' "$(pkfile $p)" | wc -l | tr -d ' ')
+        fw=off; grep -qx -e '--archive-areas main non-free-firmware' "$T/awk/out/$p.lbflags" && fw=on
+        line=$(grep "^$p|" "$T/awk/out/profiles.txt" | grep -v '^#'); shell=$(echo "$line" | cut -d'|' -f2); whom=$(echo "$line" | cut -d'|' -f3)
+        g=$(grep "^$p|" "$T/e2.groups" | cut -d'|' -f2)
+        echo "$p|$shell|$whom|$g|$n|$fw" >> "$T/e2.want"
+    done
+    if cmp -s "$T/e2.doc" "$T/e2.want" && [ "$(wc -l < "$T/e2.doc" | tr -d ' ')" = 5 ]; then
+        ok E2 "the profile table in 3-DESIGN (for whom, shell, groups, package count, firmware) equals profiles.txt, the recipe table and the line counts of out/"
+    else bad E2 "3-DESIGN's table differs from the generated files: $(diff "$T/e2.doc" "$T/e2.want" | grep '^[<>]' | head -2 | cut -c1-120 | tr '\n' ' ')"; fi
+}
+chk_E3() {
+    D=$R/..; bads=
+    for f in 1-IDEATION 2-ANALYSIS 3-DESIGN 6-REVIEW; do [ -r "$D/$f.md" ] || bads="$bads $f.md is missing;"; done
+    [ -d "$R" ] && [ -d "$HERE" ] || bads="$bads 4-BUILD or 5-TEST is missing;"
+    if [ -r "$D/1-IDEATION.md" ]; then
+        n=$(grep -c '^### A[0-9][0-9]*\. ' "$D/1-IDEATION.md"); [ "$n" -ge 5 ] || bads="$bads 1-IDEATION has $n approaches, wanted five or more;"
+        grep -q '^## The pick' "$D/1-IDEATION.md" || bads="$bads 1-IDEATION has no pick;"
+        grep -q '^<!-- produced-by: lens · subject: ' "$D/1-IDEATION.md" || bads="$bads 1-IDEATION has no LENS head line;"
+        grep -q 'persona' "$D/1-IDEATION.md" && grep -q 'inverse' "$D/1-IDEATION.md" || bads="$bads 1-IDEATION has no persona and inverse;"
+        sub=$(sed -n 's/^<!-- produced-by: lens · subject: \([^ ]*\) · sha256: \([0-9a-f]*\) .*/\1 \2/p' "$D/1-IDEATION.md" | head -1)
+        subj=${sub%% *}; pin=${sub##* }
+        if [ -n "$subj" ] && [ -r "$D/../$subj" ]; then
+            [ "$(sha256sum "$D/../$subj" | cut -d' ' -f1)" = "$pin" ] || bads="$bads the LENS head line pins a different $subj than the one on disk;"
+        else note "(the LENS subject file was not found beside the stage files, so its hash was not compared)"; fi
+    fi
+    if [ -r "$D/2-ANALYSIS.md" ]; then
+        awk '/^### R[0-9]+\. / { if (id != "") chk(); id = $2; w = f = o = 0; n++; next } /^## / { if (id != "") chk(); id = "" } id != "" && /^- Whose concern:/ { w = 1 } id != "" && /^- Falsifier:/ { f = 1 } id != "" && /^- OBSERVED:/ { o = 1 }
+             function chk() { if (!w) { printf "%s has no whose-concern; ", id; e++ } if (!f) { printf "%s has no falsifier; ", id; e++ } if (!o) { printf "%s has nothing observed; ", id; e++ } }
+             END { if (id != "") chk(); if (n < 5) { printf "only %d risks; ", n; e++ } exit e ? 1 : 0 }' "$D/2-ANALYSIS.md" > "$T/e3.out" || bads="$bads 2-ANALYSIS: $(cat "$T/e3.out");"
+        for h in '## Constraints' '## Risks' '## Unknowns' '## What would prove the pick wrong'; do grep -q "^$h" "$D/2-ANALYSIS.md" || bads="$bads 2-ANALYSIS lacks '$h';"; done
+    fi
+    if [ -r "$D/3-DESIGN.md" ]; then for h in '## Architecture' '## The five profiles' '## The first-run flow'; do grep -q "^$h" "$D/3-DESIGN.md" || bads="$bads 3-DESIGN lacks '$h';"; done; fi
+    if [ -r "$D/6-REVIEW.md" ]; then for h in '## What is good' '## What is weak' '## What I did not check' '## What I would do next' '## Facts that came from the web'; do grep -q "^$h" "$D/6-REVIEW.md" || bads="$bads 6-REVIEW lacks '$h';"; done; fi
+    [ -z "$bads" ] && ok E3 "the stage documents have what the brief asks: five or more approaches and a pick, the LENS head line pinned to its subject, every risk with an owner, what was observed and a falsifier, the architecture and profile and flow sections, and the four review parts" || bad E3 "$bads"
+}
+chk_E4() {
+    D=$R/..; r=$D/6-REVIEW.md
+    [ -r "$r" ] || { skip E4 "6-REVIEW.md is not there"; return; }
+    mark=$(printf '\342\200\240'); bads=; line=$(grep '^daggers: ' "$r" | head -1)
+    [ -n "$line" ] || { bad E4 "6-REVIEW.md has no 'daggers:' line stating the counts"; return; }
+    for f in 1-IDEATION 2-ANALYSIS 3-DESIGN 6-REVIEW; do
+        have=$(grep -o "$mark" "$D/$f.md" 2>/dev/null | wc -l | tr -d ' ')
+        said=$(echo "$line" | sed -n "s/.*$f=\([0-9]*\).*/\1/p")
+        [ "$said" = "$have" ] || bads="$bads $f says '${said:-nothing}' but has $have;"
+    done
+    [ -z "$bads" ] && ok E4 "the dagger counts stated in 6-REVIEW ($line) are what grep counts in each document" || bad E4 "stale counts:$bads"
+}
+
+# ================================================================ run
+run_checks() {
+    for id in $1; do
+        STEP=$id
+        if ! command -v "chk_$id" >/dev/null 2>&1; then echo "lr1ck: no such check '$id' (see --list)" >&2; finish 1; fi
+        "chk_$id"
+    done
+}
+
+verdict() {
+    echo ""
+    printf '%d passed, %d FAILED, %d not checked\n' "$PASSES" "$FAILS" "$SKIPS"
+    if [ "$FAILS" -gt 0 ]; then echo "RESULT: FAIL (exit 1)"; return 1; fi
+    if [ "$SKIPS" -gt 0 ]; then echo "RESULT: NOT CHECKED (exit 2): a tool or file a check needs is missing; this is not a pass"; return 2; fi
+    echo "RESULT: PASS (exit 0)"; return 0
+}
+
+# -------------------------------------------------------------- prove-red: each planted fault must be caught by its own check
+# a planted change must keep the file's mode (a lost executable bit makes a tool fail for the wrong reason)
+mut() { f=$1; shift; sed "$@" "$f" > "$f.mut" && cat "$f.mut" > "$f" && rm -f "$f.mut"; }
+swap() { cat "$1.new" > "$1" && rm -f "$1.new"; }
+# plant NAME DIR: change one thing in the copy under DIR/4-BUILD
+plant() {
+    b=$2/4-BUILD
+    case $1 in
+      typo-package)        mut "$b/recipes.org" -e 's/^rsync$/rsyncc/' ;;
+      nonfree-in-desktop)  mut "$b/recipes.org" -e 's/^evince$/firmware-iwlwifi/' ;;
+      package-in-two-groups) awk '{ print } /^nmap$/ { print "git" }' "$b/recipes.org" > "$b/recipes.org.new" && swap "$b/recipes.org" ;;
+      live-build-command-line) awk '{ print } /^#\+name: g-core$/ { getline; print; print "!echo planted" }' "$b/recipes.org" > "$b/recipes.org.new" && swap "$b/recipes.org" ;;
+      reader-drops-newline) mut "$b/bin/lr1tg.awk" -e 's/^\( *\)ln = body\[t\]$/\1ln = body[t] "\\n"/' ;;
+      silent-bad-ref)      awk '!d && /^<<g-boot>>$/ { print "<<g-bot>>"; d = 1; next } { print }' "$b/recipes.org" > "$b/recipes.org.new" && swap "$b/recipes.org" ;;
+      stale-out)           printf 'zz-stale\n' >> "$b/out/desktop.packages" ;;
+      flag-typo)           mut "$b/recipes.org" -e 's/--uefi-secure-boot enable/--uefi-secureboot enable/' ;;
+      table-drifts-from-blocks) mut "$b/recipes.org" -e 's/^| hardened | the desktop with fewer parts and more guards          | boot core token console xfce access apps hardening onion/| hardened | the desktop with fewer parts and more guards          | boot core token console xfce access apps hardening/' ;;
+      description-drift)   mut "$b/recipes.org" -e 's/^homelab|emacs|a headless chapter server/homelab|emacs|a headless server/' ;;
+      mesh-standing-unlabelled) awk '!d && /^rns\|/ { sub(/\|restricted\|/, "|probably-fine|"); d = 1 } { print }' "$b/recipes.org" > "$b/recipes.org.new" && swap "$b/recipes.org" ;;
+      no-browser)          mut "$b/recipes.org" -e '/^firefox-esr$/d' ;;
+      command-in-wrong-package) mut "$b/recipes.org" -e 's/|Open a word processor\.|lowriter$/|Open a word processor.|libreoffice --writer/' ;;
+      i386-flag)           mut "$b/recipes.org" -e 's/^--architecture amd64$/--architecture i386/' ;;
+      design-count-drift)  mut "$2/3-DESIGN.md" -e 's/| boot core token console vtmouse | 34 |/| boot core token console vtmouse | 35 |/' ;;
+      risk-without-falsifier) awk '!d && /^- Falsifier:/ { sub(/Falsifier:/, "Test:"); d = 1 } { print }' "$2/2-ANALYSIS.md" > "$2/2-ANALYSIS.md.new" && swap "$2/2-ANALYSIS.md" ;;
+      dagger-count-stale)  printf '\342\200\240\n' >> "$2/2-ANALYSIS.md" ;;
+      ui-promise-broken)   mut "$b/recipes.org" -e 's/^library|base|desktop hardened fullsink|kiwix|/library|base|desktop hardened fullsink|kiwix-tools|/' ;;
+      phone-home)          awk '/^<\/head>/ { print "<script src=\"https://cdn.example.invalid/x.js\"></script>" } { print }' "$b/shell/first-run.html" > "$b/shell/first-run.html.new" && swap "$b/shell/first-run.html" ;;
+      html-says-other-words) mut "$b/shell/first-run.html" -e 's/Join my group/Join my chapter/' ;;
+      small-target)        mut "$b/shell/first-run.html" -e 's/^\.choice{display:block;min-height:4.5rem/.choice{display:block;min-height:1.5rem/' ;;
+      no-color-scheme)     mut "$b/shell/first-run.html" -e '/^html{color-scheme:light dark}$/d' ;;
+      dark-palettes-split) mut "$b/shell/first-run.html" -e '/^:root\[data-theme="dark"\]{/,/^}/ s/--fg:#ffffff/--fg:#fefefe/' ;;
+      low-contrast)        mut "$b/shell/first-run.html" -e 's/--muted:#505050;/--muted:#b0b0b0;/' ;;
+      colour-not-modus)    mut "$b/shell/first-run.html" -e 's/--accent:#0031a9; \/\* modus:blue/--accent:#0030a9; \/* modus:blue/' ;;
+      system-click-sets-light) mut "$b/shell/first-run.html" -e 's/r.removeAttribute("data-theme");/r.setAttribute("data-theme", "light");/' ;;
+      tag-left-open)       mut "$b/shell/first-run.html" -e 's/^<\/main>$//' ;;
+      page-script-no-filter) mut "$b/shell/first-run.html" -e 's/if (d !== "\*" \&\& d.split(" ").indexOf(p) < 0) { li.hidden = true; }//' ;;
+      dead-button)         mut "$b/shell/larder-first-run.el" -e 's/(lambda () (larder-first-run--act id))/(lambda () nil)/' ;;
+      tool-not-executable) chmod -x "$b/bin/lr1bk" ;;
+      silent-flag)         mut "$b/bin/lr1op" -e 's/^        -\*) echo "lr1op: unknown option.*$/        -*) ;;/' ;;
+      missing-spdx)        mut "$b/bin/lr1op" -e '/^# SPDX-License-/d' ;;
+      notice-flipped-to-in-force) mut "$b/author/PERMISSION-NOTICE.md" -e 's/^STATUS: DRAFT/STATUS: IN FORCE/' ;;
+      book-gate-hole)      printf '| example-9 | (x) | audio | unknown |  |  | yes |\n' >> "$b/author/books.org" ;;
+      gate-ignores-sold)   mut "$b/bin/lr1bk" -e '/include=yes but sold-by-author is/d' ;;
+      stamp-skips-signature) mut "$b/bin/lr1st" -e 's/^gpgv --keyring .*$/true ||/' ;;
+      book-file-smuggled)  printf 'x' > "$b/author/story.epub" ;;
+      readme-silent-on-limits) awk '/^## What was not checked/ { next } { print }' "$b/README.md" > "$b/README.md.new" && swap "$b/README.md" ;;
+    esac
+}
+# name | the check that must catch it | one-line description
+FAULTS='typo-package|B9|a package name that does not exist in Debian 13.7
+nonfree-in-desktop|B10|a non-free firmware package in the desktop profile
+package-in-two-groups|B8|git listed in a second group
+live-build-command-line|B7|a line starting with ! in a list (live-build would run it)
+reader-drops-newline|B4|a bug in the awk tangler (reader one): output loses its last newline
+silent-bad-ref|B2|a misspelt <<g-bot>> (Org stays silent; the awk reader refuses)
+stale-out|B6|a committed list that no longer matches the recipes
+flag-typo|B11|an lb config option that does not exist
+table-drifts-from-blocks|B13|the prose table and a profile block disagree
+description-drift|B15|the "for whom" text differs between the prose table and profiles.txt
+mesh-standing-unlabelled|B14|a mesh row whose standing is neither free nor restricted
+no-browser|B16|a graphical profile without the browser its first-run page needs
+command-in-wrong-package|B17|a choice starts a program that a different package ships
+i386-flag|B11|a build flag that asks for a 32-bit image trixie cannot make
+design-count-drift|E2|a package count in 3-DESIGN that no longer matches out/
+risk-without-falsifier|E3|a risk in 2-ANALYSIS whose falsifier is missing
+dagger-count-stale|E4|a single-source mark added without updating the stated count
+ui-promise-broken|C2|a menu choice needs a package its profile does not have
+phone-home|C4|an outside script tag in the first-run page
+html-says-other-words|C3|the page says different words from choices.txt
+small-target|C5|a click target shrunk below the floor
+no-color-scheme|C6|the page stops telling the browser it has both light and dark
+dark-palettes-split|C7|the two dark palettes stop matching
+low-contrast|C8|secondary text below its contrast floor
+colour-not-modus|C9|an accent colour one digit off Emacs'"'"' Modus value
+system-click-sets-light|C10|"follow my computer" stops following (sets light instead)
+tag-left-open|C11|a closing tag removed from the page
+page-script-no-filter|C13|the page script stops hiding choices an edition lacks
+dead-button|C12|an Emacs button that draws but does nothing
+tool-not-executable|A3|a tool that has lost its executable bit
+silent-flag|A2|lr1op swallows an unknown option
+missing-spdx|A1|a tool without its SPDX line
+notice-flipped-to-in-force|D1|the shipped notice says IN FORCE
+book-gate-hole|D2|a row with sold-by-author unknown marked include=yes
+gate-ignores-sold|D3|the gate stops looking at "sold by author"
+stamp-skips-signature|D4|the stamp stops checking the author'"'"'s signature
+book-file-smuggled|D5|an e-book file in the author folder
+readme-silent-on-limits|E1|the README drops its list of what was not checked'
+
+prove_red() {
+    echo "lr1ck --prove-red: a green control, then each planted fault must be caught by its own check."
+    echo "(shell running the checks: $RUNSH)"
+    echo ""
+    echo "control (the prototype as it is):"
+    STEP=control
+    $RUNSH "$SELF" --root "$R" --quiet > "$T/control.out" 2>&1; crc=$?
+    sed 's/^/    /' "$T/control.out" | tail -3
+    if [ "$crc" -eq 2 ]; then echo "PROVE-RED: NOT CHECKED (exit 2): the control itself could not run fully, so no fault can be proved"; return 2; fi
+    if [ "$crc" -ne 0 ]; then echo "PROVE-RED: FAIL (exit 1): the control is not green (exit $crc)"; return 1; fi
+    echo "control is green. Planting faults, one at a time, in a copy:"
+    : > "$T/missed"
+    echo "$FAULTS" | while IFS='|' read -r name ids desc; do
+        STEP="plant $name"
+        rm -rf "$T/pr"; mkdir -p "$T/pr"; cp -R "$R" "$T/pr/4-BUILD"; cp "$R"/../[1-6]-*.md "$T/pr/" 2>/dev/null
+        plant "$name" "$T/pr"
+        modes0=$(cd "$R" && find . -type f -perm -100 | sort); modes1=$(cd "$T/pr/4-BUILD" && find . -type f -perm -100 | sort)
+        if diff -r "$R" "$T/pr/4-BUILD" >/dev/null 2>&1 && [ "$modes0" = "$modes1" ] && [ "$(cat "$R"/../[1-6]-*.md | cksum)" = "$(cat "$T"/pr/[1-6]-*.md | cksum)" ]; then echo "  NOT PLANTED  $name: the change did not apply, so this proves nothing"; echo x >> "$T/missed"; continue; fi
+        if [ "$name" != tool-not-executable ] && [ "$modes0" != "$modes1" ]; then
+            echo "  NOT PLANTED  $name: the planted copy lost an executable bit, so a tool would fail for the wrong reason"; echo x >> "$T/missed"; continue; fi
+        out=$($RUNSH "$SELF" --root "$T/pr/4-BUILD" --only "$ids" --quiet 2>&1); rc=$?
+        said=$(echo "$out" | grep "^  FAIL  $ids " | head -1 | sed 's/^  FAIL  [A-Z0-9]* *//' | cut -c1-120)
+        if [ "$rc" -eq 1 ] && [ -n "$said" ]; then
+            printf '  caught   %-26s by %s\n           planted: %s\n           %s said: %s\n' "$name" "$ids" "$desc" "$ids" "$said"
+        else
+            printf '  MISSED   %-26s expected %s, got exit %s (%s)\n' "$name" "$ids" "$rc" "$desc"; echo x >> "$T/missed"
+        fi
+    done
+    echo ""
+    echo "the exit-code paths of lr1ck itself:"
+    # exit 2: take emacs, node and gpg off the path; the checks that need them must say NOT CHECKED, not pass
+    mkdir -p "$T/nopath"
+    for f in /usr/bin/* /bin/*; do n=${f##*/}; case $n in emacs*|node*|nodejs*|gpg*) continue ;; esac; [ -e "$T/nopath/$n" ] || ln -s "$f" "$T/nopath/$n" 2>/dev/null; done
+    out=$(PATH=$T/nopath $RUNSH "$SELF" --root "$R" --only B3,B4,C9,C10,D4 2>&1); rc=$?
+    if [ "$rc" -eq 2 ] && echo "$out" | grep -q 'SKIP  B4 ' && echo "$out" | grep -q 'SKIP  C10' && ! echo "$out" | grep -q '^  FAIL  '; then
+        echo "  caught   a missing tool           exit 2 and SKIP ... NOT CHECKED for B3, B4, C9, C10 and D4's signed path (never a pass)"
+    else echo "  MISSED   a missing tool           expected exit 2 with SKIP lines, got exit $rc"; echo x >> "$T/missed"; fi
+    # exit 3: stop on purpose
+    out=$($RUNSH "$SELF" --root "$R" --crash 2>&1); rc=$?
+    if [ "$rc" -eq 3 ] && echo "$out" | grep -q 'Paste this line'; then
+        echo "  caught   an unexpected stop       exit 3 and a line to paste into a session"
+    else echo "  MISSED   an unexpected stop       expected exit 3 with a heal prompt, got exit $rc"; echo x >> "$T/missed"; fi
+    nf=$(($(echo "$FAULTS" | wc -l) + 2))
+    if [ -s "$T/missed" ]; then echo "PROVE-RED: FAIL (exit 1): $(wc -l < "$T/missed" | tr -d ' ') of $nf planted faults or paths were not caught"; return 1; fi
+    echo "PROVE-RED: PASS (exit 0): the control was green and all $nf planted faults and exit paths were caught by the check meant to catch them"
+    return 0
+}
+
+if [ "$CRASH" = 1 ]; then
+    STEP=crash-on-purpose
+    : "${LR1CK_THIS_IS_NEVER_SET:?stopping on purpose (--crash)}"
+fi
+if [ "$PROVE" = 1 ]; then
+    prove_red; rc=$?; finish "$rc"
+fi
+
+[ "$QUIET" = 1 ] || { echo "lr1ck on $R"; echo "tools: sh=$(readlink -f /bin/sh 2>/dev/null | xargs basename 2>/dev/null) awk=$(awk -W version 2>&1 | head -1) emacs=$(have emacs && emacs --version | head -1 || echo none) node=$(have node && node --version || echo none) gpg=$(have gpg && echo yes || echo no)"; echo ""; }
+run_checks "${ONLY:-$CHECKS}"
+verdict; rc=$?
+if [ "$QUIET" != 1 ] && [ -z "$ONLY" ]; then
+    echo ""
+    echo "Not checked by this script, by design: that anything boots; that an ISO builds; that the lists install (apt resolves"
+    echo "dependencies, runs maintainer scripts); a real browser, screen or mouse, or the larder: link handler; awk other than"
+    echo "the one on this machine; any Org version other than the one run; whether the Reticulum licence text still reads the"
+    echo "same upstream today."
+fi
+finish "$rc"

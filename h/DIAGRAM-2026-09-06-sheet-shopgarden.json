@@ -1,0 +1,242 @@
+{
+ "v": 1,
+ "treatment": "blueprint",
+ "paradigm": "office",
+ "anchor": "points",
+ "paper": "graph",
+ "_provenance": {
+  "title": "character sheet · CHARACTER-2026-09-05-shopgarden.tsv",
+  "source": "h/CHARACTER-2026-09-05-shopgarden.tsv",
+  "legend": "the three dungeon tables as rooms on graph paper; a row is a note; the TSV is the record, this is the courtesy"
+ },
+ "shapes": [
+  {
+   "id": "cs-intrinsics",
+   "label": "cs-intrinsics",
+   "kind": "box",
+   "x": 40,
+   "y": 60,
+   "face": "front",
+   "group": "cs-intrinsics"
+  },
+  {
+   "id": "cs-intrinsics-0",
+   "label": "name · the Garden (C4)",
+   "kind": "note",
+   "x": 44,
+   "y": 130,
+   "face": "front",
+   "group": "cs-intrinsics"
+  },
+  {
+   "id": "cs-intrinsics-1",
+   "label": "shortname · shopgarden [handle ~50%, unbless",
+   "kind": "note",
+   "x": 44,
+   "y": 162,
+   "face": "front",
+   "group": "cs-intrinsics"
+  },
+  {
+   "id": "cs-intrinsics-2",
+   "label": "class · place-persona",
+   "kind": "note",
+   "x": 44,
+   "y": 194,
+   "face": "front",
+   "group": "cs-intrinsics"
+  },
+  {
+   "id": "cs-intrinsics-3",
+   "label": "rank · HOST",
+   "kind": "note",
+   "x": 44,
+   "y": 226,
+   "face": "front",
+   "group": "cs-intrinsics"
+  },
+  {
+   "id": "cs-intrinsics-4",
+   "label": "special · says faults out loud; keeps the to",
+   "kind": "note",
+   "x": 44,
+   "y": 258,
+   "face": "front",
+   "group": "cs-intrinsics"
+  },
+  {
+   "id": "cs-intrinsics-5",
+   "label": "gold · 0 — no vendor, no key, no account; ru",
+   "kind": "note",
+   "x": 44,
+   "y": 290,
+   "face": "front",
+   "group": "cs-intrinsics"
+  },
+  {
+   "id": "cs-intrinsics-6",
+   "label": "experience · 507",
+   "kind": "note",
+   "x": 44,
+   "y": 322,
+   "face": "front",
+   "group": "cs-intrinsics"
+  },
+  {
+   "id": "cs-skills",
+   "label": "cs-skills",
+   "kind": "box",
+   "x": 500,
+   "y": 60,
+   "face": "front",
+   "group": "cs-skills"
+  },
+  {
+   "id": "cs-skills-0",
+   "label": "decide-the-row-inherit-the-address · t ·1",
+   "kind": "note",
+   "x": 504,
+   "y": 130,
+   "face": "front",
+   "group": "cs-skills"
+  },
+  {
+   "id": "cs-skills-1",
+   "label": "file-by-words · t ·1",
+   "kind": "note",
+   "x": 504,
+   "y": 162,
+   "face": "front",
+   "group": "cs-skills"
+  },
+  {
+   "id": "cs-skills-2",
+   "label": "stop-and-talk · Q162 ·1",
+   "kind": "note",
+   "x": 504,
+   "y": 194,
+   "face": "front",
+   "group": "cs-skills"
+  },
+  {
+   "id": "cs-skills-3",
+   "label": "mounts-are-authoritative · t ·1",
+   "kind": "note",
+   "x": 504,
+   "y": 226,
+   "face": "front",
+   "group": "cs-skills"
+  },
+  {
+   "id": "cs-skills-4",
+   "label": "nogrant · t ·1",
+   "kind": "note",
+   "x": 504,
+   "y": 258,
+   "face": "front",
+   "group": "cs-skills"
+  },
+  {
+   "id": "cs-posessions",
+   "label": "cs-posessions",
+   "kind": "box",
+   "x": 960,
+   "y": 60,
+   "face": "front",
+   "group": "cs-posessions"
+  },
+  {
+   "id": "cs-posessions-0",
+   "label": "bank · Q1–Q507 ·1",
+   "kind": "note",
+   "x": 964,
+   "y": 130,
+   "face": "front",
+   "group": "cs-posessions"
+  },
+  {
+   "id": "cs-posessions-1",
+   "label": "palace · SEAM·PIN·FORT ·1",
+   "kind": "note",
+   "x": 964,
+   "y": 162,
+   "face": "front",
+   "group": "cs-posessions"
+  },
+  {
+   "id": "cs-posessions-2",
+   "label": "door · signed ·1",
+   "kind": "note",
+   "x": 964,
+   "y": 194,
+   "face": "front",
+   "group": "cs-posessions"
+  },
+  {
+   "id": "cs-posessions-3",
+   "label": "dealer · w0rk over w0sh ·1",
+   "kind": "note",
+   "x": 964,
+   "y": 226,
+   "face": "front",
+   "group": "cs-posessions"
+  },
+  {
+   "id": "cs-posessions-4",
+   "label": "brief · c4prime ·1",
+   "kind": "note",
+   "x": 964,
+   "y": 258,
+   "face": "front",
+   "group": "cs-posessions"
+  },
+  {
+   "id": "cs-posessions-5",
+   "label": "gauge · words ·1",
+   "kind": "note",
+   "x": 964,
+   "y": 290,
+   "face": "front",
+   "group": "cs-posessions"
+  },
+  {
+   "id": "cs-posessions-6",
+   "label": "picture-floor · 7 checks ·1",
+   "kind": "note",
+   "x": 964,
+   "y": 322,
+   "face": "front",
+   "group": "cs-posessions"
+  },
+  {
+   "id": "cs-posessions-7",
+   "label": "tombstone · 0 bytes ·1",
+   "kind": "note",
+   "x": 964,
+   "y": 354,
+   "face": "front",
+   "group": "cs-posessions"
+  }
+ ],
+ "edges": [],
+ "systems": {
+  "cs-intrinsics": {
+   "_label": "cs-intrinsics",
+   "color": "#534AB7",
+   "text": "#3C3489",
+   "line": "dotted"
+  },
+  "cs-skills": {
+   "_label": "cs-skills",
+   "color": "#185FA5",
+   "text": "#0C447C",
+   "line": "dotted"
+  },
+  "cs-posessions": {
+   "_label": "cs-posessions",
+   "color": "#0F6E56",
+   "text": "#085041",
+   "line": "dotted"
+  }
+ }
+}

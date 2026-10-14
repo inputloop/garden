@@ -1,0 +1,128 @@
+#!/bin/sh
+# lc1ck -- LICENCE CHECK 1: does shipped writing say CC-BY-SA-4.0, and does no prose carry a code licence?
+#
+# usage: lc1ck [--book DIR | --no-book] [PATH ...]
+#                             files or folders; default dist/vibrobeast (the minted plugin), else skills/
+#                             (folders named .git, __pycache__, .arc and _archive* are archives, not read)
+#   book/ (SPEC F1-9, pass 2, P6 O10): with no PATH, lc1ck also reads book/ (or --book DIR), the person
+#   and persona sheets. That part is REPORT-ONLY: each line it would fault is listed as
+#   "OWED   file:line  ... re-sign owed, his pen", because re-carrying a sheet's licence is Corwin's
+#   pen, and it never changes the exit status. --no-book skips it.
+#
+# Corwin's licence ruling, relayed for the 2026-10-10 fold (c4/man/licensing-defaults.md, TERMS v2):
+# writing and art are CC-BY-SA-4.0; code GPL-3.0-or-later OR LGPL-3.0-or-later; the Technology
+# Architecture (TA) model alone is CC BY 4.0; essays already published keep the licence they went out
+# with.  This check reads prose (.md .org .txt) and says, with file and line:
+#   FAULT  code licence on prose  -- an SPDX-License-Identifier line naming a code licence (GPL, LGPL,
+#                                    AGPL, MIT, Apache, BSD, MPL) outside a code fence
+#   FAULT  CC BY 4.0 for writing  -- a paragraph or list item naming CC BY 4.0 (no ShareAlike) that is
+#                                    not about the TA model or already-published essays
+#   FAULT  terms without BY-SA    -- a TERMS-OF-SERVICE*/PRIVACY* text that never names CC-BY-SA-4.0
+# and counts, without judging: footers using the short spelling CC-BY-SA4 (house.env's PROSE_LICENCE;
+# the SPDX name is CC-BY-SA-4.0, and the re-mint of those footers is its own later task), and GNU
+# licence notices sitting in prose outside a code fence.
+# Exit 0 clean, 1 a FAULT, 2 a path not there (NOT CHECKED, never "clean").  Reads only; writes nothing.
+#
+# Authored by Mentat (for Corwin; claude-opus-5-5).
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+# SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later
+here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+root=$(CDPATH= cd -- "$here/.." && pwd)
+book=$root/book; nobook=0; bookset=0
+while [ $# -gt 0 ]; do
+  case $1 in
+    --book) book=$2; bookset=1; shift 2 ;;
+    --no-book) nobook=1; shift ;;
+    *) break ;;
+  esac
+done
+[ $# -eq 0 ] || [ $bookset -eq 1 ] || nobook=1     # explicit paths: book/ only when asked
+if [ $# -eq 0 ]; then
+  if [ -d "$root/dist/vibrobeast" ]; then set -- "$root/dist/vibrobeast"; else set -- "$root/skills"; fi
+fi
+case ${1:-} in -h|--help) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;; esac
+missing=0
+list=${TMPDIR:-/tmp}/lc1ck.$$
+trap 'rm -f "$list" "$list.b"' EXIT INT TERM
+: > "$list"
+for p in "$@"; do
+  if [ -d "$p" ]; then
+    find "$p" -type d \( -name .git -o -name __pycache__ -o -name .arc -o -name '_archive*' \) -prune -o -type f \
+      \( -name '*.md' -o -name '*.org' -o -name '*.txt' \) -print >> "$list"
+  elif [ -f "$p" ]; then
+    case $p in *.md|*.org|*.txt) printf '%s\n' "$p" >> "$list" ;; esac
+  else
+    printf 'lc1ck: NOT CHECKED: %s is not there\n' "$p"; missing=1
+  fi
+done
+rc=0
+scan() { # LISTFILE REPORT -> the awk over every file; xargs keeps the list off the command line's size limit
+  tr '\n' '\0' < "$1" | xargs -0 awk -v report="$2" '
+    function tag() { return report ? "OWED " : "FAULT" }
+    function owe() { return report ? " -- re-sign owed, his pen (a person or persona sheet: report only)" : "" }
+    function flush_unit() {
+      if (u_hit && u_text !~ /TA model|Technology Architecture|\(TA\)|already published|published essays|essays already/) {
+        printf "%s  %s:%d  CC BY 4.0 for writing: writing is CC-BY-SA-4.0; CC BY 4.0 is for the TA model only%s\n", tag(), FILENAME_U, u_hit, owe()
+        faults++
+      }
+      u_text = ""; u_hit = 0
+    }
+    function end_file() {
+      if (cur == "") return
+      flush_unit()
+      n = cur; sub(/.*\//, "", n)
+      if (n ~ /^(TERMS-OF-SERVICE|PRIVACY)/ && !saw_sa) {
+        printf "%s  %s  terms without BY-SA: this text does not name CC-BY-SA-4.0 for writing%s\n", tag(), cur, owe()
+        faults++
+      }
+    }
+    FNR == 1 { end_file(); cur = FILENAME; files++; fence = 0; saw_sa = 0
+               n = FILENAME; sub(/.*\//, "", n); if (n ~ /^(TERMS-OF-SERVICE|PRIVACY)/) terms++ }
+    /^[ \t]*(```|~~~)/ { fence = !fence; next }
+    fence { next }
+    /CC-BY-SA-4\.0|CC BY-SA 4\.0|Attribution-ShareAlike 4\.0/ { saw_sa = 1 }
+    /CC-BY-SA4([^.0-9]|$)/ { short++ }
+    /GNU (Lesser |Affero )?General Public License as published by/ { notices++ }
+    /^[ \t#*\/<!-]*SPDX-License-Identifier:/ {
+      v = $0; sub(/.*SPDX-License-Identifier:[ \t]*/, "", v)
+      # the expression only: stop at the first ";" "," ". " or " (" (words after it are prose)
+      sub(/[;,].*/, "", v); sub(/\.[ \t].*/, "", v); sub(/ \(.*/, "", v); sub(/[. \t]+$/, "", v)
+      if (v ~ /GPL|MIT|Apache|BSD|MPL/) {
+        printf "%s  %s:%d  code licence on prose: %s (prose is CC-BY-SA-4.0)%s\n", tag(), FILENAME, FNR, v, owe()
+        faults++
+      }
+    }
+    /^[ \t]*$/ || /^[ \t]*([-*+]|[0-9]+\.)[ \t]/ { flush_unit() }
+    !/^[ \t]*$/ {
+      u_text = u_text " " $0
+      if (!u_hit && ($0 ~ /CC[- ]BY[- ]4\.0/ || $0 ~ /Attribution 4\.0 International/)) { u_hit = FNR; FILENAME_U = FILENAME }
+    }
+    END {
+      end_file()
+      if (report) {
+        printf "lc1ck: book: %d sheet file(s) read; %d line(s) owed a re-carry (re-sign owed, his pen; report only, never a FAULT)\n", files, faults + 0
+        exit 0
+      }
+      printf "lc1ck: %d prose file(s) read (%d terms or privacy text(s)); %d fault(s); %d footer(s) use the short spelling CC-BY-SA4 (the SPDX name is CC-BY-SA-4.0; re-minting them is a later task); %d GNU licence notice(s) in prose outside a code fence (counted, not judged)\n", files, terms, faults + 0, short + 0, notices + 0
+      exit (faults > 0)
+    }'
+}
+if [ -s "$list" ]; then
+  scan "$list" 0 || rc=1
+else
+  printf 'lc1ck: 0 prose files found in %s\n' "$*"
+fi
+if [ "$nobook" -eq 0 ]; then
+  if [ -d "$book" ]; then
+    : > "$list.b"
+    find "$book" -type d \( -name .git -o -name __pycache__ -o -name .arc -o -name '_archive*' \) -prune -o -type f \
+      \( -name '*.md' -o -name '*.org' -o -name '*.txt' \) -print >> "$list.b"
+    [ -s "$list.b" ] && scan "$list.b" 1
+    rm -f "$list.b"
+  else
+    printf 'lc1ck: book: NOT CHECKED: %s is not there (report only)\n' "$book"
+  fi
+fi
+[ "$rc" -ne 0 ] && exit 1
+[ "$missing" -ne 0 ] && exit 2
+exit 0

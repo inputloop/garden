@@ -1,0 +1,348 @@
+{
+  "v": 1,
+  "treatment": "blueprint",
+  "paradigm": "office",
+  "anchor": "points",
+  "_provenance": {
+    "title": "EXPERIMENT [sign+seal: ECOLOGY ~+17:NEXUS] NETWORK/ED HOST/ED SYMBIOSIS — Functional Model — Xperiment Modulation",
+    "source": "Corwin's hand drawing, graph paper, photographed 2026-09-05 (session local_b35451fe)",
+    "transcribed_by": "Fable (Mentat/Vibrobeast), 2026-09-05",
+    "answer_key": "context actor = ccspt (his word); poly delegates action away from the interesting actors; non-poly actors belong to ccspt, some also to poly (RECIPE.org rule: README overrides RECIPE; PERSONA last resort)",
+    "glyph_guesses": {
+      "RPD": "ink reads RPO; he says RPD — expansion [guess ~35%] Routines·Pruning·Decisions (the three words written over it); the sideways 'polygram' is his signal that this is poly(1) seen from ccspt",
+      "FMOK": "[guess ~55%] Frame OK — the FRAME layer's gate (bottom pencil: PROTOCOL/FRAME/FABRIC/SURFACE); alt [~25%] ForMat OK",
+      "XMOK": "[guess ~50%] eXchange OK; alt [~30%] eXperiment OK — the second gate before MEANTCHA",
+      "MEANTCHA": "[guess ~80%] 'meant-cha?' = what did you mean? — the interpretation/consent check; the box lists keep / refuse? / … and carries a C4 register chip",
+      "PEND": "[guess ~85%] pending — the HOLD desk (CLAUD_QA_HOLD); doc glyph = the record parked",
+      "hexevent": "[guess ~50%] the sign+seal event of the title (a hexagon/asterisk in a circle)",
+      "2781": "[guess ~40%] a counter or version cell; alt [~25%] reads Z7B1 (Z register); alt [~30%] a palace-picker value (>17) — unresolved, kept verbatim",
+      "27": "[guess ~30%] a grain above GRAND (palace picker); alt [~25%] Z7; kept verbatim",
+      "docevent": "[guess ~60%] the attestation/record written before the terminal",
+      "C4OK|ABRT": "[guess ~90%] terminal: C4 accepts, or abort",
+      "ENHS": "[guess ~70%] ENHANCE-S — an enhance request is the start token; PROSE (tool optional) is its form",
+      "title ~+17:NEXUS": "[guess ~60%] the experiment's ecology is at/above GRAND (17); NEXUS = the palace/hub"
+    },
+    "groups_his": {
+      "kit": "outer pencil shade — the full kit / RECIPE for the context application (ccspt)",
+      "core": "the yellow rectangle — minimum shippable ccspt: memory handling, MCP + MD/TSV compat bus, schema capabilities",
+      "poly": "RPD only very slightly outside the border — poly is nearly fully conceptualized here; 'what sticks out?'"
+    }
+  },
+  "shapes": [
+    {
+      "id": "start",
+      "label": "start",
+      "kind": "node",
+      "x": 60,
+      "y": 300,
+      "face": "front",
+      "group": "kit"
+    },
+    {
+      "id": "enhs",
+      "label": "ENHS · PROSE (tool optional)",
+      "kind": "note",
+      "x": 40,
+      "y": 360,
+      "face": "front",
+      "group": "kit"
+    },
+    {
+      "id": "rpd",
+      "label": "RPD  |polygram|  poly(1)",
+      "kind": "box",
+      "x": 170,
+      "y": 297,
+      "face": "front",
+      "group": "poly"
+    },
+    {
+      "id": "routines",
+      "label": "Routines · pruning · selectivity",
+      "kind": "note",
+      "x": 120,
+      "y": 215,
+      "face": "front",
+      "group": "poly"
+    },
+    {
+      "id": "fmok",
+      "label": "FMOK",
+      "kind": "decision",
+      "x": 400,
+      "y": 300,
+      "face": "front",
+      "group": "core"
+    },
+    {
+      "id": "xmok",
+      "label": "XMOK",
+      "kind": "decision",
+      "x": 485,
+      "y": 300,
+      "face": "front",
+      "group": "core"
+    },
+    {
+      "id": "meantcha",
+      "label": "MEANTCHA  [keep · refuse? · …]  C4",
+      "kind": "box",
+      "x": 575,
+      "y": 297,
+      "face": "front",
+      "group": "core"
+    },
+    {
+      "id": "gate3",
+      "label": "",
+      "kind": "decision",
+      "x": 760,
+      "y": 300,
+      "face": "front",
+      "group": "core"
+    },
+    {
+      "id": "docevent",
+      "label": "record",
+      "kind": "node",
+      "x": 825,
+      "y": 300,
+      "face": "front",
+      "group": "kit"
+    },
+    {
+      "id": "end",
+      "label": "C4OK | ABRT",
+      "kind": "node",
+      "x": 905,
+      "y": 300,
+      "face": "front",
+      "group": "kit"
+    },
+    {
+      "id": "pend",
+      "label": "PEND",
+      "kind": "box",
+      "x": 495,
+      "y": 150,
+      "face": "front",
+      "group": "core"
+    },
+    {
+      "id": "hexevent",
+      "label": "sign+seal",
+      "kind": "node",
+      "x": 655,
+      "y": 165,
+      "face": "front",
+      "group": "kit"
+    },
+    {
+      "id": "n2781",
+      "label": "2781",
+      "kind": "box",
+      "x": 745,
+      "y": 110,
+      "face": "front",
+      "group": "kit"
+    },
+    {
+      "id": "n27",
+      "label": "27",
+      "kind": "box",
+      "x": 755,
+      "y": 190,
+      "face": "front",
+      "group": "kit"
+    },
+    {
+      "id": "compat",
+      "label": "COMPAT  MCP · MD/TSV",
+      "kind": "box",
+      "x": 250,
+      "y": 440,
+      "face": "front",
+      "group": "core"
+    },
+    {
+      "id": "memory",
+      "label": "MEMORY / SCHEMA",
+      "kind": "node",
+      "x": 212,
+      "y": 540,
+      "face": "front",
+      "group": "core"
+    },
+    {
+      "id": "layers",
+      "label": "PROTOCOL / FRAME / FABRIC / SURFACE",
+      "kind": "note",
+      "x": 535,
+      "y": 585,
+      "face": "front",
+      "group": "kit"
+    },
+    {
+      "id": "demand",
+      "label": "DEMAND",
+      "kind": "note",
+      "x": 755,
+      "y": 30,
+      "face": "front"
+    }
+  ],
+  "edges": [
+    {
+      "from": "start",
+      "to": "rpd",
+      "nib": {
+        "b": "arrow"
+      }
+    },
+    {
+      "from": "rpd",
+      "to": "fmok",
+      "nib": {
+        "b": "arrow"
+      }
+    },
+    {
+      "from": "fmok",
+      "to": "xmok",
+      "nib": {
+        "b": "arrow"
+      }
+    },
+    {
+      "from": "xmok",
+      "to": "meantcha",
+      "nib": {
+        "b": "arrow"
+      }
+    },
+    {
+      "from": "meantcha",
+      "to": "gate3",
+      "nib": {
+        "b": "arrow"
+      }
+    },
+    {
+      "from": "gate3",
+      "to": "docevent",
+      "nib": {
+        "b": "arrow"
+      }
+    },
+    {
+      "from": "docevent",
+      "to": "end",
+      "nib": {
+        "b": "arrow"
+      }
+    },
+    {
+      "from": "fmok",
+      "to": "pend",
+      "fromCP": "n",
+      "toCP": "w",
+      "nib": {
+        "b": "arrow"
+      }
+    },
+    {
+      "from": "pend",
+      "to": "hexevent",
+      "nib": {
+        "b": "arrow"
+      }
+    },
+    {
+      "from": "hexevent",
+      "to": "n2781",
+      "nib": {
+        "b": "arrow"
+      }
+    },
+    {
+      "from": "n2781",
+      "to": "n27",
+      "nib": {
+        "b": "arrow"
+      }
+    },
+    {
+      "from": "n27",
+      "to": "gate3",
+      "toCP": "n",
+      "nib": {
+        "b": "arrow"
+      }
+    },
+    {
+      "from": "n2781",
+      "to": "pend",
+      "fromCP": "n",
+      "toCP": "n",
+      "style": {
+        "dash": true
+      },
+      "nib": {
+        "b": "open"
+      }
+    },
+    {
+      "from": "rpd",
+      "to": "memory",
+      "fromCP": "s",
+      "toCP": "n",
+      "nib": {
+        "b": "none"
+      }
+    },
+    {
+      "from": "rpd",
+      "to": "compat",
+      "fromCP": "s",
+      "toCP": "n",
+      "nib": {
+        "b": "none"
+      }
+    },
+    {
+      "from": "compat",
+      "to": "meantcha",
+      "fromCP": "e",
+      "toCP": "s",
+      "nib": {
+        "b": "none"
+      }
+    },
+    {
+      "from": "memory",
+      "to": "compat",
+      "fromCP": "e",
+      "toCP": "s",
+      "style": {
+        "dash": true
+      },
+      "nib": {
+        "b": "none"
+      }
+    }
+  ],
+  "systems": {
+    "kit": {
+      "pinned": true,
+      "_label": "full kit / RECIPE — the context application: ccspt"
+    },
+    "core": {
+      "pinned": false,
+      "_label": "core — minimum shippable ccspt"
+    },
+    "poly": {
+      "pinned": false,
+      "_label": "poly — what sticks out"
+    }
+  }
+}

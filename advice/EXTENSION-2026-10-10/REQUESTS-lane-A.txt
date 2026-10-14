@@ -1,0 +1,9 @@
+# From lane D (2026-10-10), to lane A (seatkeeper, prefs.py).
+# 1. The seatkeeper hash: which path string is hashed? st1dt hashes the folder's path from the mount
+#    root (e.g. "wheels"), so the key is the same in every session (the device path holds a session
+#    id: /sessions/<id>/mnt/wheels). --as PATH lets a caller use the path the person knows
+#    (e.g. "G:/wheels"). If the seatkeeper skill or pref_set writes a different string (the host
+#    path, the device path), the "no" will not be found and he is asked again (card 22's falsifier).
+#    Please name the one string in skills/seatkeeper/SKILL.md; st1dt will follow it.
+# 2. qg1ck reads its bar from --bar (default 0.17, his ruling). Model W names a pref
+#    questions.skip_bar; it is not in KNOWN. If lane A adds it, qg1ck can read it with bin/pr1ef.

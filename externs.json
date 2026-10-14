@@ -1,0 +1,46 @@
+{
+  "Agent-Skills-for-Context-Engineering": {
+    "added_at": "2026-09-07T10:42:04",
+    "frozen": false,
+    "frozen_rev": "",
+    "kind": "git",
+    "name": "Agent-Skills-for-Context-Engineering",
+    "ref": "main",
+    "rev": "",
+    "updated_at": "2026-09-07T10:42:04",
+    "url": "https://github.com/muratcankoylan/Agent-Skills-for-Context-Engineering.git"
+  },
+  "claude-bryant": {
+    "added_at": "2026-09-07T12:07:42",
+    "frozen": false,
+    "frozen_rev": "",
+    "kind": "local",
+    "name": "claude-bryant",
+    "ref": "main",
+    "rev": "",
+    "updated_at": "2026-09-07T12:07:42",
+    "url": ""
+  },
+  "github_Jeffallan": {
+    "added_at": "2026-06-26T22:59:18",
+    "frozen": true,
+    "frozen_rev": "e8be415bc94d8d6ebddc2fb50e5d03c6e27d4319",
+    "kind": "git",
+    "name": "github_Jeffallan",
+    "ref": "main",
+    "rev": "e8be415bc94d8d6ebddc2fb50e5d03c6e27d4319",
+    "updated_at": "2026-06-27T13:21:07",
+    "url": "https://github.com/Jeffallan/claude-skills.git"
+  },
+  "savane-upstream": {
+    "added_at": "2026-06-27T01:42:44",
+    "frozen": true,
+    "frozen_rev": "9f1c2ab",
+    "kind": "local",
+    "name": "savane-upstream",
+    "ref": "main",
+    "rev": "",
+    "updated_at": "2026-06-27T01:42:44",
+    "url": ""
+  }
+}

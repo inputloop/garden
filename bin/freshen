@@ -1,0 +1,64 @@
+#!/bin/sh
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st>
+# Authored by Mentat (for Corwin).
+# SPDX-License-Identifier: GPL-3.0-or-later
+# This file is part of polygram.  polygram is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later version.  It is
+# distributed WITHOUT ANY WARRANTY; see <https://www.gnu.org/licenses/>.
+# freshen — bust the FUSE mount's stale-node cache with a rename dance.
+#
+# The Cowork sandbox reaches Windows folders through a FUSE bridge whose
+# per-node cache can go stale after host-side in-place edits: bash then
+# serves old bytes at the old length (even stat lies). Guest-side cache
+# cures (posix_fadvise, O_DIRECT, touch) do NOT work — the staleness is
+# in the bridge, not the kernel. A metadata op does: renaming the file
+# away and back forces the bridge to re-resolve the node.
+#
+#   freshen FILE...        dance the named files
+#   freshen -r DIR...      dance every regular file under DIR
+#
+# Exit 0 if all danced; 1 if any failed (host lock, permission). When a
+# dance fails, the proven host-side fallback is Corwin's: end the sandbox
+# processes in Task Manager and let Cowork respawn them — that resets the
+# bridge cache wholesale. (Disclosed and proven 2026-07-02.)
+#
+# Provenance: probe of 2026-07-02 — repro'd desync twice on purpose,
+# fadvise/O_DIRECT/touch failed, rename dance cured both rounds plus the
+# three real casualties; suite then ran 64-green directly on the mount.
+set -u
+
+rc=0
+recurse=0
+[ "${1:-}" = "-r" ] && { recurse=1; shift; }
+[ $# -gt 0 ] || { echo "usage: freshen [-r] PATH..." >&2; exit 2; }
+
+dance() {
+    f=$1
+    t="$f.freshen.$$~"
+    if mv -- "$f" "$t" 2>/dev/null && mv -- "$t" "$f" 2>/dev/null; then
+        echo "freshened: $f"
+    else
+        # try to restore if the first mv landed but the second failed
+        [ -e "$t" ] && mv -- "$t" "$f" 2>/dev/null
+        echo "FAILED: $f (host lock? fallback: end sandbox processes in Task Manager)" >&2
+        rc=1
+    fi
+}
+
+for p in "$@"; do
+    if [ $recurse -eq 1 ] && [ -d "$p" ]; then
+        # skip .private trees: policy none — no tool traffic.
+        # list first, read in this shell: a pipeline would fork the
+        # while-loop and drop rc on the floor.
+        list="/tmp/freshen.$$"
+        find "$p" -name .private -prune -o -type f ! -name '*~' -print > "$list"
+        while IFS= read -r f; do dance "$f"; done < "$list"
+        rm -f "$list"
+    elif [ -f "$p" ]; then
+        dance "$p"
+    else
+        echo "skip (not a file): $p" >&2
+    fi
+done
+exit $rc

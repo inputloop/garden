@@ -1,0 +1,42 @@
+2026-10-10  Claude (Cowork, lane T of the extension edition, turn 2)  for Corwin  <corwin@bru.st>
+
+	The Terms, the voice and the README: one collection, two partners, first person.
+	* c4/man/licensing-defaults.md (TERMS block): v2.  Corwin Brust and Bryant Frankford offer
+	one shared collection together; code GPL-3.0-or-later OR LGPL-3.0-or-later; the collection's
+	credit line (Corwin, Bryant, K Smith as editor of the works she edited); what the tools make
+	for a user is the user's; Corwin's two permissions named as his.  Intro, "Why each default"
+	and a v2 change record updated.  v1.1 archived whole at
+	c4/archive/2026-10/licensing-defaults-v1.1_Archived-by-rcw-01kr4zwy9ba6fvw5z6kd8cei.md
+	(sha16 ffccfe82f9dbd5fa).
+	* c4/README.md, c4/GHOSTWHEEL.org, H:\pub/persona/README.org, AS4CE0001/book/CORWIN.md:
+	TERMS v2 carried by `tm1ck --carry` (H:\pub copy first kept at persona/.c4/README-before-terms-v2.org).
+	* bin/tp2mt: Terms prose rewritten ("Who made this" first; code under the OR form; what the
+	plugin makes for you is yours; "We change them together").  Privacy: Llama Bridge and Tavern
+	named as Bryant's; last line "part of our shared writing".  New: every --also copy gets a
+	PROVENANCE row in <place>/.c4/PROVENANCE.tsv (re-lift keeps the old hash in the note);
+	--row DIR writes the rows for a pair already there.
+	* H:\pub/persona/.c4/PROVENANCE.tsv: new, two rows for the 1.1.3 pair (tp2mt --row).
+	* tests/tp2mt-tests.sh: T5-T9.  tests/terms-v2-spec.awk: new (V1-V6).
+	* AUTHORS: Bryant Frankford added as co-author, with what he made; one line on the shared
+	collection.
+	* conventions/VOICE.md: new, the voice guide (S9 part B), in Corwin's words, with a falsifier.
+	* polygram/plugin.py (_README, _README_ROWS, _README_BROAD): plain opening (what it is, then
+	both partners); server, MCP and stdio unpacked; "the author" gone (twelve places in the 1.1.3
+	README); the unshipped marker reads "(in the source tree, not shipped)"; Corwin's
+	"We have defined memory, maybe we need words" now named as his; the licence line adds the
+	LGPL choice.  tests/readme-voice-spec.rb and tests/readme-voice-tests.sh: new (R1-R5).
+	* GRAMMARY.md: the 74 "(in the author's tree, not shipped)" are one glyph, †, with one legend
+	line; the two names read as partners; Corwin's line on GRAMMARY lifted to the top as a pull
+	quote; the byline form put in code type.  tests/grammary-paths-spec.awk and -tests.sh: the
+	marker is †, the legend is read by "marked †".
+	* bin/fp1gk: new, the first-person gauge.  tests/fp1gk-tests.sh: new.
+	* skills/{build-loop,inculcat-boxer,lens,mentat-skill,posix,reformat-prompt,sandboxer,
+	seatkeeper,topoforge-story,writing-forms}/SKILL.md, skills/ethicsminions/references/
+	AI_GUARD_PROVENANCE_CLAUDE.md, skills/llama-bridge/references/CARD-2026-10-05-bridge-cutover.md:
+	first-person pass (bracket tags, "the instrument" as self-name, mid-text bylines).  Each signed
+	copy kept at skills/<name>/.arc/<file>.signed-2026-10-10.
+
+	Heals of Corwin's words (exact words kept in the chat record and BRIEF-study.md):
+	GRAMMARY: "confusing the garden" -> "confusing, the garden".  VOICE.md: "multi context" ->
+	"multi-context"; "weighting down" -> "weighing down"; "work every item" capitalised at a
+	sentence start.  README: "we have defined memory" capitalised at a sentence start.

@@ -1,0 +1,226 @@
+#!/bin/sh
+# gd1ck -- GARDEN 1 CHECK. The whole garden's test and benchmark kit, in one command.
+#
+# THE NAME, declared as my reading (a guess, marked): GD garden · 1 run-level 1 (reads and runs;
+# writes only through sk2mt, and only with --record) · CK check.
+#
+# usage: sh bin/gd1ck [--list] [--quick] [--record] [--heartbeat] [--c-locale] [--c4 DIR|--no-c4] [--root DIR] [ITEM ...]
+#        sh bin/gd1ck --prove-red         self-test: a planted failing leg must turn the verdict RED
+#
+#   --list       print every leg it would run, run nothing
+#   --quick      skip the slow legs (polygram's python suite, c4's selftest battery)
+#   --record     write each ITEM's result to the metrics store via bin/sk2mt (interesting-only)
+#   --heartbeat  with --record: write a row even when nothing changed (sk2mt set --force)
+#   --c-locale   run every leg under LC_ALL=C (a portability probe; default is your own locale)
+#   ITEM ...     run only the legs for these exact item names
+#
+# WHAT IT RUNS (discovered, not listed by hand -- a new suite joins the kit by existing):
+#   polygram         python3 -m unittest discover -s tests                      gate
+#   <tool>           tests/<tool>-tests.sh, and again with --prove-red if it offers it   gate
+#   <skill>          skill-lint.sh on skills/<skill>/, then its tests.sh (+ --prove-red)   gate
+#                    and a benchmark: bytes, words, ~tokens (bytes/4 -- an ESTIMATE, not a count),
+#                    and the lint's own description length against the 1024-character limit
+#   vibrobeast       dist/vibrobeast/check.sh (the minted plugin's bytes vs its MANIFEST)   gate
+#   garden           make garden (sg1ck: is every worn skill the curated one?)          gauge
+#   c4               c4/bin/selftest (web + emacs batteries)                           gate
+#   <c4 tool>        c4/tests/<tool>-tests.sh (+ --prove-red); c4/tests/*-spec.py      gate
+#   <canon skill>    skill-lint.sh on each c4/dist/skills/<skill>/                     gate
+#
+# A gate that exits non-zero is FAIL; a gauge that exits 1 is LOOK (it found something for a person
+# to decide, not a defect). A leg that cannot run here is NOT CHECKED -- never counted as a pass.
+# Per ITEM: any FAIL -> RED, else any LOOK -> LOOK, else any NOT CHECKED -> UNCHECKED, else GREEN.
+# Exit: 0 no FAIL · 1 at least one FAIL · 2 usage.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st> -- GPLv3-or-later. Authored by Mentat (for Corwin).
+set -u
+# Legs run under the CALLER's locale (a suite that only passes under C is a finding, not a pass);
+# --c-locale runs them under C instead, as a portability probe. The kit's own sorting is always C.
+LEG_LC=${LC_ALL-__unset__}
+LC_ALL=C; export LC_ALL
+SL_PROG=gd1ck
+KIT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd) || exit 2   # where this kit lives
+ROOT=$KIT                                                          # the tree under test (--root)
+. "$KIT/skills/skill-metrics/scripts/sh1lib.sh"
+
+LIST=0 QUICK=0 RECORD=0 BEAT=0 C4= NOC4=0 ONLY= PROVE=0
+while [ $# -gt 0 ]; do
+  case $1 in
+    --list) LIST=1 ;; --quick) QUICK=1 ;; --record) RECORD=1 ;; --heartbeat) BEAT=1 ;;
+    --c4) [ $# -ge 2 ] || sl_die "--c4 needs a directory"; C4=$2; shift ;;
+    --no-c4) NOC4=1 ;;
+    --root) [ $# -ge 2 ] || sl_die "--root needs a directory"; ROOT=$(CDPATH= cd -- "$2" && pwd) || exit 2; shift ;;
+    --prove-red) PROVE=1 ;;
+    --c-locale) LEG_LC=C ;;
+    -h|--help) sed -n '/^# usage:/,/^# Exit/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -*) sl_die "unknown option: $1" ;;
+    *) ONLY="$ONLY $1" ;;
+  esac
+  shift
+done
+
+if [ $NOC4 -eq 0 ] && [ -z "$C4" ]; then
+  for c in /f/claude/c4 "$ROOT/../../c4" "$ROOT/../c4" "$HOME/mnt/c4"; do
+    [ -d "$c/bin" ] && [ -d "$c/dist" ] && { C4=$(CDPATH= cd -- "$c" && pwd); break; }
+  done
+fi
+[ $NOC4 -eq 1 ] && C4=
+
+WORK=$(mktemp -d 2>/dev/null) || { WORK=${TMPDIR:-/tmp}/gd1ck.$$; mkdir -p "$WORK"; }
+trap 'rm -rf "$WORK"' EXIT INT TERM
+LEGS=$WORK/legs; : > "$LEGS"
+LINT=$ROOT/skills/skill-sign/scripts/skill-lint.sh; [ -f "$LINT" ] || LINT=$KIT/skills/skill-sign/scripts/skill-lint.sh
+TO=; sl_have timeout && TO="timeout ${GD1CK_TIMEOUT:-900}"
+
+# addleg ITEM KIND LABEL DIR CONSTITUENT CMD   (fields joined by a TAB; CMD is shell text)
+addleg() { printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$4" "${5:--}" "$6" >> "$LEGS"; }
+offers_red() { grep -q -e '--prove-red' "$1" 2>/dev/null; }
+const_for() {  # ITEM TREE -> best constituent path, or -
+  for p in "$2/skills/$1/SKILL.md" "$2/bin/$1" "$2/h/$1" "$2/dist/skills/$1/SKILL.md"; do
+    [ -f "$p" ] && { printf '%s\n' "$p"; return; }; done; echo -
+}
+
+# ---- discover -----------------------------------------------------------------------------------
+if [ $PROVE -eq 1 ]; then
+  addleg planted-green gate "planted pass" "$WORK" - "true"
+  addleg planted-red   gate "planted fail" "$WORK" - "echo planted failure; false"
+else
+  ver=$(sed -n 's/^__version__ = "\(.*\)"$/\1/p' "$ROOT/polygram/__init__.py" 2>/dev/null)
+  pc=$ROOT/dist/polygram-curation-$ver.MANIFEST; [ -f "$pc" ] || pc=$ROOT/polygram/__init__.py
+  [ -d "$ROOT/polygram" ] && [ $QUICK -eq 0 ] && \
+    addleg polygram gate "python suite" "$ROOT" "$pc" "env PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests"
+  for t in "$ROOT"/tests/*-tests.sh; do
+    [ -f "$t" ] || continue; it=$(basename "$t" -tests.sh)
+    c=$(const_for "$it" "$ROOT"); [ "$it" = makefile-c4root ] && c=$ROOT/Makefile
+    addleg "$it" gate "tests/${t##*/}" "$ROOT" "$c" "sh tests/${t##*/}"
+    offers_red "$t" && addleg "$it" gate "tests/${t##*/} --prove-red" "$ROOT" "$c" "sh tests/${t##*/} --prove-red"
+  done
+  for d in "$ROOT"/skills/*/; do
+    [ -f "$d/SKILL.md" ] || continue; it=$(basename "$d")
+    addleg "$it" bench "lint + size" "$ROOT" "$d""SKILL.md" "sh '$LINT' 'skills/$it'"
+    if [ -f "$d/tests.sh" ]; then
+      addleg "$it" gate "skills/$it/tests.sh" "$ROOT" "$d""SKILL.md" "sh skills/$it/tests.sh"
+      offers_red "$d/tests.sh" && addleg "$it" gate "skills/$it/tests.sh --prove-red" "$ROOT" "$d""SKILL.md" "sh skills/$it/tests.sh --prove-red"
+    fi
+  done
+  [ -f "$ROOT/dist/vibrobeast/check.sh" ] && \
+    addleg vibrobeast gate "plugin bytes vs MANIFEST" "$ROOT" "$ROOT/dist/vibrobeast/MANIFEST" "sh dist/vibrobeast/check.sh"
+  if [ -n "$C4" ]; then
+    # The Makefile stays the source of truth for HOW the garden is gauged; gd1ck asks make for the
+    # command (-n) and runs it itself, because make turns the gauge's "1 = look" into its own 2.
+    gcmd=$(cd "$ROOT" && make -s -n C4_ROOT="$C4" garden 2>/dev/null)
+    [ -n "$gcmd" ] && addleg garden gauge "make garden (sg1ck)" "$ROOT" - "$gcmd"
+    [ $QUICK -eq 0 ] && [ -f "$C4/bin/selftest" ] && \
+      addleg c4 gate "c4/bin/selftest" "$C4" "$C4/README.md" "sh bin/selftest"
+    for t in "$C4"/tests/*-tests.sh; do
+      [ -f "$t" ] || continue; it=$(basename "$t" -tests.sh); c=$(const_for "$it" "$C4")
+      addleg "$it" gate "c4/tests/${t##*/}" "$C4" "$c" "sh tests/${t##*/}"
+      offers_red "$t" && addleg "$it" gate "c4/tests/${t##*/} --prove-red" "$C4" "$c" "sh tests/${t##*/} --prove-red"
+    done
+    for t in "$C4"/tests/*-spec.py; do
+      [ -f "$t" ] || continue; it=$(basename "$t" -spec.py); c=$(const_for "$it" "$C4")
+      addleg "$it" gate "c4/tests/${t##*/}" "$C4" "$c" "python3 tests/${t##*/}"
+    done
+    for d in "$C4"/dist/skills/*/; do
+      [ -f "$d/SKILL.md" ] || continue; it=$(basename "$d")
+      addleg "$it" bench "lint + size (canon)" "$C4/dist/skills" "$d""SKILL.md" "sh '$LINT' '$it'"
+    done
+  else
+    addleg c4 skip "no c4 tree found (pass --c4 DIR)" "$ROOT" - "false"
+  fi
+fi
+
+if [ -n "$ONLY" ]; then
+  awk -F'\t' -v ws="$ONLY" 'BEGIN { n = split(ws, a, " "); for (i = 1; i <= n; i++) W[a[i]] = 1 } ($1 in W)' "$LEGS" > "$LEGS.f"
+  mv "$LEGS.f" "$LEGS"
+  [ -s "$LEGS" ] || { sl_warn "no legs for:$ONLY (see --list)"; exit 2; }
+fi
+
+if [ $LIST -eq 1 ]; then
+  awk -F'\t' '{ printf "%-28s %-6s %s\n", $1, $2, $3 }' "$LEGS"
+  echo "$(wc -l < "$LEGS" | tr -d ' ') legs · c4: ${C4:-none}"; exit 0
+fi
+
+# ---- run ----------------------------------------------------------------------------------------
+RES=$WORK/res; : > "$RES"
+echo "== gd1ck · garden check · $(sl_utc) =="
+echo "root $ROOT · c4 ${C4:-none}$([ $QUICK -eq 1 ] && echo ' · quick')"
+n=0
+while IFS='	' read -r it kind label dir const cmd; do
+  n=$((n+1)); out=$WORK/out.$n; t0=$(sl_epoch)
+  if [ "$kind" = skip ]; then rc=99; : > "$out"
+  else ( cd "$dir" || exit 97
+         if [ "$LEG_LC" = __unset__ ]; then unset LC_ALL; else LC_ALL=$LEG_LC; export LC_ALL; fi
+         eval "$TO $cmd" ) > "$out" 2>&1 < /dev/null; rc=$?; fi
+  secs=$(( $(sl_epoch) - t0 ))
+  case $kind:$rc in
+    skip:*)   v='NOT CHECKED' ;;
+    gauge:0)  v=PASS ;; gauge:1) v=LOOK ;;
+    *:0)      v=PASS ;; *:124)  v=FAIL; echo "timed out after ${GD1CK_TIMEOUT:-900}s" >> "$out" ;;
+    *)        v=FAIL ;;
+  esac
+  # the detail is the suite's own summary line when it prints one, else its last line
+  detail=$(grep -a -i -E 'to look at|total|pass=|[0-9]+ passed|^ran [0-9]+|[0-9]+/[0-9]+ (pass|spec|ok)|^OK$|FAILED \(' "$out" | tail -1)
+  [ -n "$detail" ] || detail=$(grep -a -v '^[[:space:]]*$' "$out" | tail -1)
+  ran=$(grep -a -E '^Ran [0-9]+ tests? in' "$out" | tail -1)   # python unittest: keep the count
+  [ -n "$ran" ] && detail="$ran · $detail"
+  if [ "$v" = FAIL ]; then   # on a failure, lead with the first line that names a cause
+    why=$(grep -a -E '^(FAIL|Error)|ENOENT|No such file|: FAIL|FAILED|timed out' "$out" | head -1 | tr '\t' ' ' | sed 's/  */ /g; s/^ //')
+    [ -n "$why" ] && [ "$why" != "$detail" ] && detail="$why · $detail"
+  fi
+  detail=$(printf '%s' "$detail" | tr '\t' ' ' | sed 's/  */ /g; s/^ //' | cut -c1-90)
+  [ "$kind" = skip ] && detail=$label
+  if [ "$kind" = bench ] && [ -f "$const" ]; then
+    b=$(wc -c < "$const" | tr -d ' '); w=$(wc -w < "$const" | tr -d ' ')
+    lint=$(grep -a -o -E '(FAIL L[0-9].*|description [0-9]+/[0-9]+ chars)' "$out" | head -1 | cut -c1-60)
+    detail="${b}B ${w}w ~$(( (b + 3) / 4 ))tok(est) · ${lint:-lint said nothing}"
+  fi
+  printf '%-11s %-26s %4ss  %s  -- %s\n' "$v" "$it" "$secs" "$label" "$detail"
+  printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$it" "$v" "$secs" "$label" "$const" "$detail" >> "$RES"
+  [ "$v" = FAIL ] && { echo "            ---- last lines of that leg ----"; tail -6 "$out" | sed 's/^/            | /'; }
+done < "$LEGS"
+
+# ---- per item -----------------------------------------------------------------------------------
+ITEMS=$WORK/items
+awk -F'\t' '{
+    it = $1; v = $2
+    if (!(it in seen)) { seen[it] = 1; order[++n] = it; st[it] = "GREEN" }
+    if (v == "FAIL") st[it] = "RED"
+    else if (v == "LOOK" && st[it] != "RED") st[it] = "LOOK"
+    else if (v == "NOT CHECKED" && st[it] == "GREEN") st[it] = "UNCHECKED"
+    if ($5 != "-" && !(it in cst)) cst[it] = $5
+    d = $6; if (length(d) > 70) d = substr(d, 1, 70) "..."
+    note[it] = note[it] (note[it] == "" ? "" : "; ") $4 " " v " " $3 "s" (d != "" ? " (" d ")" : "")
+  } END { for (i = 1; i <= n; i++) { it = order[i]; printf "%s\t%s\t%s\t%s\n", it, st[it], (it in cst) ? cst[it] : "-", note[it] } }' "$RES" > "$ITEMS"
+
+g=$(awk -F'\t' '$2=="GREEN"' "$ITEMS" | wc -l | tr -d ' ')
+r=$(awk -F'\t' '$2=="RED"' "$ITEMS" | wc -l | tr -d ' ')
+l=$(awk -F'\t' '$2=="LOOK"' "$ITEMS" | wc -l | tr -d ' ')
+u=$(awk -F'\t' '$2=="UNCHECKED"' "$ITEMS" | wc -l | tr -d ' ')
+legs=$(wc -l < "$RES" | tr -d ' '); lf=$(awk -F'\t' '$2=="FAIL"' "$RES" | wc -l | tr -d ' ')
+echo
+echo "-- by item: $g GREEN · $r RED · $l LOOK · $u UNCHECKED  ($legs legs, $lf failed)"
+awk -F'\t' '$2 != "GREEN" { printf "   %-9s %s\n", $2, $1 }' "$ITEMS"
+
+if [ $RECORD -eq 1 ]; then
+  SK="sh $KIT/skills/skill-metrics/scripts/sk2mt"
+  : "${SKILL_METRICS_ROOT:=$ROOT/metrics}"; export SKILL_METRICS_ROOT
+  [ -f "$SKILL_METRICS_ROOT/log" ] || $SK init >/dev/null
+  logged=0; same=0
+  while IFS='	' read -r it st c nt; do
+    set -- set "$it" "$st" --note "$nt"
+    [ "$c" != - ] && [ -f "$c" ] && set -- "$@" --file "$c"
+    [ $BEAT -eq 1 ] && set -- "$@" --force
+    case $($SK "$@" 2>&1) in LOGGED*) logged=$((logged+1)) ;; UNCHANGED*) same=$((same+1)) ;;
+      *) sl_warn "could not record $it" ;; esac
+  done < "$ITEMS"
+  echo "-- recorded to $SKILL_METRICS_ROOT: $logged new row(s), $same unchanged"
+fi
+
+if [ $PROVE -eq 1 ]; then
+  if [ "$r" -ge 1 ] && awk -F'\t' '$1=="planted-green" && $2=="GREEN"' "$ITEMS" | grep -q .; then
+    echo "prove-red: the planted failing leg turned its item RED, the planted pass stayed GREEN -- PASS"; exit 0
+  fi
+  echo "prove-red: the kit could NOT report a planted failure -- FAIL"; exit 1
+fi
+if [ "$lf" -gt 0 ]; then echo "== verdict: RED -- $lf leg(s) failed; see the lines above =="; exit 1; fi
+echo "== verdict: no failures$([ "$l" -gt 0 ] && echo " ($l item(s) for you to look at)")$([ "$u" -gt 0 ] && echo " · $u not checked here") =="

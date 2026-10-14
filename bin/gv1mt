@@ -1,0 +1,1441 @@
+#!/usr/bin/env python3
+# gv1mt -- GARDEN VIEW 1 MINT.  Rebuilds the garden view (site/garden/) from the files as they are now.
+#
+# The name, read as a guess I make plainly: GV garden view, 1 run-level 1 (reads files, writes only its
+# own output folder), MT mint.
+#
+# usage: gv1mt [build] [--public] [--root DIR] [--c4 DIR] [--out DIR] [--at ISO-TIME]
+#        --public also writes OUT/public/, a copy for sharing with this machine's paths and claude.ai
+#        links masked (nothing dropped); check it with C4's pb1ck before it travels.
+#        gv1mt text  [same options]      the read-back in words, nothing written
+#        gv1mt facts [same options]      the facts lines, nothing written
+#
+# What it reads, at every build (the model is garden-view/data v1, c4 spells/extension/runs/2026-10-10/
+# turn2/study/S7-bryant-graph-and-ours.md, Part 3):
+#   - Bryant's Nexus Skill Tree data (c4/from-bryant/*/skill-tree.html) and his newest Gauntlet Nexus Map
+#     (c4/from-bryant/*/gauntlet-nexus-map*.html);
+#   - our skills (skills/*/SKILL.md), soft skills (SOFT-SKILLS/*/SKILL.md, not _archive*), the six servers
+#     (dist/vibrobeast/.mcp.json and their source in polygram/mcp/) with their state words;
+#   - the persona ledger (advice/*/persona-ledger/LEDGER-*.md, newest);
+#   - the option cards (c4 spells/extension/runs/*/cards/INDEX.md, newest) and ERRATA;
+#   - conventions/bryant-counterparts.tsv; and the compass guesses in the S8 study.
+# What it writes: OUT/data.json, OUT/index.html (one self-contained page), OUT/garden-view.facts (one line
+# per thing, for the awk recount in tests/gv1mt-recount.awk) and OUT/pairs.txt (every colour pair the page
+# uses, for color-theory's audit).  OUT defaults to site/garden.  Exit 0 built (missing sources are said),
+# 2 usage.
+#
+# Authored by Mentat (for Corwin; claude-opus-5-5).
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+# SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later
+import glob, hashlib, html, json, math, os, re, sys, time
+
+FORMAT = "garden-view/data v1"
+VERSION = "1.0.0"
+EDGE_TYPES = ["counterpart", "derived-from", "wraps", "checks", "route", "hand", "use", "slot", "seam",
+              "mention", "vs", "dangling", "gap"]
+SHOWN = {"counterpart", "derived-from", "wraps", "checks", "route", "hand"}
+KINDS = ["skill", "soft", "server", "persona", "external"]
+PREFER = ["corwin", "soft", "server", "persona", "bryant", "external", "c4"]
+
+
+def die(msg, rc=2):
+    sys.stderr.write("gv1mt: %s\n" % msg)
+    sys.exit(rc)
+
+
+# ---------------------------------------------------------------- sources
+class Sources:
+    def __init__(self, root, c4):
+        self.root, self.c4, self.rows = root, c4, []
+
+    def label(self, path):
+        for base, name in ((self.root, "AS4CE0001"), (self.c4, "c4")):
+            if base and path.startswith(base.rstrip("/") + "/"):
+                return name + "/" + path[len(base.rstrip("/")) + 1:]
+        return path
+
+    def read(self, path, reader, required=False):
+        """The text of PATH, recorded with its sha256 and size; None (recorded missing) when unreadable."""
+        try:
+            with open(path, "rb") as f:
+                raw = f.read()
+        except OSError:
+            self.rows.append({"path": self.label(path), "reader": reader, "missing": True})
+            return None
+        self.rows.append({"path": self.label(path), "reader": reader, "sha256": hashlib.sha256(raw).hexdigest(),
+                          "bytes": len(raw)})
+        return raw.decode("utf-8", "replace")
+
+
+def newest(paths, key=None):
+    paths = sorted(paths, key=key) if key else sorted(paths)
+    return paths[-1] if paths else None
+
+
+# ---------------------------------------------------------------- small parsers
+def frontmatter(text):
+    """A SKILL.md's frontmatter as {key: str, 'metadata': {key: str}}: the YAML subset the garden uses
+    (plain, quoted, and >- / | folded values, one nested metadata block)."""
+    out = {"metadata": {}}
+    if not text.startswith("---"):
+        return out
+    end = text.find("\n---", 3)
+    lines = text[3:end if end > 0 else len(text)].splitlines()
+    cur, curmap, ind = None, out, 0
+    for ln in lines:
+        if not ln.strip():
+            continue
+        m = re.match(r"^( *)([A-Za-z0-9_.-]+):\s*(.*)$", ln)
+        lead = len(ln) - len(ln.lstrip(" "))
+        if m and (cur is None or lead <= ind):
+            sp, k, v = len(m.group(1)), m.group(2), m.group(3).strip()
+            if sp == 0 and k == "metadata" and not v:
+                curmap, cur, ind = out["metadata"], None, 0
+                continue
+            if sp == 0:
+                curmap = out
+            target = curmap
+            if v in (">-", ">", "|", "|-", ">+", "|+"):
+                v = ""
+            target[k] = unquote(v)
+            cur, ind = (target, k), sp
+        elif cur is not None:
+            t, k = cur
+            t[k] = (t[k] + " " + ln.strip()).strip()
+    return out
+
+
+def unquote(v):
+    v = v.strip()
+    if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
+        v = v[1:-1]
+        if v.startswith("'"):
+            pass
+        v = v.replace('\\"', '"')
+    return v
+
+
+def js_object(text, start):
+    """The balanced {...} beginning at TEXT[start], aware of strings."""
+    depth, i, q = 0, start, None
+    while i < len(text):
+        c = text[i]
+        if q:
+            if c == "\\":
+                i += 2
+                continue
+            if c == q:
+                q = None
+        elif c in "\"'`":
+            q = c
+        elif c == "{":
+            depth += 1
+        elif c == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start:i + 1]
+        i += 1
+    return None
+
+
+def md_table(lines):
+    rows = []
+    for ln in lines:
+        if not ln.startswith("|") or re.match(r"^\|[-| :]+\|\s*$", ln):
+            continue
+        rows.append([c.strip() for c in ln.strip().strip("|").split(" | ")])
+    return rows[1:] if rows else []
+
+
+def first_sentence(s):
+    s = re.sub(r"\s+", " ", s or "").strip()
+    m = re.match(r"(.+?[.!?])(\s|$)", s)
+    return (m.group(1) if m else s)[:240]
+
+
+# ---------------------------------------------------------------- the model
+class Garden:
+    def __init__(self, root, c4, built):
+        self.root, self.c4 = root, c4
+        self.src = Sources(root, c4)
+        self.nodes, self.edges, self.tensions, self.families = {}, {}, [], []
+        self.people = 0
+        self.words = []
+        self.built = built
+        self.compass = {"axes": {}, "points": [], "source": None}
+        self.doorways = []
+
+    # nodes and edges
+    def node(self, kind, garden, prefix, name, **kw):
+        nid = "%s:%s" % (prefix, name)
+        n = self.nodes.get(nid)
+        if n is None:
+            n = {"id": nid, "kind": kind, "garden": garden, "name": name, "fam": None, "ver": None, "upd": None,
+                 "lane": None, "desc": None, "triggers": [], "ships": [], "slot": None, "k": [], "l": None,
+                 "notes": [], "vs": [], "sha256": None, "file": None, "state": None, "seen_in": []}
+            self.nodes[nid] = n
+        for k, v in kw.items():
+            if v in (None, "", [], "?"):
+                continue
+            if k == "seen_in":
+                if v not in n["seen_in"]:
+                    n["seen_in"].append(v)
+            elif n.get(k) in (None, "", []):
+                n[k] = v
+        return n
+
+    def edge(self, a, b, typ, label="", **extra):
+        if not a or not b or a == b:
+            return
+        key = (a, b, typ)
+        e = self.edges.get(key)
+        if e:
+            e[4]["times"] = e[4].get("times", 1) + 1
+            return
+        x = {k: v for k, v in extra.items() if v not in (None, "")}
+        x.setdefault("times", 1)
+        self.edges[key] = [a, b, typ, label, x]
+
+    def by_name(self, name, prefer=PREFER):
+        for p in prefer:
+            nid = "%s:%s" % (p, name)
+            if nid in self.nodes:
+                return nid
+        return None
+
+    # ------------------------------------------------ Bryant's garden
+    def read_bryant(self):
+        fb = os.path.join(self.c4, "from-bryant")
+        tree = newest(glob.glob(os.path.join(fb, "*", "skill-tree.html")))
+        nexus = newest(glob.glob(os.path.join(fb, "*", "gauntlet-nexus-map*.html")),
+                       key=lambda p: os.path.basename(os.path.dirname(p)))
+        if not tree:
+            self.src.rows.append({"path": "c4/from-bryant/*/skill-tree.html", "reader": "skill-tree", "missing": True})
+        if not nexus:
+            self.src.rows.append({"path": "c4/from-bryant/*/gauntlet-nexus-map*.html", "reader": "nexus-map",
+                                  "missing": True})
+        self.bryant_tree = self.bryant_nexus = None
+        if tree:
+            t = self.src.read(tree, "skill-tree")
+            m = t and re.search(r'^<script type="application/json" id="skill-data">(.*?)</script>', t, re.S | re.M)
+            if m:
+                d = json.loads(m.group(1))
+                self.bryant_tree = {"built": d.get("built"), "file": self.src.label(tree)}
+                for f in d.get("families", []):
+                    self.families.append({"id": f["id"], "name": f.get("name"), "slot": f.get("slot"),
+                                          "blurb": f.get("blurb"), "garden": "bryant"})
+                for s in d.get("skills", []):
+                    self.node("skill" if s.get("src") != "missing" else "external", "bryant", "bryant", s["id"],
+                              fam=s.get("fam"), ver=s.get("ver"), upd=s.get("upd"), lane=s.get("lane"),
+                              desc=s.get("desc"), triggers=s.get("triggers"), ships=s.get("ships"),
+                              notes=s.get("notes"), vs=s.get("vs"), seen_in="skill-tree",
+                              state="ghost" if s.get("src") == "missing" else "installed")
+                for e in d.get("edges", []):
+                    a, b, typ = e[0], e[1], e[2]
+                    lab = e[3] if len(e) > 3 else ""
+                    self.pending_his.append(("bryant:" + a, b, typ, lab))
+                for s in d.get("skills", []):
+                    for v in s.get("vs", []) or []:
+                        self.pending_his.append(("bryant:" + s["id"], v, "vs", "lane boundary"))
+        if nexus:
+            t = self.src.read(nexus, "nexus-map")
+            i = t.find("const DATA = ") if t else -1
+            obj = js_object(t, t.index("{", i)) if i >= 0 else None
+            if obj:
+                d = json.loads(obj)
+                self.bryant_nexus = {"date": d.get("date"), "file": self.src.label(nexus), "terms": d.get("terms")}
+                for s in d.get("skills", []):
+                    n = self.node("skill", "bryant", "bryant", s["n"], ver=s.get("v"), desc=s.get("d"),
+                                  slot=s.get("slot"), k=s.get("k"), l=s.get("l"), ships=s.get("f"),
+                                  seen_in="nexus-map", state="installed",
+                                  fam=("nexus:" + s["sec"]) if s.get("sec") else None)
+                    if s.get("v") and s.get("v") != "?":
+                        n["ver"] = s["v"]          # the newer drop's version wins
+                    if s.get("k"):
+                        n["k"] = s["k"]
+                    for mname in s.get("m", []) or []:
+                        self.pending_his.append(("bryant:" + s["n"], mname, "mention", "named in his map"))
+                    for mname in s.get("not", []) or []:
+                        self.pending_his.append(("bryant:" + s["n"], mname, "vs", "says it is not"))
+                self.bryant_external = d.get("external", [])
+
+    # ------------------------------------------------ our garden
+    def read_ours(self):
+        for kind, prefix, pat in (("skill", "corwin", "skills/*/SKILL.md"), ("soft", "soft", "SOFT-SKILLS/*/SKILL.md")):
+            for p in sorted(glob.glob(os.path.join(self.root, pat))):
+                folder = os.path.basename(os.path.dirname(p))
+                if folder.startswith("_"):
+                    continue
+                t = self.src.read(p, kind)
+                if t is None:
+                    continue
+                fm = frontmatter(t)
+                md = fm.get("metadata", {})
+                name = fm.get("name") or folder
+                ver = md.get("version") or fm.get("version")
+                if not ver:
+                    m = re.search(r"\bv(\d+\.\d+(?:\.\d+)?)\b", t[:1500])
+                    ver = m.group(1) if m else None
+                author = md.get("author") or fm.get("author")
+                n = self.node(kind, "corwin", prefix, folder, desc=fm.get("description"),
+                              lane=first_sentence(fm.get("description")), ver=ver,
+                              k=[author] if author else None, l=md.get("derived-from"),
+                              file=self.src.label(p), sha256=self.src.rows[-1]["sha256"],
+                              state="installed" if kind == "skill" else "soft", fam="ours" if kind == "skill" else "soft",
+                              seen_in=pat.split("/")[0])
+                if name != folder:
+                    n["notes"].append({"lvl": "info", "text": "frontmatter name %r differs from folder" % name})
+                self.ours_text[n["id"]] = t
+                notice = os.path.join(os.path.dirname(p), "NOTICE.md")
+                if os.path.exists(notice):
+                    nt = self.src.read(notice, "notice")
+                    self.notices[n["id"]] = nt or ""
+
+    def read_servers(self):
+        mcp = os.path.join(self.root, "dist", "vibrobeast", ".mcp.json")
+        t = self.src.read(mcp, "mcp.json")
+        names = list(json.loads(t).get("mcpServers", {}).keys()) if t else []
+        prefs_t = self.src.read(os.path.join(self.root, "polygram", "mcp", "prefs.py"), "prefs") or ""
+        defaults = dict(re.findall(r'^\s*"([a-z0-9]+\.on)":\s*\("([a-z]+)"', prefs_t, re.M))
+        for name in names:
+            mod = os.path.join(self.root, "polygram", "mcp", name + ".py")
+            text = self.src.read(mod, "server") or ""
+            tools, seen, todo = [], set(), [(mod, text)]
+            # one level of the package modules it imports
+            for m in re.finditer(r"from \. import ([a-z_, ]+)|from \.([a-z_]+) import", text):
+                for imp in (m.group(1) or m.group(2)).split(","):
+                    imp = imp.strip()
+                    f = os.path.join(self.root, "polygram", "mcp", imp + ".py")
+                    if imp and os.path.exists(f) and f not in seen:
+                        seen.add(f)
+                        try:
+                            todo.append((f, open(f, encoding="utf-8").read()))
+                        except OSError:
+                            pass
+            for f, tx in todo:
+                for tn in re.findall(r'@srv\.tool\(\s*"([^"]+)"', tx):
+                    if tn not in tools:
+                        tools.append(tn)
+            words = []
+            for w in re.findall(r'"state":\s*"([^"]+)"', text):
+                if w not in words:
+                    words.append(w)
+            gate = None
+            m = re.search(r'_pref\("([a-z0-9]+\.on)"\)', text) or re.search(r"pref_set ([a-z0-9]+\.on) on", text)
+            if m:
+                gate = m.group(1)
+            if gate:
+                state = "gated"
+                says = ("%s by default (preference %s); this build cannot see your setting, because your "
+                        "preferences live outside what the build reads" % (defaults.get(gate, "off"), gate))
+            else:
+                state = "installed"
+                says = "on whenever the plugin runs"
+            n = self.node("server", "corwin", "server", name, file=self.src.label(mod), state=state,
+                          lane=says, ver=(re.search(r'^VERSION = "([^"]+)"', text, re.M) or [None, None])[1],
+                          fam="server", seen_in="mcp.json")
+            n["tools"] = tools
+            n["state_words"] = words
+            n["gate"] = gate
+            n["notes"].append({"lvl": "info", "text": "tools source-read, not asked"})
+        # what each server wraps
+        if "server:llamabridge" in self.nodes:
+            tgt = self.by_name("llama-bridge", ["bryant"]) or self.node("external", "bryant", "external", "llama-bridge")["id"]
+            self.edge("server:llamabridge", tgt, "wraps", "serves Bryant's Llama Bridge code (NOTICE-llama_bridge)",
+                      cite="polygram/mcp/NOTICE-llama_bridge")
+        if "server:tavernface" in self.nodes:
+            tv = self.node("external", "bryant", "external", "tavern", lane="Bryant's Tavern 2.3.1, kept byte for byte",
+                           k=["Bryant Frankford"], fam="external")
+            self.edge("server:tavernface", tv["id"], "wraps", "serves Tavern 2.3.1 byte for byte (NOTICE-tavern)",
+                      cite="polygram/mcp/NOTICE-tavern")
+        if "server:c4face" in self.nodes:
+            c4m = self.node("external", "corwin", "c4", "c4-mcp.js", lane="C4's own MCP server (c4/mcp/c4-mcp.js)",
+                            k=["Corwin Brust"], fam="external")
+            self.edge("server:c4face", c4m["id"], "wraps", "runs C4's own c4-mcp.js", cite="polygram/mcp/c4face.py")
+
+    def read_ledger(self):
+        led = newest(glob.glob(os.path.join(self.root, "advice", "*", "persona-ledger", "LEDGER-*.md")),
+                     key=os.path.getmtime)
+        if not led:
+            self.src.rows.append({"path": "advice/*/persona-ledger/LEDGER-*.md", "reader": "ledger", "missing": True})
+            return
+        t = self.src.read(led, "ledger") or ""
+        sec = re.split(r"^## ", t, flags=re.M)
+        part = {s.split("\n", 1)[0].strip(): s for s in sec}
+
+        def body(prefix):
+            for k, v in part.items():
+                if k.startswith(prefix):
+                    return v.splitlines()
+            return []
+        for r in md_table(body("Sheets")):
+            if len(r) < 6:
+                continue
+            self.node("persona", "corwin", "persona", r[0], ver=r[2], sha256=r[3], file=r[5], fam="persona",
+                      state=r[1], seen_in="ledger")
+            self.nodes["persona:" + r[0]]["actor"] = r[1]
+        m = re.search(r"\((\d+)\) person models?", t) or re.search(r"\b(\d+) person models?", t)
+        self.people = int(m.group(1)) if m else 0
+        for state, prefix in (("sheet", "Edges in the sheets"), ("proposed", "Proposed by review")):
+            for r in md_table(body(prefix)):
+                if len(r) < 4:
+                    continue
+                a, b = r[0], r[1]
+                withheld = "person model" in a or "person model" in b
+                fa = "people" if "person model" in a else "persona:" + a
+                fb = "people" if "person model" in b else "persona:" + b
+                self.edge(fa, fb, "checks", "can falsify" if not withheld else "withheld: a person model is at one end",
+                          state="withheld" if withheld else state, cite=r[3])
+        self.ledger_file = self.src.label(led)
+
+    # ------------------------------------------------ resolution of names into edges
+    def resolve_pending(self):
+        for a, bname, typ, lab in self.pending_his:
+            tgt = self.by_name(bname, ["bryant", "corwin", "soft", "server", "persona", "external"])
+            if typ == "dangling":
+                self.edge(a, tgt or "missing:" + bname, "dangling", lab, state="dangling" if not tgt else "resolved")
+                continue
+            if tgt is None:
+                tgt = self.node("external", "platform", "external", bname, fam="external", state="named")["id"]
+            self.edge(a, tgt, typ, lab, cite=(self.bryant_nexus or {}).get("file") if typ in ("mention",) else
+                      (self.bryant_tree or {}).get("file"))
+        # his map's "external" list: a name of ours points at our node (his mentions already reach it); a name
+        # already in his garden stays his; anything else is named from elsewhere.
+        self.his_externals_ours = []
+        for ex in getattr(self, "bryant_external", []):
+            nm = ex.get("n")
+            ours = self.by_name(nm, ["corwin", "soft"])
+            if ours:
+                self.his_externals_ours.append(nm)
+                self.nodes[ours]["notes"].append({"lvl": "info", "text": "Bryant's Gauntlet Nexus Map lists this "
+                                                  "among its externals: %s" % (ex.get("note") or "no note")})
+            elif "bryant:" + nm not in self.nodes:
+                self.node("external", "platform", "external", nm, lane=ex.get("note"), fam="external", state="named")
+
+    def counterparts(self):
+        tsv = os.path.join(self.root, "conventions", "bryant-counterparts.tsv")
+        t = self.src.read(tsv, "counterparts") or ""
+        listed = set()
+        for ln in t.splitlines():
+            if ln.startswith("#") or not ln.strip():
+                continue
+            c = ln.split("\t")
+            if len(c) < 5:
+                continue
+            his, our, place, rel, why = c[:5]
+            if our == "-" or rel == "none":
+                continue
+            hid = self.by_name(his, ["bryant"]) or self.node("external", "bryant", "bryant", his, fam="external",
+                                                             state="named")["id"]
+            if place.startswith("SOFT-SKILLS"):
+                oid = "soft:" + our
+            elif place.startswith("c4"):
+                oid = self.node("external", "corwin", "c4", our, lane="in C4's %s" % place, fam="external")["id"]
+            else:
+                oid = "corwin:" + our
+            if oid not in self.nodes:
+                oid = self.by_name(our, ["corwin", "soft"]) or oid
+            if oid not in self.nodes:
+                continue
+            listed.add((hid, oid))
+            cite = "conventions/bryant-counterparts.tsv"
+            if rel == "derived-from-his":
+                self.edge(oid, hid, "derived-from", "ours, from his: " + why, cite=cite)
+            elif rel == "derived-from-ours":
+                self.edge(hid, oid, "derived-from", "his, from ours: " + why, cite=cite)
+            else:
+                self.edge(hid, oid, "counterpart", rel.replace("-", " ") + ": " + why, cite=cite)
+        for nid, n in list(self.nodes.items()):
+            if n["garden"] != "bryant" or n["kind"] not in ("skill", "external"):
+                continue
+            for p, lab in (("corwin", "same name"), ("soft", "carried soft")):
+                oid = "%s:%s" % (p, n["name"])
+                if oid in self.nodes and (nid, oid) not in listed:
+                    self.edge(nid, oid, "counterpart", lab, cite="by name")
+
+    def our_text_edges(self):
+        names = sorted({n["name"] for n in self.nodes.values() if n["kind"] in ("skill", "soft")}, key=len, reverse=True)
+        for nid, t in self.ours_text.items():
+            body = t
+            for m in re.finditer(r"(?:routes?|hands?(?: off)?|hand-off)\s+(?:it\s+)?to\s+`?([a-z][a-z0-9-]+)`?", body):
+                tgt = self.by_name(m.group(1), ["corwin", "soft", "bryant"])
+                if tgt and tgt != nid:
+                    self.edge(nid, tgt, "route", "says it routes to it", cite=self.nodes[nid]["file"])
+            for m in re.finditer(r"\bNOT\s+`?([a-z][a-z0-9-]{3,})`?", body):
+                tgt = self.by_name(m.group(1), ["corwin", "soft", "bryant"])
+                if tgt and tgt != nid:
+                    self.edge(nid, tgt, "vs", "says it is NOT this", cite=self.nodes[nid]["file"])
+            for nm in names:
+                if nm == self.nodes[nid]["name"] or ("-" not in nm and len(nm) < 6):
+                    continue
+                if re.search(r"(?<![a-z0-9-])%s(?![a-z0-9-])" % re.escape(nm), body):
+                    tgt = self.by_name(nm, ["corwin", "soft"])
+                    if tgt:
+                        self.edge(nid, tgt, "mention", "named in its text", cite=self.nodes[nid]["file"])
+            d = self.nodes[nid].get("l")
+            if d:
+                m = re.match(r"\s*([a-z][a-z0-9-]+)", d)
+                if m:
+                    tgt = self.by_name(m.group(1), ["bryant", "corwin", "soft"]) or self.node(
+                        "external", "bryant", "bryant", m.group(1), fam="external", state="named")["id"]
+                    self.edge(nid, tgt, "derived-from", "metadata.derived-from", cite=self.nodes[nid]["file"])
+        for nid, nt in self.notices.items():
+            his = self.by_name(self.nodes[nid]["name"], ["bryant"])
+            if his and ("byte for byte" in nt or "Bryant" in nt):
+                self.edge(nid, his, "derived-from", "kept whole, with NOTICE.md", cite=self.nodes[nid]["file"]
+                          .replace("SKILL.md", "NOTICE.md"))
+
+    # ------------------------------------------------ tensions
+    def read_tensions(self):
+        idx = newest(glob.glob(os.path.join(self.c4, "spells", "extension", "runs", "*", "cards", "INDEX.md")))
+        names = {}
+        for n in self.nodes.values():
+            if n["kind"] in ("skill", "soft", "server", "persona") and ("-" in n["name"] or len(n["name"]) >= 5):
+                names.setdefault(n["name"], self.by_name(n["name"]))
+
+        def touches(text):
+            out = []
+            for nm, nid in names.items():
+                if nid and re.search(r"(?<![A-Za-z0-9-])%s(?![A-Za-z0-9-])" % re.escape(nm), text):
+                    out.append(nid)
+            return sorted(set(out))
+        if not idx:
+            self.src.rows.append({"path": "c4/spells/extension/runs/*/cards/INDEX.md", "reader": "cards", "missing": True})
+        else:
+            t = self.src.read(idx, "cards") or ""
+            lines = t.splitlines()
+            for i, ln in enumerate(lines, 1):
+                m = re.match(r"^\| (\d\d) \| \[([^\]]+)\]\(([^)]+)\) \| (.*?) \| (.*?) \| (.*?) \| (.*?) \|\s*$", ln)
+                if not m:
+                    continue
+                nn, slug, f, area, default, rule, edition = m.groups()
+                cf = os.path.join(os.path.dirname(idx), f)
+                ct = self.src.read(cf, "card") or ""
+                fm = re.search(r"\*\*Falsifier\.\*\*\s*(.+)", ct)
+                rule_main = re.match(r"(\w+)", rule).group(1)
+                ed = edition.strip().strip("`")
+                self.tensions.append({
+                    "id": "card:" + nn, "src": "card", "ref": os.path.splitext(f)[0], "title": slug,
+                    "area": area, "rule": rule_main, "rule_note": rule if rule != rule_main else None,
+                    "default": default, "edition": ed, "state": "resolved" if ed.startswith("this") else "open",
+                    "waits": None, "falsifier": fm.group(1).strip() if fm else None, "touches": touches(ct),
+                    "cite": "%s:%d" % (self.src.label(idx), i)})
+        er = os.path.join(self.root, "ERRATA")
+        t = self.src.read(er, "errata")
+        if t:
+            cur, key = None, None
+            for i, ln in enumerate(t.splitlines(), 1):
+                m = re.match(r"^\* (E\d+)\s+(.*)$", ln)
+                if m:
+                    cur = {"id": "errata:" + m.group(1), "src": "errata", "ref": m.group(1), "title": m.group(2).strip(),
+                           "area": None, "rule": None, "rule_note": None, "default": None, "edition": None,
+                           "state": "open", "waits": None, "falsifier": None, "touches": [], "_text": ln,
+                           "cite": "AS4CE0001/ERRATA:%d" % i}
+                    self.tensions.append(cur)
+                    key = None
+                    continue
+                if cur is None:
+                    continue
+                cur["_text"] += "\n" + ln
+                km = re.match(r"^\s+(Where|Why it waits|Change[^:]*|Check|Observed[^:]*):\s*(.*)$", ln)
+                if km:
+                    key = {"Where": "area", "Why it waits": "waits", "Check": "falsifier"}.get(km.group(1))
+                    if key is None and km.group(1).startswith("Change"):
+                        key = "default"
+                    if key:
+                        cur[key] = km.group(2).strip()
+                elif key and ln.startswith("         ") and ln.strip():
+                    cur[key] = (cur[key] + " " + ln.strip()).strip()
+                else:
+                    key = None
+            for x in self.tensions:
+                if x["src"] == "errata":
+                    x["touches"] = touches(x.pop("_text"))
+
+    # ------------------------------------------------ the compass (S8 section 3)
+    def read_compass(self):
+        s8 = newest(glob.glob(os.path.join(self.c4, "spells", "extension", "runs", "*", "turn2", "study", "S8-*.md")))
+        self.compass["axes"] = {
+            "x": {"west": "Accessibility", "east": "Interoperability"},
+            "y": {"north": "capability as imagination, own-ness and freedom of use",
+                  "south": "conventionality, intuitiveness, custom and boundary as signage"}}
+        if not s8:
+            self.src.rows.append({"path": "c4/spells/extension/runs/*/turn2/study/S8-*.md", "reader": "compass",
+                                  "missing": True})
+            return
+        t = self.src.read(s8, "compass") or ""
+        sec = t.split("## 3. The axes", 1)
+        if len(sec) < 2:
+            return
+        body = sec[1].split("\n## ", 1)[0]
+        garden = None
+        for ln in body.splitlines():
+            if ln.startswith("### Ours"):
+                garden = "corwin"
+            elif ln.startswith("### Bryant"):
+                garden = "bryant"
+            m = re.match(r"^\| (.+?) \| ([-+]?\d+) \| ([-+]?\d+) \| ([0-9.]+) / (\w+) \| (.*) \|\s*$", ln)
+            if m and garden:
+                label = re.sub(r"\s*\(`[^)]*`\)", "", m.group(1)).replace("`", "").strip()
+                node = None
+                for cand in re.findall(r"[a-z][a-z0-9-]+", label.lower()):
+                    node = node or self.by_name(cand, ["corwin", "soft", "bryant"] if garden == "corwin"
+                                                else ["bryant", "corwin", "soft"])
+                self.compass["points"].append({"label": label, "garden": garden, "x": int(m.group(2)),
+                                               "y": int(m.group(3)), "L": float(m.group(4)), "C": m.group(5),
+                                               "saw": m.group(6).replace("`", ""), "node": node})
+        self.compass["source"] = self.src.label(s8)
+
+    # ------------------------------------------------ doorways
+    def read_doorways(self):
+        srv = [n for n in self.nodes.values() if n["kind"] == "server"]
+        on = [n["name"] for n in srv if n["state"] == "installed"]
+        off = ["%s (%s)" % (n["name"], n.get("gate")) for n in srv if n["state"] == "gated"]
+        gates = [n.get("gate") for n in srv if n["state"] == "gated"]
+        ntools = sum(len(n.get("tools") or []) for n in srv)
+        tv = os.path.join(os.path.dirname(self.root), "wheels", "tavern", "tavern.py")
+        tver = None
+        try:
+            with open(tv, encoding="utf-8", errors="replace") as f:
+                for ln in f:
+                    m = re.match(r'^VERSION = "([^"]+)"', ln)
+                    if m:
+                        tver = m.group(1)
+                        break
+        except OSError:
+            pass
+        wire_sk = [n["name"] for n in self.nodes.values() if n["garden"] == "corwin" and n["kind"] == "skill"
+                   and n["name"] in ("wire-connect", "wire-ledger", "aethernet-relay")]
+        c4ok = os.path.isfile(os.path.join(self.c4, "serve", "c4-serve.js"))
+        self.doorways = [
+            {"id": "mcp", "name": "MCP servers", "status": "as built",
+             "status_text": "%d servers in the plugin. Always on: %s. Gated by a preference: %s. Each gated one is "
+                            "off by default; this build cannot see your setting (your preferences live outside what "
+                            "the build reads), so press Ask Claude below to read it live. %d tools are named in "
+                            "their source." % (len(srv), ", ".join(on) or "none", ", ".join(off) or "none", ntools),
+             "facts": ["%s: %s" % (n["name"], ", ".join(n.get("tools") or []) or "no tools found") for n in srv],
+             "probe": None, "probe_why": "a page cannot start a process; ask Claude instead",
+             "actions": [
+                 {"label": "List what each server answers",
+                  "prompt": "Using the vibrobeast plugin's MCP tools, tell me in words which of its six servers "
+                            "(mentcached, persona, skillx, llamabridge, tavernface, c4face) answered in this session "
+                            "and how many tools each offered.",
+                  "see": "six server names, each with a count of tools"},
+                 {"label": "Which gated servers are on for me?",
+                  "prompt": "Run pref_list from the vibrobeast plugin (the mentcached server) and tell me in words "
+                            "whether %s are on or off on this machine, and whether each was set by me or is the "
+                            "default." % ", ".join(gates or ["the gated preferences"]),
+                  "see": "each preference with on or off, and set or default"},
+                 {"label": "Is my plugin the one beside the dist?",
+                  "prompt": "Run plugin_freshness from the vibrobeast plugin and tell me in words whether the "
+                            "running copy is current.",
+                  "see": "a sentence saying current, or which copy is older"}]},
+            {"id": "wire", "name": "The Wire", "status": "as built",
+             "status_text": "Carried by %s. The relay is never probed from this page: it needs codes and a "
+                            "one-time password, and those never sit in a page." % (", ".join(wire_sk) or "no skill found"),
+             "facts": ["skills: " + (", ".join(wire_sk) or "none")], "probe": None,
+             "probe_why": "closed to pages on purpose (codes and OTP stay at the keeper's keyboard)",
+             "actions": [
+                 {"label": "Check the wire, step by step",
+                  "prompt": "Use the wire-connect skill to walk me through the status, ping, inbox ladder for the "
+                            "Wire. Do not dial the relay from a sandbox; tell me what I should run at my keyboard.",
+                  "see": "three steps: status, ping, inbox"}]},
+            {"id": "tavern", "name": "The Tavern", "status": "as built",
+             "status_text": ("Tavern %s found beside the garden. " % tver if tver else
+                             "No Tavern found beside the garden. ") +
+                            "The plugin's tavernface is off by default (tavern.on); this build cannot see your "
+                            "setting, so ask Claude for tavern_status to read it live.",
+             "facts": ["tavern.py version: %s" % (tver or "not found"),
+                       "local API 127.0.0.1:2338 needs its token and the same origin; this page does not probe it"],
+             "probe": None, "probe_why": "same-origin only, with a token (Tavern's own rule, and the right one)",
+             "actions": [
+                 {"label": "Who is in the Tavern?",
+                  "prompt": "Run tavern_status from the vibrobeast plugin and tell me in words whether the Tavern "
+                            "is on, which build it is, and who is listening.",
+                  "see": "a state word (OFF or ON) and the Tavern's name"},
+                 {"label": "Turn the Tavern on (if it is not)",
+                  "prompt": "Read tavern.on with pref_list. If it is off, set it to on with pref_set and tell me "
+                            "what restarting the plugin will change; if it is already on, just say so.",
+                  "see": "tavern.on, its value, and whether anything changed"}]},
+            {"id": "c4", "name": "C4", "status": "as built",
+             "status_text": ("C4 tree found; c4-serve can serve on 127.0.0.1:8781, org-httpd on 127.0.0.1:8042. "
+                             "c4face in the plugin is off by default (c4.on); this build cannot see your setting, "
+                             "so ask Claude to read it live.") if c4ok else
+                            "No C4 tree found at build time. c4face in the plugin is off by default (c4.on); this "
+                            "build cannot see your setting, so ask Claude to read it live.",
+             "facts": ["c4-serve: 127.0.0.1:8781 (readable only when this page is served by it)",
+                       "org-httpd: 127.0.0.1:8042 (answers any page; GET only is used here)"],
+             "probe": [{"id": "orghttpd", "url": "http://127.0.0.1:8042/api/headings", "name": "org-httpd"},
+                       {"id": "c4serve", "url": "http://127.0.0.1:8781/api/diagram", "name": "c4-serve",
+                        "same_origin": "http://127.0.0.1:8781"}],
+             "probe_why": None,
+             "actions": [
+                 {"label": "Open the C4 work surface",
+                  "prompt": "Start C4's c4-serve (node serve/c4-serve.js in my C4 folder) and tell me the address "
+                            "to open, then confirm /api/diagram answers.",
+                  "see": "http://127.0.0.1:8781/ and a diagram answer"},
+                 {"label": "Is c4face on for me?",
+                  "prompt": "Run pref_list from the vibrobeast plugin and tell me whether c4.on is on on this "
+                            "machine; if it is, run c4_status and tell me its state word.",
+                  "see": "c4.on with its value, and a state word such as ON or OFF"}]},
+        ]
+
+    # ------------------------------------------------ build
+    def build(self):
+        self.pending_his, self.ours_text, self.notices = [], {}, {}
+        self.read_bryant()
+        self.read_ours()
+        self.read_servers()
+        self.read_ledger()
+        self.resolve_pending()
+        self.counterparts()
+        self.our_text_edges()
+        self.read_tensions()
+        self.read_compass()
+        self.read_doorways()
+        fams = [{"id": "ours", "name": "Our skills", "slot": None, "blurb": "skills/ in the garden", "garden": "corwin"},
+                {"id": "soft", "name": "Our soft skills", "slot": None, "blurb": "SOFT-SKILLS/, served live",
+                 "garden": "corwin"},
+                {"id": "server", "name": "The plugin's servers", "slot": None, "blurb": "dist/vibrobeast/.mcp.json",
+                 "garden": "corwin"},
+                {"id": "persona", "name": "Personas", "slot": None, "blurb": "the persona ledger's sheets",
+                 "garden": "corwin"},
+                {"id": "external", "name": "Named, not here", "slot": None, "blurb": "platform, Anthropic, or kept elsewhere",
+                 "garden": "platform"}]
+        self.families += fams
+        nodes = sorted(self.nodes.values(), key=lambda n: n["id"])
+        edges = sorted(self.edges.values(), key=lambda e: (e[2], e[0], e[1]))
+        counts = {"sources": len(self.src.rows), "missing": sum(1 for s in self.src.rows if s.get("missing")),
+                  "nodes": len(nodes), "edges": len(edges), "tensions": len(self.tensions),
+                  "open": sum(1 for x in self.tensions if x["state"] == "open"),
+                  "resolved": sum(1 for x in self.tensions if x["state"] == "resolved"), "people": self.people}
+        for k in KINDS:
+            counts["kind." + k] = sum(1 for n in nodes if n["kind"] == k)
+        for t in EDGE_TYPES:
+            counts["type." + t] = sum(1 for e in edges if e[2] == t)
+        data = {
+            "format": FORMAT, "built": self.built, "builder": "bin/gv1mt " + VERSION,
+            "sources": self.src.rows,
+            "gardens": [
+                {"id": "corwin", "name": "Corwin's garden", "keeper": "Corwin Brust", "with": "Mentat (for Corwin; claude-opus-5-5)"},
+                {"id": "bryant", "name": "Bryant's garden", "keeper": "Bryant Frankford", "with": "Alfred (for Bryant; claude-opus-5-5)"}],
+            "families": self.families, "nodes": nodes, "edges": edges, "tensions": self.tensions,
+            "compass": self.compass, "doorways": self.doorways,
+            "terms": {"code": "GPL-3.0-or-later OR LGPL-3.0-or-later", "prose": "CC-BY-SA-4.0",
+                      "holders": ["Corwin Brust", "Bryant Frankford"], "and": "Contributors",
+                      "his_words": (self.bryant_nexus or {}).get("terms", {}) and (self.bryant_nexus["terms"] or {}).get("quote")},
+            "starting_point": {"skill_tree": self.bryant_tree, "nexus_map": {k: v for k, v in (self.bryant_nexus or {}).items() if k != "terms"} or None},
+            "counts": counts}
+        data["seal"] = {"sha256": seal(data)}
+        return data
+
+
+# ---------------------------------------------------------------- the copy for sharing (--public)
+RE_CLAUDE = re.compile(r"(?:https?://)?claude\.ai/[^\s\])>\"`'|]*")
+RE_DRIVE = re.compile(r"(?<![A-Za-z0-9_<])([A-Za-z]):((?:[\\/]+[^\s\"'<>|*?`)\],;]*)+)")
+RE_MSYS = re.compile(r"(^|[\s`'\"(=])/([a-z])/(?=[A-Za-z0-9_.-])")
+RE_UNC = re.compile(r"\\{2,}[A-Za-z0-9_.-]+\\+")
+
+
+def mask_text(s, tally):
+    """This machine's paths and claude.ai links in S, masked; nothing else changes, nothing is dropped.
+    A drive letter D: becomes <D>: (its backslashes written as /, so an escaped copy cannot read as a UNC
+    path); an msys /d/ becomes <D>:/; a UNC host becomes <UNC>/; a claude.ai link becomes <claude.ai link>."""
+    def claude(m):
+        tally["claude-ai-link"] += 1
+        return "<claude.ai link>"
+
+    def drive(m):
+        tally["drive-letter"] += 1
+        return "<%s>:%s" % (m.group(1).upper(), re.sub(r"[\\/]+", "/", m.group(2)))
+
+    def msys(m):
+        tally["msys-path"] += 1
+        return "%s<%s>:/" % (m.group(1), m.group(2).upper())
+
+    def unc(m):
+        tally["unc-path"] += 1
+        return "<UNC>/"
+    s = RE_CLAUDE.sub(claude, s)
+    s = RE_DRIVE.sub(drive, s)
+    s = RE_MSYS.sub(msys, s)
+    s = RE_UNC.sub(unc, s)
+    return s
+
+
+def masked(obj, tally):
+    if isinstance(obj, str):
+        return mask_text(obj, tally)
+    if isinstance(obj, list):
+        return [masked(x, tally) for x in obj]
+    if isinstance(obj, dict):
+        return {k: masked(v, tally) for k, v in obj.items()}
+    return obj
+
+
+def public_copy(data):
+    tally = {"drive-letter": 0, "msys-path": 0, "unc-path": 0, "claude-ai-link": 0}
+    d = masked({k: v for k, v in data.items() if k != "seal"}, tally)
+    d["masked"] = tally
+    d["seal"] = {"sha256": seal(d)}
+    return d
+
+
+def canon(obj):
+    return json.dumps(obj, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+
+
+def seal(data):
+    d = {k: v for k, v in data.items() if k != "seal"}
+    return hashlib.sha256(canon(d).encode("utf-8")).hexdigest()
+
+
+# ---------------------------------------------------------------- facts and words
+def fv(s):
+    return re.sub(r"\s", "%20", str(s if s is not None else "-")) or "-"
+
+
+def facts(data):
+    out = []
+    for s in data["sources"]:
+        out.append("SOURCE path=%s reader=%s state=%s" % (fv(s["path"]), fv(s["reader"]),
+                                                          "missing" if s.get("missing") else "read"))
+    for n in data["nodes"]:
+        out.append("NODE id=%s kind=%s garden=%s state=%s" % (fv(n["id"]), n["kind"], n["garden"], fv(n.get("state"))))
+    for e in data["edges"]:
+        out.append("EDGE from=%s to=%s type=%s state=%s" % (fv(e[0]), fv(e[1]), e[2], fv(e[4].get("state"))))
+    for x in data["tensions"]:
+        out.append("TENSION id=%s state=%s rule=%s" % (fv(x["id"]), x["state"], fv(x.get("rule"))))
+    head = "FACTS v=1 format=%s built=%s" % (fv(data["format"]), fv(data["built"]))
+    os.environ["LC_ALL"] = "C"
+    return head + "\n" + "\n".join(sorted(out, key=lambda s: s.encode("utf-8"))) + "\n"
+
+
+def words(data):
+    c = data["counts"]
+    sp = data.get("starting_point") or {}
+    lines = [
+        "The garden view, built %s from %d sources (%d missing)." % (data["built"], c["sources"], c["missing"]),
+        "%d things are drawn: %d skills, %d soft skills, %d servers, %d personas and %d named from elsewhere; "
+        "%d person models are counted and never drawn." % (c["nodes"], c["kind.skill"], c["kind.soft"], c["kind.server"],
+                                                           c["kind.persona"], c["kind.external"], c["people"]),
+        "%d links: %s." % (c["edges"], ", ".join("%d %s" % (c["type." + t], t) for t in EDGE_TYPES if c["type." + t])),
+        "%d tensions: %d open and %d resolved." % (c["tensions"], c["open"], c["resolved"]),
+        "Starting point: Bryant Frankford's Nexus Skill Tree (%s) and his Gauntlet Nexus Map (%s)." % (
+            ((sp.get("skill_tree") or {}).get("file") or "not found"), ((sp.get("nexus_map") or {}).get("file") or "not found"))]
+    for s in data["sources"]:
+        if s.get("missing"):
+            lines.append("MISSING: %s (%s) could not be read; the view is built without it." % (s["path"], s["reader"]))
+    return "\n".join(lines) + "\n"
+
+
+# ---------------------------------------------------------------- the page
+LIGHT = {"bg": "#fbfaf7", "panel": "#f1efe9", "ink": "#1d1f23", "muted": "#4a505b", "link": "#1d5fa8",
+         "focus": "#8a3ffc", "line": "#6b7280", "his": "#8a4a0b", "ours": "#205e8c", "open": "#a3321f",
+         "resolved": "#2b6a2f", "e-counterpart": "#7a3fb0", "e-derived-from": "#1f6878", "e-wraps": "#865400",
+         "e-checks": "#b0303f", "e-route": "#2f6a2f", "e-hand": "#4d5294", "e-use": "#2a63a6", "e-slot": "#8a4a0b",
+         "e-seam": "#6b4f2a", "e-mention": "#5c6370", "e-vs": "#9a3f22", "e-dangling": "#a3321f", "e-gap": "#7a5a00"}
+DARK = {"bg": "#16181c", "panel": "#1f2228", "ink": "#e8e6e1", "muted": "#b4b9c2", "link": "#8cc2ff",
+        "focus": "#c9a7ff", "line": "#9aa1ad", "his": "#f0b070", "ours": "#86c3f0", "open": "#ff9b85",
+        "resolved": "#8fd694", "e-counterpart": "#c9a0f5", "e-derived-from": "#7fd0e0", "e-wraps": "#e8b45a",
+        "e-checks": "#ff8f9c", "e-route": "#93d68f", "e-hand": "#aeb3f2", "e-use": "#8cc2ff", "e-slot": "#f0b070",
+        "e-seam": "#d6b98a", "e-mention": "#b4b9c2", "e-vs": "#f09a7a", "e-dangling": "#ff9b85", "e-gap": "#e8c66a"}
+DASH = {"counterpart": "", "derived-from": "8 3", "wraps": "2 3", "checks": "6 2 2 2", "route": "", "hand": "4 2",
+        "use": "1 2", "slot": "10 4", "seam": "3 3 9 3", "mention": "1 4", "vs": "5 5", "dangling": "2 6", "gap": "2 6"}
+EDGE_WORDS = {"counterpart": "counterpart: the same job in both gardens", "derived-from": "derived from: made from the other",
+              "wraps": "wraps: a server serves another's code", "checks": "checks and falsifies: one persona can show the other wrong",
+              "route": "routes to", "hand": "hands to (his type)", "use": "uses (his type)", "slot": "slot (his type)",
+              "seam": "seam (his type)", "mention": "names in its text", "vs": "says it is not",
+              "dangling": "dangling (his audit)", "gap": "gap (his audit)"}
+
+
+def pairs(theme):
+    t = theme
+    out = [(t["ink"], t["bg"]), (t["muted"], t["bg"]), (t["link"], t["bg"]), (t["ink"], t["panel"]),
+           (t["muted"], t["panel"]), (t["link"], t["panel"]), (t["his"], t["bg"]), (t["ours"], t["bg"]),
+           (t["open"], t["bg"]), (t["resolved"], t["bg"]), (t["open"], t["panel"]), (t["resolved"], t["panel"]),
+           (t["focus"], t["bg"]), (t["line"], t["bg"]), (t["his"], t["panel"]), (t["ours"], t["panel"])]
+    out += [(t["e-" + k], t["bg"]) for k in EDGE_TYPES]
+    return out
+
+
+def esc(s):
+    return html.escape(str(s if s is not None else ""), quote=True)
+
+
+def polar(r, deg):
+    a = math.radians(deg)
+    return r * math.cos(a), r * math.sin(a)
+
+
+def layout(data):
+    """Positions: his garden on the left half-ring, ours on the right, servers and personas inside."""
+    pos = {}
+    nodes = {n["id"]: n for n in data["nodes"]}
+    fam_order = [f["id"] for f in data["families"] if f.get("garden") == "bryant"]
+    his = [n for n in data["nodes"] if n["garden"] == "bryant" and n["kind"] in ("skill", "external")
+           and n["name"] not in ("alfred", "power-glove", "omni-tool", "gauntlet")]
+    his.sort(key=lambda n: (fam_order.index(n["fam"]) if n["fam"] in fam_order else 99, n["fam"] or "~", n["name"]))
+    R = 410
+    for i, n in enumerate(his):
+        pos[n["id"]] = (R, 97 + 166 * (i + 0.5) / max(1, len(his)))
+    for i, nm in enumerate(["power-glove", "omni-tool", "gauntlet"]):
+        if "bryant:" + nm in nodes:
+            pos["bryant:" + nm] = (165, 150 + 30 * i)
+    if "bryant:alfred" in nodes:
+        pos["bryant:alfred"] = (70, 180)
+    # ours: counterparts mirrored, then the rest
+    cp = {}
+    for e in data["edges"]:
+        if e[2] in ("counterpart", "derived-from"):
+            a, b = e[0], e[1]
+            h, o = (a, b) if a.startswith("bryant:") else (b, a)
+            if h in pos and o in nodes and nodes[o]["garden"] == "corwin":
+                cp.setdefault(o, pos[h][1])
+    ours = [n for n in data["nodes"] if n["kind"] in ("skill", "soft") and n["garden"] == "corwin"]
+    ours += [n for n in data["nodes"] if n["kind"] == "external" and n["garden"] == "corwin"]
+    ours.sort(key=lambda n: (0 if n["id"] in cp else 1, -(180 - cp[n["id"]]) if n["id"] in cp else 0,
+                             n["kind"], n["name"]))
+    # mirrored angle of 97..263 is 83..-83: largest first runs top to bottom on the right
+    ours.sort(key=lambda n: ((180 - cp[n["id"]]) if n["id"] in cp else 999, n["kind"], n["name"]))
+    with_cp = [n for n in ours if n["id"] in cp]
+    rest = [n for n in ours if n["id"] not in cp]
+    seq = sorted(with_cp, key=lambda n: -((180 - cp[n["id"]] + 180) % 360 - 180)) + rest
+    seq = list(reversed(sorted(with_cp, key=lambda n: (180 - cp[n["id"]])))) + rest
+    for i, n in enumerate(seq):
+        pos[n["id"]] = (R, -83 + 166 * (i + 0.5) / max(1, len(seq)))
+    rest = [n for n in data["nodes"] if n["id"] not in pos and n["kind"] not in ("server", "persona")]
+    for i, n in enumerate(rest):
+        pos[n["id"]] = (265, 115 + 130 * (i + 0.5) / max(1, len(rest)) if n["garden"] != "corwin"
+                        else -65 + 130 * (i + 0.5) / max(1, len(rest)))
+    out = {k: polar(*v) + (v[1],) for k, v in pos.items()}
+    # servers and personas inside, in two columns of their own, labels to the right (swing 1: no overlaps)
+    for col, kind, step in ((30, "persona", 24), (175, "server", 40)):
+        group = [n for n in data["nodes"] if n["kind"] == kind]
+        top = -step * (len(group) - 1) / 2.0
+        for i, n in enumerate(group):
+            x, y = col, top + step * i
+            out[n["id"]] = (x, y, math.degrees(math.atan2(y, x)))
+    return out
+
+
+def spread(items, gap):
+    """1-D label placement: ITEMS [(desired, key)] -> {key: position}, each at least GAP from the next,
+    as close as it can be to where it wants to be (blocks merged while they collide)."""
+    items = sorted(items)
+    blocks = []                                   # [first index, count, sum of (desired - offset)]
+    for i, (d, k) in enumerate(items):
+        blocks.append([i, 1, d])
+        while len(blocks) > 1:
+            b1, b2 = blocks[-2], blocks[-1]
+            if b1[2] / b1[1] + b1[1] * gap <= b2[2] / b2[1]:
+                break
+            b1[2] += b2[2] - b2[1] * b1[1] * gap
+            b1[1] += b2[1]
+            blocks.pop()
+    out = {}
+    for s0, n, sm in blocks:
+        x0 = sm / n
+        for j in range(n):
+            out[items[s0 + j][1]] = x0 + j * gap
+    return out
+
+
+def shape(n, x, y):
+    k = n["kind"]
+    if k == "soft":
+        return '<rect x="%.1f" y="%.1f" width="9" height="9"/>' % (x - 4.5, y - 4.5)
+    if k == "server":
+        return '<polygon points="%.1f,%.1f %.1f,%.1f %.1f,%.1f %.1f,%.1f"/>' % (x, y - 7, x + 7, y, x, y + 7, x - 7, y)
+    if k == "persona":
+        return '<polygon points="%.1f,%.1f %.1f,%.1f %.1f,%.1f"/>' % (x, y - 6, x + 6, y + 5, x - 6, y + 5)
+    if k == "external":
+        return '<circle cx="%.1f" cy="%.1f" r="4" class="hollow"/>' % (x, y)
+    return '<circle cx="%.1f" cy="%.1f" r="5"/>' % (x, y)
+
+
+def ring_svg(data):
+    P = layout(data)
+    nodes = {n["id"]: n for n in data["nodes"]}
+    out = ['<svg id="ring" viewBox="-660 -600 1320 1200" role="img" aria-labelledby="ring-t ring-d" '
+           'xmlns="http://www.w3.org/2000/svg">',
+           '<title id="ring-t">Two gardens, one ring</title>',
+           '<desc id="ring-d">Bryant\'s garden on the left half, ours on the right, servers and personas inside; '
+           'lines are the links listed in the story below, marks on the inner band are the tensions.</desc>',
+           '<text class="garden-label his" x="-560" y="-560">Bryant\'s garden</text>',
+           '<text class="garden-label ours" x="400" y="-560">Corwin\'s garden</text>',
+           '<g class="edges">']
+    for e in data["edges"]:
+        a, b, t = e[0], e[1], e[2]
+        if a not in P or b not in P:
+            continue
+        x1, y1, _ = P[a]
+        x2, y2, _ = P[b]
+        cx, cy = (x1 + x2) * 0.18, (y1 + y2) * 0.18
+        st = e[4].get("state")
+        cls = "e e-%s%s%s" % (t, "" if t in SHOWN else " off", " proposed" if st in ("proposed",) else "")
+        out.append('<path class="%s" data-a="%s" data-b="%s" d="M%.1f %.1fQ%.1f %.1f %.1f %.1f"/>'
+                   % (cls, esc(a), esc(b), x1, y1, cx, cy, x2, y2))
+    out.append("</g><g class=\"nodes\">")
+    for nid, (x, y, deg) in sorted(P.items()):
+        n = nodes[nid]
+        side = "his" if n["garden"] in ("bryant", "platform") else "ours"
+        out.append('<g class="n %s k-%s" data-id="%s">%s' % (side, n["kind"], esc(nid), shape(n, x, y)))
+        if n["kind"] in ("server", "persona"):
+            out.append('<text x="%.1f" y="%.1f" dominant-baseline="middle">%s</text>' % (x + 10, y, esc(n["name"])))
+        elif math.hypot(x, y) > 380:
+            lx, ly = polar(math.hypot(x, y) + 10, deg)
+            rot = deg if -90 <= deg <= 90 else deg - 180
+            anchor = "start" if -90 <= deg <= 90 else "end"
+            out.append('<text x="%.1f" y="%.1f" transform="rotate(%.1f %.1f %.1f)" text-anchor="%s" '
+                       'dominant-baseline="middle">%s</text>' % (lx, ly, rot, lx, ly, anchor, esc(n["name"])))
+        else:
+            out.append('<text x="%.1f" y="%.1f" text-anchor="middle">%s</text>' % (x, y - 9, esc(n["name"])))
+        out.append("</g>")
+    out.append("</g><g class=\"tensions\">")
+    # tensions on a track of their own (r=340, inside our ring, outside the inner columns), each at the
+    # mean angle of what it touches, spread so no two labels meet; labels run outward, like the ring's.
+    want = []
+    for i, x in enumerate(data["tensions"]):
+        degs = [P[t][2] for t in x["touches"] if t in P]
+        if degs:
+            sx = sum(math.cos(math.radians(d)) for d in degs)
+            sy = sum(math.sin(math.radians(d)) for d in degs)
+            deg = math.degrees(math.atan2(sy, sx)) if (abs(sx) + abs(sy)) > 1e-9 else -90.0
+        else:
+            deg = -90.0
+        want.append((deg, i))
+    at = spread(want, 2.4)
+    TR = 338
+    out.append('<circle class="track" cx="0" cy="0" r="%d"/>' % TR)
+    for i, x in enumerate(data["tensions"]):
+        deg = at[i]
+        px, py = polar(TR, deg)
+        lab = x["ref"] if x["src"] == "errata" else x["id"].split(":")[1]
+        g = ('<circle cx="%.1f" cy="%.1f" r="5" class="t-resolved"/>' % (px, py) if x["state"] == "resolved" else
+             '<polygon class="t-open" points="%.1f,%.1f %.1f,%.1f %.1f,%.1f %.1f,%.1f"/>'
+             % (px, py - 6, px + 6, py, px, py + 6, px - 6, py))
+        lx, ly = polar(TR + 9, deg)
+        d2 = ((deg + 180) % 360) - 180
+        rot = d2 if -90 <= d2 <= 90 else d2 - 180
+        anchor = "start" if -90 <= d2 <= 90 else "end"
+        out.append('<g class="t %s" data-t="%s">%s<text x="%.1f" y="%.1f" transform="rotate(%.1f %.1f %.1f)" '
+                   'text-anchor="%s" dominant-baseline="middle" class="tlab">%s %s</text></g>'
+                   % (x["state"], esc(x["id"]), g, lx, ly, rot, lx, ly, anchor, esc(lab), x["state"]))
+    out.append("</g></svg>")
+    return "\n".join(out)
+
+
+def compass_svg(data):
+    pts = data["compass"]["points"]
+    S = 62
+    out = ['<svg id="compass" viewBox="-250 -200 500 400" role="img" aria-labelledby="cmp-t cmp-d" '
+           'xmlns="http://www.w3.org/2000/svg">', '<title id="cmp-t">The compass</title>',
+           '<desc id="cmp-d">West accessibility, east interoperability; north imagination and own-ness, south '
+           'convention and signage. Every placement is a guess; the table beside it gives each likelihood and '
+           'confidence.</desc>',
+           '<line class="axis" x1="-170" y1="0" x2="170" y2="0"/><line class="axis" x1="0" y1="-160" x2="0" y2="160"/>',
+           '<text x="-246" y="-8">Accessibility</text><text x="246" y="-8" text-anchor="end">Interoperability</text>',
+           '<text x="8" y="-172">Imagination, own-ness</text>',
+           '<text x="8" y="182">Convention, signage</text>']
+    seen = {}
+    for i, p in enumerate(pts, 1):
+        key = (p["x"], p["y"])
+        k = seen.get(key, 0)
+        seen[key] = k + 1
+        x, y = p["x"] * S + (k % 3) * 30, -p["y"] * S + (k // 3) * 18
+        if p["garden"] == "bryant":
+            g = '<rect class="his" x="%.1f" y="%.1f" width="9" height="9"/>' % (x - 4.5, y - 4.5)
+        else:
+            g = '<circle class="ours" cx="%.1f" cy="%.1f" r="5"/>' % (x, y)
+        out.append('%s<text x="%.1f" y="%.1f" class="clab">%d</text>' % (g, x + 7, y + 4, i))
+    out.append("</svg>")
+    return "\n".join(out)
+
+
+def tokens_css(t):
+    return ";".join("--%s:%s" % (k, v) for k, v in t.items())
+
+
+CSS = r"""
+:root{%(light)s;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){%(dark)s;color-scheme:dark}}
+:root[data-theme="dark"]{%(dark)s;color-scheme:dark}
+:root[data-theme="light"]{%(light)s;color-scheme:light}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif}
+a{color:var(--link)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+header,main,footer{max-width:1180px;margin:0 auto;padding:0 16px}
+header{padding-top:20px}
+h1{font-size:1.7rem;margin:.2em 0}
+h2{font-size:1.25rem;margin:1.6em 0 .4em;border-bottom:1px solid var(--line);padding-bottom:.2em}
+h3{font-size:1.05rem;margin:.6em 0 .2em}
+.muted{color:var(--muted)}
+.readback{background:var(--panel);padding:10px 14px;border-left:4px solid var(--ours)}
+blockquote{margin:1em 0;padding:.4em 1em;border-left:4px solid var(--his);background:var(--panel);font-size:1.05rem}
+blockquote footer{padding:0;margin-top:.3em;font-size:.9rem;color:var(--muted)}
+.bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+button{font:inherit;color:var(--ink);background:var(--panel);border:2px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer}
+button:hover{border-color:var(--ink)}
+.figs{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
+@media (min-width:900px){.figs{grid-template-columns:1fr 1fr}}
+svg{width:100%%;height:auto;display:block}
+#ring text{fill:var(--ink);font-size:11px}
+#ring .garden-label{font-size:16px;font-weight:600}
+#ring .garden-label.his{fill:var(--his)} #ring .garden-label.ours{fill:var(--ours)}
+#ring .n.his circle,#ring .n.his rect,#ring .n.his polygon{fill:var(--his)}
+#ring .n.ours circle,#ring .n.ours rect,#ring .n.ours polygon{fill:var(--ours)}
+#ring .n .hollow{fill:var(--bg)!important;stroke:var(--line);stroke-width:1.5}
+#ring .n.sel circle,#ring .n.sel rect,#ring .n.sel polygon{stroke:var(--focus);stroke-width:3}
+#ring .n.sel text{font-weight:700}
+#ring .e{fill:none;stroke-width:1.2;opacity:.7}
+#ring .e.off{display:none}
+#ring .e.hot{stroke-width:2.6;opacity:1}
+#ring.dim .e:not(.hot){opacity:.12}
+#ring .e.proposed{stroke-dasharray:3 3}
+%(edgecss)s
+#ring .t-open{fill:var(--bg);stroke:var(--open);stroke-width:2}
+#ring .t-resolved{fill:var(--resolved)}
+#ring .tlab{font-size:9.5px}
+#ring .track{fill:none;stroke:var(--line);stroke-width:.6;stroke-dasharray:2 4}
+#ring .t.open .tlab{fill:var(--open)} #ring .t.resolved .tlab{fill:var(--resolved)}
+#compass text{fill:var(--ink);font-size:10px}
+#compass .axis{stroke:var(--line);stroke-width:1.5}
+#compass .his{fill:var(--his)} #compass .ours{fill:var(--ours)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:.5em 0;padding:0;list-style:none}
+.legend li{display:flex;align-items:center;gap:6px}
+.legend svg{width:34px;height:10px}
+fieldset{border:1px solid var(--line);border-radius:6px}
+table{border-collapse:collapse;width:100%%;font-size:.92rem}
+th,td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:top}
+.wrap{overflow-wrap:anywhere}
+.doors{display:grid;grid-template-columns:1fr;gap:14px}
+@media (min-width:760px){.doors{grid-template-columns:1fr 1fr}}
+.door{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+.badge{display:inline-block;border:2px solid var(--line);border-radius:999px;padding:0 10px;font-size:.9rem;margin:2px 0}
+.badge.live{border-color:var(--resolved);color:var(--resolved)}
+.badge.unreach{border-color:var(--open);color:var(--open)}
+pre.prompt{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;margin:.3em 0;font-size:.88rem}
+.state-open{color:var(--open);font-weight:600} .state-resolved{color:var(--resolved);font-weight:600}
+details{border-bottom:1px solid var(--line);padding:2px 0}
+summary{cursor:pointer}
+@media (max-width:700px){.tt thead{position:absolute;left:-9999px}.tt tr,.tt td{display:block}.tt tr{border-bottom:2px solid var(--line);padding:4px 0}
+.tt td{border:0;padding:2px 0}.tt td::before{content:attr(data-label) ": ";color:var(--muted);font-weight:600}}
+.story-cols{columns:1}
+@media (min-width:900px){.story-cols{columns:2}}
+.story-cols details{break-inside:avoid}
+"""
+
+JS = r"""
+(function(){
+"use strict";
+var D=JSON.parse(document.getElementById("garden-data").textContent);
+var root=document.documentElement, KEY="garden-view:theme";
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){return null;}}
+var modes=["os","light","dark"], themeBtn=document.getElementById("theme");
+function setTheme(m){if(m==="os")root.removeAttribute("data-theme");else root.setAttribute("data-theme",m);
+  themeBtn.textContent="Theme: "+(m==="os"?"follows the system":m);store(KEY,m);}
+var m0=store(KEY); setTheme(modes.indexOf(m0)>=0?m0:"os");
+themeBtn.hidden=false;
+themeBtn.addEventListener("click",function(){var c=root.getAttribute("data-theme")||"os";setTheme(modes[(modes.indexOf(c)+1)%3]);});
+document.querySelectorAll("[data-js]").forEach(function(el){el.hidden=false;});
+document.querySelectorAll("[data-nojs]").forEach(function(el){el.hidden=true;});
+// edge toggles
+document.querySelectorAll("input[data-etype]").forEach(function(cb){cb.addEventListener("change",function(){
+  document.querySelectorAll("#ring .e-"+cb.getAttribute("data-etype")).forEach(function(p){p.classList.toggle("off",!cb.checked);});});});
+// selection
+var ring=document.getElementById("ring");
+function select(id){ring.querySelectorAll(".n.sel").forEach(function(g){g.classList.remove("sel");});
+  ring.querySelectorAll(".e.hot").forEach(function(p){p.classList.remove("hot");});
+  if(!id){ring.classList.remove("dim");return;}
+  var g=ring.querySelector('.n[data-id="'+CSS.escape(id)+'"]'); if(g)g.classList.add("sel");
+  ring.querySelectorAll('.e[data-a="'+CSS.escape(id)+'"],.e[data-b="'+CSS.escape(id)+'"]').forEach(function(p){p.classList.add("hot");});
+  ring.classList.add("dim");}
+document.querySelectorAll("details[data-node]").forEach(function(d){d.addEventListener("toggle",function(){
+  if(d.open)select(d.getAttribute("data-node"));else select(null);});});
+ring.addEventListener("click",function(ev){var g=ev.target.closest(".n");if(!g)return;var id=g.getAttribute("data-id");
+  var d=document.querySelector('details[data-node="'+CSS.escape(id)+'"]');if(d){d.open=true;d.querySelector("summary").focus();d.scrollIntoView({block:"center"});}});
+// copy buttons
+document.querySelectorAll("button[data-copy]").forEach(function(b){b.addEventListener("click",function(){
+  var t=document.getElementById(b.getAttribute("data-copy")).textContent, s=b.nextElementSibling;
+  function ok(){s.textContent="Copied. Paste it to Claude.";}
+  function no(){s.textContent="Could not copy here; select the text above and copy it.";}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok,no);}else no();});});
+// probes: only when asked
+function badge(el,cls,word,why){el.className="badge "+cls;el.textContent=word+(why?" ("+why+")":"");}
+document.querySelectorAll("button[data-probe]").forEach(function(b){b.addEventListener("click",function(){
+  var el=document.getElementById(b.getAttribute("data-probe")), url=b.getAttribute("data-url"), so=b.getAttribute("data-same-origin");
+  if(so&&location.origin!==so){badge(el,"unreach","not reachable","this page is not served by "+so+"; that server answers only its own pages");return;}
+  badge(el,"","as built","asking now");
+  var ctl=window.AbortController?new AbortController():null, tm=setTimeout(function(){if(ctl)ctl.abort();},2000);
+  fetch(url,{method:"GET",signal:ctl?ctl.signal:undefined}).then(function(r){clearTimeout(tm);
+    if(r.ok)badge(el,"live","live","answered "+r.status+" at "+new Date().toLocaleTimeString());
+    else badge(el,"unreach","not reachable","answered "+r.status);},
+   function(e){clearTimeout(tm);badge(el,"unreach","not reachable","no answer: "+(e&&e.name==="AbortError"?"timed out":"refused or blocked"));});});});
+// seal and self-test
+function canon(v){if(v===null||typeof v!=="object")return JSON.stringify(v);
+  if(Array.isArray(v))return "["+v.map(canon).join(",")+"]";
+  return "{"+Object.keys(v).sort().map(function(k){return JSON.stringify(k)+":"+canon(v[k]);}).join(",")+"}";}
+function sealCheck(){var d={};Object.keys(D).forEach(function(k){if(k!=="seal")d[k]=D[k];});
+  if(!(window.crypto&&crypto.subtle))return Promise.resolve(null);
+  return crypto.subtle.digest("SHA-256",new TextEncoder().encode(canon(d))).then(function(b){
+    return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("")===D.seal.sha256;});}
+var sealEl=document.getElementById("seal-state");
+sealCheck().then(function(ok){sealEl.textContent=ok===null?"not checked in this browser":(ok?"matches":"DOES NOT MATCH");});
+window.__gardenSelfTest=function(){return sealCheck().then(function(ok){var r=[];
+  r.push({id:"T-SEAL",pass:ok===true,msg:ok===null?"NOT CHECKED: no crypto.subtle":(ok?"seal matches":"seal does not match")});
+  var story=document.querySelectorAll("details[data-node]").length;
+  r.push({id:"T-STORY",pass:story===D.counts.nodes,msg:story+" story entries for "+D.counts.nodes+" nodes"});
+  var marks=document.querySelectorAll("#ring .t"), worded=0;
+  marks.forEach(function(g){var t=g.textContent;if(/\b(open|resolved)\b/.test(t))worded++;});
+  r.push({id:"T-MARKS",pass:marks.length===D.counts.tensions&&worded===marks.length,msg:worded+" of "+marks.length+" tension marks carry a word; "+D.counts.tensions+" tensions"});
+  var open=D.tensions.filter(function(t){return t.state==="open";}).length;
+  r.push({id:"T-COUNTS",pass:open===D.counts.open&&D.edges.length===D.counts.edges&&D.nodes.length===D.counts.nodes,msg:"open "+open+"/"+D.counts.open+", edges "+D.edges.length+"/"+D.counts.edges+", nodes "+D.nodes.length+"/"+D.counts.nodes});
+  var badges=document.querySelectorAll(".badge"), bw=0;badges.forEach(function(b){if(/^(live|as built|not reachable)/.test(b.textContent))bw++;});
+  r.push({id:"T-BADGES",pass:bw===badges.length&&badges.length>0,msg:bw+" of "+badges.length+" badges read live / as built / not reachable"});
+  return r;});};
+})();
+"""
+
+
+def page(data):
+    c = data["counts"]
+    t_open = [x for x in data["tensions"] if x["state"] == "open"]
+    sp = data.get("starting_point") or {}
+    tree = sp.get("skill_tree") or {}
+    nex = sp.get("nexus_map") or {}
+    edgecss = "\n".join("#ring .e-%s{stroke:var(--e-%s)%s}" % (k, k, (";stroke-dasharray:" + DASH[k]) if DASH[k] else "")
+                        for k in EDGE_TYPES)
+    css = CSS % {"light": tokens_css(LIGHT), "dark": tokens_css(DARK), "edgecss": edgecss}
+    rb = words(data).strip().splitlines()
+    P = []
+    a = P.append
+    a('<!doctype html><html lang="en"><head><meta charset="utf-8">')
+    a('<meta name="viewport" content="width=device-width,initial-scale=1">')
+    a('<title>Garden View</title>')
+    a('<meta name="description" content="Bryant\'s garden and ours, drawn side by side with the tensions between them, '
+      'rebuilt at every build.">')
+    a('<meta name="generator" content="%s">' % esc(data["builder"]))
+    a("<style>%s</style></head><body>" % css)
+    a('<a href="#main" class="muted">Skip to the view</a>')
+    a('<header><div class="bar"><h1>Garden View</h1><button id="theme" type="button" hidden>Theme: follows the system</button></div>')
+    a('<p class="muted">Built %s by <code>bin/gv1mt</code> from the files as they were then. Seal: <code>%s</code> '
+      '(<span id="seal-state">checked when JavaScript runs</span>).</p></header>' % (esc(data["built"]), esc(data["seal"]["sha256"][:16])))
+    a('<main id="main">')
+    a('<section aria-labelledby="h-read"><h2 id="h-read">In words</h2><div class="readback">%s</div>'
+      % "".join("<p>%s</p>" % esc(s) for s in rb))
+    a('<p>This view starts from Bryant Frankford\'s <strong>Nexus Skill Tree</strong> (built %s by Alfred for Bryant), '
+      'the drawing of his garden\'s skills and the lines between them, and from his <strong>Gauntlet Nexus Map</strong> '
+      '(%s). I redrew his ring from his own data, then set ours beside it so the two can be read together.</p>'
+      % (esc(tree.get("built") or "2026-09-17"), esc(nex.get("date") or "not found")))
+    a('<blockquote><p>&ldquo;the new view that shows the resolved and opened tensions across our garden of tools '
+      'and computer friends&rdquo;</p><footer>Corwin, asking for this page</footer></blockquote></section>')
+    # the ring
+    a('<section aria-labelledby="h-ring"><h2 id="h-ring">Two gardens, one ring</h2>')
+    a('<p>Each dot is a skill, a soft skill (square), a server (diamond), a persona (triangle) or something named '
+      'from elsewhere (hollow). Bryant\'s garden is on the left, ours on the right; the inner band carries the '
+      'tensions, each with its word: <span class="state-open">&#9671; open</span> or '
+      '<span class="state-resolved">&#9679; resolved</span>. Proposed links are dashed and say so in the story.</p>')
+    a('<ul class="legend" aria-label="Kinds of line">')
+    for k in EDGE_TYPES:
+        a('<li><svg viewBox="0 0 34 10" aria-hidden="true"><line x1="0" y1="5" x2="34" y2="5" style="stroke:var(--e-%s);'
+          'stroke-width:2.5%s"/></svg><span>%s: %d%s</span></li>'
+          % (k, (";stroke-dasharray:" + DASH[k]) if DASH[k] else "", esc(EDGE_WORDS[k]), c["type." + k],
+             "" if k in SHOWN else " (hidden at first)"))
+    a("</ul>")
+    a('<fieldset data-js hidden><legend>Show these lines</legend><div class="bar">')
+    for k in EDGE_TYPES:
+        a('<label><input type="checkbox" data-etype="%s"%s> %s</label>' % (k, " checked" if k in SHOWN else "", esc(k)))
+    a("</div></fieldset>")
+    a('<p data-nojs class="muted">Without JavaScript the hidden kinds stay hidden in the drawing; every line is still '
+      'listed in the story below.</p>')
+    a('<figure style="margin:0">%s<figcaption class="muted">Open an entry in the story below to light up its '
+      'lines.</figcaption></figure></section>' % ring_svg(data))
+    # compass beside
+    cp = data["compass"]
+    a('<section aria-labelledby="h-cmp"><h2 id="h-cmp">The compass</h2><p>West to east: accessibility to interoperability. South to north: convention and '
+      'signage to imagination and own-ness. Every placement is a guess, with how likely I think it is (L) and how '
+      'sure I am of that (C). Circles are ours, squares Bryant\'s; each number is a row of the table.</p><div class="figs"><div>%s</div><div>' % compass_svg(data))
+    a('<table><caption class="muted">The compass in words (from %s)</caption><thead><tr><th>#</th><th>tool</th>'
+      '<th>garden</th><th>x</th><th>y</th><th>L / C</th></tr></thead><tbody>' % esc(cp.get("source") or "no study found"))
+    for i, p in enumerate(cp["points"], 1):
+        a("<tr><td>%d</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%.1f / %s</td></tr>"
+          % (i, esc(p["label"]), "ours" if p["garden"] == "corwin" else "Bryant's", p["x"], p["y"], p["L"], esc(p["C"])))
+    a("</tbody></table></div></div></section>")
+    # doorways
+    a('<section aria-labelledby="h-doors"><h2 id="h-doors">Doorways</h2><p>What each surface was when this page was '
+      'built, and what you can ask Claude to do with it. A page cannot start a server or send on the Wire, so each '
+      'action is a prompt to copy. A check of a local server runs only when you press its button.</p><div class="doors">')
+    for d in data["doorways"]:
+        a('<article class="door" aria-labelledby="door-%s"><h3 id="door-%s">%s</h3>' % (d["id"], d["id"], esc(d["name"])))
+        a('<p><span class="badge">as built</span> %s</p>' % esc(d["status_text"]))
+        a("<ul>%s</ul>" % "".join("<li class=\"wrap\">%s</li>" % esc(f) for f in d["facts"]))
+        if d.get("probe"):
+            for p in d["probe"]:
+                pid = "probe-%s" % p["id"]
+                a('<p>%s: <span class="badge" id="%s" role="status">as built (not asked yet)</span> '
+                  '<button type="button" data-js hidden data-probe="%s" data-url="%s"%s>Check %s now</button></p>'
+                  % (esc(p["name"]), pid, pid, esc(p["url"]),
+                     (' data-same-origin="%s"' % esc(p["same_origin"])) if p.get("same_origin") else "", esc(p["name"])))
+        else:
+            a('<p><span class="badge unreach">not reachable from a page</span> %s</p>' % esc(d["probe_why"]))
+        for i, act in enumerate(d["actions"]):
+            aid = "ask-%s-%d" % (d["id"], i)
+            a('<h4 style="margin:.6em 0 .1em">%s</h4><pre class="prompt" id="%s">%s</pre>'
+              '<button type="button" data-js hidden data-copy="%s">Ask Claude: copy this prompt</button>'
+              '<span role="status" class="muted"></span><p class="muted" style="margin:.2em 0">You should see: %s</p>'
+              % (esc(act["label"]), aid, esc(act["prompt"]), aid, esc(act["see"])))
+        a("</article>")
+    a("</div></section>")
+    # tensions
+    a('<section aria-labelledby="h-t"><h2 id="h-t">Tensions, open and resolved</h2><p>%d tensions: %d open, %d resolved. '
+      'An option card is resolved when its default ships in this edition; every ERRATA entry is open, because that '
+      'file keeps only what is still owed.</p>' % (c["tensions"], c["open"], c["resolved"]))
+    a('<table class="tt"><thead><tr><th>state</th><th>id</th><th>what</th><th>default or change</th><th>falsifier or check</th>'
+      '<th>touches</th></tr></thead><tbody>')
+    for x in data["tensions"]:
+        mark = ('<span class="state-open">&#9671; open</span>' if x["state"] == "open"
+                else '<span class="state-resolved">&#9679; resolved</span>')
+        what = x["title"] + ((" (" + x["area"] + ")") if x.get("area") else "")
+        if x.get("waits"):
+            what += ". Waits: " + x["waits"]
+        if x.get("edition"):
+            what += ". Edition: " + x["edition"]
+        a('<tr><td data-label="state">%s</td><td data-label="id" class="wrap">%s</td><td data-label="what" class="wrap">%s</td>'
+          '<td data-label="default or change" class="wrap">%s</td><td data-label="falsifier or check" class="wrap">%s</td>'
+          '<td data-label="touches" class="wrap">%s</td></tr>' % (mark, esc(x["id"]), esc(what), esc(x.get("default") or ""),
+                                              esc(x.get("falsifier") or ""), esc(", ".join(x["touches"]) or "none found")))
+    a("</tbody></table></section>")
+    # story
+    nodes = {n["id"]: n for n in data["nodes"]}
+    out_e, in_e = {}, {}
+    for e in data["edges"]:
+        out_e.setdefault(e[0], []).append(e)
+        in_e.setdefault(e[1], []).append(e)
+    a('<section aria-labelledby="h-s"><h2 id="h-s">The story of the drawing</h2><p>Every thing drawn, with its '
+      'lines, in words. Open an entry to light it up in the ring.</p>')
+    for gid, gname in (("bryant", "Bryant's garden"), ("corwin", "Corwin's garden"), ("platform", "Named from elsewhere")):
+        group = [n for n in data["nodes"] if n["garden"] == gid]
+        a('<h3>%s (%d)</h3><div class="story-cols">' % (gname, len(group)))
+        for n in sorted(group, key=lambda n: (n["kind"], n["name"])):
+            bits = []
+            if n.get("lane"):
+                bits.append(esc(n["lane"]))
+            meta = [n["kind"]]
+            if n.get("ver"):
+                meta.append("version " + str(n["ver"]))
+            if n.get("state"):
+                meta.append(str(n["state"]))
+            if n.get("slot"):
+                meta.append("glove slot " + n["slot"])
+            if n.get("k"):
+                meta.append("makers: " + ", ".join(n["k"]))
+            lines = []
+            for e in out_e.get(n["id"], []):
+                st = e[4].get("state")
+                lines.append("%s %s%s" % (e[2], (nodes[e[1]]["name"] if e[1] in nodes else e[1]),
+                                          " (%s)" % st if st else ""))
+            for e in in_e.get(n["id"], []):
+                st = e[4].get("state")
+                lines.append("%s from %s%s" % (e[2], (nodes[e[0]]["name"] if e[0] in nodes else e[0]),
+                                               " (%s)" % st if st else ""))
+            a('<details data-node="%s"><summary>%s <span class="muted">(%s)</span></summary><p class="wrap">%s</p>'
+              '<p class="muted wrap">%s</p>%s%s</details>'
+              % (esc(n["id"]), esc(n["name"]), esc(n["kind"]), "; ".join(bits) or "", esc("; ".join(meta)),
+                 ("<p class=\"wrap\">Lineage: %s</p>" % esc(n["l"])) if n.get("l") else "",
+                 ("<p class=\"wrap\">Lines: %s.</p>" % esc("; ".join(lines))) if lines else "<p>No lines.</p>"))
+        a("</div>")
+    a("</section>")
+    a('<section aria-labelledby="h-src"><h2 id="h-src">Sources read for this build</h2><table><thead><tr><th>file</th>'
+      '<th>read as</th><th>sha256</th><th>bytes</th></tr></thead><tbody>')
+    for s in data["sources"]:
+        a('<tr><td class="wrap">%s</td><td>%s</td><td class="wrap">%s</td><td>%s</td></tr>'
+          % (esc(s["path"]), esc(s["reader"]), "missing" if s.get("missing") else esc(s["sha256"][:16]),
+             "" if s.get("missing") else s["bytes"]))
+    a("</tbody></table></section></main>")
+    a('<footer><h2>Made together</h2><p>Corwin Brust and Bryant Frankford share these gardens as one collection. '
+      'This page\'s code is offered under GPL-3.0-or-later OR LGPL-3.0-or-later and its words under CC-BY-SA-4.0; '
+      'text quoted from a skill keeps the terms of that skill. Copyright &copy; 2026 Corwin Brust and Bryant '
+      'Frankford, and Contributors.</p>')
+    if data.get("masked"):
+        mk = data["masked"]
+        a('<p>This is the copy for sharing. I masked this machine\'s paths and links and dropped nothing: %d drive '
+          'paths, %d msys paths and %d UNC hosts now read like <code>&lt;F&gt;:/claude</code>, and %d claude.ai links '
+          'read <code>&lt;claude.ai link&gt;</code>.</p>' % (mk["drive-letter"], mk["msys-path"], mk["unc-path"],
+                                                             mk["claude-ai-link"]))
+    hw = data["terms"].get("his_words")
+    if hw:
+        a('<p>In Bryant\'s words: &ldquo;%s&rdquo;</p>' % esc(hw))
+    a('<p>The ring\'s shape, the family arcs and the edge types are his; the counterparts, the tensions, the compass '
+      'and the doorways are what I added to read the two gardens together.</p>')
+    a('<p>Mentat (for Corwin; claude-opus-5-5)</p></footer>')
+    js = JS
+    blob = canon(data).replace("</", "<\\/")
+    a('<script type="application/json" id="garden-data">%s</script>' % blob)
+    a("<script>%s</script></body></html>" % js)
+    return "\n".join(P) + "\n"
+
+
+# ---------------------------------------------------------------- main
+def main(argv):
+    cmd = "build"
+    args = list(argv)
+    if args and args[0] in ("build", "text", "facts"):
+        cmd = args.pop(0)
+    if args and args[0] in ("-h", "--help"):
+        print(__doc__ or open(__file__).read().split("\nimport ", 1)[0])
+        return 0
+    opt = {"--root": None, "--c4": None, "--out": None, "--at": None}
+    public = False
+    while args:
+        a = args.pop(0)
+        if a == "--public":
+            public = True
+        elif a in opt and args:
+            opt[a] = args.pop(0)
+        else:
+            die("unknown argument %r (see --help)" % a)
+    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    root = os.path.abspath(opt["--root"] or here)
+    c4 = opt["--c4"] or os.environ.get("C4_ROOT") or ("/f/claude/c4" if os.path.isdir("/f/claude/c4")
+                                                     else os.path.join(os.path.expanduser("~"), "mnt", "c4"))
+    built = opt["--at"] or time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    g = Garden(root, os.path.abspath(c4), built)
+    data = g.build()
+    if cmd == "text":
+        sys.stdout.write(words(data))
+        return 0
+    if cmd == "facts":
+        sys.stdout.write(facts(data))
+        return 0
+    out = os.path.abspath(opt["--out"] or os.path.join(root, "site", "garden"))
+    os.makedirs(out, exist_ok=True)
+
+    def write_all(d, where):
+        os.makedirs(where, exist_ok=True)
+
+        def w(name, text):
+            tmp = os.path.join(where, "." + name + ".tmp")
+            with open(tmp, "w", encoding="utf-8", newline="\n") as f:
+                f.write(text)
+            os.replace(tmp, os.path.join(where, name))
+        w("data.json", json.dumps(d, ensure_ascii=False, indent=1) + "\n")
+        w("garden-view.facts", facts(d))
+        w("pairs.txt", "".join("%s %s\n" % p for p in pairs(LIGHT) + pairs(DARK)))
+        w("index.html", page(d))
+    write_all(data, out)
+    sys.stdout.write(words(data))
+    print("gv1mt: wrote %s/{index.html,data.json,garden-view.facts,pairs.txt}" % out)
+    if public:
+        pd = public_copy(data)
+        write_all(pd, os.path.join(out, "public"))
+        mk = pd["masked"]
+        print("gv1mt: wrote %s/public/ (the copy for sharing): masked %d drive paths, %d msys paths, %d UNC hosts, "
+              "%d claude.ai links; nothing dropped" % (out, mk["drive-letter"], mk["msys-path"], mk["unc-path"],
+                                                       mk["claude-ai-link"]))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

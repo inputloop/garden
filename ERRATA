@@ -1,0 +1,134 @@
+polygram ERRATA -- what is still wrong in the distributable this file ships beside
+
+One job (his words, 2026-09-29): "ERATA has the job of saying what still needs fixed given a
+distributable standing along side it actually goes out before addressing the given items."
+So:
+  - An entry is here only while it is still owed by the build beside it.  No DONE lines, no history.
+  - When an entry is fixed, it leaves this file in the same change, and the fix is written where
+    changes are written: ChangeLog (per file) and NEWS (what a user sees).
+  - Work that is not in the distributable (C4-side machinery, spells that stay home, ideas that
+    pend ENHANCE) does not belong here; it goes to the C4 carry-in note or the ENHANCE queue.
+  - Entry numbers are never reused, so a citation like "ERRATA E19" elsewhere still means one thing.
+    Closed entries E1-E5, E7-E14, E16-E19, E22, E24 (fixed 2026-09-28 and 2026-09-29) and E27 (2026-10-04) are in
+    ChangeLog and, as written at the time, in c4 archive/2026-09/ERRATA-0.8-2026-09-29_Archived-by-rcw-015zvleftmjk3yzqgnw3ptim.90-folded.
+    E20 and E21 (C4-side) live on in c4 spells/onward-turn/runs/2026-09-29T0215Z-NOTE-carry-in.md
+    (P3, P4); E23 (the plaid lane as a skill) in c4 h/ENHANCE-2026-09-29-fold.md, item 7.
+
+Each entry: what, where, why it waits, the change, and the check that says it was made.
+
+* E6  A release does not move the shipboard date
+  Where:   bin/rl2bp finish, polygram/mcp/seatnote.py (the seat's shipdate file)
+  Why it waits: his call (the shipboard date is a high-water mark he set on 2026-09-15).
+  Change, if he wants it: `rl2bp finish` advances the seat's shipboard date to the finish time.
+  Observed: the 0.8.90 note (built 2026-09-28) is stamped 20260924T225500Z.
+  Check:   the next release note's stamp is the release day.
+
+* E15 The ratchet spell is on trial; if it proves out it ships beside grand-test-manifest
+  Where:   c4 spells/ratchet/; SOFT-SKILLS/grand-test-manifest (PROVISIONAL)
+  Observed 2026-09-28: his ruling, "let's give ratchet a chance to prove out; if it's good let's bring
+           it straight on into AS4CE" (c4 q/2026-09-28-receiving-signal-discord/PROMPT.md).
+  Why it waits: the trial.  "Proves out", RULED 2026-09-28 (Q553): two firings on real problems,
+           each with a run record, none tripping a falsifier, the chapter 08 second check agreeing
+           with the first every time.  One firing so far (c4 spells/ratchet/runs/2026-09-28-01-...).
+  Observed 2026-09-29: firing 2 (c4 spells/ratchet/runs/2026-09-29-02-foreign-bytes/RUN.md) raised a
+           step, left its record, tripped no falsifier, and its second check agreed.  Two of two: by
+           Q553's bar the trial has passed.  What is left is this entry's change, at the rebuild.
+  Change:  on a pass, the spell ships beside the soft skill (as a book, the way spells ship) and
+           grand-test-manifest drops PROVISIONAL.
+  Check:   two run records name their numbers' commands; Q553 reads RULED.
+
+* E25 The soft skills do not ship in the plugin
+  Where:   polygram/cli.py (dist), polygram/editions.py select(), polygram/plugin.py (mint)
+  Observed 2026-09-29 (c4 h/GRAIN-2026-09-29-build-loop/M3-stranger.md, S19): a minted edition copies
+           into its own SOFT-SKILLS/ only the garden skills not chosen for it; nothing copies
+           AS4CE0001/SOFT-SKILLS (build-loop, hui, ngen, prior-instruction and the rest).  They reach a
+           session only through a live root on his machine.  The plugin already reads its own
+           SOFT-SKILLS/ last, so it is ready for the day they ship.
+  Why it waits: whether soft skills ship is his ("Skills stay soft until they show use; graduation
+           is by hand, never by the build", the plugin README).
+  Change, if he wants it: the full edition carries AS4CE0001/SOFT-SKILLS as its own SOFT-SKILLS/.
+  Check:   unzip -l dist/vibrobeast.plugin | grep -c SOFT-SKILLS/build-loop/SKILL.md prints 1.
+  Derived 2026-10-04, for 1.0.0 (his newest word on this, 2026-10-04: "what we don't want is our
+           skills advertising for it [C4] when it's not really demonstrating what it does"): five of
+           the eleven (build-loop, egress, hui, intern, ngen) drive C4 tools and read as C4 without a
+           C4 tree, so 1.0.0 ships none of them, as today.  The entry stays for a per-skill answer:
+           considerate-reader and nongnu-steward name C4 nowhere (grep -c -i c4 on each SKILL.md: 0)
+           and are the first candidates; prior-instruction (9 mentions) and retro-apply (4) want the
+           same with-or-without-C4 pass the garden had on 2026-10-04 before they could travel.
+
+* E26 A sized edition is signed at release but not published with it
+  Where:   bin/release, the --push step (the Forgejo release assets)
+  Observed 2026-09-29 (c4 h/GRAIN-2026-09-29-build-loop/M1-fidelity.md): --push uploads the full
+           plugin and the archives; a dist/vibrobeast-<size>.plugin is signed beside them and stays in
+           dist/.  The --push resume with sized editions has no test (it needs a Forgejo).
+  Why it waits: whether sized editions are release assets is his.
+  Change, if he wants it: --push uploads each signed dist/vibrobeast-*.plugin and its .asc.
+  Check:   the release page lists vibrobeast-<size>.plugin and its .asc.
+
+* E27 Signatures owed after the extension edition
+  Where:   46 skills whose old typed GPL block was removed (list: advice/EXTENSION-2026-10-10/
+           HANDBACK-F2.md), skills/seatkeeper (lane A), and two person-model lines (book/CORWIN.md x3,
+           mentat-chronicle.md:46) that still name TERMS v1
+  Observed 2026-10-10: each old copy is archived in .arc/2026-10/; the minted footer below each block
+           already said the right licence (sampled 3).  The mint is UNSIGNED.
+  Why it waits: signing is his.
+  Change, if he wants it: sign the 47 skills (make dist without UNSIGNED=1); the person-model lines
+           are his pen.
+  Check:   sh bin/skill-sign verify (or make dist) reports no TREE CHANGED.
+
+* E28 A new user becomes the keeper only through an environment step
+  Where:   polygram/mcp/prefs.py (people.named, MENTCACHED_KEEPER)
+  Observed 2026-10-10 (HANDBACK-F1 request 5): people.named starts as corwin; a stranger must set
+           MENTCACHED_KEEPER before their own name takes, which is a hand step.
+  Why it waits: who holds authority on an install is his call.  Fork A: keep the environment step.
+           Fork B: the first people.named set makes that turn the keeper, but only when no prefs
+           file exists yet (on a shared machine the first speaker would win).
+  Check:   a fresh install where a stranger is kept by asking Claude alone.
+
+* E29 Two review-pass-4 ideas, parked
+  Where:   c4/spells/extension/runs/2026-10-10/review/C7-pass4.md
+  Observed 2026-10-10: (1) "ask Claude not to use altorewired / token-optimizer" lasts one
+           conversation while every other opt-in is a durable switch; (2) br1in prints the YAML \"
+           escape undecoded in mode lines (gauntlet, color-theory).
+  Why it waits: the run stopped at pass 4 (counts 59, 27, 16, 2); see the run record.
+  Change, if he wants it: a pref per opt-out, or one sentence saying it lasts a conversation; decode
+           YAML escapes in br1in.
+  Check:   a fifth review pass that finds nothing new.
+
+* E30 Two reviewer frames worth naming in the lens skills
+  Where:   skills/lens, skills/eclipse-pass (signed; not edited)
+  Observed 2026-10-10: the frame that never read the evidence pack (C1) and the frame that reads only
+           what ships (C5, C5b) each found defects no other frame did.
+  Change, if he wants it: name both as standard frames in lens and eclipse-pass.
+
+* E31 Licence spelling and four prose faults left after the edition
+  Where:   69 minted footers spell CC-BY-SA4 (conventions/house.env); bin/lc1ck finds 4 code
+           licences on prose in reference notes (ethicsminions, pencil-your-own, seams, skill-metrics)
+  Observed 2026-10-10: lc1ck dist/vibrobeast prints "4 fault(s); 69 footer(s) use the short spelling".
+  Change, if he wants it: one footer re-mint with the SPDX spelling, and heal the four notes.
+  Check:   sh bin/lc1ck dist/vibrobeast prints 0 faults and 0 short spellings.
+
+* E32 The Tavern in G:\wheels runs stock 2.3.1, not the garden-pony build
+  Where:   G:/wheels/tavern/tavern.py; projects/garden-pony
+  Observed 2026-10-10 (study S5c): byte-identical to stock; the roads that need gp.1 (option cards
+           01, 02, 05, 13, 14, 16, 17) fall back to option W on this machine.
+  Why it waits: installing gp.1 there is his and Bryant's.
+
+* E33 Another session's uncommitted work in SOFT-SKILLS
+  Where:   SOFT-SKILLS/egress (version 1.1.0), SOFT-SKILLS/family-shelf, SOFT-SKILLS/_archive-2026-10-10
+  Observed 2026-10-10: present and uncommitted before the extension lanes began; not touched or
+           committed by them.  tests/test_ft1mt fails on egress's footer row until its row is minted.
+  Change, if he wants it: commit them with their session's ChangeLog entry, and run bin/ft1mt mint.
+
+* E34 The persona estate: Drive copies behind, three sheets with two differing copies
+  Where:   Drive ComputerPeople/persona; h/ vs h/persona (mentat), shopgarden, gh7
+  Observed 2026-10-10 (lane B): LEDGER-2026-10-10.md uploaded as a new file (Drive id
+           1AV67kRSuAn1FPxg0lDArz_kpqFA79Yjt, size matches); 11 local sheets are newer than, or
+           missing from, Drive; no sheet yet has a "Whose inverse I carry" section.
+  Why it waits: which copy is master, and the sections themselves, are his pen.
+
+* E35 A patternwalk ingest tool (later edition)
+  Observed 2026-10-10 (his words, 03:47): the recordings are never seated; an ingest goes through a
+           tool whose output (or MCP surface) may be seated.
+
+Authored by Mentat (for Corwin), 2026-09-29.  Unsigned.

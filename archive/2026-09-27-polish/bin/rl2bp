@@ -1,0 +1,105 @@
+#!/bin/sh
+# rl2bp -- RELEASE 2 BUMP: the implicit z bump around `make dist`, with the release's own record.
+#
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st>
+# SPDX-License-Identifier: GPL-3.0-or-later
+# This program is free software: you can redistribute it and/or modify it under the terms
+# of the GNU General Public License as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
+# This file is part of vibrobeast.  Authored by Mentat (for Corwin).  It is free software: you can
+# redistribute it and/or modify it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at your option) any later
+# version.  It is distributed WITHOUT ANY WARRANTY; see <https://www.gnu.org/licenses/>.
+#
+# THE NAME: R RELEASE · L LEDGER (one file per release, appended, never rewritten) · 2 writes two
+#   files (polygram/__init__.py's __version__, releases/<x.y.z>) · B BUMP · P POLYGRAM.
+#
+# WHAT HE ASKED (2026-09-24): "implicit minor (z in x.y.z bump) during make dist · track if you have
+#   started the build at the released version with a file named for the release and containing the
+#   start time · when the release finishes append another date".
+#
+# HOW: `make dist` runs `rl2bp start` first and `rl2bp finish` last.
+#   start   reads x.y.z from polygram/__init__.py (the one place the version lives; plugin.json is
+#           written from it at mint), computes x.y.(z+1), writes releases/x.y.(z+1) with one line
+#           `start <UTC stamp>`, then rewrites __version__.  If releases/<current x.y.z> exists with a
+#           start and NO finish, the previous build was torn: it does not bump again -- it says so,
+#           appends `restart <stamp>` to that file, and the build continues at the same version.
+#   finish  appends `finish <stamp>` to releases/<current version>; refuses if there is no start.
+#   show    the current version and its release file, if any.
+#   The stamp is UTC from the host clock, written down by itself first (da1te's rule: a clock value
+#   becomes a fact before it travels): the release file IS the record.
+#   start --to X.Y.Z  (2026-09-25, "let's cut 0.8.50"): the named version instead of z+1, when a
+#           release point is chosen by hand. It must be greater than the current version: a
+#           version never goes backwards and never repeats. `make dist RELEASE=0.8.50` passes it.
+#           --to the CURRENT version re-mints in place while it is unreleased (no tag v<x.y.z>):
+#           it appends `remint <stamp>` and does not bump.
+# usage: sh bin/rl2bp start [--to X.Y.Z]|finish|show [--root DIR]   ·   sh bin/rl2bp --prove-red
+# Exit: 0 · 1 finish without a start · 2 usage / no version line found.
+set -u
+me=rl2bp
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+MODE=${1:-}; [ $# -gt 0 ] && shift; TO=''
+while [ $# -gt 0 ]; do case $1 in
+  --root) [ $# -ge 2 ] || { echo "$me: --root needs a value" >&2; exit 2; }; ROOT=$2; shift ;;
+  --to) [ $# -ge 2 ] || { echo "$me: --to needs X.Y.Z" >&2; exit 2; }; TO=$2; shift ;;
+  *) echo "$me: unknown option $1" >&2; exit 2 ;; esac; shift; done
+INIT=$ROOT/polygram/__init__.py; REL=$ROOT/releases
+stamp() { date -u +%Y-%m-%dT%H:%M:%SZ; }
+cur() { sed -n 's/^__version__ = "\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)".*/\1/p' "$INIT" | head -1; }
+bump() { printf '%s' "$1" | awk -F. '{printf "%s.%s.%d", $1, $2, $3+1}'; }
+newer() { printf '%s\n%s\n' "$1" "$2" | awk -F. 'NR==1 {a=$1*1e8+$2*1e4+$3} NR==2 {b=$1*1e8+$2*1e4+$3} END {exit !(b>a)}'; }   # is $2 > $1
+set_version() {  # NEW -> rewrites __version__ in place, verified
+  tmp=$INIT.tmp.$$; sed "s/^__version__ = \"[0-9.]*\"/__version__ = \"$1\"/" "$INIT" > "$tmp" && cat "$tmp" > "$INIT" && rm -f "$tmp"
+  [ "$(cur)" = "$1" ] || { echo "$me: could not set __version__ to $1 in $INIT" >&2; return 2; }
+}
+do_start() {
+  v=$(cur); [ -n "$v" ] || { echo "$me: no __version__ = \"x.y.z\" line in $INIT" >&2; return 2; }
+  mkdir -p "$REL"
+  if [ -f "$REL/$v" ] && grep -q '^start ' "$REL/$v" && ! grep -q '^finish ' "$REL/$v"; then
+    s=$(stamp); printf 'restart %s\n' "$s" >> "$REL/$v"
+    [ -n "$TO" ] && echo "$me: --to $TO NOT applied: the torn build at $v is finished first (then run start --to again)"
+    echo "$me: TORN BUILD -- releases/$v has a start ($(sed -n 's/^start //p' "$REL/$v" | head -1)) and no finish; not bumping again; continuing at $v (restart $s noted)"
+    return 0
+  fi
+  n=$(bump "$v"); s=$(stamp)
+  if [ -n "$TO" ]; then
+    printf '%s' "$TO" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$' || { echo "$me: --to $TO is not x.y.z" >&2; return 2; }
+    if [ "$TO" = "$v" ]; then
+      # 2026-09-25: re-mint at the SAME version, for artifacts gone stale before the cut. Allowed
+      # only while the version is unreleased: no tag v$v (when git can say). Recorded, not silent.
+      if command -v git >/dev/null 2>&1 && git -C "$ROOT" rev-parse -q --verify "refs/tags/v$v" >/dev/null 2>&1; then
+        echo "$me: REFUSED --to $v: v$v is tagged -- a released version is never minted again" >&2; return 2; fi
+      s=$(stamp); printf 'remint %s\n' "$s" >> "$REL/$v"; echo "$me: re-mint at $v (unreleased; releases/$v: remint $s)"; return 0
+    fi
+    newer "$v" "$TO" || { echo "$me: REFUSED --to $TO: not greater than the current $v (a version never goes back or repeats)" >&2; return 2; }
+    [ -e "$REL/$TO" ] && { echo "$me: REFUSED --to $TO: releases/$TO already exists" >&2; return 2; }
+    n=$TO
+  fi
+  printf 'start %s\nfrom %s\n' "$s" "$v" > "$REL/$n" || return 2
+  set_version "$n" || return 2
+  echo "$me: $v -> $n (releases/$n: start $s)"
+}
+do_finish() {
+  v=$(cur); [ -n "$v" ] || { echo "$me: no __version__ line in $INIT" >&2; return 2; }
+  [ -f "$REL/$v" ] && grep -q '^start ' "$REL/$v" || { echo "$me: releases/$v has no start -- run rl2bp start first (a finish with no start is not a release)" >&2; return 1; }
+  s=$(stamp); printf 'finish %s\n' "$s" >> "$REL/$v"; echo "$me: $v finished $s (releases/$v)"
+}
+do_show() { v=$(cur); echo "version $v"; [ -f "$REL/$v" ] && sed 's/^/  /' "$REL/$v" || echo "  no releases/$v (never built by make dist since this version was set)"; }
+case $MODE in
+  start) do_start ;; finish) do_finish ;; show) do_show ;;
+  --prove-red)
+    W=$(mktemp -d) || exit 2; trap 'rm -rf "$W"' EXIT; mkdir -p "$W/polygram"; printf '# x\n__version__ = "0.7.0"\n__all__ = ["__version__"]\n' > "$W/polygram/__init__.py"; red=0
+    o=$(sh "$0" finish --root "$W" 2>&1); [ $? -eq 1 ] && printf '%s' "$o" | grep -q 'no start' && red=$((red+1)) || echo "FAIL: finish before start must exit 1: $o"
+    o=$(sh "$0" start --root "$W" 2>&1); [ "$(sed -n 's/^__version__ = "\(.*\)"/\1/p' "$W/polygram/__init__.py")" = 0.7.1 ] && grep -q '^start 20' "$W/releases/0.7.1" && grep -q '^from 0.7.0$' "$W/releases/0.7.1" && red=$((red+1)) || echo "FAIL: start must bump z and write the release file: $o"
+    o=$(sh "$0" start --root "$W" 2>&1); [ "$(sed -n 's/^__version__ = "\(.*\)"/\1/p' "$W/polygram/__init__.py")" = 0.7.1 ] && printf '%s' "$o" | grep -q 'TORN BUILD' && grep -q '^restart ' "$W/releases/0.7.1" && red=$((red+1)) || echo "FAIL: a second start with no finish is a torn build, not a second bump: $o"
+    o=$(sh "$0" finish --root "$W" 2>&1); grep -q '^finish 20' "$W/releases/0.7.1" && red=$((red+1)) || echo "FAIL: finish must append: $o"
+    o=$(sh "$0" start --root "$W" 2>&1); [ "$(sed -n 's/^__version__ = "\(.*\)"/\1/p' "$W/polygram/__init__.py")" = 0.7.2 ] && [ -f "$W/releases/0.7.2" ] && red=$((red+1)) || echo "FAIL: after a finish the next start bumps again: $o"
+    o=$(sh "$0" show --root "$W" 2>&1); printf '%s' "$o" | grep -q '^version 0.7.2' && red=$((red+1)) || echo "FAIL: show: $o"
+    sh "$0" finish --root "$W" >/dev/null 2>&1; o=$(sh "$0" start --to 0.7.1 --root "$W" 2>&1); [ $? -eq 2 ] && printf '%s' "$o" | grep -q 'not greater' && red=$((red+1)) || echo "FAIL: --to must refuse a version that is not greater: $o"
+    o=$(sh "$0" start --to 0.8.50 --root "$W" 2>&1); [ "$(sed -n 's/^__version__ = "\(.*\)"/\1/p' "$W/polygram/__init__.py")" = 0.8.50 ] && grep -q '^from 0.7.2$' "$W/releases/0.8.50" && red=$((red+1)) || echo "FAIL: --to 0.8.50 must set the named version and record where it came from: $o"
+    sh "$0" finish --root "$W" >/dev/null 2>&1;     o=$(sh "$0" start --to 0.8.50 --root "$W" 2>&1); [ "$(sed -n 's/^__version__ = "\(.*\)"/\1/p' "$W/polygram/__init__.py")" = 0.8.50 ] && grep -q '^remint ' "$W/releases/0.8.50" && red=$((red+1)) || echo "FAIL: --to the current, untagged version must re-mint in place and say so: $o"
+    [ $red -eq 9 ] && { echo "PASS: rl2bp refuses a finish with no start, bumps z and records the start, treats start-without-finish as a torn build (no double bump), appends the finish, bumps again after it, shows"; exit 0; }
+    echo "FAIL: rl2bp prove-red $red/9"; exit 1 ;;
+  ''|-h|--help) sed -n '/^# usage:/,/^# Exit:/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  *) echo "$me: unknown mode $MODE (start|finish|show|--prove-red)" >&2; exit 2 ;;
+esac

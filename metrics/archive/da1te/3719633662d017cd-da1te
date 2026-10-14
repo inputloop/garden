@@ -1,0 +1,266 @@
+#!/bin/sh
+# da1te -- DATE: the shipboard date as a RECORDED FACT, versioned toward root.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st>
+# This program is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.  See <https://www.gnu.org/licenses/>.
+#
+# ---------------------------------------------------------------------------------------------
+# THE NAME (AS4CE pattern, run-level in the middle) -- guessed freely, marked provisional:
+#   D  DOCUMENT  -- the date lives in a document, never in a variable someone remembered
+#   A  ARCHIVE   -- every roll is kept; the file is a history, not a value
+#   1  run-level -- reads one DATE file, appends at most one line, writes nothing else
+#   T  TEST      -- `stamp` is a gate: it refuses rather than guesses
+#   E  ENTITY    -- the date is an entity in the register, with a home and a lineage
+#
+# THE CORRECTION THIS TOOL IS BUILT ON (Corwin, 2026-09-17, verbatim in substance):
+#   "it doesn't make sense to treat 'reach for the host clock' as a pillaged act we should be
+#    proud when we show restraint by resisting: the goal is to resist handing directly from the
+#    system to some broader context without making a record of the value by itself."
+#
+# So the host clock is a LEGITIMATE SOURCE and restraint is not a virtue.  The fault is handing a
+# clock reading onward -- into a filename, a document, a record -- without first writing the value
+# down BY ITSELF, where a second reader can see it.  One place touches the clock: `da1te roll`.
+# Everything else reads the fact.  A date that never became a fact cannot be stamped onto anything.
+#
+# WHERE THE FACT LIVES -- "versioning toward root", his instruction, mechanically:
+#   Walk from the working point toward root.  The FIRST ancestor that already keeps a DATE file is
+#   the keeper, and the new version is appended there.  If nothing keeps one anywhere down toward
+#   the present root, the keeper goes at the TOP OF CONTEXT.
+#   The walk STOPS AT THE DISC BOUNDARY.  Above the disc is another machine's business, and a DATE
+#   found up there would be a different shop's date.  The top of context is therefore the point
+#   where this disc begins -- the same boundary bin/mo1nt reports, and for the same reason: a path
+#   on this session's own scratch is not on his estate at all.
+#
+# THE RECORD.  One line per roll, newest last, 24h UTC affixed with the hostname, and the
+# predecessor named so the lineage reads without a log:
+#   2026-09-17  2026-09-17T19:45Z  avalon  from=2026-09-16
+# The host field names the machine whose clock was read.  Set DA1TE_HOST when the reading shell
+# is not the station -- through the desktop bridge it is a VM called `claude` sitting on avalon.
+#
+# ---------------------------------------------------------------------------------------------
+# TWO DECLARATIONS, because an undeclared check reads as MUST:
+#
+#   MUST     which DATE file governs a working point and how it was chosen; the value recorded in
+#            it; whether that value equals today's UTC calendar day as the host clock reports it;
+#            every refusal `stamp` makes and the exit code it makes it with; the record appended
+#            by `roll` and the lineage read back out.  All off the disk, or off the one clock
+#            reading `roll` takes and writes down by itself before anything hands it on.
+#
+#   JOURNEY  THE TOP OF CONTEXT IS THE MOUNT ROOT, NOT THE DEVICE BOUNDARY.  On his machine
+#            F:\claude and F:\claude\c4 are one disc and arrive through this session as two
+#            mounts; this tool calls the mount the ceiling because the unit he CONNECTS is the
+#            unit that travels.  That is a judgement about what a context is -- a shop whose
+#            context stops short of its mount must say so with DA1TE_TOP rather than be assumed.
+#            THE KEEPER RULE.  "Versioned toward root" is his instruction; "the LOWEST ancestor
+#            that already keeps a DATE file wins, and failing that the top of context" is my
+#            mechanization of it.  A nearer keeper silently overrides a further one; that is the
+#            intended shape and it is still a choice this file made.
+#            A DAY IS A UTC CALENDAR DAY.  `stamp` refuses on a date-STRING mismatch, so a shop
+#            working across midnight UTC is refused mid-session by design.  Whether the UTC day is
+#            the right day for this shop is not measured anywhere.
+#            THE HOST FIELD names the machine whose CLOCK WAS READ and defaults to `uname -n`.
+#            Through the desktop bridge that is a VM, not the station, so the default is not the
+#            station; DA1TE_HOST states the station.  Neither is guessed and neither is inferred.
+#
+# Depends on: sh, awk, sed, stat, date, uname.  Nothing else.  Never signs.
+set -eu
+
+SELF=$(cd "$(dirname "$0")" && pwd)
+REF=${DA1TE_REF:-$HOME}
+NAME=${DA1TE_NAME:-DATE}
+devof() { stat -c %d -- "$1" 2>/dev/null || echo NONE; }
+
+usage() {
+  cat <<'USAGE'
+usage:
+  da1te where [DIR]      say which DATE file governs DIR, and how it was chosen
+  da1te read  [DIR]      print the recorded date.  Exits 1 if there is no fact yet.
+  da1te stamp [DIR]      print the date FOR USE in a name or a document.
+                         Refuses -- loudly, exit 3 -- if the fact was not rolled for today.
+  da1te roll  [DIR]      touch the host clock ONCE, append a versioned record, print the value
+  da1te log   [DIR]      the whole lineage, read back in words
+  da1te --prove-red      plant every fault; show them all red
+  da1te -h               this header
+
+THE ONE RULE: nothing gets a date except through a recorded fact.  `roll` is the only verb that
+reads the clock.  `stamp` is the only verb anything else should call, and it refuses rather than
+guessing, so a session cannot quietly put an unrecorded value into a filename.
+USAGE
+}
+
+# ---- the walk, stopping at the disc boundary ------------------------------------------------
+# TOP OF CONTEXT = the mount root: the deepest entry in the live mount table at or above DIR.
+# NOT the device boundary, and the difference is a real seam worth naming rather than smoothing.
+# On his machine F:\claude and F:\claude\c4 are one disc; through this session they arrive as two
+# separate fuse mounts.  The unit he CONNECTS is the unit that travels, so the mount root is the
+# honest top of context on both sides: c4 is a context, and its date is c4's date.
+# DA1TE_TOP names a narrower ceiling explicitly, for a harness or for a shop whose context stops
+# short of its mount.  It is an override that must be stated, never a default that drifts.
+mtab() {
+  if [ -r /proc/self/mounts ]; then awk '{print $2}' /proc/self/mounts
+  else mount | sed -n 's/^.* on \(.*\) type .*$/\1/p'; fi \
+  | awk '{print length($0)"\t"$0}' | sort -rn | cut -f2-
+}
+disc_top() {
+  d=$(cd "$1" && pwd)
+  if [ -n "${DA1TE_TOP:-}" ]; then echo "$DA1TE_TOP"; return 0; fi
+  mtab | while IFS= read -r m; do
+    case "$d" in "$m") echo "$m"; break ;; "$m"/*) echo "$m"; break ;; esac
+  done | head -1
+}
+
+find_keeper() {                    # find_keeper DIR -> "PATH<TAB>found|top"
+  d=$(cd "$1" && pwd); dev=$(devof "$d"); top=$(disc_top "$d")
+  while :; do
+    [ -f "$d/$NAME" ] && { printf '%s\t%s\n' "$d/$NAME" found; return 0; }
+    [ "$d" = "$top" ] && break
+    d=$(dirname -- "$d")
+    [ "$(devof "$d")" = "$dev" ] || break
+  done
+  printf '%s\t%s\n' "$top/$NAME" top
+}
+
+keeper_of() { find_keeper "${1:-.}" | cut -f1; }
+how_of()    { find_keeper "${1:-.}" | cut -f2; }
+
+value_in()  { [ -f "$1" ] && awk '!/^#/ && NF {v=$1} END{print v}' "$1" || true; }
+
+# ---- verbs ------------------------------------------------------------------------------------
+cmd_where() {
+  dir=${1:-.}; k=$(keeper_of "$dir"); how=$(how_of "$dir"); top=$(disc_top "$(cd "$dir" && pwd)")
+  printf 'working point : %s\n' "$(cd "$dir" && pwd)"
+  printf 'disc begins at: %s\n' "$top"
+  if [ "$how" = found ]; then
+    printf 'governed by   : %s\n' "$k"
+    printf 'chosen because: it is the lowest point toward root that already keeps a %s file.\n' "$NAME"
+  else
+    printf 'governed by   : %s   (does not exist yet)\n' "$k"
+    printf 'chosen because: nothing keeps a %s file anywhere down toward the present root, so the\n' "$NAME"
+    printf '                fact goes at the top of context -- where this disc begins.\n'
+  fi
+  [ -f "$k" ] && printf 'current value : %s\n' "$(value_in "$k")" || printf 'current value : none recorded\n'
+}
+
+cmd_read() {
+  k=$(keeper_of "${1:-.}"); v=$(value_in "$k")
+  [ -n "$v" ] || { printf 'da1te: no date has been recorded at %s -- roll one.\n' "$k" >&2; exit 1; }
+  echo "$v"
+}
+
+cmd_stamp() {
+  k=$(keeper_of "${1:-.}"); v=$(value_in "$k")
+  today=$(date -u +%Y-%m-%d)
+  if [ -z "$v" ]; then
+    printf 'da1te: REFUSED. No date is recorded at %s.\n' "$k" >&2
+    printf '       The clock says %s. Record it by itself first:  sh bin/da1te roll\n' "$today" >&2
+    exit 3
+  fi
+  if [ "$v" != "$today" ]; then
+    printf 'da1te: REFUSED. The recorded date is %s; the clock says %s.\n' "$v" "$today" >&2
+    printf '       Handing the clock straight into a name is the fault this tool exists to stop.\n' >&2
+    printf '       Roll it, which writes the value down by itself:  sh bin/da1te roll\n' >&2
+    exit 3
+  fi
+  echo "$v"
+}
+
+cmd_roll() {
+  dir=${1:-.}; k=$(keeper_of "$dir"); how=$(how_of "$dir")
+  prev=$(value_in "$k"); [ -n "$prev" ] || prev='-'
+  now=$(date -u +%Y-%m-%d); at=$(date -u +%Y-%m-%dT%H:%MZ)
+  # The host recorded is the machine whose CLOCK WAS READ, which is not always the station the
+  # work belongs to: through the desktop bridge the reading shell is a Linux VM named `claude`
+  # running on avalon.  DA1TE_HOST names the station when the two differ.  Recording the reader
+  # rather than the station would be a quiet lie of exactly the kind this tool exists to stop,
+  # so both are allowed and neither is guessed.
+  host=${DA1TE_HOST:-$(uname -n)}
+  if [ "$prev" = "$now" ]; then
+    printf 'da1te: already rolled for %s at %s -- a day gets one record, not one per caller.\n' \
+      "$now" "$k" >&2
+    echo "$now"; return 0
+  fi
+  if [ ! -f "$k" ]; then
+    d=$(dirname -- "$k"); [ -d "$d" ] || { printf 'da1te: no directory %s\n' "$d" >&2; exit 2; }
+    {
+      printf '# %s -- the shipboard date, recorded by itself before it is handed on.\n' "$NAME"
+      printf '# Written only by bin/da1te.  One line per roll, newest last:\n'
+      printf '#   <date>  <rolled-at, 24h UTC>  <host>  from=<predecessor>\n'
+      printf '# Kept here because %s.\n' \
+        "$( [ "$how" = top ] && echo 'nothing down toward the present root kept one, so this is the top of context' \
+                             || echo 'this is the lowest point toward root that already kept one' )"
+    } > "$k"
+  fi
+  printf '%s\t%s\t%s\tfrom=%s\n' "$now" "$at" "$host" "$prev" >> "$k"
+  printf 'rolled %s -> %s   recorded at %s\n' "$prev" "$now" "$k" >&2
+  echo "$now"
+}
+
+cmd_log() {
+  k=$(keeper_of "${1:-.}")
+  [ -f "$k" ] || { printf 'da1te: nothing recorded at %s yet.\n' "$k" >&2; exit 1; }
+  printf 'The lineage kept at %s, oldest first:\n\n' "$k"
+  awk -F'\t' '!/^#/ && NF { n++
+    p=$4; sub(/^from=/,"",p)
+    if (p=="-") printf "  %s was the first date recorded here, at %s on %s.\n", $1,$2,$3
+    else        printf "  %s followed %s, rolled at %s on %s.\n", $1,p,$2,$3 }
+    END { printf "\n  %s record(s). The newest is the one stamp will hand out.\n", n+0 }' "$k"
+}
+
+# ---- --prove-red ------------------------------------------------------------------------------
+prove_red() {
+  d=$(mktemp -d) || exit 1
+  trap 'rm -rf "$d"' EXIT INT TERM
+  fails=0
+  chk() { if [ "$2" = "$3" ]; then printf '  ok    %s\n' "$1"
+          else printf '  FAIL  %s  want [%s] got [%s]\n' "$1" "$2" "$3"; fails=$((fails+1)); fi }
+  mkdir -p "$d/top/mid/work"
+  today=$(date -u +%Y-%m-%d)
+  # The harness states its own ceiling rather than hoping the scratch directory sits on one.
+  DA1TE_TOP="$d/top" ; export DA1TE_TOP
+
+  echo "GREEN -- what must hold:"
+  chk "with no keeper anywhere, the fact goes to the top of context" \
+      "$d/top/$NAME" "$(cd "$d/top/mid/work" && keeper_of .)"
+  ( cd "$d/top/mid/work" && cmd_roll . >/dev/null 2>&1 )
+  chk "after a roll, read returns the recorded value" \
+      "$today" "$(cd "$d/top/mid/work" && cmd_read .)"
+  chk "stamp hands out the value when the fact is today's" \
+      "$today" "$(cd "$d/top/mid/work" && cmd_stamp .)"
+  : > "$d/top/mid/$NAME"
+  chk "a nearer keeper wins over a higher one" \
+      "$d/top/mid/$NAME" "$(cd "$d/top/mid/work" && keeper_of .)"
+  chk "a second roll on the same day adds no second record" \
+      "1" "$(cd "$d/top" && awk '!/^#/ && NF' "$d/top/$NAME" | wc -l | tr -d ' ')"
+
+  echo "RED -- four planted faults, every one must fire:"
+  mkdir -p "$d/bare/w" ; DA1TE_TOP="$d/bare" ; export DA1TE_TOP
+  if ( cd "$d/bare/w" && cmd_stamp . >/dev/null 2>&1 ); then
+    echo "  FAIL  stamp handed out a date with no fact recorded"; fails=$((fails+1))
+  else echo "  ok    stamp REFUSES when no date has been recorded"; fi
+  printf '%s\t%s\tx\tfrom=-\n' "1999-01-01" "1999-01-01T00:00Z" > "$d/bare/$NAME"
+  if ( cd "$d/bare/w" && cmd_stamp . >/dev/null 2>&1 ); then
+    echo "  FAIL  stamp handed out a stale date"; fails=$((fails+1))
+  else echo "  ok    stamp REFUSES a recorded date that is not today's"; fi
+  chk "a stale fact still READS, so nothing is hidden" "1999-01-01" "$(cd "$d/bare/w" && cmd_read .)"
+  if ( cd "$d/bare/w" && cmd_read . >/dev/null 2>&1 ) && \
+     [ "$(cd "$d/bare/w" && cmd_read .)" = "$today" ]; then
+    echo "  FAIL  read invented today's date"; fails=$((fails+1))
+  else echo "  ok    read never reaches for the clock, even when the fact is old"; fi
+
+  echo
+  if [ "$fails" -eq 0 ]; then echo "da1te: all held, all fired."; else echo "da1te: $fails FAILED"; fi
+  [ "$fails" -eq 0 ]
+}
+
+case "${1:-}" in
+  -h|--help|"") usage; exit 0 ;;
+  --prove-red)  prove_red; exit $? ;;
+  where) shift; cmd_where "${1:-.}" ;;
+  read)  shift; cmd_read  "${1:-.}" ;;
+  stamp) shift; cmd_stamp "${1:-.}" ;;
+  roll)  shift; cmd_roll  "${1:-.}" ;;
+  log)   shift; cmd_log   "${1:-.}" ;;
+  *) printf 'da1te: no verb %s\n' "$1" >&2; usage >&2; exit 2 ;;
+esac

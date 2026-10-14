@@ -1,0 +1,93 @@
+REWRITE of fix-comic-rewrite-session-improve-orgvm.txt (2026-10-04), shaped so it can run to the end
+without locking up.  Your original sits beside this file, unchanged.  Changes from it are named at
+the bottom.
+
+----------------------------------------------------------------------------------------------------
+
+CLAUDE: Explain what you did, with only as much of the reasoning as ties your actions to my words.
+Do not narrate how you think in general.  The comic left out about 90% of what I said and what you
+answered; the fix is a real session log, and then a comic built from that log.
+
+Work in this order.  Each step writes its result to a file and commits it (no push) before the next
+step starts.  If a step stops partway, write what is finished, say what is left, and go on.
+
+STEP 1: the session log, one turn at a time.
+  Source: this session's own transcript (the JSONL the harness keeps), read by a small script, not
+  from memory.  For each turn, write one file under
+  F:\claude\projects\field-comic\session\2026-10-04\TURN-NN.md containing, in this order:
+    a. my prompt, verbatim, including mid-turn messages, each marked with its time;
+    b. your reading of it: what you understood me to ask, in a few plain sentences;
+    c. what you did: the files you changed, the commits, the checks run and their results;
+    d. what you told me, verbatim (your final message for the turn).
+  Leave out thinking, tool-call noise, and file dumps.  Keep everything I said.  Smooth as little as
+  you can.  One turn per call; a turn longer than about 4,000 words is split into parts.
+  Done when: one file per turn, and a check script confirms that every user message in the JSONL
+  appears verbatim in some TURN file.
+
+STEP 2: reformat-session, put to use.
+  Write a soft skill, reformat-session (a sibling of reformat-prompt, not a change to it), whose
+  method is STEP 1 above, with its script beside it.  Use it for STEP 1, not afterwards.  Do not ask
+  me whether it should be one skill or two: choose, write why in one line, and we will learn from
+  using it.
+  Done when: SOFT-SKILLS/reformat-session/ holds SKILL.md and the script, and sk1in and ft1mt pass.
+
+STEP 3: the comic, rebuilt from the log.
+  Rebuild Volume 2's panels from the TURN files: at least one panel per turn, and one per mid-turn
+  message that changed the work.  Corwin bubbles are still verbatim, with src pointing at a TURN file
+  (which points back to the JSONL).  Keep qt1ck and the 25 inline tests green.
+  Done when: every turn has a panel, and qt1ck and the tests pass.
+
+STEP 4: a skill shape for the comic's avatars (design plus a first cut, small).
+  - The user's avatar is sticky: it stays the same until the user comments on it.  Before that,
+    new lines are fine.  If the user gives direction (a set to choose from, with instructions), or
+    already has compatible art, use that instead.
+  - Mood reaches the drawing only through plain syntactic hints in the text (for example a
+    "mood:" key), so other clients can read the same hints and render them their own way: a
+    context VM for some other consumer, or a user VM the user turns it on for (egadjit).
+  Done when: a soft-skill draft, comic-avatars, says this, and the comic engine reads one mood hint
+  end to end in one panel.
+
+STEP 5: my coined words, recorded as I defined them.
+  Put these definitions, verbatim from my original prompt, into ghostwheel-nodes ROLLOUT.org (and
+  egad's model where it fits), correcting your earlier guess ("Enteritis/entities"):
+  - Entertetris: the nexus/network on each side of the bridge, establishing shared context among
+    enterprise-shaped things, on either side of two enterprise-centric VMs or the context VMs
+    between them.
+  - Entertreties: the public offering from an enterprise, or several of them.  It adds the same
+    layers of indirection, so that a person's relationships inside an organisation (horizontal and
+    cross-functional teams) are kept apart from how they use an application.  This still holds when
+    the application is the joint product of several organisations and the user has relationships
+    with more than one of them.  Each context is consulted on a VM dedicated to that context and
+    shared with whoever else has access to it.  The "who?" work is not pushed down to leaf
+    containers, except when a permission (or other assertion) is asserted outward after a user
+    action, playing back the user's "remember my preference" setting for that context.
+  Done when: both are in ROLLOUT.org with my words quoted, and the old guess is marked withdrawn.
+
+STEP 6: Dee.
+  Dee is an Acknowledgement, not a credit for the Book so far.  Record that where acknowledgements
+  are kept.  Keep collecting for the Book and pending, rather than writing into the Book's work area.
+  Her laugh at the knock-knock joke may go in as an acknowledgement note, in my telling:
+    Knock Knock / Who's There? / *Crickets*  [oh, right; it won't say. I have to go via context VMs]
+
+At the end, report in a few lines: what each step produced, where, and what is left.
+
+----------------------------------------------------------------------------------------------------
+
+WHAT CHANGED FROM THE ORIGINAL, AND WHY (so it will not lock up)
+
+1. "Walk over the prompts tonight" is the whole session: many turns, several context compactions,
+   and long tool output.  Done in one pass, it overruns a reply.  The rewrite works one turn per
+   call, from the transcript file rather than from memory, writing each turn to disk as it goes.
+2. "Unsmoothed long form ... interposing your rewrites" now has a fixed shape per turn (prompt /
+   reading / what was done / what was said), so nothing has to be decided turn by turn, and a
+   script can check that nothing you said was dropped.
+3. The reformat-session decision is made in the step itself (a sibling soft skill, used at once),
+   as you asked, rather than left open.
+4. The comic now depends on the log; it is no longer drawn from my selection.  That is the actual
+   cause of the 90% gap.
+5. The avatar idea and the coined words each get a small "done when", so they cannot grow without
+   end inside this turn.
+6. Every step commits before the next one starts, so a stall loses at most one step.
+
+Kept from the original: no extraction of reasoning; no pushes; nothing written into the Book's
+work area; Dee as an acknowledgement.

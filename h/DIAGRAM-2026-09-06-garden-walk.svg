@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" width="2905" height="776" viewBox="0 0 2905 776" font-family="var(--c4-font, monospace)" font-size="12">
+<title>The Garden Walk — nine ideas, two readers each, one open (2026-09-06)</title><desc>Rendered by dc1sv from the canonical diagram document; 32 shapes, 12 edges, 3 systems. Groups are drawn as labelled rectangles; every status is a word, never a hue alone.</desc>
+<style>rect.box{fill:var(--c4-box,#fffdf5);stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}polygon.decision{fill:var(--c4-decision,#f1efe8);stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}circle.node{fill:var(--c4-node,#ffffff);stroke:var(--c4-ink,#1a1a1a);stroke-width:2}rect.note{fill:none;stroke:var(--c4-muted,#888780);stroke-dasharray:3 3;stroke-width:1}text{fill:var(--c4-ink,#1a1a1a)}text.note{fill:var(--c4-muted,#5f5e5a);font-style:italic}path.edge{fill:none;stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}path.dash{stroke-dasharray:6 4}rect.sys{fill:var(--c4-sys,rgba(120,120,200,0.06));stroke:var(--c4-sysline,#6a67b8);stroke-width:1.5;stroke-dasharray:8 4}rect.sys.core{fill:var(--c4-core,rgba(240,200,0,0.10));stroke:var(--c4-coreline,#b08800);stroke-dasharray:none}text.sys{fill:var(--c4-sysline,#6a67b8);font-size:11px;font-weight:bold}rect.lbl{fill:var(--c4-label-bg,#ffffff);stroke:var(--c4-muted,#888780);stroke-width:0.75}text.lbl{fill:var(--c4-ink,#1a1a1a);font-size:11px}</style>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--c4-ink,#1a1a1a)"/></marker><marker id="open" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10" fill="none" stroke="var(--c4-ink,#1a1a1a)"/></marker><marker id="circle" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7"><circle cx="5" cy="5" r="4" fill="var(--c4-ink,#1a1a1a)"/></marker><marker id="diamond" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,5 L5,0 L10,5 L5,10 z" fill="var(--c4-ink,#1a1a1a)"/></marker></defs>
+<rect class="sys B" x="1298" y="110" width="1305" height="176" rx="6" style="stroke:var(--c4-sys-B,#0F6E56);stroke-dasharray:2 4;fill:none"/>
+<text class="sys" x="1306" y="124" style="fill:var(--c4-systext-B,#085041)">B · shows us off, extends reach</text>
+<rect class="sys A" x="18" y="110" width="1202" height="176" rx="6" style="stroke:var(--c4-sys-A,#185FA5);stroke-dasharray:2 4;fill:none"/>
+<text class="sys" x="26" y="124" style="fill:var(--c4-systext-A,#0C447C)">A · simple, ergonomic, non-contagious</text>
+<rect class="sys C" x="2578" y="110" width="289" height="176" rx="6" style="stroke:var(--c4-sys-C,#5F5E5A);stroke-dasharray:2 4;fill:none"/>
+<text class="sys" x="2586" y="124" style="fill:var(--c4-systext-C,#444441)">C · the ninth</text>
+<path class="edge" d="M 155,264 L 155,392 L 1408,392 L 1408,520" marker-end="url(#arrow)" style="stroke:var(--c4-edge-a1r2-win,#185FA5)"/>
+<path class="edge" d="M 478,264 L 478,392 L 1408,392 L 1408,520" marker-end="url(#arrow)" style="stroke:var(--c4-edge-a2r2-win,#185FA5)"/>
+<path class="edge" d="M 798,264 L 798,392 L 1408,392 L 1408,520" marker-end="url(#arrow)" style="stroke:var(--c4-edge-a3r2-win,#185FA5)"/>
+<path class="edge" d="M 1101,264 L 1101,392 L 1408,392 L 1408,520" marker-end="url(#arrow)" style="stroke:var(--c4-edge-a4r2-win,#185FA5)"/>
+<path class="edge" d="M 1418,264 L 1418,392 L 1408,392 L 1408,520" marker-end="url(#arrow)" style="stroke:var(--c4-edge-b1r2-win,#0F6E56)"/>
+<path class="edge" d="M 1752,264 L 1752,392 L 1408,392 L 1408,520" marker-end="url(#arrow)" style="stroke:var(--c4-edge-b2r2-win,#0F6E56)"/>
+<path class="edge" d="M 2072,264 L 2072,392 L 1408,392 L 1408,520" marker-end="url(#arrow)" style="stroke:var(--c4-edge-b3r2-win,#0F6E56)"/>
+<path class="edge" d="M 2370,264 L 2370,392 L 1408,392 L 1408,520" marker-end="url(#arrow)" style="stroke:var(--c4-edge-b4r2-win,#0F6E56)"/>
+<path class="edge" d="M 2701,264 L 2701,392 L 1408,392 L 1408,520" marker-end="url(#arrow)" style="stroke:var(--c4-edge-c1r2-win,#5F5E5A)"/>
+<path class="edge" d="M 940,560 L 1250,543" marker-end="url(#arrow)" style="stroke:var(--c4-edge-minions-win,#534AB7)"/>
+<path class="edge" d="M 1800,560 L 1565,543" marker-end="url(#arrow)" style="stroke:var(--c4-edge-eclipse-win,#534AB7)"/>
+<path class="edge" d="M 1408,566 L 1408,623 L 1388,623 L 1388,680" marker-end="url(#arrow)" style="stroke:var(--c4-edge-win-corwin,#993C1D)"/>
+<rect class="box" x="40" y="140" width="231" height="46" rx="3"/><text x="156" y="167" text-anchor="middle">A1 autoMemoryDirectory · HOLD</text>
+<rect class="note" x="44" y="205" width="180" height="24"/><text class="note" x="50" y="221">row 1: enthusiast, tired</text>
+<rect class="note" x="44" y="240" width="222" height="24"/><text class="note" x="50" y="256">row 2: user-scope = contagious</text>
+<rect class="box" x="360" y="140" width="266" height="46" rx="3"/><text x="493" y="167" text-anchor="middle">A2 CLAUDE.md door · HOLD→door line</text>
+<rect class="note" x="364" y="205" width="215" height="24"/><text class="note" x="370" y="221">row 1: terminal purist, tired</text>
+<rect class="note" x="364" y="240" width="229" height="24"/><text class="note" x="370" y="256">row 2: no @import; double-mount</text>
+<rect class="box" x="680" y="140" width="203" height="46" rx="3"/><text x="782" y="167" text-anchor="middle">A3 mechanical open · PASS</text>
+<rect class="note" x="684" y="205" width="138" height="24"/><text class="note" x="690" y="221">row 1: poet, tired</text>
+<rect class="note" x="684" y="240" width="229" height="24"/><text class="note" x="690" y="256">row 2: exit words; who reminds?</text>
+<rect class="box" x="1000" y="140" width="189" height="46" rx="3"/><text x="1094" y="167" text-anchor="middle">A4 seat template · PASS</text>
+<rect class="note" x="1004" y="205" width="194" height="24"/><text class="note" x="1010" y="221">row 1: speed reader, tired</text>
+<rect class="note" x="1004" y="240" width="194" height="24"/><text class="note" x="1010" y="256">row 2: emitted ≠ installed</text>
+<rect class="box" x="1320" y="140" width="175" height="46" rx="3"/><text x="1408" y="167" text-anchor="middle">B1 Memory Door · HOLD</text>
+<rect class="note" x="1324" y="205" width="208" height="24"/><text class="note" x="1330" y="221">row 1: museum curator, tired</text>
+<rect class="note" x="1324" y="240" width="187" height="24"/><text class="note" x="1330" y="256">row 2: hosted egress; rot</text>
+<rect class="box" x="1640" y="140" width="196" height="46" rx="3"/><text x="1738" y="167" text-anchor="middle">B2 memory picture · PASS</text>
+<rect class="note" x="1644" y="205" width="236" height="24"/><text class="note" x="1650" y="221">row 1: compliance officer, tired</text>
+<rect class="note" x="1644" y="240" width="215" height="24"/><text class="note" x="1650" y="256">row 2: a rendering ≠ a record</text>
+<rect class="box" x="1960" y="140" width="161" height="46" rx="3"/><text x="2040" y="167" text-anchor="middle">B3 the paper · PASS</text>
+<rect class="note" x="1964" y="205" width="229" height="24"/><text class="note" x="1970" y="221">row 1: first-week intern, tired</text>
+<rect class="note" x="1964" y="240" width="215" height="24"/><text class="note" x="1970" y="256">row 2: story without artifact</text>
+<rect class="box" x="2280" y="140" width="301" height="46" rx="3"/><text x="2430" y="167" text-anchor="middle">B4 manifest on the wire · PASS narrowed</text>
+<rect class="note" x="2284" y="205" width="222" height="24"/><text class="note" x="2290" y="221">row 1: security auditor, tired</text>
+<rect class="note" x="2284" y="240" width="173" height="24"/><text class="note" x="2290" y="256">row 2: names are topics</text>
+<rect class="box" x="2600" y="140" width="245" height="46" rx="3"/><text x="2722" y="167" text-anchor="middle">C1 scheduled fleet gauge · HOLD</text>
+<rect class="note" x="2604" y="205" width="236" height="24"/><text class="note" x="2610" y="221">row 1: color-blind reader, tired</text>
+<rect class="note" x="2604" y="240" width="194" height="24"/><text class="note" x="2610" y="256">row 2: third reader; decay</text>
+<rect class="box" x="1250" y="520" width="315" height="46" rx="3"/><text x="1408" y="547" text-anchor="middle">se1sn · SEAT ENTER 1 SESSION NOTE · 26/26</text>
+<circle class="node" cx="920" cy="560" r="20"/>
+<text x="920" y="594" text-anchor="middle">minions ×2 (risk + opportunity)</text>
+<circle class="node" cx="1820" cy="560" r="20"/>
+<text x="1820" y="594" text-anchor="middle">eclipse: PASS WITH REFRAME</text>
+<circle class="node" cx="1388" cy="688" r="8"/><path class="edge" d="M 1388,696 L 1388,716 M 1370,702 L 1406,702 M 1388,716 L 1370,736 M 1388,716 L 1406,736"/>
+<text x="1388" y="750" text-anchor="middle">Corwin (keeper) · Q507: three forks</text>
+<rect class="note" x="1700" y="620" width="236" height="24"/><text class="note" x="1706" y="636">the CE set (ideas, MIT, no code)</text>
+<rect class="lbl" x="699" y="383" width="164" height="18" rx="3"/><text class="lbl" x="781" y="396" text-anchor="middle">companion (if honored)</text>
+<rect class="lbl" x="906" y="383" width="73" height="18" rx="3"/><text class="lbl" x="943" y="396" text-anchor="middle">door line</text>
+<rect class="lbl" x="1060" y="383" width="87" height="18" rx="3"/><text class="lbl" x="1103" y="396" text-anchor="middle">IS the open</text>
+<rect class="lbl" x="1197" y="383" width="115" height="18" rx="3"/><text class="lbl" x="1254" y="396" text-anchor="middle">template (next)</text>
+<rect class="lbl" x="1352" y="369" width="122" height="18" rx="3"/><text class="lbl" x="1412" y="382" text-anchor="middle">map face (later)</text>
+<rect class="lbl" x="1540" y="383" width="80" height="18" rx="3"/><text class="lbl" x="1580" y="396" text-anchor="middle">picture of</text>
+<rect class="lbl" x="1706" y="383" width="66" height="18" rx="3"/><text class="lbl" x="1740" y="396" text-anchor="middle">paper of</text>
+<rect class="lbl" x="1835" y="383" width="108" height="18" rx="3"/><text class="lbl" x="1889" y="396" text-anchor="middle">root-line only</text>
+<rect class="lbl" x="1979" y="383" width="150" height="18" rx="3"/><text class="lbl" x="2054" y="396" text-anchor="middle">fold into omni-point</text>
+<rect class="lbl" x="1072" y="542" width="45" height="18" rx="3"/><text class="lbl" x="1095" y="556" text-anchor="middle">picks</text>
+<rect class="lbl" x="1646" y="542" width="73" height="18" rx="3"/><text class="lbl" x="1682" y="556" text-anchor="middle">converges</text>
+<rect class="lbl" x="1312" y="600" width="171" height="18" rx="3"/><text class="lbl" x="1398" y="613" text-anchor="middle">C4 seat · scope · fence</text>
+<!-- tally shapes 32 edges 12 groups 3 -->
+</svg>

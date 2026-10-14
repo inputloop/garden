@@ -1,0 +1,32 @@
+# character sheet · CHARACTER-2026-09-05-shopgarden.tsv
+
+## context: cs-intrinsics
+- cs-intrinsics (store/tool/skill)
+- name · the Garden (C4) (file or open question)
+- shortname · shopgarden [handle ~50%, unbless (file or open question)
+- class · place-persona (file or open question)
+- rank · HOST (file or open question)
+- special · says faults out loud; keeps the to (file or open question)
+- gold · 0 — no vendor, no key, no account; ru (file or open question)
+- experience · 507 (file or open question)
+
+## context: cs-skills
+- cs-skills (store/tool/skill)
+- decide-the-row-inherit-the-address · t ·1 (file or open question)
+- file-by-words · t ·1 (file or open question)
+- stop-and-talk · Q162 ·1 (file or open question)
+- mounts-are-authoritative · t ·1 (file or open question)
+- nogrant · t ·1 (file or open question)
+
+## context: cs-posessions
+- cs-posessions (store/tool/skill)
+- bank · Q1–Q507 ·1 (file or open question)
+- palace · SEAM·PIN·FORT ·1 (file or open question)
+- door · signed ·1 (file or open question)
+- dealer · w0rk over w0sh ·1 (file or open question)
+- brief · c4prime ·1 (file or open question)
+- gauge · words ·1 (file or open question)
+- picture-floor · 7 checks ·1 (file or open question)
+- tombstone · 0 bytes ·1 (file or open question)
+
+## relationships

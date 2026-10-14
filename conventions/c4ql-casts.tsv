@@ -1,0 +1,17 @@
+# c4ql-casts.tsv -- which table a C4QL cast word points at; read by bin/tg1rs (the tag resolver).
+# A tool table: tg1rs reads it back in its answers.  Guide: conventions/C4QL-TAG.md.
+# Columns (tab-separated): cast, table, key, kind, by.
+#   table: ws:PATH (this garden), c4:PATH (the C4 tree), seat:PATH (the memory seat), cast:NAME (indirect), or a plain path.
+#   key:   the column number(s) that make the row key, joined by ":" ("-" for store and file kinds).
+#   kind:  tsv | words (space-separated, read case-blind) | file (PATH/FACT.md) | store (PATH/FACT/g*.md) | indirect | alias | names (the persons sweep may take from a "by" column).
+#   by:    the column that names who wrote or influenced the row ("-" = none).  An alias row lists the persons it stands for.
+# Authored by Mentat (for Corwin; claude-opus-5-5). Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+# SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later
+# cast	table	key	kind	by
+seam	seat:notes	-	store	-
+gloss	c4:m/gloss	1:2:3	tsv	6
+counterpart	ws:conventions/bryant-counterparts.tsv	1	tsv	5
+tag	c4:m/tags	2	words	-
+memory	ws:memory	-	file	-
+both	corwin bryant	-	alias	-
+known	corwin bryant mentat vibrobeast penumbra	-	names	-

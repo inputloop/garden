@@ -1,0 +1,58 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+# lr1op -- LaRder 1 OPen: what a first-run choice does. Both shells (HTML, Emacs) call this.
+#   lr1op --list          the choices offered on this edition, as id|label|plain words
+#   lr1op ID              say which command ID would start (nothing is started)
+#   lr1op --run ID        start it
+# Environment: LARDER_CHOICES (default ../out/choices.txt), LARDER_PROFILE (default desktop),
+#              LARDER_EDITION (base or author, default base).
+# Exit: 0 done; 1 no such choice or bad usage; 4 the choice exists but this edition does not offer it;
+#       127 --run, and the program is not installed (the larder-* programs are not built in this prototype).
+# Unknown options are refused, never ignored.
+here=$(dirname "$0")
+choices=${LARDER_CHOICES:-$here/../out/choices.txt}
+profile=${LARDER_PROFILE:-desktop}
+edition=${LARDER_EDITION:-base}
+run=0 list=0 id=
+while [ $# -gt 0 ]; do
+    case $1 in
+        --run)  run=1 ;;
+        --list) list=1 ;;
+        -h|--help) sed -n '3,12p' "$0"; exit 0 ;;
+        -*) echo "lr1op: unknown option $1 (see -h)" >&2; exit 1 ;;
+        *)  [ -z "$id" ] || { echo "lr1op: one choice at a time" >&2; exit 1; }; id=$1 ;;
+    esac
+    shift
+done
+[ -r "$choices" ] || { echo "lr1op: cannot read $choices" >&2; exit 1; }
+
+# offered ROW-EDITION ROW-PROFILES: is this choice shown on the current profile and edition?
+offered() {
+    [ "$1" = base ] || [ "$1" = "$edition" ] || return 1
+    [ "$2" = '*' ] && return 0
+    case " $2 " in *" $profile "*) return 0 ;; esac
+    return 1
+}
+
+if [ "$list" = 1 ]; then
+    [ -z "$id" ] || { echo "lr1op: --list takes no choice" >&2; exit 1; }
+    grep -v '^#' "$choices" | while IFS='|' read -r cid ced cpr cneeds clabel cplain ccmd; do
+        offered "$ced" "$cpr" && printf '%s|%s|%s\n' "$cid" "$clabel" "$cplain"
+    done
+    exit 0
+fi
+
+[ -n "$id" ] || { echo "lr1op: say which choice (see --list)" >&2; exit 1; }
+row=$(grep -v '^#' "$choices" | awk -F'|' -v id="$id" '$1 == id { print; exit }')
+[ -n "$row" ] || { echo "lr1op: there is no choice called '$id'" >&2; exit 1; }
+IFS='|' read -r cid ced cpr cneeds clabel cplain ccmd <<EOF
+$row
+EOF
+offered "$ced" "$cpr" || { echo "lr1op: '$clabel' is not offered on this edition ($profile, $edition)." >&2; exit 4; }
+if [ "$run" = 0 ]; then
+    echo "would run: $ccmd"
+    exit 0
+fi
+prog=${ccmd%% *}
+command -v "$prog" >/dev/null 2>&1 || { echo "lr1op: $prog is not installed here." >&2; exit 127; }
+exec sh -c "$ccmd"

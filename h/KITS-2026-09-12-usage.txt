@@ -1,0 +1,94 @@
+== MAIN — the main book ==
+  0 · set the table
+    tabletop:    Two d6 of different colours (the light die reads first), one d4, the shaded 6×4 index, the 24 trait tables, the two ladders, the three shaping tables, a blank sheet.
+      insight: The light-die rule is line one of every kit: without it "high-first seven" does not exist at a table. · Levels are words, not scores; the sheet keeps the dice in the margin.
+    iT assisted: `python3 h/pg1rl --roll GRID.md --kit main --seed N --traits 4` — the seed is printed; a stranger re-rolls the same persona.
+      insight: The tool's dice are a seeded RNG (Python); the viewer's are another (JS) — the trace names its engine. · `--kit` is the field a future MCP/skill will pass; the JSON shape is the contract.
+  1 · enter: d6 × d4
+    tabletop:    Throw d6 (domain A–F) and d4 (depth 1–4). Plain cell → that trait table. Shaded cell (6 of 24 = 1/4) → a stripe: a fate on top; you still throw again for the trait.
+      insight: Exact 1/4 needs the d4 — no 9-cell die-symmetric stripe set exists on 2d6 because 9 is odd. · The classic 2d6 numbered index stays as the alternate (stripes 1/3, pattern names the rung directly).
+    iT assisted: Same throw, printed as `index d6=3 d4=2 → B2 (Cognitive style)` or `→ STRIPE`; stripe rate asserted from the table (exact), not sampled.
+      insight: iT play can use the classic 2d6 index with a confirming d4 (1/3 × 3/4 = 1/4) — the same rate without a second table.
+  2 · a stripe: the ladder
+    tabletop:    One 2d6 on the ladder: light die 1–3 → BAD side, 4–6 → GOOD side (50/50 exact); dark die = rung 1 (bottom) … 6 (top). Doubles on this throw → also throw one shaping table (dark 1–2 good guys, 3–4 callings, 5–6 circumstance).
+      insight: GOOD: samaritan, good neighbour, steady ally, protector, hero, mensch. BAD: malcontent, schemer, bad guy, saboteur, villain, evil-doer (his poles at rungs 1 and 6; the middles are the instrument's, marked). · Side comes from the dice, never from the domain — a colour wheel is not valenced.
+    iT assisted: `ladder light=5 dark=2 → GOOD rung 2 (good neighbour)`; over ≥2000 seeds the tool prints the good/bad split and rung histogram with binomial bounds.
+      insight: Balance is a measurable: the tool refuses a kit whose split or histogram is asymmetric beyond the bound and says "biased" in the news sense.
+  3 · the trait: d66
+    tabletop:    In the table: light die = trait row, dark die = level column L1 faint … L6 extreme. Entry sevens only: light high (4-3, 5-2, 6-1) → level +1, LOAD-BEARING; light low (3-4, 2-5, 1-6) → level −1, BACKGROUND.
+      insight: Fork for the keeper: does a low-first seven lower (as built) or raise like every other bump (his word "bump")? · Trait and level come from two dice, not one sum — no coupling between row and level.
+    iT assisted: `table 6 (B2) 4+3 → Faith in Intuition · L4 (+1 seven, load-bearing)`; a load-bearing trait adds +1 to the persona's next ladder throw (modifier from a prior roll).
+      insight: The level histogram per trait row is asserted identical (a lint), so no row is secretly biased toward its edges.
+  4 · doubles: bump (1/6)
+    tabletop:    Any doubles in a table: the trait gets stronger. High doubles (4-4, 5-5, 6-6) → same trait, level +1. Low doubles (1-1, 2-2, 3-3) → next row down (row 6 curves to row 1), level +1. Throw again; stop on the first non-double. 6-6 also sends you one table deeper in the domain (depth 4 → back to the index).
+      insight: Sevens do not bump after the entry throw — they are ordinary cells inside a chain. · The curve is the ball of persona's neighbourness made a move; near-twin traits across tables get the "twin = +1 level" house rule.
+    iT assisted: The trace prints every bump with its colour (pink amp, blue curve, yellow sevens, purple stripes); `--jumbled` switches all affinity off for a control arm.
+      insight: A 2000-seed sweep asserts every trait reachable and every level flat (F10: static counts for rates, binomial bounds for sweeps).
+  5 · the calling + the sheet
+    tabletop:    One plain 2d6 on the callings table for every persona (arts, industry, governance, scholarship, stewardship, care). Then the sheet: four traits × level × LB/BG, ladder side + rung, calling, circumstance, the watch column, three weathering boxes.
+      insight: Every sheet opens with a founding journal entry: how the persona happened. · Four traits for a sketch, nine for a short work, seventeen for a long one.
+    iT assisted: `cs1gk` gauges the sheet cold (G1–G10 + the new founding-journal check); the TSV sidecar is the dungeon inventory; `pg1rl --sheet` drafts the skeleton from the roll.
+      insight: A drafted sheet is a draft: the persona writes its own voice; the tool never writes the journal.
+  6 · system actors (the governance lift)
+    tabletop:    If the persona is a system, software, host or place (the default): the BAD ladder is what it watches for in itself — perspective · watch · never action. The GOOD column is what it is for. A sheet that will be wired to a real watcher says `wired: yes` and needs the watcher contract, which this kit names and does not ship.
+      insight: Three harms the ladder clamp alone does not stop (a sysop's read): omission by disposition, true facts in a false tone, lateness by weathering — hence the contract, not a paragraph. · The kit stops at the contract's door; that is the lift, and it keeps the fiction mark honest.
+    iT assisted: `actor:` defaults to the clamped reading; `cs1gk` faults a system sheet whose bad-ladder row is outside the enum {perspective, watch}; `wired: yes` without a contract file is refused; weathering is off for a wired sheet.
+      insight: The contract (out of this kit's scope, named): verdict field {PASS, FAIL, UNKNOWN} per check before any prose; a log-range receipt per verdict; one line per signal class with a count; a fixed `report-within: T` no roll may touch.
+== SIMPLE — one throw per trait ==
+  0 · set the table
+    tabletop:    Four d6 of which two are a marked pair (light/dark), plus the six domain cards (each domain's depth-1 trait table) and the 3d6 level band.
+      insight: No index, no bumps, no ladders on the table — the bell does the balancing.
+    iT assisted: `pg1rl --roll GRID.md --kit simple --seed N --traits 4`
+      insight: The tool reads the same record; `--kit simple` is a rule set, not a second data file.
+  1 · throw
+    tabletop:    Per trait, one throw of all four dice: light d6 = domain (A–F), dark d6 = trait row in that domain's depth-1 table, the other three d6 summed = level band (3–6 L1, 7–8 L2, 9–10 L3, 11–12 L4, 13–14 L5, 15–18 L6, about 9/17/24/24/17/9 %).
+      insight: Trait is uniform (a die), level is bell-shaped (a sum) — the shape the first draft got backwards.
+    iT assisted: `simple 3 · 5 · 3d6=11 → C1 row 5 (Achievement Striving) · L4`
+      insight: The same seed on the same kit gives the same four throws; the trace shows all four dice.
+  2 · fate by doubles
+    tabletop:    If the light and dark d6 match (1/6): a fate rides on the trait — high doubles → GOOD ladder, rung = the dark die; low doubles → BAD ladder, rung = the dark die.
+      insight: One throw, one lookup, one line on the sheet — a persona in four throws.
+    iT assisted: `simple doubles 5-5 → GOOD rung 5 (hero)` — the fate rate is 1/6 here, printed, not 1/4: SIMPLE trades the stripe for the throw.
+      insight: SIMPLE is the control kit for the human-scored A/B (engine vs jumbled twin): fewest moving parts to blame.
+  3 · the sheet
+    tabletop:    Four traits, their levels, any fates; the calling is one more 2d6 if you want it.
+      insight: A SIMPLE sheet is a legal MAIN sheet with fewer margins filled.
+    iT assisted: `cs1gk` reads it the same as any sheet.
+      insight: Upgrade path: re-enter any trait through MAIN's index later; the record is the same.
+== HENCH TO MENCH — the extreme gate ==
+  0 · set the table
+    tabletop:    MAIN's table plus one rule card: the gate.
+      insight: A gate mode of MAIN with its own page title — nothing here is underivable from MAIN plus two lines, and that is the point.
+    iT assisted: `pg1rl --roll GRID.md --kit hench --seed N`
+      insight: Exact rates asserted from the rule: 1/6 normal, 5/36 max-extreme, 25/36 extreme.
+  1 · the gate
+    tabletop:    Throw the pair. Light die 1 → a normal persona: play MAIN, levels clamped to L3–L4. Otherwise → extreme: play MAIN, every level clamped to L1 or L6 (per trait 1d6: odd L1, even L6).
+      insight: Caricature on purpose; L2/L5 are unreachable by construction and the card says so.
+    iT assisted: `gate light=4 → EXTREME` then MAIN's walk with the clamp in force.
+      insight: Useful for stress tests: the watch-list persona that is all edges.
+  2 · the inner gate
+    tabletop:    On extreme: dark die 1 → MAX extreme: every trait at its edge AND a ladder pole — light die odd → hench (BAD rung 6, evil-doer), even → mench (GOOD rung 6, mensch).
+      insight: Fork for the keeper: the name reads bad↔good; the gate is normal↔extreme — keep the name and let the pole pick, or rename.
+    iT assisted: `gate light=4 dark=1 → MAX · light odd → HENCH`
+      insight: The tool prints which pole and why.
+  3 · doubles flip
+    tabletop:    In an extreme persona, doubles in a table flip that trait's edge (L1 ↔ L6) instead of bumping.
+      insight: The only bump rule that differs from MAIN; one line on the card.
+    iT assisted: `flip 3-3 → Anxiety L1 → L6`
+      insight: Sweep asserts the flip rate = 1/6 and that no extreme persona ever holds L2–L5.
+== WEATHERING DECK — mutation over time ==
+  0 · when
+    tabletop:    Between sessions or scenes, for a persona that already exists (never for `wired: yes`).
+      insight: The deck is the "healthy doses of mutating variation" as rules; it never deletes — retire is compost with a date.
+    iT assisted: `pg1rl --weather SHEET.tsv --seed N` reads the sheet's three boxes (last-roll date, per-trait tested tick, use count) and proposes.
+      insight: For a wired persona a weathering roll is logged as a proposal to the operator and never applied.
+  1 · the roll
+    tabletop:    2d6 + modifiers, capped at +3: +1 per load-bearing trait untested since the last roll, +1 if a month has passed since the persona last moved, −1 if it was used twice at a feature plane. The d4 picks which trait a row acts on.
+      insight: ≤4 no change; 5–6 drift one level toward the middle; 7 curve to the neighbour; 8–9 a new trait affixes (second use) at L3; 10–11 a load-bearing trait is tested (throw its table again, keep the higher, and throw the ladder, keep the higher rung); ≥12 a trait retires (compost), or for a system actor the bad-guy stage re-runs.
+    iT assisted: `weather 2d6=8 +2 → 10 → tested: roll the trait again, keep the higher level` — the modifiers are read from the sheet's boxes, not remembered.
+      insight: The affix row carries the front-door rule: what no persona owns ships under Mentat until an owner steps forward at second use.
+  2 · the ledger
+    tabletop:    Three tick-boxes on the sheet do the counting; the mutation log (generations, evidence-pinned) records each change with the dice.
+      insight: Same seed + same sheet → same proposal on both engines, or the residue is prompt-driven and the row says so.
+    iT assisted: The tool appends the generation line to the sheet's §12 mutation log and re-gauges with `cs1gk`.
+      insight: The deck can be rolled against a kit's own rules to propose a variant — parked until a row says what "drift" means for a kit.

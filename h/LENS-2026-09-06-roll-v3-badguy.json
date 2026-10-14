@@ -1,0 +1,334 @@
+{
+ "method": "Roll for Bias v1.0.91 (Corwin Brust, CC BY 4.0) -- fold half-extremes + half-neutrals to 36, ordered 6x6, randomized 6x6, indexed, methodology, validated",
+ "mark": "for fiction or analysis -- no ship dates or licensing or publication dates specifically defined",
+ "metric": "muss tolerance",
+ "seed": 20260906,
+ "population": 100,
+ "sources": "instrument's guess (no research); metric defined in the TSV header",
+ "ordered": [
+  {
+   "n": 1,
+   "item": "forensic-examiner",
+   "score": 5.0
+  },
+  {
+   "n": 2,
+   "item": "standards-committee-member",
+   "score": 5.0
+  },
+  {
+   "n": 3,
+   "item": "ceremony-lover",
+   "score": 5.0
+  },
+  {
+   "n": 4,
+   "item": "a-compliance-officer",
+   "score": 5.0
+  },
+  {
+   "n": 5,
+   "item": "a-signing-everything-person",
+   "score": 5.0
+  },
+  {
+   "n": 6,
+   "item": "security-auditor",
+   "score": 4.0
+  },
+  {
+   "n": 7,
+   "item": "emacs-hacker",
+   "score": 4.0
+  },
+  {
+   "n": 8,
+   "item": "open-source-lawyer",
+   "score": 4.0
+  },
+  {
+   "n": 9,
+   "item": "maximalist",
+   "score": 4.0
+  },
+  {
+   "n": 10,
+   "item": "a-child-safety-reviewer",
+   "score": 4.0
+  },
+  {
+   "n": 11,
+   "item": "pair-note-taker",
+   "score": 1.0
+  },
+  {
+   "n": 12,
+   "item": "windows-power-user",
+   "score": 0.0
+  },
+  {
+   "n": 13,
+   "item": "game-designer",
+   "score": 0.0
+  },
+  {
+   "n": 14,
+   "item": "retiree-hobbyist",
+   "score": 0.0
+  },
+  {
+   "n": 15,
+   "item": "data-scientist",
+   "score": 0.0
+  },
+  {
+   "n": 16,
+   "item": "a-stranger-with-a-terminal",
+   "score": 0.0
+  },
+  {
+   "n": 17,
+   "item": "a-translator",
+   "score": 0.0
+  },
+  {
+   "n": 18,
+   "item": "a-sysadmin-of-many-hosts",
+   "score": 0.0
+  },
+  {
+   "n": 19,
+   "item": "a-visually-impaired-reader",
+   "score": 0.0
+  },
+  {
+   "n": 20,
+   "item": "a-screen-reader-user",
+   "score": 0.0
+  },
+  {
+   "n": 21,
+   "item": "a-color-blind-reader",
+   "score": 0.0
+  },
+  {
+   "n": 22,
+   "item": "a-person-who-loves-dashboards",
+   "score": 0.0
+  },
+  {
+   "n": 23,
+   "item": "a-person-who-hates-dashboards",
+   "score": 0.0
+  },
+  {
+   "n": 24,
+   "item": "a-markdown-devotee",
+   "score": 0.0
+  },
+  {
+   "n": 25,
+   "item": "a-person-on-a-fast-machine",
+   "score": 0.0
+  },
+  {
+   "n": 26,
+   "item": "a-person-with-one-machine",
+   "score": 0.0
+  },
+  {
+   "n": 27,
+   "item": "a-reader-98",
+   "score": 0.0
+  },
+  {
+   "n": 28,
+   "item": "a-reader-99",
+   "score": 0.0
+  },
+  {
+   "n": 29,
+   "item": "vendor-representative",
+   "score": -4.0
+  },
+  {
+   "n": 30,
+   "item": "minimalist",
+   "score": -4.0
+  },
+  {
+   "n": 31,
+   "item": "a-startup-founder",
+   "score": -4.0
+  },
+  {
+   "n": 32,
+   "item": "home-user-nontechnical",
+   "score": -5.0
+  },
+  {
+   "n": 33,
+   "item": "ceremony-hater",
+   "score": -5.0
+  },
+  {
+   "n": 34,
+   "item": "a-mobile-user",
+   "score": -5.0
+  },
+  {
+   "n": 35,
+   "item": "a-person-in-a-hurry",
+   "score": -5.0
+  },
+  {
+   "n": 36,
+   "item": "a-signing-nothing-person",
+   "score": -5.0
+  }
+ ],
+ "ordered_matrix": [
+  [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  [
+   7,
+   8,
+   9,
+   10,
+   11,
+   12
+  ],
+  [
+   13,
+   14,
+   15,
+   16,
+   17,
+   18
+  ],
+  [
+   19,
+   20,
+   21,
+   22,
+   23,
+   24
+  ],
+  [
+   25,
+   26,
+   27,
+   28,
+   29,
+   30
+  ],
+  [
+   31,
+   32,
+   33,
+   34,
+   35,
+   36
+  ]
+ ],
+ "randomized_matrix": [
+  [
+   21,
+   28,
+   22,
+   13,
+   26,
+   12
+  ],
+  [
+   15,
+   11,
+   16,
+   6,
+   34,
+   32
+  ],
+  [
+   14,
+   23,
+   18,
+   8,
+   36,
+   27
+  ],
+  [
+   4,
+   5,
+   10,
+   29,
+   33,
+   2
+  ],
+  [
+   25,
+   1,
+   31,
+   35,
+   9,
+   17
+  ],
+  [
+   19,
+   3,
+   7,
+   30,
+   20,
+   24
+  ]
+ ],
+ "picks": [
+  "a-color-blind-reader",
+  "a-reader-99",
+  "a-person-who-loves-dashboards",
+  "game-designer",
+  "a-person-with-one-machine",
+  "windows-power-user",
+  "data-scientist",
+  "pair-note-taker",
+  "a-stranger-with-a-terminal"
+ ],
+ "fate_dice": [
+  3,
+  2
+ ],
+ "fate": "ne'er-do-well",
+ "fate_from": "h/LENS-2026-09-06-roll-v2.json",
+ "actor": "system",
+ "badguy": {
+  "rule": "system/software actor -> bad-guy roll informs the perspective; one more lens stage inverts it (HIS, 2026-09-06)",
+  "reroll": false,
+  "fate_dice": [
+   3,
+   2
+  ],
+  "fate": "ne'er-do-well",
+  "branch": "tragic (doubles and seven avoided): too far, too much, or fixed by evident fate or circumstance",
+  "parity": "odd",
+  "parity_reading": "a predictable misfortune",
+  "parity_confidence": "[MINE ~50%]",
+  "grain_questions": [
+   "how does this fate inform my CARE (what I tend, what I let go)?",
+   "how does this fate inform my WORK (what I build, what I refuse to build)?",
+   "how does this fate inform my VOICE (what I say, how I say it, what I never say)?",
+   "how does this fate inform my LINE (what I hold under pressure; the break-character watch)?"
+  ],
+  "inversion_stage": [
+   "the inverse character: who is the ne'er-do-well turned inside out, and is that inverse a mirror or a line?",
+   "what did the bad-guy shape SEE that the straight sheet did not (keep it; compost the rest)?",
+   "which one trait, if inverted, would make this actor safer for the people it serves?",
+   "which one trait must NOT be inverted, because the inversion is the actual villain?"
+  ]
+ },
+ "validated": true
+}

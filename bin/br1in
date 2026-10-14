@@ -1,0 +1,533 @@
+#!/bin/sh
+# br1in -- BRYANT DROP 1 INTAKE: a read-only look at one drop of Bryant's skills.
+#
+# What it does, in order (SPEC lines BR1-BR8 in tests/lane-d-SPEC.txt):
+#   1. checks the transport sums (every SHA256SUMS beside and inside the drop);
+#   2. reads each signature's issuer and compares it to Bryant's pinned key (verifies only
+#      when a keyring is handed in with --keyring; otherwise says NOT CHECKED);
+#   3. hashes every file of the drop;
+#   4. unpacks every .zip and .skill into scratch OUTSIDE the mounts and finds each skill;
+#   5. finds each skill's prior copy in the earlier drops (newest first) and notes copies held in
+#      the other intake places (externs/claude-bryant, the Bryant folder);
+#   6. says NEW, UNCHANGED, CHANGED or DROPPED, with a one-line change summary;
+#   7. maps each skill to our counterpart (conventions/bryant-counterparts.tsv, then by name);
+#   8. extracts "modes of work" lines (trigger / loop / gates / hand-back), marked as extracted,
+#      not judged;
+#   9. lists mechanical open questions, writes a words report, a TSV and an ACK, and stops.
+# It never installs, signs or edits his files, never runs his code, never writes into a drop
+# (an --out inside a drop or an intake place is refused, exit 3), and never reads under a
+# fenced path (c4/Z, c4/a, c4/p, .keys, .house, SAVANNAH, .patternwalk, *.secret, *.key).
+#
+# Usage: br1in [--out DIR] [--prior DROPDIR]... [--also DIR]... [--no-also]
+#              [--counterparts FILE] [--ours DIR]... [--pin FPR] [--keyring FILE] DROPDIR
+#   --prior   earlier drops, oldest first (default: the drop's earlier dated siblings)
+#   --also    other intake places (default: $GARDEN/externs/claude-bryant and $HOME/mnt/Bryant)
+# Exit: 0 PASS; 1 FAIL (a sum or signature failed); 2 usage; 3 refused.
+#
+# Authored by Mentat (for Corwin; claude-opus-5-5).
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+# SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later
+
+set -u
+LC_ALL=C; export LC_ALL
+me=br1in
+here=$(cd "$(dirname "$0")" && pwd -P)
+GARDEN=${BR1IN_GARDEN:-$(dirname "$here")}
+PIN=5D9924DCD4F1FC3F76FECADE6FA7DB9DF84D5DE7
+TAB=$(printf '\t')
+
+die()    { printf '%s: %s\n' "$me" "$*" >&2; exit 2; }
+refuse() { printf '%s: REFUSED: %s\n' "$me" "$*" >&2; exit 3; }
+
+# --- the fence: a path on this list is never read, listed or opened ------------------------
+fenced() {
+  case "/$1/" in
+    */c4/Z/*|*/c4/a/*|*/c4/p/*|*/.keys/*|*/.house/*|*/SAVANNAH/*|*/.patternwalk/*) return 0 ;; #guard:fence
+  esac
+  case "$1" in *.secret|*.key) return 0 ;; esac
+  return 1
+}
+# list regular files under $1, never entering a fenced folder
+walk() {
+  FENCED_DIRS='-path */c4/Z -o -path */c4/a -o -path */c4/p -o -name .keys -o -name .house -o -name SAVANNAH -o -name .patternwalk'
+  set -f
+  # shellcheck disable=SC2086
+  find "$1" \( -type d \( $FENCED_DIRS \) -prune \) -o \( -type f ! -name '*.secret' ! -name '*.key' -print \) 2>/dev/null #guard:prune
+  set +f
+}
+absdir() { (cd "$1" 2>/dev/null && pwd -P); }
+nice() {  # a path in words: under the mounts it is shown from the mount root
+  case "$1" in "$HOME"/mnt/*) printf '%s' "${1#"$HOME"/mnt/}" ;; *) printf '%s' "$1" ;; esac
+}
+rel() { case "$1" in "$2"/*) printf '%s' "${1#"$2"/}" ;; *) printf '%s' "$1" ;; esac; }
+
+# --- arguments ------------------------------------------------------------------------------
+OUT=; PRIORS=; ALSO=; NOALSO=; CP=; OURS=; KEYRING=; DROP=
+nl='
+'
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --out) [ $# -ge 2 ] || die "--out needs a folder"; OUT=$2; shift 2 ;;
+    --prior) [ $# -ge 2 ] || die "--prior needs a folder"; PRIORS="$PRIORS$2$nl"; shift 2 ;;
+    --also) [ $# -ge 2 ] || die "--also needs a folder"; ALSO="$ALSO$2$nl"; shift 2 ;;
+    --no-also) NOALSO=1; shift ;;
+    --counterparts) [ $# -ge 2 ] || die "--counterparts needs a file"; CP=$2; shift 2 ;;
+    --ours) [ $# -ge 2 ] || die "--ours needs a folder"; OURS="$OURS$2$nl"; shift 2 ;;
+    --pin) [ $# -ge 2 ] || die "--pin needs a fingerprint"; PIN=$2; shift 2 ;;
+    --keyring) [ $# -ge 2 ] || die "--keyring needs a file"; KEYRING=$2; shift 2 ;;
+    -h|--help) sed -n '2,32p' "$0"; exit 0 ;;
+    --*) die "unknown option $1" ;;
+    *) [ -z "$DROP" ] || die "one drop at a time"; DROP=$1; shift ;;
+  esac
+done
+[ -n "$DROP" ] || die "name the drop folder (see --help)"
+fenced "$DROP" && refuse "the drop is under a fenced path; it is not read"
+[ -d "$DROP" ] || die "no such folder: $DROP"
+DROP=$(absdir "$DROP")
+fenced "$DROP" && refuse "the drop is under a fenced path; it is not read"
+DROPID=$(basename "$DROP")
+
+# default prior drops: the drop's earlier siblings, oldest first
+if [ -z "$PRIORS" ]; then
+  parent=$(dirname "$DROP")
+  # names sorted bare, so 2026-09-26 comes before 2026-09-26-r2
+  PRIORS=$(find "$parent" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort | while IFS= read -r d; do
+    b=$(basename "$d")
+    [ "$b" \< "$DROPID" ] || continue
+    fenced "$d" && continue
+    printf '%s\n' "$d"
+  done)
+  [ -n "$PRIORS" ] && PRIORS="$PRIORS$nl"
+fi
+if [ -z "$ALSO" ] && [ -z "$NOALSO" ]; then
+  for d in "$GARDEN/externs/claude-bryant" "$HOME/mnt/Bryant"; do
+    [ -d "$d" ] && ALSO="$ALSO$d$nl"
+  done
+fi
+[ -n "$CP" ] || CP="$GARDEN/conventions/bryant-counterparts.tsv"
+[ -n "$OURS" ] || OURS="$GARDEN/dist/vibrobeast/skills$nl$GARDEN/SOFT-SKILLS$nl"
+[ -n "$OUT" ] || OUT="$PWD/br1in-reports"
+
+# --- the out-folder may not sit inside a drop or an intake place (BR1) -----------------------
+outparent=$(dirname "$OUT")
+[ -d "$outparent" ] || die "the out folder's parent does not exist: $outparent"
+OUTABS="$(absdir "$outparent")/$(basename "$OUT")"
+inside() { case "$1/" in "$2"/*) return 0 ;; esac; return 1; }
+inside "$OUTABS" "$DROP" && refuse "the out folder is inside the drop ($(nice "$DROP")); br1in never writes into a drop" #guard:out-in-drop
+printf '%s' "$PRIORS$ALSO" | while IFS= read -r p; do
+  [ -n "$p" ] && [ -d "$p" ] || continue
+  if inside "$OUTABS" "$(absdir "$p")"; then exit 9; fi #guard:out-in-prior
+done
+[ $? -eq 9 ] && refuse "the out folder is inside an intake place; br1in never writes into a drop"
+fenced "$OUTABS" && refuse "the out folder is under a fenced path"
+
+# --- scratch, outside the mounts --------------------------------------------------------------
+S=$(mktemp -d "${TMPDIR:-/tmp}/br1in.XXXXXX") || die "no scratch folder"
+case "$S" in "$HOME"/mnt/*) rm -rf "$S"; refuse "scratch would land inside a mount" ;; esac
+trap 'rm -rf "$S"' EXIT INT TERM
+: > "$S/index.tsv"; : > "$S/places.tsv"; : > "$S/fenced.txt"; : > "$S/placecount.tsv"
+
+# --- facts about one SKILL.md (name, version, description, headings) --------------------------
+skill_name() {
+  awk 'NR==1{sub(/^\357\273\277/,""); sub(/\r$/,""); if($0!="---")exit; next}
+       {sub(/\r$/,"")} /^---[ \t]*$/{exit}
+       /^name:/{sub(/^name:[ \t]*/,""); gsub(/["\047]/,""); sub(/[ \t]+$/,""); print; exit}' "$1"
+}
+skill_version() {  # front matter version:, else the highest vX.Y named in a version note line
+  v=$(awk 'NR==1{sub(/\r$/,""); if($0!="---")exit; next} {sub(/\r$/,"")} /^---[ \t]*$/{exit}
+       /^[ \t]*version:/{sub(/^[ \t]*version:[ \t]*/,""); gsub(/["\047]/,""); print; exit}' "$1")
+  if [ -n "$v" ]; then printf '%s' "$v"; return; fi
+  awk '{ if (match($0, /^[ \t>|*_#-]*\**v[0-9]+(\.[0-9]+)+[a-z0-9-]*/)) {
+           s=substr($0,RSTART,RLENGTH); sub(/^[^v]*/,"",s); print s } }' "$1" |
+    sort -V | tail -n 1
+}
+skill_desc() {
+  awk 'NR==1{sub(/\r$/,""); if($0!="---")exit; next} {sub(/\r$/,"")} /^---[ \t]*$/{exit}
+       ind && /^[ \t]/ {sub(/^[ \t]+/,""); d=d " " $0; next}
+       ind {exit}
+       /^description:/{sub(/^description:[ \t]*/,""); sub(/^[>|][-+]?[ \t]*$/,""); d=$0; ind=1}
+       END{gsub(/^ +| +$/,"",d); if (d ~ /^".*"$/ || d ~ /^\047.*\047$/) d=substr(d,2,length(d)-2); print d}' "$1"
+}
+skill_heads() {
+  awk '{sub(/\r$/,"")} /^(```|~~~)/{f=!f; next} !f && /^#{1,6}[ \t]/{sub(/^#+[ \t]*/,""); print}' "$1"
+}
+
+# --- index one place: every SKILL.md on disk and inside every archive -------------------------
+# index.tsv: PLACE NAME RANK SHA SKILLDIR WHERE
+rec() { # place file rank where
+  n=$(skill_name "$2"); [ -n "$n" ] || n=$(basename "$(dirname "$2")")
+  sh=$(sha256sum < "$2" | cut -c1-64)
+  printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$1" "$n" "$3" "$sh" "$(dirname "$2")" "$4" >> "$S/index.tsv"
+}
+index_place() { # pid dir label
+  pid=$1; dir=$2
+  printf '%s\t%s\t%s\n' "$pid" "$dir" "$3" >> "$S/places.tsv"
+  if fenced "$dir"; then printf '%s\n' "$pid" >> "$S/fenced.txt"; printf '%s\tfenced\n' "$pid" >> "$S/placecount.tsv"; return; fi
+  mkdir -p "$S/u/$pid"
+  walk "$dir" > "$S/files.$pid"
+  k=0
+  while IFS= read -r f; do
+    case "$f" in
+      *.zip|*.skill)
+        k=$((k+1)); d="$S/u/$pid/a$k"; mkdir -p "$d"; printf '%s\n' "$f" > "$d.src"
+        unzip -qq -o "$f" -d "$d" >/dev/null 2>&1 || printf '%s\n' "$f" >> "$S/unzipfail.$pid"
+        find "$d" -type f \( -name '*.zip' -o -name '*.skill' \) > "$d.nest"
+        while IFS= read -r g; do
+          mkdir -p "$g.unz"; unzip -qq -o "$g" -d "$g.unz" >/dev/null 2>&1 || :
+        done < "$d.nest" ;;
+    esac
+  done < "$S/files.$pid"
+  grep '/SKILL\.md$' "$S/files.$pid" | while IFS= read -r f; do
+    rec "$pid" "$f" 0 "$(rel "$(dirname "$f")" "$dir") (a folder on disk)"
+  done
+  for d in "$S/u/$pid"/a*; do
+    [ -d "$d" ] || continue
+    src=$(cat "$d.src")
+    find "$d" -type f -name SKILL.md > "$d.sk"
+    cnt=$(wc -l < "$d.sk")
+    while IFS= read -r f; do
+      r=$((1000 + cnt)); case "$f" in *.unz/*) r=$((r - 1)) ;; esac
+      rec "$pid" "$f" "$r" "$(rel "$(dirname "$f")" "$d") inside $(rel "$src" "$dir")"
+    done < "$d.sk"
+  done
+  printf '%s\t%s files looked at, %s skill copies found\n' "$pid" "$(wc -l < "$S/files.$pid" | tr -d ' ')" \
+    "$(awk -F'\t' -v p="$pid" '$1==p' "$S/index.tsv" | wc -l | tr -d ' ')" >> "$S/placecount.tsv"
+}
+
+index_place p0 "$DROP" "$DROPID"
+i=0
+printf '%s' "$PRIORS" | while IFS= read -r p; do [ -n "$p" ] && printf '%s\n' "$p"; done > "$S/priors.lst"
+while IFS= read -r p; do
+  i=$((i+1)); pa=$(absdir "$p") || { printf 'p%02d\t%s\tmissing\n' "$i" "$p" >> "$S/places.tsv"; continue; }
+  [ "$pa" = "$DROP" ] && continue
+  index_place "$(printf 'p%02d' "$i")" "$pa" "$(basename "$pa")"
+done < "$S/priors.lst"
+i=0
+printf '%s' "$ALSO" | while IFS= read -r p; do [ -n "$p" ] && printf '%s\n' "$p"; done > "$S/also.lst"
+while IFS= read -r p; do
+  i=$((i+1)); pa=$(absdir "$p") || continue
+  index_place "$(printf 'x%02d' "$i")" "$pa" "$(nice "$pa")"
+done < "$S/also.lst"
+
+# primary copy per place and name: highest rank (the largest bundle), then path order
+sort -t "$TAB" -k1,1 -k2,2 -k3,3nr -k5,5 "$S/index.tsv" |
+  awk -F'\t' '!seen[$1 FS $2]++' > "$S/primary.tsv"
+# names whose copies disagree inside one place
+awk -F'\t' '{k=$1 FS $2; if(!(k FS $4 in u)){u[k FS $4]=1; n[k]++}} END{for(k in n) if(n[k]>1) print k FS n[k]}' \
+  "$S/index.tsv" | sort > "$S/disagree.tsv"
+
+placedir()   { awk -F'\t' -v p="$1" '$1==p{print $2; exit}' "$S/places.tsv"; }
+placelabel() { awk -F'\t' -v p="$1" '$1==p{print $3; exit}' "$S/places.tsv"; }
+priorids=$(awk -F'\t' '$1 ~ /^p[0-9][0-9]/ && $3!="missing"{print $1}' "$S/places.tsv" | sort -r)
+alsoids=$(awk -F'\t' '$1 ~ /^x/{print $1}' "$S/places.tsv")
+
+files_of() { (cd "$1" && find . -type f -exec sha256sum {} + | sed 's#  \./#  #' | sort -k2); }
+
+# --- 1. transport sums (BR2) ------------------------------------------------------------------
+: > "$S/sums.txt"
+sums_ok=0; sums_bad=0; sums_files=0
+check_sums() { # sumsfile where-label
+  sd=$(dirname "$1")
+  (cd "$sd" && sha256sum -c "$(basename "$1")" 2>/dev/null) > "$S/sc.out"
+  ok=$(grep -c ': OK$' "$S/sc.out"); bad=$(grep -vc ': OK$' "$S/sc.out")
+  printf '%s\t%s\t%s\n' "$2" "$ok" "$bad" >> "$S/sums.txt"
+  grep -v ': OK$' "$S/sc.out" | sed "s#^#  $2: #" >> "$S/sumsbad.txt"
+}
+: > "$S/sumsbad.txt"
+grep -E '/(SHA256SUMS[^/]*|[^/]*\.sha256)$' "$S/files.p0" | while IFS= read -r f; do
+  check_sums "$f" "$(rel "$f" "$DROP")"
+done
+for d in "$S/u/p0"/a*; do
+  [ -d "$d" ] || continue
+  src=$(rel "$(cat "$d.src")" "$DROP")
+  find "$d" -type f \( -name 'SHA256SUMS*' -o -name '*.sha256' \) | while IFS= read -r f; do
+    check_sums "$f" "$(rel "$f" "$d") inside $src"
+  done
+done
+sums_files=$(wc -l < "$S/sums.txt" | tr -d ' ')
+sums_ok=$(awk -F'\t' '{s+=$2} END{print s+0}' "$S/sums.txt")
+sums_bad=$(awk -F'\t' '{s+=$3} END{print s+0}' "$S/sums.txt")
+# drop files no sum covers (by base name)
+: > "$S/covered.txt"
+grep -E '/(SHA256SUMS[^/]*|[^/]*\.sha256)$' "$S/files.p0" | while IFS= read -r f; do
+  awk '{n=$0; sub(/^[0-9a-f]+[ *]+/,"",n); sub(/^.*\//,"",n); print n}' "$f"
+done >> "$S/covered.txt"
+: > "$S/uncovered.txt"
+while IFS= read -r f; do
+  b=$(basename "$f")
+  case "$b" in SHA256SUMS*|*.sha256|*.sig|*.asc) continue ;; esac
+  grep -qxF "$b" "$S/covered.txt" || printf '%s\n' "$(rel "$f" "$DROP")" >> "$S/uncovered.txt"
+done < "$S/files.p0"
+
+# --- 2. signatures: issuer against the pin; verified only with a keyring handed in ---------------
+: > "$S/sigs.txt"; sig_bad=0
+G="$S/gnupg"; mkdir -p "$G"; chmod 700 "$G"
+[ -n "$KEYRING" ] && GNUPGHOME="$G" gpg --batch --quiet --import "$KEYRING" >/dev/null 2>&1
+grep -E '\.(sig|asc)$' "$S/files.p0" | while IFS= read -r f; do
+  data=${f%.*}
+  iss=$(GNUPGHOME="$G" gpg --batch --list-packets "$f" 2>/dev/null |
+        sed -n 's/.*issuer fpr v[0-9] \([0-9A-F]*\).*/\1/p; s/.*keyid \([0-9A-F]\{16\}\).*/\1/p' | head -n 1)
+  pinmatch=no; case "$PIN" in *"$iss") [ -n "$iss" ] && pinmatch=yes ;; esac
+  if [ -n "$KEYRING" ] && [ -f "$data" ]; then
+    if GNUPGHOME="$G" gpg --batch --status-fd 1 --verify "$f" "$data" 2>/dev/null | grep -q '^\[GNUPG:\] GOODSIG'; then
+      res=GOOD; else res=BAD; fi
+  else
+    res="NOT CHECKED (no keyring handed in)"
+  fi
+  printf '%s\t%s\t%s\t%s\n' "$(rel "$f" "$DROP")" "${iss:-none}" "$pinmatch" "$res" >> "$S/sigs.txt"
+done
+sig_bad=$(awk -F'\t' '$4=="BAD"{n++} END{print n+0}' "$S/sigs.txt")
+sig_off=$(awk -F'\t' '$3=="no"{n++} END{print n+0}' "$S/sigs.txt")
+
+# --- 3. hash every file of the drop -------------------------------------------------------------
+: > "$S/hashes.txt"
+while IFS= read -r f; do
+  printf '%s\t%s\t%s\n' "$(sha256sum < "$f" | cut -c1-64)" "$(wc -c < "$f" | tr -d ' ')" "$(rel "$f" "$DROP")"
+done < "$S/files.p0" | sort -k3 > "$S/hashes.txt"
+
+# --- 4-8. each skill ------------------------------------------------------------------------------
+cpline() { # his name -> counterpart words
+  found=
+  if [ -f "$CP" ]; then
+    awk -F'\t' -v n="$1" '$0!~/^#/ && $1==n' "$CP" > "$S/cp.rows"
+    while IFS="$TAB" read -r his ours place relation source; do
+      found=1
+      if [ "$ours" = "-" ] || [ -z "$ours" ]; then
+        printf 'none in our garden (%s; %s)\n' "$relation" "$source"
+      else
+        there="present"; [ -e "$GARDEN/$place/$ours" ] || [ -e "$HOME/mnt/$place/$ours" ] || [ -e "$place/$ours" ] || there="not found at that place"
+        printf '%s in %s (%s; %s; %s)\n' "$ours" "$place" "$relation" "$source" "$there"
+      fi
+    done < "$S/cp.rows"
+  fi
+  [ -n "$found" ] && return
+  printf '%s' "$OURS" | while IFS= read -r o; do
+    [ -n "$o" ] && [ -f "$o/$1/SKILL.md" ] && printf '%s in %s (by name, not in the table; relation not yet written)\n' "$1" "$(nice "$o")"
+  done > "$S/cp.byname"
+  if [ -s "$S/cp.byname" ]; then cat "$S/cp.byname"; else printf 'none (not in the table, no skill of that name)\n'; fi
+}
+modes() { # skill.md -> extracted lines
+  f=$1; desc=$(skill_desc "$f")
+  printf '%s\n' "$desc" | awk '{
+      s=$0; n=0
+      # SPEC BM1 (F3, pass 3, C6 d): a quote opens and closes beside a non-letter, so the apostrophes
+      # inside agent'"'"'s, Bryant'"'"'s or can'"'"'t never pair; the boundary characters are trimmed off.  #guard:quote
+      while (n < 6 && match(s, /(^|[^A-Za-z0-9])(\047[^\047]{3,60}\047|"[^"]{3,60}"|\342\200\234[^\342]{3,60}\342\200\235)([^A-Za-z0-9]|$)/)) {
+        t=substr(s,RSTART,RLENGTH); s=substr(s,RSTART+RLENGTH)
+        c=substr(t,1,1); if (c != "\047" && c != "\"" && c != "\342") t=substr(t,2)
+        c=substr(t,length(t),1); if (c != "\047" && c != "\"" && c != "\235") t=substr(t,1,length(t)-1)
+        out = out (n?", ":"") t; n++ }
+      if (n) print "trigger (quoted in the description): " out
+      # SPEC BM4: the sentence ends at ". " or at the end, not at the dot inside index.php.  #guard:dot
+      if (match($0, /(Use (it )?(when|whenever|for)|Trigger(s)? on|Triggers:)([^.]|\.[^ ])*/)) print "trigger (description): " substr($0,RSTART,(RLENGTH>160?160:RLENGTH))
+    }'
+  # SPEC BM3: the title (a "# " heading) is the skill'"'"'s name, not a mode: only "## " and deeper are read.  #guard:title
+  awk '{sub(/\r$/,"")} /^(```|~~~)/{f=!f; next} !f && /^#{2,6}[ \t]/{sub(/^#+[ \t]*/,""); print}' "$f" | awk '
+    # SPEC BM2: "the run" as words (not "the runner").  #guard:therun
+    tolower($0) ~ /protocol|loop|stage|boot|order|steps|workflow|how it works|procedure|(^|[^a-z])the run([^a-z]|$)|first move|slots?$|routing/ { if (l++ < 4) L = L (L?" | ":"") $0 }
+    tolower($0) ~ /gate|park|law|guard|refus|never|rule/ { if (g++ < 4) G = G (G?" | ":"") $0 }
+    tolower($0) ~ /hands?[ -]?back|deliver|exit|present|output|report|result/ { if (h++ < 4) H = H (H?" | ":"") $0 }
+    END { if (L) print "loop (headings): " L; if (G) print "gates (headings): " G; if (H) print "hand-back (headings): " H }'
+  awk '{sub(/\r$/,"")} /^(```|~~~)/{f=!f; next} !f && tolower($0) ~ /^[ \t*_-]*(hands? back|first move|trigger)[^a-z]/ { if (n++ < 2) { s=$0; gsub(/^[ \t*_-]+/,"",s); print "line: " substr(s,1,160) } }' "$f"
+}
+summary() { # olddir newdir oldmd newmd -> one line
+  ov=$(skill_version "$3"); nv=$(skill_version "$4")
+  ob=$(wc -c < "$3" | tr -d ' '); nb=$(wc -c < "$4" | tr -d ' ')
+  od=$(skill_desc "$3"); nd=$(skill_desc "$4")
+  if [ "$od" = "$nd" ]; then dsc="description same"; else dsc="description changed (${#od} to ${#nd} chars)"; fi
+  skill_heads "$3" | sort -u > "$S/h.old"; skill_heads "$4" | sort -u > "$S/h.new"
+  ha=$(comm -13 "$S/h.old" "$S/h.new" | wc -l | tr -d ' '); hr=$(comm -23 "$S/h.old" "$S/h.new" | wc -l | tr -d ' ')
+  hfa=$(comm -13 "$S/h.old" "$S/h.new" | head -n 1); hfr=$(comm -23 "$S/h.old" "$S/h.new" | head -n 1)
+  hd="headings +$ha -$hr"; [ -n "$hfa" ] && hd="$hd (new: \"$hfa\")"; [ -n "$hfr" ] && hd="$hd (gone: \"$hfr\")"
+  files_of "$1" > "$S/fo"; files_of "$2" > "$S/fn"
+  fs=$(awk 'NR==FNR{o[substr($0,67)]=substr($0,1,64); next}
+            {p=substr($0,67); if(!(p in o)) {a++; A=A (A?",":"") p} else if (o[p]!=substr($0,1,64)) {c++; C=C (C?",":"") p}; seen[p]=1}
+            END{for(p in o) if(!(p in seen)){r++; R=R (R?",":"") p}
+                printf "files +%d ~%d -%d", a, c, r; if(A) printf " (added %s)", A; if(C) printf " (changed %s)", C; if(R) printf " (removed %s)", R}' "$S/fo" "$S/fn")
+  if cmp -s "$3" "$4"; then md="SKILL.md same bytes"; else md="SKILL.md $ob to $nb bytes"; fi
+  printf 'version %s to %s; %s; %s; %s; %s' "${ov:-none}" "${nv:-none}" "$md" "$dsc" "$hd" "$fs"
+}
+
+TSV="$S/out.tsv"; MODES="$S/modes.md"; Q="$S/questions.txt"; W="$S/skills.md"
+printf '# drop\tname\tstatus\tskill_md\tversion\tsha256_skill_md\tprior_drop\tprior_version\tprior_sha256\tsummary\tcounterpart\talso_held\twhere\n' > "$TSV"
+: > "$MODES"; : > "$Q"; : > "$W"
+awk -F'\t' '$1=="p0"' "$S/primary.tsv" | sort -t "$TAB" -k2,2 > "$S/now.tsv"
+while IFS="$TAB" read -r pid name rank sha sdir where; do
+  md="$sdir/SKILL.md"; ver=$(skill_version "$md")
+  prior=; psha=; pdir=; pver=
+  for q in $priorids; do
+    row=$(awk -F'\t' -v p="$q" -v n="$name" '$1==p && $2==n' "$S/primary.tsv")
+    if [ -n "$row" ]; then prior=$q; psha=$(printf '%s' "$row" | cut -f4); pdir=$(printf '%s' "$row" | cut -f5); break; fi
+  done
+  if [ -z "$prior" ]; then
+    status=NEW; mdcmp=new; summ="first seen in this drop"; plabel="-"; pver="-"; psha="-"
+  else
+    plabel=$(placelabel "$prior"); pver=$(skill_version "$pdir/SKILL.md")
+    files_of "$pdir" > "$S/fo2"; files_of "$sdir" > "$S/fn2"
+    if [ "$psha" = "$sha" ]; then mdcmp=same; else mdcmp=differs; fi
+    if cmp -s "$S/fo2" "$S/fn2"; then #guard:compare
+      status=UNCHANGED; summ="same bytes in every file"
+    else status=CHANGED; summ=$(summary "$pdir" "$sdir" "$pdir/SKILL.md" "$md"); fi
+  fi
+  # copies in the other intake places
+  also=
+  for x in $alsoids; do
+    xs=$(awk -F'\t' -v p="$x" -v n="$name" '$1==p && $2==n {print $4 "\t" $6}' "$S/index.tsv")
+    [ -n "$xs" ] || continue
+    if printf '%s\n' "$xs" | cut -f1 | grep -qx "$sha"; then
+      w=$(printf '%s\n' "$xs" | awk -F'\t' -v s="$sha" '$1==s{print $2; exit}')
+      also="$also${also:+; }same bytes in $(placelabel "$x")/$w"
+    else
+      w=$(printf '%s\n' "$xs" | head -n 1 | cut -f2)
+      also="$also${also:+; }a different copy in $(placelabel "$x")/$w"
+    fi
+  done
+  cpw=$(cpline "$name" | paste -sd '|' - | sed 's/|/ | /g')
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$DROPID" "$name" "$status" "$mdcmp" "${ver:-none}" "$sha" \
+    "$plabel" "${pver:-none}" "$psha" "$summ" "$cpw" "${also:--}" "$where" >> "$TSV"
+  {
+    printf -- '- **%s**, version %s, SKILL.md sha256 `%s`: **%s**' "$name" "${ver:-none found}" "$sha" "$status"
+    [ -n "$prior" ] && printf ' against %s (was version %s)' "$plabel" "${pver:-none found}"
+    printf '. %s.\n' "$summ"
+    printf '  Where in the drop: %s. Our counterpart: %s.\n' "$where" "$cpw"
+    [ -n "$also" ] && printf '  Also held: %s.\n' "$also"
+  } >> "$W"
+  { printf '### %s (%s)\n' "$name" "$status"; modes "$md" | sed 's/^/- extracted, not judged: /'; printf '\n'; } >> "$MODES"
+  # mechanical open questions
+  if [ "$status" = CHANGED ] && [ "$mdcmp" = differs ] && [ "${ver:-x}" = "${pver:-y}" ]; then
+    printf -- '- %s: its SKILL.md changed but the version did not (%s). Is a new version number owed?\n' "$name" "${ver:-none}" >> "$Q"; fi
+  if [ "$status" = CHANGED ] && [ -n "$ver" ] && [ -n "$pver" ] && [ "$ver" != "$pver" ]; then
+    hi=$(printf '%s\n%s\n' "$ver" "$pver" | sort -V | tail -n 1)
+    [ "$hi" = "$pver" ] && printf -- '- %s: the version went down (%s to %s). Which copy is current?\n' "$name" "$pver" "$ver" >> "$Q"; fi
+  d=$(skill_desc "$md"); [ ${#d} -gt 1024 ] && printf -- '- %s: the description is %s characters, over the 1024 limit some save paths keep.\n' "$name" "${#d}" >> "$Q"
+  if grep -q "^p0${TAB}${name}${TAB}" "$S/disagree.tsv"; then
+    printf -- '- %s: the drop holds copies of it that differ from each other (%s distinct). Which one is meant?\n' "$name" \
+      "$(grep "^p0${TAB}${name}${TAB}" "$S/disagree.tsv" | cut -f3)" >> "$Q"; fi
+done < "$S/now.tsv"
+
+# DROPPED: in the newest prior drop that held any skill, missing now
+lastp=
+for q in $priorids; do awk -F'\t' -v p="$q" '$1==p{f=1} END{exit !f}' "$S/primary.tsv" && { lastp=$q; break; }; done
+if [ -n "$lastp" ]; then
+  awk -F'\t' -v p="$lastp" '$1==p{print $2}' "$S/primary.tsv" | sort -u > "$S/lastnames"
+  cut -f2 "$S/now.tsv" | sort -u > "$S/nownames"
+  comm -23 "$S/lastnames" "$S/nownames" | while IFS= read -r n; do
+    row=$(awk -F'\t' -v p="$lastp" -v n="$n" '$1==p && $2==n' "$S/primary.tsv")
+    psha=$(printf '%s' "$row" | cut -f4); pdir=$(printf '%s' "$row" | cut -f5)
+    pver=$(skill_version "$pdir/SKILL.md")
+    printf '%s\t%s\tDROPPED\t-\t-\t-\t%s\t%s\t%s\tin the prior drop, not in this one\t%s\t-\t-\n' "$DROPID" "$n" "$(placelabel "$lastp")" "${pver:-none}" "$psha" \
+      "$(cpline "$n" | paste -sd '|' - | sed 's/|/ | /g')" >> "$TSV"
+    printf -- '- **%s**: **DROPPED**; it was in %s (version %s, sha256 `%s`) and is not in this drop.\n' "$n" "$(placelabel "$lastp")" "${pver:-none found}" "$psha" >> "$W"
+    printf -- '- %s: in %s but not in this drop. Retired on purpose, or left out of the bundle?\n' "$n" "$(placelabel "$lastp")" >> "$Q"
+  done
+fi
+
+# wiring: skills named in the routers' table rows that are not in this drop
+for router in alfred power-glove gauntlet; do
+  r=$(awk -F'\t' -v n="$router" '$2==n{print $5; exit}' "$S/now.tsv"); [ -n "$r" ] || continue
+  awk '/^[ \t]*\|/ { low=tolower($0); s=$0
+         while (match(s, /`[a-z][a-z0-9]*(-[a-z0-9]+)+`|`[a-z]{4,}`/)) { t=substr(s,RSTART+1,RLENGTH-2); s=substr(s,RSTART+RLENGTH)
+           lk = (low ~ /linked|not installed/) ? "linked" : "named"; print t "\t" lk } }' "$r/SKILL.md" | sort -u > "$S/named"
+  cut -f2 "$S/now.tsv" | sort -u > "$S/nownames"
+  awk -F'\t' 'NR==FNR{have[$1]=1; next} !($1 in have) && !d[$1]++ {print}' "$S/nownames" "$S/named" |
+  while IFS="$TAB" read -r t lk; do
+    if [ "$lk" = linked ]; then
+      printf -- '- %s names `%s` in its map on a "linked / not installed" row; it is not in this drop (as the row says).\n' "$router" "$t" >> "$S/wired.txt"
+    else
+      el=$(awk -F'\t' -v n="$t" '$2==n && $1!="p0"{print $1; exit}' "$S/index.tsv")
+      if [ -n "$el" ]; then
+        printf -- '- %s names `%s` in a table row; it is not in this drop, and a copy is held in %s.\n' "$router" "$t" "$(placelabel "$el")" >> "$S/wired.txt"
+      else
+        printf -- '- %s names `%s` in a table row, and no skill of that name is in this drop or any intake place looked in. Installed elsewhere, or a dangling route?\n' "$router" "$t" >> "$Q"
+      fi
+    fi
+  done
+done
+
+# other mechanical questions
+n_unc=$(wc -l < "$S/uncovered.txt" | tr -d ' ')
+[ "$n_unc" -gt 0 ] && printf -- '- %s file(s) in the drop are not named in any SHA256SUMS (listed under Transport). Ours, or owed a sum?\n' "$n_unc" >> "$Q"
+n_sig=$(wc -l < "$S/sigs.txt" | tr -d ' ')
+[ "$sig_off" -gt 0 ] && awk -F'\t' '$3=="no"{print "- `" $1 "` is signed by key " $2 ", not by the pinned key. Whose key is it, and is that signer expected in a drop of Bryant'"'"'s?"}' "$S/sigs.txt" >> "$Q"
+[ "$n_sig" -gt 0 ] && [ -z "$KEYRING" ] && printf -- '- %s signature(s) read NOT CHECKED: no public key for the pin was handed in. Can the pinned public key be placed where br1in can read it?\n' "$n_sig" >> "$Q"
+[ -s "$S/unzipfail.p0" ] && printf -- '- %s archive(s) did not unpack cleanly. Re-send?\n' "$(wc -l < "$S/unzipfail.p0" | tr -d ' ')" >> "$Q"
+
+# --- verdict ---------------------------------------------------------------------------------------
+verdict=PASS
+[ "$sums_bad" -gt 0 ] && verdict=FAIL #guard:sums
+[ "$sig_bad" -gt 0 ] && verdict=FAIL
+n_new=$(awk -F'\t' '$3=="NEW"' "$TSV" | wc -l | tr -d ' ')
+n_ch=$(awk -F'\t' '$3=="CHANGED"' "$TSV" | wc -l | tr -d ' ')
+n_un=$(awk -F'\t' '$3=="UNCHANGED"' "$TSV" | wc -l | tr -d ' ')
+n_dr=$(awk -F'\t' '$3=="DROPPED"' "$TSV" | wc -l | tr -d ' ')
+n_md=$(awk -F'\t' '$4=="differs"' "$TSV" | wc -l | tr -d ' ')
+ch_names=$(awk -F'\t' '$3=="CHANGED"{print $2}' "$TSV" | paste -sd ' ' -)
+md_names=$(awk -F'\t' '$4=="differs"{print $2}' "$TSV" | paste -sd ' ' -)
+new_names=$(awk -F'\t' '$3=="NEW"{print $2}' "$TSV" | paste -sd ' ' -)
+when=$(date -u +%Y-%m-%dT%H:%MZ)
+
+# --- write out (never into a drop) --------------------------------------------------------------------
+mkdir -p "$OUTABS" || die "cannot make $OUTABS"
+R="$OUTABS/$DROPID.md"
+{
+  printf '# br1in report: drop %s\n\n' "$DROPID"
+  printf '*Written by br1in (the Bryant drop intake, read-only) at %s. The drop: `%s`. ' "$when" "$(nice "$DROP")"
+  printf 'Nothing was installed, signed, run or edited; nothing was written into any drop. This page is OBSERVED output of the tool; the open questions are mechanical, not judgements.*\n\n'
+  printf '## In words\n\n'
+  printf 'Verdict: **%s**. ' "$verdict"
+  printf 'Transport: %s sum file(s) checked, %s line(s) OK, %s failed. ' "$sums_files" "$sums_ok" "$sums_bad"
+  printf 'Signatures: %s found; %s failed; %s carry an issuer other than the pin (a question, not a failure).\n\n' "$n_sig" "$sig_bad" "$sig_off"
+  printf 'Skills in the drop: %s. Against the prior drops: %s new, %s changed, %s unchanged, %s dropped. ' \
+    "$(wc -l < "$S/now.tsv" | tr -d ' ')" "$n_new" "$n_ch" "$n_un" "$n_dr"
+  printf 'The SKILL.md itself differs for %s of them.\n\n' "$n_md"
+  [ -n "$new_names" ] && printf -- '- New: %s.\n' "$new_names"
+  [ -n "$ch_names" ] && printf -- '- Changed (any file): %s.\n' "$ch_names"
+  [ -n "$md_names" ] && printf -- '- SKILL.md bytes differ: %s.\n' "$md_names"
+  printf '\nPrior drops looked in (newest first): '
+  for q in $priorids; do printf '%s ' "$(placelabel "$q")"; done
+  printf '\nOther intake places looked in: '
+  for x in $alsoids; do printf '`%s` ' "$(placelabel "$x")"; done
+  [ -s "$S/fenced.txt" ] && printf '\n%s place(s) handed in were under a fenced path and were not read.' "$(wc -l < "$S/fenced.txt" | tr -d ' ')"
+  printf '\n\n## Places looked in\n\n'
+  while IFS="$TAB" read -r pid what; do
+    if [ "$what" = fenced ]; then what="not read (fenced)"; fi
+    printf -- '- `%s`: %s.\n' "$(nice "$(placedir "$pid")")" "$what"
+  done < "$S/placecount.tsv"
+  printf '\n## Each skill\n\n'; cat "$W"
+  printf '\n## Modes of work (extracted, not judged)\n\n'
+  printf 'Lines pulled by pattern from each description and heading list: quoted trigger phrases, loop or stage headings, gate headings and hand-back headings. No line here is a reading of what the skill means.\n\n'
+  cat "$MODES"
+  printf '## Open questions (mechanical)\n\n'
+  if [ -s "$Q" ]; then cat "$Q"; else printf 'None raised by the checks.\n'; fi
+  [ -s "$S/wired.txt" ] && { printf '\nRoutes the checks did not turn into questions (marked linked, or a copy is held elsewhere):\n\n'; cat "$S/wired.txt"; }
+  printf '\n## Transport and signatures\n\n'
+  if [ -s "$S/sums.txt" ]; then
+    while IFS="$TAB" read -r w ok bad; do printf -- '- `%s`: %s OK, %s failed.\n' "$w" "$ok" "$bad"; done < "$S/sums.txt"
+  else printf -- '- No SHA256SUMS in or beside the drop: transport NOT CHECKED.\n'; fi
+  [ -s "$S/sumsbad.txt" ] && { printf '\nFailed lines:\n\n'; sed 's/^/    /' "$S/sumsbad.txt"; }
+  if [ -s "$S/uncovered.txt" ]; then printf '\nFiles no sum names:\n\n'; sed 's/^/- `/; s/$/`/' "$S/uncovered.txt"; fi
+  printf '\n'
+  if [ -s "$S/sigs.txt" ]; then
+    while IFS="$TAB" read -r f iss pm res; do
+      printf -- '- `%s`: issuer %s; matches the pin: %s; %s.\n' "$f" "$iss" "$pm" "$res"; done < "$S/sigs.txt"
+  else printf -- '- No signatures in the drop.\n'; fi
+  printf '\n## Every file of the drop, with its sha256\n\n'
+  while IFS="$TAB" read -r h b p; do printf -- '- `%s` (%s bytes): %s\n' "$p" "$b" "$h"; done < "$S/hashes.txt"
+  printf '\n## What the model was shown\n\n'
+  printf 'br1in ran as a shell tool; the model saw this page and the TSV beside it: names, versions, hashes, '
+  printf 'headings and description phrases of Bryant'"'"'s skills, and no file bodies beyond those lines.\n\n'
+  printf -- '---\nAuthored by Mentat (for Corwin; claude-opus-5-5), by br1in.\n'
+  printf 'Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.\nSPDX-License-Identifier: CC-BY-SA-4.0\n'
+} > "$R"
+cp "$TSV" "$OUTABS/$DROPID.tsv"
+{
+  printf 'ACK br1in %s %s\nverdict: %s\nsums: %s OK, %s failed; signatures: %s, %s bad, %s off the pin\n' \
+    "$DROPID" "$when" "$verdict" "$sums_ok" "$sums_bad" "$n_sig" "$sig_bad" "$sig_off"
+  printf 'skills: %s new, %s changed, %s unchanged, %s dropped\n' "$n_new" "$n_ch" "$n_un" "$n_dr"
+  awk -F'\t' '{print $1 "  " $3}' "$S/hashes.txt"
+} > "$OUTABS/$DROPID.ACK.txt"
+
+printf '%s: %s %s (sums %s OK / %s failed; skills %s new, %s changed, %s unchanged, %s dropped) -> %s\n' \
+  "$me" "$DROPID" "$verdict" "$sums_ok" "$sums_bad" "$n_new" "$n_ch" "$n_un" "$n_dr" "$(nice "$R")"
+[ "$verdict" = PASS ] || exit 1
+exit 0

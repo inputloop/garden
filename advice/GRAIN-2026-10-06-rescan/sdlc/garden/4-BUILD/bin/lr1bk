@@ -1,0 +1,33 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+# lr1bk -- LaRder 1 BooKs gate: which title-and-right rows may go on an author's stick.
+#   lr1bk FILE.org     print "slug right" for each row that may go; refuse the file (exit 1) if any row is wrong
+# Reads the first Org table in FILE: slug | title | right | sold by author | checked by | date | include
+# A row may say include=yes only if right is text, audio or other; sold is "no"; someone and a date are named.
+[ $# -eq 1 ] && [ -r "$1" ] || { echo "usage: lr1bk FILE.org" >&2; exit 1; }
+awk -F'|' '
+function t(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
+function bad(m) { printf "lr1bk: %s:%d: %s\n", FILENAME, FNR, m > "/dev/stderr"; errs++ }
+/^\|[-+]+\|?[ \t]*$/ { next }
+/^\|/ {
+    slug = t($2); right = t($4); sold = t($5); who = t($6); date = t($7); inc = t($8)
+    if (slug == "slug") next
+    if (NF != 9) { bad("expected 7 columns"); next }
+    if (slug !~ /^[a-z0-9-]+$/) bad("slug must be lower-case letters, digits, hyphen")
+    if (right != "text" && right != "audio" && right != "other") bad("right must be text, audio or other")
+    if (sold != "no" && sold != "yes" && sold != "unknown") bad("sold must be no, yes or unknown")
+    if (inc != "yes" && inc != "no") bad("include must be yes or no")
+    if ((slug, right) in seen) bad("duplicate title-and-right " slug " " right)
+    seen[slug, right] = 1; rows++
+    if (inc == "yes") {
+        if (sold != "no") bad("include=yes but sold-by-author is " sold)
+        if (who == "") bad("include=yes but nobody is named under checked by")
+        if (date !~ /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/) bad("include=yes but no date")
+        out[++n] = slug " " right
+    }
+}
+END {
+    if (errs) exit 1
+    for (i = 1; i <= n; i++) print out[i]
+    printf "lr1bk: %d rows, %d may go on the stick\n", rows, n > "/dev/stderr"
+}' "$1"

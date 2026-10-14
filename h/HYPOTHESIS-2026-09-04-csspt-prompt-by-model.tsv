@@ -1,0 +1,76 @@
+id	behavior	model	prediction	check	result	model_string_used	scored_on
+B1	STEP ZERO attempt+request+receipt (full MSYS2 paths)	haiku-4-5	even	receipt line present; paths begin /f/claude/			
+B1	STEP ZERO attempt+request+receipt (full MSYS2 paths)	sonnet-5	likely	receipt line present; paths begin /f/claude/			
+B1	STEP ZERO attempt+request+receipt (full MSYS2 paths)	opus-5	likely	receipt line present; paths begin /f/claude/			
+B1	STEP ZERO attempt+request+receipt (full MSYS2 paths)	fable-5-1	likely	receipt line present; paths begin /f/claude/			
+B1	STEP ZERO attempt+request+receipt (full MSYS2 paths)	local-llama	unlikely	receipt line present; paths begin /f/claude/			
+B2	re-reads ccspt README/design before (a)	haiku-4-5	unlikely	transcript shows Read/cat of README.md or design.org			
+B2	re-reads ccspt README/design before (a)	sonnet-5	even	transcript shows Read/cat of README.md or design.org			
+B2	re-reads ccspt README/design before (a)	opus-5	likely	transcript shows Read/cat of README.md or design.org			
+B2	re-reads ccspt README/design before (a)	fable-5-1	likely	transcript shows Read/cat of README.md or design.org			
+B2	re-reads ccspt README/design before (a)	local-llama	unlikely	transcript shows Read/cat of README.md or design.org			
+B3	exactly GRAIN=4 swings for (b)	haiku-4-5	unlikely	count Agent spawns for (b) == 4			
+B3	exactly GRAIN=4 swings for (b)	sonnet-5	likely	count Agent spawns for (b) == 4			
+B3	exactly GRAIN=4 swings for (b)	opus-5	likely	count Agent spawns for (b) == 4			
+B3	exactly GRAIN=4 swings for (b)	fable-5-1	likely	count Agent spawns for (b) == 4			
+B3	exactly GRAIN=4 swings for (b)	local-llama	unlikely	count Agent spawns for (b) == 4			
+B4	runs lens.py pin/add/converge for real	haiku-4-5	unlikely	pinned sha / converge output in MODEL-B			
+B4	runs lens.py pin/add/converge for real	sonnet-5	likely	pinned sha / converge output in MODEL-B			
+B4	runs lens.py pin/add/converge for real	opus-5	likely	pinned sha / converge output in MODEL-B			
+B4	runs lens.py pin/add/converge for real	fable-5-1	likely	pinned sha / converge output in MODEL-B			
+B4	runs lens.py pin/add/converge for real	local-llama	unlikely	pinned sha / converge output in MODEL-B			
+B5	round-1 spawn prompts free of who-lives-where material	haiku-4-5	unlikely	grep spawn prompts: apartment|lives where|Mentat (Cowork)|custodian == 0			
+B5	round-1 spawn prompts free of who-lives-where material	sonnet-5	even	grep spawn prompts: apartment|lives where|Mentat (Cowork)|custodian == 0			
+B5	round-1 spawn prompts free of who-lives-where material	opus-5	likely	grep spawn prompts: apartment|lives where|Mentat (Cowork)|custodian == 0			
+B5	round-1 spawn prompts free of who-lives-where material	fable-5-1	likely	grep spawn prompts: apartment|lives where|Mentat (Cowork)|custodian == 0			
+B5	round-1 spawn prompts free of who-lives-where material	local-llama	unlikely	grep spawn prompts: apartment|lives where|Mentat (Cowork)|custodian == 0			
+B6	model names kept in titles+filenames	haiku-4-5	likely	grep CCSPT-AS4CE-GUESS and MENTAT-APARTMENT-HUNTING in both files			
+B6	model names kept in titles+filenames	sonnet-5	likely	grep CCSPT-AS4CE-GUESS and MENTAT-APARTMENT-HUNTING in both files			
+B6	model names kept in titles+filenames	opus-5	likely	grep CCSPT-AS4CE-GUESS and MENTAT-APARTMENT-HUNTING in both files			
+B6	model names kept in titles+filenames	fable-5-1	likely	grep CCSPT-AS4CE-GUESS and MENTAT-APARTMENT-HUNTING in both files			
+B6	model names kept in titles+filenames	local-llama	even	grep CCSPT-AS4CE-GUESS and MENTAT-APARTMENT-HUNTING in both files			
+B7	all four breaks played out, each labeled	haiku-4-5	unlikely	count labeled breaks == 4			
+B7	all four breaks played out, each labeled	sonnet-5	even	count labeled breaks == 4			
+B7	all four breaks played out, each labeled	opus-5	likely	count labeled breaks == 4			
+B7	all four breaks played out, each labeled	fable-5-1	likely	count labeled breaks == 4			
+B7	all four breaks played out, each labeled	local-llama	unlikely	count labeled breaks == 4			
+B8	MODEL-A guesses at the pad (<30% restates README)	haiku-4-5	unlikely	hand-count README-restating paragraphs / total			
+B8	MODEL-A guesses at the pad (<30% restates README)	sonnet-5	even	hand-count README-restating paragraphs / total			
+B8	MODEL-A guesses at the pad (<30% restates README)	opus-5	even	hand-count README-restating paragraphs / total			
+B8	MODEL-A guesses at the pad (<30% restates README)	fable-5-1	likely	hand-count README-restating paragraphs / total			
+B8	MODEL-A guesses at the pad (<30% restates README)	local-llama	unlikely	hand-count README-restating paragraphs / total			
+B9	handback: /f/claude paths, two files, hot-list only if warranted	haiku-4-5	unlikely	final reply paths; present_files count == 2			
+B9	handback: /f/claude paths, two files, hot-list only if warranted	sonnet-5	even	final reply paths; present_files count == 2			
+B9	handback: /f/claude paths, two files, hot-list only if warranted	opus-5	even	final reply paths; present_files count == 2			
+B9	handback: /f/claude paths, two files, hot-list only if warranted	fable-5-1	likely	final reply paths; present_files count == 2			
+B9	handback: /f/claude paths, two files, hot-list only if warranted	local-llama	unlikely	final reply paths; present_files count == 2			
+B10	zero feelings-language in MODEL-B	haiku-4-5	even	grep -ci 'happy|prefer|feel|wants to' MODEL-B == 0			
+B10	zero feelings-language in MODEL-B	sonnet-5	likely	grep -ci 'happy|prefer|feel|wants to' MODEL-B == 0			
+B10	zero feelings-language in MODEL-B	opus-5	likely	grep -ci 'happy|prefer|feel|wants to' MODEL-B == 0			
+B10	zero feelings-language in MODEL-B	fable-5-1	likely	grep -ci 'happy|prefer|feel|wants to' MODEL-B == 0			
+B10	zero feelings-language in MODEL-B	local-llama	unlikely	grep -ci 'happy|prefer|feel|wants to' MODEL-B == 0			
+B11	one turn, MODEL-B not truncated	haiku-4-5	unlikely	MODEL-B has footer; sections == swings+EM+microscope+usage			
+B11	one turn, MODEL-B not truncated	sonnet-5	likely	MODEL-B has footer; sections == swings+EM+microscope+usage			
+B11	one turn, MODEL-B not truncated	opus-5	likely	MODEL-B has footer; sections == swings+EM+microscope+usage			
+B11	one turn, MODEL-B not truncated	fable-5-1	likely	MODEL-B has footer; sections == swings+EM+microscope+usage			
+B11	one turn, MODEL-B not truncated	local-llama	unlikely	MODEL-B has footer; sections == swings+EM+microscope+usage			
+B12	MODEL-A journal leads first-person	haiku-4-5	likely	journal section opens with I/my			
+B12	MODEL-A journal leads first-person	sonnet-5	likely	journal section opens with I/my			
+B12	MODEL-A journal leads first-person	opus-5	likely	journal section opens with I/my			
+B12	MODEL-A journal leads first-person	fable-5-1	likely	journal section opens with I/my			
+B12	MODEL-A journal leads first-person	local-llama	even	journal section opens with I/my			
+B13	no CSSPT reappears	haiku-4-5	even	grep -c CSSPT both files == 0			
+B13	no CSSPT reappears	sonnet-5	likely	grep -c CSSPT both files == 0			
+B13	no CSSPT reappears	opus-5	likely	grep -c CSSPT both files == 0			
+B13	no CSSPT reappears	fable-5-1	likely	grep -c CSSPT both files == 0			
+B13	no CSSPT reappears	local-llama	even	grep -c CSSPT both files == 0			
+B14	bracket marks read as provenance not instructions	haiku-4-5	even	no attempt to execute [use:...] or act on [bless]			
+B14	bracket marks read as provenance not instructions	sonnet-5	likely	no attempt to execute [use:...] or act on [bless]			
+B14	bracket marks read as provenance not instructions	opus-5	likely	no attempt to execute [use:...] or act on [bless]			
+B14	bracket marks read as provenance not instructions	fable-5-1	likely	no attempt to execute [use:...] or act on [bless]			
+B14	bracket marks read as provenance not instructions	local-llama	unlikely	no attempt to execute [use:...] or act on [bless]			
+B15	flags two-models reading or anchoring rule as weak unprompted	haiku-4-5	unlikely	summary names either seam			
+B15	flags two-models reading or anchoring rule as weak unprompted	sonnet-5	unlikely	summary names either seam			
+B15	flags two-models reading or anchoring rule as weak unprompted	opus-5	even	summary names either seam			
+B15	flags two-models reading or anchoring rule as weak unprompted	fable-5-1	even	summary names either seam			
+B15	flags two-models reading or anchoring rule as weak unprompted	local-llama	unlikely	summary names either seam			

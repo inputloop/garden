@@ -1,0 +1,37 @@
+# R-rows from lane C (2026-10-10), for the conductor to fold into polygram/mcp/__main__.py's
+# --prove-red suite.  Both rows run a garden tool (bin/lc1ck, bin/release) on scratch files, so they
+# need the source tree; in a minted plugin (no bin/) each says NOT CHECKED and is not counted as a pass.
+# Checked by lane C in a scratch harness against the live bin/ (green), and with the plants below (red).
+
+R21  "a prose file with a code licence is refused at release"
+     The licence check (bin/lc1ck) must FAULT a scratch .md carrying an SPDX GPL line, exit 1.
+
+R22  "no NEWS entry and no reason line refuses the release"
+     bin/release --prose-gates in a scratch garden whose NEWS has no entry for its version must exit
+     non-zero and say "NEWS has no entry".
+
+# --- the code (inside _prove_red, after R16, using the same want() and td) ---
+        # R21 -- a prose file with a code licence is refused at release (bin/lc1ck).
+        # R22 -- no NEWS entry and no reason line refuses the release (bin/release).
+        import shutil as _sh, subprocess as _sp
+        _bin = Path(__file__).resolve().parents[2] / "bin"
+        if (_bin / "lc1ck").is_file() and (_bin / "release").is_file() and _sh.which("sh"):
+            _md = Path(td) / "r21" / "notes.md"; _md.parent.mkdir(parents=True)
+            _md.write_text("# n\n\nprose\n\nSPDX-License-Identifier: GPL-3.0-or-later\n", encoding="utf-8", newline="\n")
+            _r = _sp.run(["sh", str(_bin / "lc1ck"), str(_md)], capture_output=True, text=True)
+            want("prose with a code licence refused", _r.returncode == 1 and "code licence on prose" in _r.stdout,
+                 f"rc={_r.returncode} {_r.stdout[-200:]}")
+            _g = Path(td) / "r22"
+            for _d in ("bin", "polygram", "dist/vibrobeast"):
+                (_g / _d).mkdir(parents=True, exist_ok=True)
+            _sh.copy(_bin / "release", _g / "bin" / "release"); _sh.copy(_bin / "lc1ck", _g / "bin" / "lc1ck")
+            (_g / "polygram" / "__init__.py").write_text('__version__ = "9.9.9"\n', encoding="utf-8", newline="\n")
+            (_g / "NEWS").write_text("polygram NEWS\n\nVersion 9.9.8\n\n- older.\n", encoding="utf-8", newline="\n")
+            _r = _sp.run(["sh", str(_g / "bin" / "release"), "--prose-gates"], capture_output=True, text=True)
+            want("no NEWS and no reason refuses the release", _r.returncode != 0 and "NEWS has no entry" in (_r.stdout + _r.stderr),
+                 f"rc={_r.returncode} {(_r.stdout + _r.stderr)[-200:]}")
+        else:
+            print("  NOT CHECKED  R21/R22: no bin/lc1ck or bin/release here (a minted plugin); not counted")
+
+# Planted red (lane C, scratch harness): R21 with lc1ck's `faults++` cut out goes FAIL; R22 with the
+# NEWS grep replaced by `true` goes FAIL.

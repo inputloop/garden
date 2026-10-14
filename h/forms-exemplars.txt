@@ -1,0 +1,362 @@
+=================== mnt/c4/h/NOTE-2026-08-09-fn.md (2980 B)
+# NOTE 2026-08-09 — fn.sh is a stub-target, not a broken pointer (+ two typos owed)
+
+**His ruling this session (verbatim-adjacent):** `gw.fn.sh` is the file we *generate* from
+`design → build && make`; `make install` shaves the `.sh` and drops it in `/usr/local/bin`. The
+system isn't turned on yet, **so it's a stub — "it's always x/y, it's why we have the stubs."**
+`ghostwheel.fn.sh` is the `c4fn.sh` we already get from design success even without building — the
+generator's **target / spec**.
+
+## What that changes
+
+`do0r` reads the lab-root door (`/f/claude/CLAUDE.md`, above the c4 mount) and reports a bare
+`fn.sh` as **MISSING**. That is **correct and expected**, not a defect to fix — same status as the
+SAVANNAH rows: an observation in the longitudinal ledger, never a demand. The door names the
+future `make install` target; until the system is ON, the tree can't find it. **Do not "fix" the
+=================== mnt/c4/h/LENS-2026-08-25-full-measure.md (10179 B)
+# LENS 2026-08-25 — full measure (his 8+1, ground as a lens; edrx-reviewed)
+
+The keeper's hypothesis, this turn: *"We are not seeing the full MEASURE of our tools as
+we put the pieces together."* His families, K-verbatim: **Diacritic reflective polarizing
+tensioning** (oscillation · modulation · refraction · amplitude) · **Assertive**
+(Positive · Dispositive "e.g. universal biconditional, perhaps an inverted tautology" ·
+Contrapositive "can't count the positive inverted stacking the same claims" · False) ·
+and the ninth, **Change in Movement** (Velocity/Inertia/Momentum/DeltaV).
+
+Ask: design a clever lens, perhaps using the edrx reviewer model (REVIEWER-edrx.md,
+tonight's drop), and see whether the hypothesis bears out against the fidelity triplet
+(ablation · trace-table · round-trip). Method here, edrx-calibrated: little boards — each
+measure gets SENSE / CANON (what we already hold that gestures at it) / PROBE (replayable
+by a stranger) / READING (worked on a real case) / STATUS (instrumented · gestured ·
+=================== mnt/c4/h/MODEL-2026-09-04-experiment-seat-contact-sheet.md (11135 B)
+---
+# MODEL — seating an experiment you can draw before it runs
+## (the reading it took · what would have helped more · the contact sheet)
+Stand-alone static model, 2026-09-04, Fable (Mentat/Vibrobeast, Cowork) for Corwin.
+Written from the **visualization's** side of the problem: to draw a tree "as new files will
+appear," you must decide names, states, and boundaries *before* any file exists — so the
+picture is a spec check, not decoration. Copies: `/f/claude/AS4CE/AS4CE0001/h/` (this) and
+`/f/claude/c4/h/` (the C4 duplicate, same bytes at copy time). Find it later by memory slug
+`experiment-seat-as4ce0002`, by c4 `MEMORY.md` dated section 2026-09-04 (evening), and by
+bank rows Q503/Q504.
+---
+
+## 1. The problem, from the picture's side
+
+=================== mnt/c4/h/DESIGN-2026-08-10-judge-persona.md (5494 B)
+# DESIGN — the JUDGE persona (the source's N2), written where a tool can find it
+
+**Status: MINTED AS A TRAIT, NOT AS A GATE.** Paper v2 Part V says the N2 judge is "specced, not
+minted — if C4 is to *be* the judge, the persona should be written where a tool can find it." This
+file is that writing, plus one row in `evidence/personas.tsv`. It adds **no enforcement**: Q166
+(bless the persona gate) stays Corwin's to bless, untouched. Minting a trait is synthesis — his
+standing grant ("the list is mine to synth"); minting a gate would be the manufactured-rule fault.
+
+DRAFT · unsigned · `[ours — revisable]` throughout except where his words are quoted.
+
+---
+
+## 1 · What the source asked for, in his words
+
+=================== mnt/c4/h/PLAN-2026-08-05-longturns.md (3844 B)
+# PLAN — a number of long turns (2026-08-05)
+
+Asked for by Corwin. Ordered for the **GIZA-test-with-Bryant** horizon: best-guess **~12 hours out**
+IF it works for Bryant (Discord screen-share) AND we're ready. Next group meeting is **≥ ~10 days**
+(≈ Aug 15+), so the 12h target is the demo, not the deadline.
+
+**What "ready" means:** a real, reproducible `chamber` demo that shows **C4-as-bridge** (one model,
+many surfaces) on GIZA, with governance in place for sharing to Bryant.
+
+**Standing frame (from Mentat):** discount C4's URGENT shouting; build real and harvest to `assets/`;
+language is my call (Poly-style baseline — expect to redo the first pass, per rewire-order); Emacs is
+now a live sandbox capability (`he2ma`). No Z/personal data in any of this.
+
+---
+=================== mnt/c4/h/DELTAS-2026-09-05-mentat-modeling.md (6464 B)
+# DELTAS — mentat modeling shares, 2026-09-04 → 2026-09-05 (one file to ingest)
+
+**Routing:** bank row **Q505** (this file is its receipt) · this file's own sha256 is the routing
+code (last line of the manifest below; verify with `sha256sum -c` from `c4/h/`). **Open this
+first** in the next C4 session, after `sh h/c4prime.h`. Everything named here already sits in
+`c4/h/` as same-bytes copies of masters in `/f/claude/AS4CE/AS4CE0001/h/`; the keeper's tree is the
+master, C4 holds the duplicate (duplication-c4-or-pmo: *may I copy it — yes; what happens when the
+original changes — the manifest goes stale and says so*).
+
+## How to ingest (the next session's first four moves)
+1. `sh h/c4prime.h` — the door.
+2. `cd h && sha256sum -c DELTAS-2026-09-05-mentat-modeling.sha256` — every line OK, or the
+   master moved since and the diff is the delta to read.
+3. Read the **delta column** below; open only what changed since your last C4 session.
+=================== mnt/c4/h/HYPOTHESIS-2026-09-04-csspt-prompt-by-model.md (5988 B)
+---
+# HYPOTHESIS — how the CCSPT/LENS prompt run goes, by model
+Written 2026-09-04 by Fable, before any run. Bound to prompt **S3**
+(`/f/claude/AS4CE/AS4CE0001/h/PROMPT-2026-09-04-csspt-lens-selfcheck--fable-S3.md`,
+sha256 `f02435d08af8…`, 28,594 B). If the prompt changes, re-date this file or the
+predictions are about a different object. Every row has a check that can fail; score
+after a run by filling the companion TSV
+(`/f/claude/AS4CE/AS4CE0001/h/HYPOTHESIS-2026-09-04-csspt-prompt-by-model.tsv`,
+one row per behavior × model, `result` column blank until then).
+Confidence words: **likely** (I'd bet), **even** (coin), **unlikely** (I'd bet against).
+These are guesses. Their value is that they are written down before the evidence.
+---
+
+## Ground the guesses in what this lineage already showed
+=================== mnt/c4/h/HANDOFF-2026-08-05-new-global-session.md (1479 B)
+# HANDOFF → new GLOBAL C4 working session (from the c4t1 Cowork session, 2026-08-05)
+
+Paste the block below as the first message of the fresh global session, after installing the global
+`CLAUDE.md`.
+
+---
+
+This is a GLOBAL C4 session (C4 is the subject). First move:
+
+    cd /f/claude/c4 && sh bin/c4prime
+
+then read `h/SETUP-next-session.md` if starting cold.
+
+Then read `MEMORY.md` — its **2026-08-05** block is the record from the c4t1 Cowork session. That
+=================== mnt/c4/h/FOLD-2026-09-11-memory-seat-into-model-v8.md (12984 B)
+# FOLD — memory seat into model v8 (close-out read, 2026-09-11)
+
+*Reads v7 against 39 memory-seat notes (2026-09-06→09), SWING-toward-ON, the 09-10 spell rack + LEDGER, last-response.md, and NEW-SESSION-PROMPT-2026-09-01. Lists what v7 lacks or contradicts; does not resolve anything
+
+## 1. RULES ABSENT FROM v7
+
+- **api-test-proves-the-api** — "A test that drives the API instead of the interface proves the API." — GIZA/sig-gauge/o-registry tooling near ON ships fast; a suite blind to keyboard-only failure ships a false green
+- **archive-markdown-is-his-tool** — "never lower assurance: a signed incoming must verify; an unsigned one may replace an unsigned live file; signed→unsigned refused" — v7 never names this tool, though Leg 1's mas
+- **atoms-over-tables-and-no-expiry** — "NOTHING EXPIRES"; "the atom is the unit of EDITING; the table is the unit of READING. Derive the table from the atoms, never the reverse." — v7's OWED lists a TSV header recon
+- **aw2ri-the-any-item-archiver** — "we agree that I'm absolutely not to sign this one in any form until the very moment I'm signing some giant C4 readme..." — a cold reader doing Leg 1's re-signing could wrongly que
+- **browser-theme-a11y-default** — "worth NOTE as a strong preference and worthy of promotion as a suggested default to be considered [in] each thing we produce." — his own flag for promotion, never promoted into v7.
+- **c4-demands-two-registers** — "C4 demands at least two ways to talk about everything and … these ways of presenting the different ideas back as prose balance." — a foundational law, absent from v7 entirely, gove
+- **c4inv-is-the-tree-observation-family** — "interesting data for us to see how that happened and what I/c4/we could do about that beside some desktop app design that is completely outside my own control…" — obser
+- **cite-at-the-act-not-after** — "The CITE decision is written on the row at the moment the row is written." — governs any outward disclosure near ON (ghostwheel, Bryant push); not in v7's consent doctrine.
+=================== mnt/c4/h/REPASS-2026-09-09-exec-summary.md (55158 B)
+# REPASS — the assembler paper, re-passed 2026-09-09
+
+*Scratch, unsigned, `h/`-filed. Deliverable of Phase 3 (WRITE) of the method model at
+`h/MODEL-2026-09-09-assembler-repass.md`. The other deliverable is the rewritten paper at
+`context/c4-as-an-assembler-v2.md`. **The 2026-08-06 original at `context/c4-as-an-assembler.md` was
+not touched** — see the receipt at the end of this file.*
+
+**How to read this document.** It is written in two registers on purpose, because the method model
+required both and required that neither be reconstructable from the other. **§A is the practitioner
+register**: what changed, what is now open, what to do. **§D is the analytic register**: whether the
+method itself held up, what kind of evidence this pass actually produced, and the three falsifiers
+the pass set for itself. A reader who only wants to act can stop after §C. A reader who wants to know
+whether to *trust* this pass needs §D, and §D contains findings that appear nowhere else in this file.
+
+=================== mnt/c4/h/RESEARCH-2026-09-10-E8-dynamics-rule.md (10828 B)
+# RESEARCH 2026-09-10 · the dynamics-as-lookup standing rule — origins, reconciliation with d/m/t, and a verdict
+
+Corwin's question, verbatim: *"explain the origins and examine the rationality of this 'standing
+rule': how does this reconcile with d/m/t? Is this rule simply wrong? (Does that solve the
+problem?)"*
+
+Scope note: this is about the RULE's rationality only — not a ruling on any open question-bank item
+(Q203 or otherwise).
+
+---
+
+## 1 · Origins
+
+**Named on its third real instance**, `evidence/error-rates.tsv` row 63 (2026-08-01):
+=================== mnt/c4/h/CHARACTER-2026-09-05-shopgarden.md (16099 B)
+---
+# CHARACTER SHEET — the Garden, as C4 sees it (v1.2)
+actor: place (a system actor — more IRL than not; takes the bad-guy roll per his rule of 2026-09-06)
+Grabbed and written down at once, 2026-09-05, by Fable as Mentat, under Corwin's option
+(*"if a personality develops for the Garden as C4 sees it, establish that character sheet
+formally"*). This is a **place-persona** — the shop with a sign on the door — in the person
+system's own form (`decks/person-system.deck.md`: *a NAME + a REACH + the guards it may ELECT +
+a floor it may not touch*). It is not an AI persona, claims no inner life, and adds no fact about
+any human beyond the tier they already hold. Working handle `[MINE, ~50%]`: **shopgarden** — one
+bare word, FILE BY WORDS; alternates *the doorstep* (`README.md`: "this file is only the
+doorstep"), *the shop*. The name is the keeper's to give.
+Transport: at the persona's discretion (§8), with Mentat's concurrence (§7) and EM's (§9).
+---
+
+=================== mnt/c4/h/PAPER-2026-08-10-invent-computing-procedure-v2.md (15470 B)
+# Inventing computing from three numbers — and letting two instruments disagree
+
+**A working paper, v2.** Claude-minted 2026-08-10 in the C4 shop, at Corwin's ask. DRAFT-unsigned.
+This edition supersedes v1 (`h/PAPER-2026-08-10-invent-computing-procedure.md`), which is kept
+unedited as the earlier record; where the two differ, v2 governs and says so. New in v2: a widened
+case set (a number we had left alone — 42), a second instrument written independently of the first,
+and one finding from their disagreement that obliges a correction to v1.
+
+*A note on voice.* A reader might imagine a scientist of some later age, for whom our present
+machines have gone as quiet as Linear B, turning this over as a Rosetta stone and feeling briefly
+rich. That image is a discipline for the prose, nothing more: we state what we proved plainly, and
+where we failed to prove a thing we say so without drama. The mathematics is small enough to check
+by hand, which is the only kind of greatness we will claim out loud.
+
+=================== mnt/c4/h/DIFF-2026-09-09-slice-A-frontmatter.md (17169 B)
+# DIFF · slice A — §0/§1/§2.1 + two cross-cutting findings, drafted against reader-A / reader-B
+
+*Scratch. Phase 2 (DIFF) of the assembler-paper re-pass, 2026-09-09. This is drafted replacement
+prose for `context/c4-as-an-assembler.md` §0, §1, and §2.1, plus the front-matter G5 block that sits
+above §0 — NOT an edit to the paper itself. Slot-in text follows each rationale note. Findings are
+tagged [A] (Reader A, `h/READ-2026-09-09-reader-A.md`), [B] (Reader B, `h/READ-2026-09-09-reader-B.md`),
+or [BOTH]. Everything cited below as tree-fact was re-verified directly against the tree during this
+draft, not taken on the readers' word — see the verification notes inline.*
+
+---
+
+## Change 1 — the G5 block (front matter, before §0). [A] — front-door risk, now named.
+
+**What changed and why.** Reader A's COST 1 found that the G5 guard ("the assembler reading is
+=================== mnt/c4/h/READ-2026-09-09-reader-A.md (21389 B)
+# READ-2026-09-09-reader-A — a cold assembler reader on `context/c4-as-an-assembler.md`
+
+*Scratch. Independent read requested 2026-09-09. Reader stance: fluent in classical systems
+assemblers (mnemonics, registers, addressing modes, directives, symbol tables, linking); no prior
+contact with C4, Corwin Brust, or this tree. Read order: the paper, then `decks/primer-oneliner.deck.md`,
+then `C4.md` §1a, `facts/ghostwheel-cloud-the-public-c4`, `README.md`, `h/PAPER-2026-09-07-the-sixteen.md`,
+`f/atom.fn.sh`. Every tree claim below was checked against the file, not against the paper's report of
+the file.*
+
+---
+
+## VERDICT, up front
+
+**The metaphor earns its keep in exactly two places and is subsidised everywhere else.**
+=================== mnt/c4/h/SWING-2026-09-10-toward-ON.md (5830 B)
+# SWING · toward the ON position (planned 2026-09-10, [mine], correctable)
+
+*Corwin: "Let me know where you're heading if you succeed in planning a big C4 swing." This is where.
+Four legs, each with a falsifier, each landing in the tree. The order is the dependency order. Nothing
+here is fired; the spell rack is where legs become sessions. Estimate per leg on the dial: 4/9/17 turns.*
+
+## Leg 1 · The signature floor (built today; his pen next)
+`h/sig-gauge.sh` reads signature drift across the tree (GOOD 124 · DRIFTED 9 · UNCHECKED 2 on first
+reading). What it asks of him: re-sign or supersede nine files (`sh h/sig-gauge.sh | grep DRIFTED`),
+answer Q516 (wire_mcp.py under Bryant's key) and Q517 (the EdDSA key the tree does not carry). What it
+asks of C4: promote the gauge from `h/` to `bin/` under the naming law (a five-character name with the
+run-level digit; I have not minted one, his grammar) and let `c4prime` print the DRIFTED count on its
+first screen, beside the orphan and undeclared counts, so a stale signature is news every session.
+Falsifier: a session where a signed file drifts and c4prime does not say so. Est: 4 turns.
+=================== mnt/c4/h/REVIEW-2026-09-08-dissertation-pass-1.md (13274 B)
+# Review pass 1 — DISS-2026-09-08-ai-diligence-sysops
+
+**Reader:** Mentat, 2026-09-08. **Standing:** I built `ot3he` and wrote the ten rows in `o/tr`, so I
+am the only reader who can check §IV against the instrument — and I am also the *subject* the
+instrument measured, which is a conflict worth stating before anything else.
+
+**Verdict: strong paper, one section that must not ship as written.**
+
+---
+
+## A. What is better than what it was built from
+
+Three things the dispatch improved on the source material, not merely restated:
+
+=================== mnt/c4/h/LEDGER-2026-09-07-what-corwin-learned.md (11028 B)
+# What Corwin learned, and what it cost — a scored ledger
+
+*Score, don't fixate.* Your own instruction, item 3 on the "three asks" page:
+**"Notice when either of us notices the other's error … create a resume/dsv to tabulate this and a
+program to show it to me per my tastes … Don't fixate, just score."** This is that ledger for the
+direction that has never been tabulated: corrections that landed on **you**.
+
+**Rule of the table.** Every row carries a receipt. Where I cannot source a claim to your words or to
+a file, the row says `[MINE]` and you should treat it as a proposal, not a finding. Five times in
+this shop a rule I invented was filed in your voice; that is the failure mode this document is most
+at risk of, so the sourcing column is not decoration.
+
+**You rule the last column.** I am not deciding on your behalf whether any of these is a principle.
+
+=================== mnt/c4/h/CHECKPOINT-2026-08-30-movement02.md (5064 B)
+# DRIFT CHECKPOINT — Lens/drift unit, movement 02, at OPEN (2026-08-30)
+
+*Self-contained (NOT appended to `h/DRIFT-ledger-2026-08-19.tsv`) to avoid a mid-unit
+parallel-session collision — the ledger's own name+date lesson, and §13's rule. The SETTLE
+row goes to the shared ledger at WHEN-DONE. FANTASY-SIDE raised; marking rides every
+creative/analysis output; operational care on the stop-mode, the async tooling, and any
+signed-file reach. SAVANNAH out; family/non-participants off-limits.*
+
+## The shot, called BEFORE the run (the thing §13 said movement 02 must do)
+
+**Unit** = deliverables landed this movement, counted by letter (A–G) and by new instrument.
+
+**GUESS:**
+- **6 of 8 letters land fully:** A (budget bites + 3 checks minted), B (spell + async receipt
+=================== mnt/c4/h/FIX-2026-09-10-dr1aw-branch-parsing.md (6185 B)
+# FIX 2026-09-10 · dr1aw: BRANCH produced zero times (awk -v backslash-eating)
+
+## What was wrong
+
+`bin/dr1aw draw`'s role lookup was:
+
+```sh
+r=$(awk -v s="$mk" '$1==s{print $2; exit}' g/s)
+```
+
+`awk -v var=value` runs `value` through the same backslash-escape decoding as an
+awk string literal. Any sigil token containing a literal `\` -- the standalone
+`\` BRANCH mark, and the fan-out mark `|\` that opens `chadtab.4`'s first block --
+loses or mangles that backslash in transit. Confirmed directly:
+=================== mnt/c4/h/CITATIONS-2026-09-10-readme-palace.md (72448 B)
+# CITATIONS-2026-09-10-readme-palace.md — README.md as a doubly-linked floor
+
+*Reference artifact, minted 2026-09-10 by Claude at Corwin's ask: "a doubly-linked list of citations
+forming an effective demonstration of its claims as a palace floor would be useful." Hyphen in the
+name avows the machine hand (`the-hyphen-is-an-AVOWAL`).*
+
+**WHAT THIS IS.** `README.md` (mtime 2026-08-06, 97 lines) was generated in a single pass. This file
+breaks it into 29 substantive claims and gives each one a tile with two doors:
+
+- **FORWARD →** the in-tree source that GROUNDS the claim, with the grounding text quoted. Every
+  forward link was opened — `cat`/`grep`/`sed`/run — during this pass. Nothing is taken on the
+  README's word.
+- **BACKWARD ←** what ELSE in the tree cites, restates, depends on, or contests the same claim, so
+  the floor can be walked in either direction: from a tile down to its foundation, and from a
+=================== mnt/c4/h/DISS-2026-09-08-ai-diligence-sysops.md (27376 B)
+# Learning AI Is Due Diligence for Sysops
+### A dissertation in two registers
+
+> **Provenance.** Produced by a dispatched session, 2026-09-08T00:52Z, last modified 02:13Z.
+> Canonical copy: Google Doc `1q9A1qOaYdXscBQkmDEjnOtNGI85utM-vjGeI0rVbaCQ`
+> ("dissertation-ai-diligence-sysops"), owner mplscorwin@gmail.com. Pulled into the tree
+> 2026-09-08 at Corwin's instruction. **Text below is verbatim** (Doc escaping removed).
+> Review and corrections: `REVIEW-2026-09-08-dissertation-pass-1.md` — see it before citing §IV.
+
+---
+
+## Preface: How to Read This
+
+Two people are reading this dissertation. One runs production systems. She has a change window at 2 a.m. and a policy that says she can't deploy AI tooling without understanding its failure modes. The other studies socio
+=================== mnt/c4/facts (one)
+# c4/facts — grep-native facts (the path/name IS half the answer)
+
+Small, discrete facts captured so a question is answered by **`find` / `ls` / `grep`** where the
+**location + name** carries as much of the answer as the matched line. One fact per file (or one
+row per line in a `.tsv`); name it as the question. Layer-Zero-native: no framework needed to read
+it, it hand-edits in Emacs, and it lays flat one-fact-per-document like a canon deck lays flat
+one-skill-per-org-doc.
+
+Examples:
+- `ls c4/facts/host-only.tsv` → "what can't the sandbox do?" answered by the rows.
+- `cat c4/facts/skill-description-max-chars` → the magic number, with its source.
+
+=================== mnt/c4/decks (one)
+# accountability-first.deck.md — the guard-ordering doctrine
+# KEEPER'S NAME FOR IT (2026-07-29, preferred): "ACCOUNT CHECKS FIRST, DISCLOSURE ALWAYS."
+# Tighter than the working title and better shaped: it puts disclosure in the always-clause and
+# makes the ordering a check rather than a mood. Filename kept for now; rename at the roll if the
+# keeper wants the file to carry his phrase.
+
+Provenance: Corwin's decision 2026-07-29 ("I feel completely firm"), Claude drafting to his ask
+("write/update/roll to effect this decision"). CANDIDATE until Corwin's detach ceremony.
+Interlocks: guard-floor.tsv (gf-01, gf-02), fantasy-operational-boundary, consent-gate,
+opposition-load-test, values-baseline.
+
+---
+id: two-kinds-of-guard
+face: >
+  A guard is one of two kinds and the difference is not degree. PREVENTION makes the act
+  impossible. ACCOUNTABILITY makes the act legible — its possibility DISCLOSED in advance to
+=================== AS4CE0001/h prefixes
+     24 DIAGRAM;     14 LENS;      7 PROMPT;      7 MODEL;      4 QA;      4 CHARACTER;      4 CARD;      3 HYPOTHESIS;      2 SEAL;      2 PUB;      2 ENHANCE;      2 DESIGN;      2 DELTAS;      1 SCORE;      1 PATCH;      1 MEMORY;

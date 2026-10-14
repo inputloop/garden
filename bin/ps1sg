@@ -1,0 +1,98 @@
+#!/bin/sh
+# ps1sg -- PERSONA 1 SIGN: the persona sheets Corwin signs, re-signed at make dist.
+#
+# usage: ps1sg check   each listed file: GOOD, BAD, MISSING (no signature), DIFFERS (a copy named in
+#                      /also/ is not byte-equal), or NOT CHECKED (unreachable here, or no gpg)
+#        ps1sg sign    sign each file whose signature is not GOOD (a BAD one moves to .arc/ first)
+#        ps1sg --prove-red
+# The list: conventions/SIGNED-PERSONAS.org.  The key: PUB_SIGN_KEY, else SIGN_KEY in
+# conventions/house.env.  Exit: 0 all fine; 1 a break (BAD, DIFFERS, or a signing that failed);
+# 2 nothing could be checked.  Disable: PS1SG=0.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st> and Contributors; GPL-3.0-or-later.
+# Mentat (for Corwin; claude-opus-5-5)
+set -u
+[ "${PS1SG:-1}" = 0 ] && { echo "ps1sg: disabled (PS1SG=0); NOT CHECKED"; exit 0; }
+here=$(cd "$(dirname "$0")/.." && pwd)
+LIST=${PS1SG_LIST:-$here/conventions/SIGNED-PERSONAS.org}
+BASE=${PS1SG_BASE:-$here}
+[ -r "$here/conventions/house.env" ] && . "$here/conventions/house.env"
+KEY=${PUB_SIGN_KEY:-${SIGN_KEY:-}}
+TAB=$(printf '\t')
+
+rows() { awk -F'|' '/^\|/ && !/^\|-/ { if (!h) { h = 1; next }
+  f = $2; a = $3; gsub(/^[ \t]+|[ \t]+$/, "", f); gsub(/^[ \t]+|[ \t]+$/, "", a); print f "\t" a }' "$LIST"; }
+
+state() { # FILE -> GOOD | BAD | MISSING | NOT
+  [ -f "$1" ] || { echo NOT; return; }
+  [ -f "$1.asc" ] || { echo MISSING; return; }
+  command -v gpg >/dev/null 2>&1 || { echo NOT; return; }
+  out=$(gpg --batch --status-fd 1 --verify "$1.asc" "$1" 2>/dev/null)
+  if printf '%s\n' "$out" | grep -q '^\[GNUPG:\] GOODSIG'; then echo GOOD
+  elif printf '%s\n' "$out" | grep -q '^\[GNUPG:\] BADSIG'; then echo BAD
+  elif printf '%s\n' "$out" | grep -q '^\[GNUPG:\] NO_PUBKEY'; then echo NOT
+  else echo BAD; fi
+}
+
+walk() { # MODE
+  mode=$1; bad=0; seen=0; t=$(mktemp); rows > "$t"
+  while IFS="$TAB" read -r f also; do
+    [ -n "$f" ] || continue
+    p="$BASE/$f"
+    if [ ! -f "$p" ]; then echo "NOT CHECKED  $f: not reachable from here"; continue; fi
+    seen=1
+    for c in $also; do
+      if [ ! -f "$BASE/$c" ]; then echo "NOT CHECKED  $c: the copy is not reachable from here"
+      elif ! cmp -s "$p" "$BASE/$c"; then echo "DIFFERS      $c: not byte-equal to $f (copy one over the other, then sign)"; bad=1; fi
+    done
+    s=$(state "$p")
+    if [ "$mode" = sign ] && [ "$s" != GOOD ]; then
+      if [ -z "$KEY" ] || ! command -v gpg >/dev/null 2>&1; then echo "NOT SIGNED   $f: no gpg or no key here ($s)"; bad=1; continue; fi
+      if [ -f "$p.asc" ]; then
+        arc="$(dirname "$p")/.arc"; mkdir -p "$arc"
+        mv "$p.asc" "$arc/$(basename "$p").asc.$(date -u +%Y-%m-%dT%H%M%SZ)-$s"
+      fi
+      if gpg --yes --batch --armor --local-user "$KEY" --detach-sign -o "$p.asc" "$p" 2>/dev/null; then
+        s=$(state "$p"); echo "SIGNED       $f ($s)"
+      else echo "SIGN FAILED  $f"; bad=1; continue; fi
+    fi
+    case $s in
+      GOOD) [ "$mode" = check ] && echo "GOOD         $f" ;;
+      BAD) echo "BAD          $f: its signature no longer verifies (make dist re-signs it)"; [ "$mode" = check ] && bad=1 ;;
+      MISSING) echo "MISSING      $f: no signature yet (make dist signs it)" ;;
+      NOT) echo "NOT CHECKED  $f: cannot verify here (no gpg, or not the signer's keyring)" ;;
+    esac
+  done < "$t"
+  rm -f "$t"
+  [ "$seen" = 0 ] && { echo "ps1sg: NOT CHECKED (no listed file is reachable from here)"; exit 2; }
+  [ "$bad" = 0 ] && { echo "ps1sg $mode: done"; exit 0; }
+  echo "ps1sg $mode: breaks above"; exit 1
+}
+
+prove_red() {
+  command -v gpg >/dev/null 2>&1 || { echo "ps1sg --prove-red: NOT CHECKED (no gpg)"; exit 2; }
+  w=$(mktemp -d) || exit 2; trap 'rm -rf "$w"' EXIT
+  export GNUPGHOME="$w/g"; mkdir -m 700 "$GNUPGHOME"
+  gpg --batch --passphrase '' --quick-gen-key 'ps1sg test <t@example.org>' ed25519 sign 1d >/dev/null 2>&1 || { echo "ps1sg --prove-red: NOT CHECKED (could not make a test key)"; exit 2; }
+  fp=$(gpg --batch --with-colons --list-keys 2>/dev/null | awk -F: '/^fpr/ { print $10; exit }')
+  mkdir -p "$w/b"; printf 'sheet v1\n' > "$w/b/S.md"; cp "$w/b/S.md" "$w/b/copy.md"
+  printf '| file | also | why |\n|-+-+-|\n| S.md | copy.md | test |\n' > "$w/L.org"
+  run() { PS1SG_LIST="$w/L.org" PS1SG_BASE="$w/b" PUB_SIGN_KEY="$fp" sh "$0" "$@"; }
+  bad=0
+  want() { if [ "$2" = "$3" ]; then echo "ok   $1"; else echo "MISS $1 (exit $2, wanted $3)"; bad=1; fi; }
+  run check >/dev/null; want "unsigned: MISSING, not a break" $? 0
+  run sign >/dev/null; want "sign signs it" $? 0
+  run check | grep -q '^GOOD'; want "then it reads GOOD" $? 0
+  printf 'sheet v2\n' > "$w/b/S.md"; cp "$w/b/S.md" "$w/b/copy.md"
+  run check >/dev/null; want "an edit after signing reads BAD: a break" $? 1
+  run sign >/dev/null; want "make dist re-signs it" $? 0
+  ls "$w/b/.arc/" | grep -q 'S.md.asc.*-BAD'; want "the BAD signature went to .arc, not away" $? 0
+  printf 'drift\n' >> "$w/b/copy.md"; run check >/dev/null; want "a copy that differs is a break" $? 1
+  [ "$bad" = 0 ] && { echo "ps1sg --prove-red: every planted fault caught"; exit 0; }
+  echo "ps1sg --prove-red: FAILED"; exit 1
+}
+
+case "${1:-}" in
+  check) walk check ;; sign) walk sign ;; --prove-red) prove_red ;;
+  *) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+esac

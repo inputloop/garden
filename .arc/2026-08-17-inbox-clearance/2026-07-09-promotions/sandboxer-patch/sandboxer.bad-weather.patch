@@ -1,0 +1,31 @@
+--- /tmp/sandboxer.orig.md	2026-07-09 22:48:55.097365900 -0500
++++ corwin/incubator/ready/2026-07-09-promotions/sandboxer-patch/patched/sandboxer/SKILL.md	2026-07-09 22:49:14.000000000 -0500
+@@ -300,4 +300,28 @@
+ the write-and-verify step rather than re-implement it. Reference when the
+ need is *occasional*; never merge what is only *sometimes* shared.
+ 
++## Known bad weather — treat the first read as suspect
+ 
++The rules above fire when an anomaly *shows*. Bad weather moves the line
++earlier: once this session has seen **any** desync, or the user reports
++changing files from their own side, every **first** bash read of a mount
++path is suspect *before* anything looks wrong. A stale mount can serve a
++whole directory old — a deleted `.git/` still listed, a resaved README at
++its old byte count with a frozen mtime — and nothing in that read will
++flag itself. (Observed 2026-07-02: bash showed `pub/.git` present and
++README.md at 1735 bytes after the user's own shell had rm'd the one and
++saved the other at 2080.)
++
++Under bad weather:
++
++1. **Cross-read before trusting any first read** of a mount path — bash
++   fingerprint (`verify.py`) *and* file-tool Read — especially after the
++   user says they touched files from their side. Don't wait for a tell.
++2. **The user's shell is a third, authoritative reader.** When they paste
++   `ls`/`rm`/editor output, weigh it above both sandbox paths; if either
++   sandbox reader disagrees with it, the sandbox reader is the stale one.
++3. **Frozen-to-the-nanosecond mtime across a known change is the tell**
++   that confirms it — a real resave moves the clock.
++
++Bad weather clears with the session, not with one good read: stay on
++cross-reads for the remainder once weather is declared.

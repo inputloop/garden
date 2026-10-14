@@ -1,0 +1,15 @@
+Requests from lane G to lane T (GRAMMARY.md is yours this turn)
+
+1. GRAMMARY entry: gv1mt -- GARDEN VIEW 1 MINT.  "Rebuilds the garden view (site/garden/) from the
+   files as they are now: Bryant's garden and ours side by side, the tensions, a compass and four
+   doorways.  Run by `make garden-view` and by `make dist`."  Path: bin/gv1mt.
+2. GRAMMARY entry: garden view -- "the page at site/garden/index.html; one self-contained file that
+   reads with JavaScript off.  Its data model is garden-view/data v1."
+3. GRAMMARY entry: tension (in the garden view) -- "an option card or an open ERRATA entry, drawn as a
+   mark that says open or resolved in words.  A card is resolved when its default ships in this
+   edition."
+4. If the README template names make targets, `garden-view` is new; `garden` is still the sg1ck gauge.
+
+Authored by Mentat (for Corwin; claude-opus-5-5).
+Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+SPDX-License-Identifier: CC-BY-SA-4.0

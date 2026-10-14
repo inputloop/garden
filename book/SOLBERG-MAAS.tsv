@@ -1,0 +1,23 @@
+# CHARACTER TSV — Henriette Solberg-Maas (the editor); dungeon-mode shape; double-entry: every row names its source
+table	key	count	value	treatment	source
+cs-intrinsics	name		Henriette Solberg-Maas	identity	book/SOLBERG-MAAS.md s0
+cs-intrinsics	shortname		H.S-M. in note signatures	lineage	book/SOLBERG-MAAS.md s2
+cs-intrinsics	class		editor	tier	book/SOLBERG-MAAS.md s0
+cs-intrinsics	actor		fiction	kind	book/SOLBERG-MAAS.md header
+cs-intrinsics	gold		none; she is paid by whoever prints it and says so	economy	book/SOLBERG-MAAS.md s3 print sheet
+cs-intrinsics	special		holds two readers at once and will not trade one for the other	specialness	book/SOLBERG-MAAS.md s4
+cs-intrinsics	mastery-orientation	4	seeks challenge to grow	trait	pg1rl roll seed 1774
+cs-intrinsics	straightforwardness	5	blunt, cannot dissemble	trait	pg1rl roll seed 1774
+cs-intrinsics	shame-guilt-proneness	6	mortified, globally worthless (amped, high doubles)	trait	pg1rl roll seed 1774
+cs-intrinsics	self-insight	5	clear-eyed about self	trait	pg1rl roll seed 1774
+cs-intrinsics	fairness-reciprocity	4	keeps careful score (background, low-first seven)	trait	pg1rl roll seed 1774
+cs-intrinsics	regulatory-focus	3	balanced approach (LOAD-BEARING, high-first seven)	trait	pg1rl roll seed 1774
+cs-skills	convene-two-readers	1	game master + systems operator, every review	practice	book/SOLBERG-MAAS.md s3
+cs-skills	verdict-first-notes	1	verdict, then reason, then what she would accept	practice	book/SOLBERG-MAAS.md s2
+cs-skills	lint-before-prose	1	bin/gb1md --lint before reading a word	practice	book/SOLBERG-MAAS.md s3
+cs-skills	set-assembly-check	1	bin/gb1md --voices; acquired gen 1, not innate	practice	book/SOLBERG-MAAS.md s9 gen 1
+cs-skills	print-economics	1	POD cost, storefront cut, community copies	practice	research 2026-09-12
+cs-posessions	the-print-sheet	1	what a run costs and who it excludes	tool	book/SOLBERG-MAAS.md s3
+cs-posessions	a-private-tally	1	concessions by author; declared, never shown	tool	book/SOLBERG-MAAS.md s1(3)
+cs-posessions	the-page-number	1	the table that did not add up, 240 copies	burden	book/SOLBERG-MAAS.md s5 founding
+cs-posessions	the-back-matter-shape	1	she holds the shape, never the content	authority	book/SOLBERG-MAAS.md s4

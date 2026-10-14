@@ -1,0 +1,73 @@
+#!/bin/sh
+# pn1ck -- PINNED 1 CHECK: someone else's bytes, kept whole, are checked against the hash their NOTICE
+# pins, and only then left out of the secrets scan (their bytes are the author's published ones, so they
+# cannot carry a secret of ours; what they hold that looks secret-shaped is the author's code).
+#
+# A pin is a line in a NOTICE-* file:   sha256 <64 hex>  <file beside the NOTICE> (upstream ...)
+# The third word must name a file in the NOTICE's own folder and the rest must say "(upstream"; any
+# other sha256 line (e.g. "upstream 1.4.0, as received", a hash of bytes no longer in the tree) is not
+# a pin and is ignored.
+#
+# usage: pn1ck check [DIR...]       every pin in DIR's NOTICE-* files matches its file (default: polygram)
+#        pn1ck unpinned DIR...      every regular file under DIR, less the pinned ones and __pycache__,
+#                                   one per line (feed it to sb1rn); refuses (exit 1) if a pin is off
+#        pn1ck --prove-red          plants a byte in a scratch copy and must see check go red
+# Exit 0 green, 1 a pin does not match (or names a missing file), 2 usage or tool missing.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st> and Contributors.
+# SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later
+# Written by Mentat (for Corwin; claude-opus-5-5), 2026-10-08, so `make dist` can carry Bryant's Tavern
+# whole (polygram/mcp/NOTICE-tavern) without weakening the scan of everything else.
+set -u
+LC_ALL=C; export LC_ALL
+me=pn1ck
+sha() {
+  if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1" | awk '{print $1}'
+  elif command -v shasum >/dev/null 2>&1; then shasum -a 256 "$1" | awk '{print $1}'
+  else echo "$me: no sha256sum or shasum here" >&2; exit 2; fi
+}
+pins() {  # DIR... -> "hex<TAB>path" per pin
+  for d in "$@"; do
+    find "$d" -type f -name 'NOTICE-*' 2>/dev/null | while IFS= read -r n; do
+      dn=$(dirname "$n")
+      awk -v dn="$dn" '$1 == "sha256" && $2 ~ /^[0-9a-f]+$/ && length($2) == 64 && index($0, "(upstream") {
+        print $2 "\t" dn "/" $3 }' "$n"
+    done
+  done
+}
+check() {  # DIR... -> 0/1, prints one line per pin
+  bad=0; n=0
+  tab=$(printf '\t')
+  pins "$@" > "${TMPDIR:-/tmp}/pn1ck.$$" || exit 2
+  while IFS="$tab" read -r want f; do
+    n=$((n+1))
+    if [ ! -f "$f" ]; then echo "FAULT  $f: pinned in a NOTICE, but not here" >&2; bad=$((bad+1)); continue; fi
+    got=$(sha "$f")
+    if [ "$got" = "$want" ]; then echo "OK     $f  pinned $want" >&2
+    else echo "FAULT  $f is $got; its NOTICE pins $want. Take a new version the way the NOTICE says, or put the author's bytes back." >&2; bad=$((bad+1)); fi
+  done < "${TMPDIR:-/tmp}/pn1ck.$$"
+  rm -f "${TMPDIR:-/tmp}/pn1ck.$$"
+  [ "$bad" -eq 0 ] || return 1
+  echo "$me: $n pin(s), all match" >&2; return 0
+}
+case "${1:-}" in
+  check) shift; [ $# -gt 0 ] || set -- polygram; check "$@"; exit $? ;;
+  unpinned)
+    shift; [ $# -gt 0 ] || { echo "usage: $me unpinned DIR..." >&2; exit 2; }
+    check "$@" || exit 1
+    p=$(pins "$@" | cut -f2)
+    find "$@" -type d -name __pycache__ -prune -o -type f -print | while IFS= read -r f; do
+      printf '%s\n' "$p" | grep -qxF -- "$f" || printf '%s\n' "$f"
+    done; exit 0 ;;
+  --prove-red)
+    t=$(mktemp -d) || exit 2; trap 'rm -rf "$t"' EXIT INT TERM
+    mkdir -p "$t/d"; printf 'author bytes\n' > "$t/d/up.py"
+    printf 'sha256 %s  up.py (upstream 1.0, as received)\n' "$(sha "$t/d/up.py")" > "$t/d/NOTICE-up"
+    check "$t/d" 2>/dev/null || { echo "$me: KIT BROKEN: a matching pin went red"; exit 2; }
+    [ "$(sh "$0" unpinned "$t/d" 2>/dev/null | grep -c 'up.py$')" -eq 0 ] || { echo "$me: KIT BROKEN: a pinned file was not left out"; exit 2; }
+    printf '#' >> "$t/d/up.py"
+    if check "$t/d" 2>/dev/null; then echo "$me: KIT BROKEN: a planted byte stayed green"; exit 2; fi
+    if sh "$0" unpinned "$t/d" >/dev/null 2>&1; then echo "$me: KIT BROKEN: unpinned listed files past a bad pin"; exit 2; fi
+    echo "$me: PROVE-RED PASS: a planted byte goes red, and the scan list is refused"; exit 0 ;;
+  *) sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+esac

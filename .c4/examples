@@ -1,0 +1,53 @@
+# .c4/examples -- paths and addresses that travel ON PURPOSE, as examples. Read by C4's bin/pb1ck
+# for anything minted under this tree (dist/vibrobeast included): a match that begins with a line
+# here reads EXAMPLE, shown with file:line and counted, never a leak.
+# Corwin, 2026-09-28: "Yes, example paths can travel; we will be looking forward to having
+# examples for several operating systems". The C4 defaults of the words server and ot1rd stay as
+# they are (his words the same day: "that's our C4 root until the turn to the ON position lands").
+# One per line, fixed text. Add another operating system's example the same way.
+#
+# Windows (the keeper's drive letters as the docs show them)
+F:\claude
+F:\SAVANNAH
+F:/claude
+F:/
+C:\Program Files
+C:/Program Files
+C:\Users
+C:/Users
+c:/users
+# MSYS2 spellings of the same
+/f/claude
+/f/SAVANNAH
+/f/x
+/f/...
+/g/wheel
+/c/Program Files
+# POSIX homes, mounts and the session sandbox, as examples and as the defaults that look for them
+/home/claude
+/Users/me
+/Users/...
+/mnt/
+/sessions/
+$HOME
+${HOME
+# prose about drive letters and msys2 (boundscheck's ot1rd, emacs-tashaki, the metrics hint)
+C:/msys64
+C:\\f\\x
+C:/ and c:/
+c:/ are the same place
+/c/Program
+# a UNC share and regexes in tests, all examples
+F:\\|AS4CE
+\\f\
+\d:\
+# the forge's git user (a public service address)
+forgejo@code.bru.st
+# the seat's desktop home as msys2 sees it (seatnote.py's docs and its test)
+/c/Users
+/Users/k
+# fixtures in tests: printf lines (\n:\r, \n:\n), a Python slice (x:\n), relative-path cases (/a/b)
+\n:\r
+\n:\n
+x:\n
+/a/b

@@ -1,0 +1,14 @@
+# Attested principle lines — the minions drift check (--expect this file).
+# Each non-comment line must appear VERBATIM somewhere in project memory
+# (memory/*.md or MEMORY.md); a missing line is a drift NOTICE, not a fix.
+# Canon lives in SAVANNAH; these are pinned echoes, chosen because they are
+# stable phrases from the blessed-principle note. Update deliberately, with
+# a minions pass — never to make a red check green.
+#
+# Run: python3 scripts/check_principles.py --memory WORKSPACE \
+#        --skills WORKSPACE/skills --expect skills/ethicsminions/references/attestations.txt
+two attestations
+universalism/egalitarianism
+four freedoms ordering
+family/non-participant line
+mechanical consent

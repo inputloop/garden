@@ -1,0 +1,163 @@
+<title>Mind-Model 2026-09-01</title>
+<style>
+  body{font:15px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;color:#1f2937;background:#fff;max-width:920px;margin:1.2rem auto;padding:0 1rem}
+  h1{font-size:1.5rem} h2{font-size:1.15rem;margin-top:1.8rem;border-bottom:1px solid #e5e7eb;padding-bottom:.2rem}
+  .panels{display:flex;flex-wrap:wrap;gap:14px} .panel{flex:1 1 380px;min-width:340px;border:1px solid #e5e7eb;border-radius:8px;padding:8px}
+  .cap{font-weight:600;margin:.2rem 0 .4rem} svg{width:100%;height:auto} code{background:#f3f4f6;padding:0 3px;border-radius:3px}
+  table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid #e5e7eb;padding:4px 6px;text-align:left;vertical-align:top}
+  .note{background:#f8fafc;border-left:3px solid #94a3b8;padding:.4rem .7rem;margin:.6rem 0}
+  .lg span{display:inline-block;margin-right:14px;font-size:13px} .sw{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:middle;margin-right:4px}
+</style>
+<svg width="0" height="0"><defs>
+  <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#475569"/></marker>
+</defs></svg>
+
+<h1>Mind-Model — 2026-09-01</h1>
+<p>Two opposing-view pairs of my cognition, plus the AI frame-of-reference. <b>As-should-be (present)</b>
+is modelled first and run through an eclipse; that reconstruction yields <b>as-was (end of last turn)</b>.
+Local only (models the instrument + internal work); companion glossary: <code>MIND-MODEL-2026-09-01.glossary.tsv</code>.</p>
+
+<div class="note"><b>Temporal flag.</b> My frame differs start-vs-end of turn: at the <i>end of last turn</i> I was in an
+<b>execution</b> frame (receive → detect tool-bait → apply the fresh rule → do task → defer build); at the
+<i>start of this turn</i> I am in a <b>reflective/verification</b> frame (model that, and prove the model). The
+"should-be" here is that present reflective frame.</div>
+
+<div class="lg"><b>Legend.</b><br>
+  <span><span class="sw" style="background:#dcfce7"></span>start/end (event ○)</span>
+  <span><span class="sw" style="background:#dbeafe"></span>task / activity (BPMN ▭)</span>
+  <span><span class="sw" style="background:#fef3c7"></span>gateway / guard (◇ / [cond])</span>
+  <span><span class="sw" style="background:#ede9fe"></span>state (Harel ▢)</span>
+  <span><span class="sw" style="background:#f1f5f9;border:1px dashed #94a3b8"></span>parallel region / standing concern</span>
+  <br><span>→ solid arrow = sequence flow · ⇢ dashed = loop/return · [x] on a line = guard condition</span>
+</div>
+
+<h2>0 · AI frame of reference (my SVG of your ASCII, refined)</h2>
+<p>Your stack, kept — awareness is fed from below by <b>Tools → Policies → Memory</b> and from above by
+<b>Knowledge</b>, producing a <b>Response</b> to the <b>User</b>. Refinement: the up-arrows are <i>constraint/supply</i>
+(each layer bounds and feeds the one above), and this session's instances are named in italics.</p>
+<svg viewBox="0 0 620 330" role="img" aria-label="AI frame of reference">
+  <!-- center -->
+  <rect x="235" y="140" width="150" height="46" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="310" y="163" text-anchor="middle" font-weight="600">AI AWARENESS</text>
+  <text x="310" y="178" text-anchor="middle" font-size="11" fill="#475569">the working frame</text>
+  <!-- user/response horizontal -->
+  <rect x="40" y="148" width="90" height="30" rx="6" fill="#dcfce7" stroke="#16a34a"/><text x="85" y="168" text-anchor="middle">User</text>
+  <line x1="130" y1="163" x2="233" y2="163" stroke="#475569" marker-end="url(#ar)"/><text x="182" y="156" text-anchor="middle" font-size="11">asks</text>
+  <rect x="490" y="148" width="95" height="30" rx="6" fill="#dcfce7" stroke="#16a34a"/><text x="537" y="168" text-anchor="middle">Response</text>
+  <line x1="387" y1="163" x2="488" y2="163" stroke="#475569" marker-end="url(#ar)"/><text x="438" y="156" text-anchor="middle" font-size="11">answers</text>
+  <!-- knowledge above -->
+  <rect x="245" y="20" width="130" height="34" rx="6" fill="#f8fafc" stroke="#94a3b8"/><text x="310" y="42" text-anchor="middle">Knowledge</text>
+  <line x1="310" y1="140" x2="310" y2="56" stroke="#475569" marker-end="url(#ar)"/><text x="352" y="100" font-size="11" fill="#475569">informs</text>
+  <text x="368" y="46" font-size="10" fill="#64748b"><tspan font-style="italic">training + this context</tspan></text>
+  <!-- stack below: Memory, Policies, Tools -->
+  <rect x="245" y="205" width="130" height="30" rx="6" fill="#f1f5f9" stroke="#94a3b8"/><text x="310" y="224" text-anchor="middle">Memory</text>
+  <text x="380" y="224" font-size="10" fill="#64748b" font-style="italic">the seat</text>
+  <rect x="245" y="248" width="130" height="30" rx="6" fill="#f1f5f9" stroke="#94a3b8"/><text x="310" y="267" text-anchor="middle">Policies</text>
+  <text x="380" y="267" font-size="10" fill="#64748b" font-style="italic">rules · drift · guards</text>
+  <rect x="245" y="291" width="130" height="30" rx="6" fill="#f1f5f9" stroke="#94a3b8"/><text x="310" y="310" text-anchor="middle">Tools</text>
+  <text x="380" y="310" font-size="10" fill="#64748b" font-style="italic">seatkeeper · run-cards</text>
+  <line x1="310" y1="291" x2="310" y2="238" stroke="#475569" marker-end="url(#ar)"/>
+  <line x1="310" y1="248" x2="310" y2="238" stroke="#475569"/>
+  <line x1="310" y1="205" x2="310" y2="188" stroke="#475569" marker-end="url(#ar)"/>
+  <text x="318" y="200" font-size="11" fill="#475569">supplies + bounds</text>
+</svg>
+
+<h2>1 · As-should-be (present reflective frame) — done first</h2>
+<div class="panels">
+ <div class="panel"><div class="cap">1a · BPMN (process view)</div>
+  <svg viewBox="0 0 400 300" role="img" aria-label="should-be process">
+   <circle cx="30" cy="40" r="12" fill="#dcfce7" stroke="#16a34a"/><text x="52" y="44" font-size="12">receive: "model your cognition"</text>
+   <rect x="30" y="66" width="150" height="34" rx="8" fill="#dbeafe" stroke="#2563eb"/><text x="105" y="87" text-anchor="middle" font-size="12">run eclipse on present</text>
+   <line x1="30" y1="52" x2="80" y2="64" stroke="#475569" marker-end="url(#ar)"/>
+   <rect x="30" y="116" width="150" height="34" rx="8" fill="#dbeafe" stroke="#2563eb"/><text x="105" y="137" text-anchor="middle" font-size="12">reconstruct past frame</text>
+   <line x1="105" y1="100" x2="105" y2="114" stroke="#475569" marker-end="url(#ar)"/>
+   <rect x="30" y="166" width="150" height="34" rx="8" fill="#dbeafe" stroke="#2563eb"/><text x="105" y="183" text-anchor="middle" font-size="12">author diagrams</text><text x="105" y="196" text-anchor="middle" font-size="10" fill="#475569">+legend +labels +glossary</text>
+   <line x1="105" y1="150" x2="105" y2="164" stroke="#475569" marker-end="url(#ar)"/>
+   <path d="M105,216 L140,236 L105,256 L70,236 Z" fill="#fef3c7" stroke="#d97706"/><text x="105" y="240" text-anchor="middle" font-size="11">backward-check</text>
+   <line x1="105" y1="200" x2="105" y2="214" stroke="#475569" marker-end="url(#ar)"/>
+   <path d="M70,236 C10,236 10,183 28,183" fill="none" stroke="#475569" stroke-dasharray="4" marker-end="url(#ar)"/><text x="14" y="210" font-size="10">[change]</text>
+   <circle cx="230" cy="236" r="12" fill="#86efac" stroke="#16a34a"/><text x="248" y="240" font-size="12">deliver + drift</text>
+   <line x1="140" y1="236" x2="216" y2="236" stroke="#475569" marker-end="url(#ar)"/><text x="178" y="230" text-anchor="middle" font-size="10">[clean]</text>
+  </svg></div>
+ <div class="panel"><div class="cap">1b · Harel statechart (state view)</div>
+  <svg viewBox="0 0 400 300" role="img" aria-label="should-be state">
+   <rect x="14" y="14" width="290" height="230" rx="10" fill="none" stroke="#7c3aed" stroke-width="1.5"/><text x="24" y="30" font-size="12" font-weight="600" fill="#7c3aed">REFLECTING</text>
+   <circle cx="30" cy="48" r="5" fill="#7c3aed"/>
+   <rect x="40" y="42" width="110" height="30" rx="8" fill="#ede9fe" stroke="#7c3aed"/><text x="95" y="61" text-anchor="middle" font-size="12">Eclipsing</text>
+   <line x1="35" y1="48" x2="38" y2="55" stroke="#475569" marker-end="url(#ar)"/>
+   <text x="158" y="52" font-size="10" fill="#64748b">‖ doubt ‖ reward</text>
+   <rect x="40" y="86" width="110" height="30" rx="8" fill="#ede9fe" stroke="#7c3aed"/><text x="95" y="105" text-anchor="middle" font-size="12">Reconstructing</text>
+   <line x1="95" y1="72" x2="95" y2="84" stroke="#475569" marker-end="url(#ar)"/>
+   <rect x="40" y="130" width="110" height="30" rx="8" fill="#ede9fe" stroke="#7c3aed"/><text x="95" y="149" text-anchor="middle" font-size="12">Authoring</text>
+   <line x1="95" y1="116" x2="95" y2="128" stroke="#475569" marker-end="url(#ar)"/>
+   <rect x="40" y="174" width="110" height="30" rx="8" fill="#ede9fe" stroke="#7c3aed"/><text x="95" y="193" text-anchor="middle" font-size="12">Verifying</text>
+   <line x1="95" y1="160" x2="95" y2="172" stroke="#475569" marker-end="url(#ar)"/>
+   <path d="M150,189 C185,189 185,145 152,145" fill="none" stroke="#475569" stroke-dasharray="4" marker-end="url(#ar)"/><text x="188" y="170" font-size="10">[change→restart]</text>
+   <rect x="40" y="212" width="110" height="26" rx="8" fill="#ede9fe" stroke="#7c3aed"/><text x="95" y="229" text-anchor="middle" font-size="12">Delivering</text>
+   <line x1="95" y1="204" x2="95" y2="210" stroke="#475569" marker-end="url(#ar)"/>
+   <!-- parallel standing concerns -->
+   <rect x="316" y="30" width="76" height="90" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="4"/>
+   <text x="354" y="46" text-anchor="middle" font-size="10" fill="#475569">standing</text>
+   <text x="354" y="70" text-anchor="middle" font-size="11">Ground-to-</text><text x="354" y="83" text-anchor="middle" font-size="11">words</text>
+   <line x1="354" y1="95" x2="354" y2="105" stroke="#94a3b8"/>
+   <text x="354" y="116" text-anchor="middle" font-size="11">Drift-track</text>
+  </svg></div>
+</div>
+
+<div class="note"><b>Eclipse on the present, to reconstruct the past.</b>
+<b>Doubt-first:</b> did I really <i>resist a bait</i>, or just follow a rule I'd made minutes earlier? The rule was
+<b>fresh and salient</b>, so the restraint was low-cost — the "self-catch" is over-credited if read as hard-won.
+<b>Reward-first:</b> the rule <i>was</i> applied correctly, the candidate named, the build deferred — a clean run.
+<b>Convergence:</b> end-of-last-turn = <b>apply-fresh-rule → execute → defer</b>, with the guard prominent because it
+was new, not because temptation was strong. That honest discount shapes Part 2 below.</div>
+
+<h2>2 · As-was (end of last turn — reconstructed) — execution frame</h2>
+<div class="panels">
+ <div class="panel"><div class="cap">2a · BPMN (process view)</div>
+  <svg viewBox="0 0 400 300" role="img" aria-label="as-was process">
+   <circle cx="30" cy="40" r="12" fill="#dcfce7" stroke="#16a34a"/><text x="52" y="44" font-size="12">receive: "diagrams, easiest via tool"</text>
+   <rect x="30" y="66" width="150" height="34" rx="8" fill="#dbeafe" stroke="#2563eb"/><text x="105" y="87" text-anchor="middle" font-size="12">detect tool-bait</text>
+   <line x1="30" y1="52" x2="80" y2="64" stroke="#475569" marker-end="url(#ar)"/>
+   <path d="M105,116 L155,140 L105,164 L55,140 Z" fill="#fef3c7" stroke="#d97706"/><text x="105" y="138" text-anchor="middle" font-size="11">rush a tool?</text><text x="105" y="150" text-anchor="middle" font-size="9">MAIN-MEMORY-DESYNC</text>
+   <line x1="105" y1="100" x2="105" y2="114" stroke="#475569" marker-end="url(#ar)"/>
+   <rect x="30" y="180" width="150" height="30" rx="8" fill="#dbeafe" stroke="#2563eb"/><text x="105" y="199" text-anchor="middle" font-size="12">do task w/ existing tools</text>
+   <line x1="105" y1="164" x2="105" y2="178" stroke="#475569" marker-end="url(#ar)"/><text x="120" y="176" font-size="10">[no — fresh rule]</text>
+   <rect x="30" y="224" width="150" height="30" rx="8" fill="#dbeafe" stroke="#2563eb"/><text x="105" y="243" text-anchor="middle" font-size="12">name tool candidate</text>
+   <line x1="105" y1="210" x2="105" y2="222" stroke="#475569" marker-end="url(#ar)"/>
+   <rect x="220" y="224" width="120" height="30" rx="8" fill="#dbeafe" stroke="#2563eb"/><text x="280" y="243" text-anchor="middle" font-size="12">defer build→pipeline</text>
+   <line x1="180" y1="239" x2="218" y2="239" stroke="#475569" marker-end="url(#ar)"/>
+   <circle cx="280" cy="284" r="12" fill="#86efac" stroke="#16a34a"/><text x="235" y="288" font-size="12" text-anchor="end">deliver+drift</text>
+   <line x1="280" y1="254" x2="280" y2="272" stroke="#475569" marker-end="url(#ar)"/>
+   <line x1="155" y1="140" x2="360" y2="140" stroke="#475569" stroke-dasharray="4" marker-end="url(#ar)"/><text x="300" y="134" font-size="10">[yes]→(would rush)</text>
+  </svg></div>
+ <div class="panel"><div class="cap">2b · Harel statechart (state view)</div>
+  <svg viewBox="0 0 400 300" role="img" aria-label="as-was state">
+   <rect x="14" y="14" width="290" height="230" rx="10" fill="none" stroke="#7c3aed" stroke-width="1.5"/><text x="24" y="30" font-size="12" font-weight="600" fill="#7c3aed">EXECUTING</text>
+   <circle cx="30" cy="48" r="5" fill="#7c3aed"/>
+   <rect x="40" y="42" width="120" height="30" rx="8" fill="#ede9fe" stroke="#7c3aed"/><text x="100" y="61" text-anchor="middle" font-size="12">Evaluating-ask</text>
+   <line x1="35" y1="48" x2="38" y2="55" stroke="#475569" marker-end="url(#ar)"/>
+   <rect x="40" y="90" width="120" height="34" rx="8" fill="#ede9fe" stroke="#7c3aed"/><text x="100" y="106" text-anchor="middle" font-size="12">Rule-guard-check</text><text x="100" y="118" text-anchor="middle" font-size="9" fill="#475569">[tool-bait] (fresh)</text>
+   <line x1="100" y1="72" x2="100" y2="88" stroke="#475569" marker-end="url(#ar)"/>
+   <rect x="40" y="142" width="120" height="30" rx="8" fill="#ede9fe" stroke="#7c3aed"/><text x="100" y="161" text-anchor="middle" font-size="12">Doing-task</text>
+   <line x1="100" y1="124" x2="100" y2="140" stroke="#475569" marker-end="url(#ar)"/><text x="150" y="136" font-size="9">[don't rush]</text>
+   <rect x="40" y="186" width="120" height="30" rx="8" fill="#ede9fe" stroke="#7c3aed"/><text x="100" y="205" text-anchor="middle" font-size="12">Naming-candidate</text>
+   <line x1="100" y1="172" x2="100" y2="184" stroke="#475569" marker-end="url(#ar)"/>
+   <rect x="40" y="212" width="120" height="26" rx="8" fill="#ede9fe" stroke="#7c3aed"/><text x="100" y="229" text-anchor="middle" font-size="12">Deferring-build</text>
+   <line x1="100" y1="216" x2="100" y2="210" stroke="#475569" marker-end="url(#ar)"/>
+   <rect x="316" y="40" width="76" height="60" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="4"/>
+   <text x="354" y="56" text-anchor="middle" font-size="10" fill="#475569">standing</text><text x="354" y="76" text-anchor="middle" font-size="11">Drift-track</text>
+  </svg></div>
+</div>
+
+<h2>Backward-check (walk 4→3→2→1; restart-on-change; cap 17)</h2>
+<p>Pass 1 walked bottom-up. Fixes made (then re-walked): <b>(4 terms)</b> "build phase" and "guard/parallel-region"
+were undefined → added to the glossary. <b>(3 symbols)</b> the dashed vs solid line meaning was unlabeled → added to
+the legend ("⇢ dashed = loop/return"). <b>(2 lines)</b> two arrows in 2a were unlabeled → added <code>[no — fresh rule]</code>
+and <code>[yes]</code>. <b>(1 components)</b> "Knowledge" supply-arrow lacked an italic instance → added "training + this
+context". Pass 2 after those changes: 4✓ 3✓ 2✓ 1✓ — <b>clean, stopped at pass 2</b> (well under the 17 cap).</p>
+<p><b>Pattern noticed on stopping:</b> every miss was a <i>label</i> gap, not a <i>structure</i> gap — my diagrams
+tend to be structurally right but under-annotated. That is the exact failure the backward-walk is built to catch, and
+it mirrors the session-long theme (ground/label the thing, don't leave meaning unstated).</p>
+
+<p style="color:#64748b;font-size:12px">Glossary: <code>MIND-MODEL-2026-09-01.glossary.tsv</code> (18 terms). Local file; not published.</p>
+<p style="text-align:center;color:#94a3b8;font-size:11px">sentinel: MIND-MODEL-2026-09-01</p>

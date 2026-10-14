@@ -1,0 +1,262 @@
+#!/bin/sh
+# ft1mt -- FOOTER 1 MINT: the common footer, minted from conventions/house.env (who, which licence,
+# which persona and model, which time zone) and conventions/FOOTERS.org (per skill: version, the
+# version it was revised from, when, and its spine date), never typed by hand.
+#
+# usage: ft1mt seed               add a FOOTERS.org row for every skill that has none
+#        ft1mt mint [NAME...]     write each skill's footer; a skill is re-dated only when its body
+#                                 (the file less its footer) changed since it was last minted
+#        ft1mt check              every footer equals what mint would write; every body matches its
+#                                 row; every skill has a row.  Exit 1 if not.
+#        ft1mt line NAME          print the footer NAME gets
+#        ft1mt footer VERSION FROM REVISED SPINE [TAIL]   a footer for any other file (FROM "-": first)
+#        ft1mt stamp FILE VERSION FROM REVISED SPINE [TAIL]   mint the footer into any other file
+#                                 (a persona sheet, a README), in place, the same way
+#        ft1mt utc "YYYY-MM-DD HH:MM"   a time in LOCAL_TZ, as UTC (the one place a local time is read)
+#        ft1mt --prove-red
+# Rows say how a skill's footer is made: mint (here), recipe (its own literate recipe writes it), or
+# verbatim (someone else's bytes, kept whole; its NOTICE governs).  Disable: FT1MT=0.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st> and Contributors; GPL-3.0-or-later.
+# Mentat (for Corwin; claude-opus-5-5)
+set -u
+[ "${FT1MT:-1}" = 0 ] && { echo "ft1mt: disabled (FT1MT=0); NOT CHECKED"; exit 0; }
+here=$(cd "$(dirname "$0")/.." && pwd)
+CONV=${FT1MT_CONV:-$here/conventions/house.env}
+TABLE=${FT1MT_TABLE:-$here/conventions/FOOTERS.org}
+NEWS=${FT1MT_NEWS:-$here/NEWS}
+CL=${FT1MT_CHANGELOG:-$here/ChangeLog}
+FOLDERS=${FT1MT_FOLDERS:-"skills SOFT-SKILLS"}
+MAKERS=${FT1MT_MAKERS:-$here/conventions/MAKERS.org}   # skills whose words are partly someone else's
+CO=""
+BASE=${FT1MT_BASE:-$here}
+LC_ALL=C; export LC_ALL
+TAB=$(printf '\t')
+tmp_c=$(mktemp) || exit 2; trap 'rm -f "$tmp_c"' EXIT
+BEGIN_MARK='<!-- footer: minted by bin/ft1mt from conventions/house.env and conventions/FOOTERS.org; edit those, not this -->'
+END_MARK='<!-- /footer -->'
+die() { echo "ft1mt: NOT CHECKED: $*" >&2; exit 2; }
+[ -r "$CONV" ] || die "cannot read $CONV"
+. "$CONV"
+today() { date -u +%Y-%m-%d; }
+
+releases() { # -> "CURRENT PREVIOUS" from NEWS
+  awk '/^Version [0-9]/ { v[++n] = $2 } n == 2 { exit } END { print v[1], (v[2] == "" ? "-" : v[2]) }' "$NEWS"
+}
+
+body() { # FILE -> the file less its footer block (and the blank line after it), trailing blanks dropped
+  awk -v b="$BEGIN_MARK" -v e="$END_MARK" '
+    $0 == b { skip = 1; next }  skip && $0 == e { skip = 0; after = 1; next }  skip { next }
+    after { after = 0; if ($0 ~ /^[ \t]*$/) next }
+    { line[++n] = $0 }
+    END { while (n > 0 && line[n] ~ /^[ \t]*$/) n--; for (i = 1; i <= n; i++) print line[i] }' "$1"
+}
+bodysha() { body "$1" | sha256sum | cut -c1-12; }
+
+footer() { # VERSION FROM REVISED SPINE [TAIL] -> the two footer lines (with a blank between)
+  v=$1 f=$2 r=$3 s=$4 tail=${5:-"(scripts $CODE_LICENCE)"}
+  if [ "$f" = - ] || [ -z "$f" ]; then printf '*Version %s: first edition %s; spine: %s.*\n' "$v" "$r" "$s"
+  else printf '*Version %s: edition revised from %s on %s; spine: %s.*\n' "$v" "$f" "$r" "$s"; fi
+  ys=${s%%-*} yr=${r%%-*}
+  case $ys in [0-9][0-9][0-9][0-9]) ;; *) ys=$yr ;; esac
+  if [ "$ys" = "$yr" ]; then years=$yr; else years="$ys-$yr"; fi
+  holder=$HOLDER; [ -n "$CO" ] && holder="$CO and $HOLDER"
+  printf '\nCopyright %s %s; %s: %s %s; %s (for %s; %s)\n' "$years" "$holder" "$PROSE_LICENCE" "$PROSE_LICENCE_URL" "$tail" "$PERSONA" "$PRINCIPAL" "$MODEL"
+}
+co_for() { # NAME -> the other makers MAKERS.org names for that skill (the attribution ladder, rung 1), or nothing
+  [ -f "$MAKERS" ] || return 0
+  awk -F'|' -v n="$1" 'NF > 3 { k = $2; gsub(/^ +| +$/, "", k); if (k == n) { m = $3; gsub(/^ +| +$/, "", m); print m; exit } }' "$MAKERS"
+}
+block() { printf '%s\n' "$BEGIN_MARK"; footer "$@"; printf '%s\n' "$END_MARK"; }
+compose() { # FILE VERSION FROM REVISED SPINE -> the file as minted: body, then the footer; when the
+            # body ends on a "sentinel:" line (the author's own end mark), the footer goes just before
+            # it, so the sentinel stays last
+  f=$1; shift
+  body "$f" > "$tmp_c"
+  if tail -n 1 "$tmp_c" | grep -q '^sentinel: '; then
+    sed '$d' "$tmp_c" | awk '{ l[++n] = $0 } END { while (n > 0 && l[n] ~ /^[ \t]*$/) n--; for (i = 1; i <= n; i++) print l[i] }'
+    printf '\n'; block "$@"; printf '\n'; tail -n 1 "$tmp_c"
+  else
+    cat "$tmp_c"; printf '\n'; block "$@"
+  fi
+}
+
+rows() { # TABLE -> TSV: skill folder how version from revised spine spinefrom sha
+  [ -r "$TABLE" ] || return 0
+  awk -F'|' '/^\|/ && !/^\|-/ { if (!hdr) { hdr = 1; next }
+    out = ""; for (i = 2; i < NF; i++) { f = $i; gsub(/^[ \t]+|[ \t]+$/, "", f); sep = (i > 2) ? "\t" : ""; out = out sep f }; print out }' "$TABLE"
+}
+write_table() { # TSV on stdin -> TABLE (Org, aligned)
+  {
+    cat <<'HEAD'
+#+TITLE: Footers: one row per skill
+#+STARTUP: showall
+
+Read by bin/ft1mt, which mints each skill's footer from this table and conventions/house.env.
+Edit a row's /spine/ or /how/ by hand if it is wrong; ft1mt keeps /version/, /from/, /revised/ and
+/body/ up to date itself (a skill is re-dated only when its body changes).  /how/: mint (ft1mt
+writes the footer), recipe (the skill's own literate recipe writes it), verbatim (someone else's
+bytes, kept whole).  /spine from/ says where the spine date was found.
+
+HEAD
+    sort -t "$TAB" -k1,1 | awk -F'\t' '
+      BEGIN { split("skill|folder|how|version|from|revised|spine|spine from|body", h, "|"); nc = 9
+              for (i = 1; i <= nc; i++) { cell[0, i] = h[i]; w[i] = length(h[i]) } }
+      { n++; for (i = 1; i <= nc; i++) { cell[n, i] = $i; if (length($i) > w[i]) w[i] = length($i) } }
+      END { for (r = 0; r <= n; r++) { line = "|"; for (i = 1; i <= nc; i++) { c = cell[r, i]; while (length(c) < w[i]) c = c " "; line = line " " c " |" }; print line
+              if (r == 0) { line = "|"; for (i = 1; i <= nc; i++) { d = ""; for (k = 0; k < w[i] + 2; k++) d = d "-"; sep = (i < nc) ? "+" : "|"; line = line d sep }; print line } } }'
+  } > "$TABLE.new" && mv "$TABLE.new" "$TABLE"
+}
+
+skill_dirs() { # -> "folder<TAB>name" for every skill with a SKILL.md
+  for fo in $FOLDERS; do
+    for d in "$BASE/$fo"/*/; do [ -f "$d/SKILL.md" ] && printf '%s\t%s\n' "$fo" "$(basename "$d")"; done
+  done
+}
+
+spine() { # FOLDER NAME -> "DATE<TAB>source": the earliest of the evidence, and where it was found
+  fo=$1 n=$2 d="$BASE/$1/$2"
+  {
+    [ -r "$CL" ] && awk -v k1="skills/$n" -v k2="SOFT-SKILLS/$n" '/^20[0-9][0-9]-[01][0-9]-[0-3][0-9] / { d = $1 }
+        { if ((index($0, k1 "/") || index($0, k1 ":") || index($0, k1 " ") || index($0, k2 "/") || index($0, k2 ":") || index($0, k2 " ")) && d != "") last = d }
+        END { if (last != "") print last "\tthe ChangeLog" }' "$CL"
+    [ -d "$d/.arc" ] && find "$d/.arc" 2>/dev/null | grep -o '20[0-9][0-9]-[01][0-9]-[0-3][0-9]' | sort | head -n 1 | sed 's/$/\tits .arc/'
+    grep -o '20[0-9][0-9]-[01][0-9]-[0-3][0-9]' "$d/SKILL.md" | awk '$0 >= "2026-06-01"' | sort | head -n 1 | sed 's/$/\tthe earliest date its text names/'
+  } | sort | head -n 1 | grep . || printf '%s\tnone found (the seed date)\n' "$(today)"
+}
+
+how_for() { # FOLDER NAME -> mint | recipe | verbatim
+  d="$BASE/$1/$2"
+  if [ -f "$d/NOTICE.md" ] && grep -Eqi 'byte[- ]for[- ]byte' "$d/NOTICE.md"; then echo verbatim; return; fi
+  if ! grep -Fqx -- "$BEGIN_MARK" "$d/SKILL.md" && grep -Eq '^\*Version [^:]+: ' "$d/SKILL.md"; then echo recipe; return; fi
+  echo mint
+}
+
+seed() {
+  set -- $(releases); cur=$1 prev=$2
+  t=$(mktemp) || die "no temp"; rows > "$t"; added=0
+  skill_dirs | while IFS="$TAB" read -r fo n; do
+    awk -F'\t' -v n="$n" '$1 == n { f = 1 } END { exit !f }' "$t" && continue
+    sp=$(spine "$fo" "$n")
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$n" "$fo" "$(how_for "$fo" "$n")" "$cur" "$prev" "$(today)" "${sp%%"$TAB"*}" "${sp#*"$TAB"}" "$(bodysha "$BASE/$fo/$n/SKILL.md")"
+  done > "$t.add"
+  added=$(grep -c . "$t.add")
+  cat "$t" "$t.add" | write_table
+  echo "ft1mt seed: $added row(s) added; $(rows | grep -c .) in all ($TABLE)"
+  rm -f "$t" "$t.add"
+}
+
+mint() {
+  set -- $(releases) "$@"; cur=$1 prev=$2; shift 2
+  t=$(mktemp) || die "no temp"; rows > "$t"; : > "$t.new"; wrote=0; redated=0
+  while IFS="$TAB" read -r n fo how v f r s sf sha; do
+    if [ $# -gt 0 ]; then want=0; for a; do [ "$a" = "$n" ] && want=1; done; else want=1; fi
+    file="$BASE/$fo/$n/SKILL.md"
+    if [ "$want" = 1 ] && [ "$how" = mint ] && [ -f "$file" ]; then
+      now=$(bodysha "$file")
+      if [ "$now" != "$sha" ]; then
+        [ "$v" != "$cur" ] && f=$v
+        v=$cur r=$(today) sha=$now; redated=$((redated + 1))
+      fi
+      CO=$(co_for "$n"); tmpf=$(mktemp); compose "$file" "$v" "$f" "$r" "$s" > "$tmpf"
+      if ! cmp -s "$tmpf" "$file"; then cat "$tmpf" > "$file"; wrote=$((wrote + 1)); fi
+      rm -f "$tmpf"
+    fi
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$n" "$fo" "$how" "$v" "$f" "$r" "$s" "$sf" "$sha" >> "$t.new"
+  done < "$t"
+  write_table < "$t.new"
+  echo "ft1mt mint: $wrote file(s) written; $redated re-dated (their bodies had changed)"
+  rm -f "$t" "$t.new"
+}
+
+check() {
+  t=$(mktemp) || die "no temp"; rows > "$t"; bad=0
+  [ -s "$t" ] || { echo "ft1mt check: NOT CHECKED (no rows in $TABLE; run ft1mt seed)"; rm -f "$t"; exit 2; }
+  skill_dirs | while IFS="$TAB" read -r fo n; do
+    awk -F'\t' -v n="$n" '$1 == n { f = 1 } END { exit !f }' "$t" || echo "RED      $n: no row in FOOTERS.org (run ft1mt seed)"
+  done > "$t.out"
+  while IFS="$TAB" read -r n fo how v f r s sf sha; do
+    file="$BASE/$fo/$n/SKILL.md"
+    [ -f "$file" ] || { echo "RED      $n: the row names $fo/$n/SKILL.md, which is gone"; continue; }
+    case $how in
+      verbatim) ;;
+      recipe) grep -Eq '^\*Version [^:]+: .*20[0-9][0-9]-[01][0-9]-[0-3][0-9]' "$file" || echo "RED      $n: recipe skill without a dated version line" ;;
+      mint)
+        [ "$(bodysha "$file")" = "$sha" ] || echo "RED      $n: the body changed since it was minted (run ft1mt mint)"
+        CO=$(co_for "$n"); exp=$(mktemp); compose "$file" "$v" "$f" "$r" "$s" > "$exp"
+        cmp -s "$exp" "$file" || echo "RED      $n: the footer is not what ft1mt mints (hand-edited, or the conventions changed: run ft1mt mint)"
+        rm -f "$exp" ;;
+      *) echo "RED      $n: unknown how '$how'" ;;
+    esac
+  done < "$t" >> "$t.out"
+  cat "$t.out"
+  nr=$(grep -c '^RED' "$t.out"); total=$(grep -c . "$t")
+  rm -f "$t" "$t.out"
+  if [ "$nr" -gt 0 ]; then echo "ft1mt check: $nr break(s) over $total row(s)"; exit 1; fi
+  echo "ft1mt check: $total row(s); every footer is as minted"
+}
+
+utc() { # "YYYY-MM-DD HH:MM" in LOCAL_TZ -> UTC
+  if date --version >/dev/null 2>&1; then
+    s=$(TZ="$LOCAL_TZ" date -d "$1" +%s 2>/dev/null) || die "cannot read '$1' as a time"
+    date -u -d "@$s" +%Y-%m-%dT%H:%MZ
+  elif command -v python3 >/dev/null 2>&1; then
+    python3 -c 'import sys,datetime,zoneinfo; d=datetime.datetime.strptime(sys.argv[1],"%Y-%m-%d %H:%M").replace(tzinfo=zoneinfo.ZoneInfo(sys.argv[2])); print(d.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"))' "$1" "$LOCAL_TZ"
+  else die "no GNU date and no python3 to read a local time"; fi
+}
+
+prove_red() {
+  w=$(mktemp -d) || exit 2; trap 'rm -rf "$w" "$tmp_c"' EXIT
+  mkdir -p "$w/skills/a" "$w/skills/b" "$w/SOFT-SKILLS/c"
+  printf -- '---\nname: a\ndescription: A.\n---\n# A\n\nIt ends.\n' > "$w/skills/a/SKILL.md"
+  printf -- '---\nname: b\ndescription: B.\n---\n# B\n\nIt ends.\n\n*Version 0.1: first edition 2026-10-04; spine: 2026-10-04.*\n' > "$w/skills/b/SKILL.md"
+  printf -- '---\nname: c\ndescription: C.\n---\n# C\n\nIt ends.\n' > "$w/SOFT-SKILLS/c/SKILL.md"; printf 'Kept byte-for-byte.\n' > "$w/SOFT-SKILLS/c/NOTICE.md"
+  printf 'NEWS\n\nVersion 2.0 (unreleased)\n\nVersion 1.9\n' > "$w/NEWS"; printf '2026-07-02  X  <x@y>\n\n\t* skills/a: new.\n' > "$w/ChangeLog"
+  cp "$CONV" "$w/house.env"
+  run() { FT1MT_MAKERS="$w/M.org" FT1MT_CONV="$w/house.env" FT1MT_TABLE="$w/F.org" FT1MT_NEWS="$w/NEWS" FT1MT_CHANGELOG="$w/ChangeLog" FT1MT_BASE="$w" sh "$0" "$@"; }
+  bad=0
+  want() { if [ "$2" = "$3" ]; then echo "ok   $1"; else echo "MISS $1 (got $2, wanted $3)"; bad=1; fi; }
+  run seed >/dev/null; run mint >/dev/null
+  run check >/dev/null; want "seeded and minted: check reads true" $? 0
+  want "how: a mint, b recipe, c verbatim" "$(rows_of() { awk -F'|' '/^\| [abc] /{gsub(/ /,"",$2); gsub(/ /,"",$4); printf "%s=%s ", $2, $4}' "$w/F.org"; }; rows_of)" "a=mint b=recipe c=verbatim "
+  want "a's spine comes from the ChangeLog" "$(grep -c '^| a .*2026-07-02 | the ChangeLog' "$w/F.org")" 1
+  want "the footer closes the file and carries a dated version line" "$(tail -n 1 "$w/skills/a/SKILL.md")" "$END_MARK"
+  cp "$w/skills/a/SKILL.md" "$w/keep"
+  sed -i 's/^Copyright/Copyleft/' "$w/skills/a/SKILL.md"; run check >/dev/null; want "a hand-edited footer is a break" $? 1
+  cp "$w/keep" "$w/skills/a/SKILL.md"; sed -i 's/^It ends\./It ends, changed./' "$w/skills/a/SKILL.md"; run check >/dev/null; want "a body changed without a mint is a break" $? 1
+  run mint >/dev/null; run check >/dev/null; want "re-minted after the change: true again" $? 0
+  want "the change moved a from 2.0 (seeded) and kept it at 2.0" "$(grep -c '^| a .* 2.0 ' "$w/F.org")" 1
+  sed -i 's/^MODEL=.*/MODEL="another-model"/' "$w/house.env"; run check >/dev/null; want "a convention changed without a mint is a break" $? 1
+  run mint >/dev/null; run check >/dev/null; want "re-minted after the convention changed: true" $? 0
+  mkdir -p "$w/skills/e"; printf -- '---\nname: e\ndescription: E.\n---\nIt ends.\n\nsentinel: E-1\n' > "$w/skills/e/SKILL.md"
+  run seed >/dev/null; run mint >/dev/null; run check >/dev/null; want "a sentinel skill minted: check reads true" $? 0
+  want "the sentinel stays the last line" "$(tail -n 1 "$w/skills/e/SKILL.md")" "sentinel: E-1"
+  cp "$w/skills/e/SKILL.md" "$w/e1"; run mint >/dev/null; cmp -s "$w/e1" "$w/skills/e/SKILL.md"; want "minting twice changes nothing" $? 0
+  printf '| skill | other makers | evidence |\n|---+---+---|\n| a | Pat Other <pat@example.org> | 20 lines first seen in theirs |\n' > "$w/M.org"
+  run check >/dev/null; want "a co-maker named in MAKERS.org but not in the footer is a break" $? 1
+  run mint >/dev/null; want "minted, the footer names both makers" "$(grep -c '^Copyright .*Pat Other <pat@example.org> and ' "$w/skills/a/SKILL.md")" 1
+  run check >/dev/null; want "re-minted with both makers: true" $? 0
+  mkdir -p "$w/skills/d"; printf -- '---\nname: d\ndescription: D.\n---\nOk.\n' > "$w/skills/d/SKILL.md"; run check >/dev/null; want "a skill with no row is a break" $? 1
+  [ "$bad" = 0 ] && { echo "ft1mt --prove-red: every planted fault caught"; exit 0; }
+  echo "ft1mt --prove-red: FAILED"; exit 1
+}
+
+cmd=${1:-}; [ $# -gt 0 ] && shift
+case $cmd in
+  seed) seed ;;
+  mint) mint "$@" ;;
+  check) check ;;
+  line) [ $# = 1 ] || die "usage: ft1mt line NAME"
+        r=$(rows | awk -F'\t' -v n="$1" '$1 == n') ; [ -n "$r" ] || die "no row for $1"
+        IFS="$TAB" read -r n fo how v f r2 s sf sha <<ROW
+$r
+ROW
+        CO=$(co_for "$n"); block "$v" "$f" "$r2" "$s" ;;
+  footer) [ $# -ge 4 ] || die "usage: ft1mt footer VERSION FROM REVISED SPINE [TAIL]"; footer "$@" ;;
+  stamp) [ $# -ge 5 ] || die "usage: ft1mt stamp FILE VERSION FROM REVISED SPINE [TAIL]"
+         [ -f "$1" ] || die "no file $1"
+         o=$(mktemp); compose "$@" > "$o"; if cmp -s "$o" "$1"; then echo "ft1mt stamp: $1 unchanged"; else cat "$o" > "$1"; echo "ft1mt stamp: $1"; fi; rm -f "$o" ;;
+  utc) [ $# = 1 ] || die 'usage: ft1mt utc "YYYY-MM-DD HH:MM"'; utc "$1" ;;
+  --prove-red) prove_red ;;
+  *) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+esac

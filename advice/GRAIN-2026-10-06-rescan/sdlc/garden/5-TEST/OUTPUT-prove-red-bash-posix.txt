@@ -1,0 +1,134 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+# the same prove-red run, by bash --posix
+# saved 2026-10-06T08:52Z by the garden team; the command and the exit status are shown.
+$ bash --posix ./lr1ck --prove-red
+
+lr1ck --prove-red: a green control, then each planted fault must be caught by its own check.
+(shell running the checks: /usr/bin/bash --posix)
+
+control (the prototype as it is):
+    
+    42 passed, 0 FAILED, 0 not checked
+    RESULT: PASS (exit 0)
+control is green. Planting faults, one at a time, in a copy:
+  caught   typo-package               by B9
+           planted: a package name that does not exist in Debian 13.7
+           B9 said: not in Debian 13.7 where claimed: minimal:[rsyncc ] desktop:[rsyncc ] homelab:[rsyncc ] hardened:[rsyncc ] fullsink:[rsy
+  caught   nonfree-in-desktop         by B10
+           planted: a non-free firmware package in the desktop profile
+           B10 said: desktop holds non-free firmware: firmware-iwlwifi  hardened holds non-free firmware: firmware-iwlwifi 
+  caught   package-in-two-groups      by B8
+           planted: git listed in a second group
+           B8 said: git is in g-console and g-server;
+  caught   live-build-command-line    by B7
+           planted: a line starting with ! in a list (live-build would run it)
+           B7 said: desktop.packages(a '!' line would be RUN by live-build) desktop.packages(odd name) fullsink.packages(a '!' line would be
+  caught   reader-drops-newline       by B4
+           planted: a bug in the awk tangler (reader one): output loses its last newline
+           B4 said: the readers disagree: diff -r /tmp/tmp.ROmNSy9VG0/awk/out/addon-firmware.packages /tmp/tmp.ROmNSy9VG0/org/out/addon-firm
+  caught   silent-bad-ref             by B2
+           planted: a misspelt <<g-bot>> (Org stays silent; the awk reader refuses)
+           B2 said: no block is named g-bot (lines 265);
+  caught   stale-out                  by B6
+           planted: a committed list that no longer matches the recipes
+           B6 said: out/ is stale or has stray files: diff -r /tmp/tmp.numPMuGVlP/pr/4-BUILD/out/desktop.packages /tmp/tmp.rGh9xQL3bX/awk/ou
+  caught   flag-typo                  by B11
+           planted: an lb config option that does not exist
+           B11 said: desktop.lbflags: --uefi-secureboot is not an lb config option;fullsink.lbflags: --uefi-secureboot is not an lb config op
+  caught   table-drifts-from-blocks   by B13
+           planted: the prose table and a profile block disagree
+           B13 said: hardened: table says [ g-access g-apps g-boot g-console g-core g-hardening g-token g-xfce ] but the block uses [ g-acces
+  caught   description-drift          by B15
+           planted: the "for whom" text differs between the prose table and profiles.txt
+           B15 said: the two descriptions differ: 4c4 < homelab|a headless chapter server ("pantry box") 
+  caught   mesh-standing-unlabelled   by B14
+           planted: a mesh row whose standing is neither free nor restricted
+           B14 said: rns: standing must be free or restricted; 
+  caught   no-browser                 by B16
+           planted: a graphical profile without the browser its first-run page needs
+           B16 said: desktop gets the HTML page but has no desktop or no browser;hardened gets the HTML page but has no desktop or no browser
+  caught   command-in-wrong-package   by B17
+           planted: a choice starts a program that a different package ships
+           B17 said: 'write' starts libreoffice, which Debian ships in libreoffice-common, but the choice needs libreoffice-writer;
+  caught   i386-flag                  by B11
+           planted: a build flag that asks for a 32-bit image trixie cannot make
+           B11 said: desktop.lbflags is not amd64 (trixie has no i386 kernel or installer);fullsink.lbflags is not amd64 (trixie has no i386 
+  caught   design-count-drift         by E2
+           planted: a package count in 3-DESIGN that no longer matches out/
+           E2 said: 3-DESIGN's table differs from the generated files: < minimal|emacs|a shell that boots, unlocks and joins a network|boot 
+  caught   risk-without-falsifier     by E3
+           planted: a risk in 2-ANALYSIS whose falsifier is missing
+           E3 said: 2-ANALYSIS: R1. has no falsifier; ;
+  caught   dagger-count-stale         by E4
+           planted: a single-source mark added without updating the stated count
+           E4 said: stale counts: 2-ANALYSIS says '11' but has 12;
+  caught   ui-promise-broken          by C2
+           planted: a menu choice needs a package its profile does not have
+           C2 said: 'library' is offered on desktop but needs kiwix-tools, which that profile does not have;'library' is offered on hardened
+  caught   phone-home                 by C4
+           planted: an outside script tag in the first-run page
+           C4 said: reaches outwards: 60:<script src="https://cdn.example.invalid/x.js"></script> 
+  caught   html-says-other-words      by C3
+           planted: the page says different words from choices.txt
+           C3 said: page and choices.txt differ: < chapter|base|*|Join my chapter|Connect to your group's server, using the file a facilita 
+  caught   small-target               by C5
+           planted: a click target shrunk below the floor
+           C5 said: click targets under 3rem tall, or not declared;
+  caught   no-color-scheme            by C6
+           planted: the page stops telling the browser it has both light and dark
+           C6 said: no color-scheme;
+  caught   dark-palettes-split        by C7
+           planted: the two dark palettes stop matching
+           C7 said: palettes differ (light 7 tokens): < fg #ffffff > fg #fefefe 
+  caught   low-contrast               by C8
+           planted: secondary text below its contrast floor
+           C8 said: FAIL light     muted  on bg     2.17 : 1  (floor 4.5);FAIL light     muted  on card   1.90 : 1  (floor 4.5);
+  caught   colour-not-modus           by C9
+           planted: an accent colour one digit off Emacs' Modus value
+           C9 said: light accent is #0030a9 but Modus blue is #0031a9; 
+  caught   system-click-sets-light    by C10
+           planted: "follow my computer" stops following (sets light instead)
+           C10 said: theme behaviour differs: theme-at-start: light;theme-after-dark: dark;theme-after-light: light;theme-after-system: light
+  caught   tag-left-open              by C11
+           planted: a closing tag removed from the page
+           C11 said: line 109: </body> does not match main;line 110: </html> does not match main;
+  caught   page-script-no-filter      by C13
+           planted: the page script stops hiding choices an edition lacks
+           C13 said: [minimal/base: lr1op='try private chapter help' awk='try private chapter help' emacs='try private chapter help' page='tr
+  caught   dead-button                by C12
+           planted: an Emacs button that draws but does nothing
+           C12 said: ERT:    FAILED  1/6  larder-test-click-starts-the-dispatcher (0.003190 sec) at larder-first-run-test.el:45;   FAILED  5/
+  caught   tool-not-executable        by A3
+           planted: a tool that has lost its executable bit
+           A3 said: bin/lr1bk(not executable)
+  caught   silent-flag                by A2
+           planted: lr1op swallows an unknown option
+           A2 said: an option was swallowed: lr1op(no explanation printed)
+  caught   missing-spdx               by A1
+           planted: a tool without its SPDX line
+           A1 said: SPDX line wrong in: bin/lr1op(has '', wants GPL-3.0-or-later)
+  caught   notice-flipped-to-in-force by D1
+           planted: the shipped notice says IN FORCE
+           D1 said: STATUS is not DRAFT;
+  caught   book-gate-hole             by D2
+           planted: a row with sold-by-author unknown marked include=yes
+           D2 said: exit 1, rows let through: '' lr1bk: /tmp/tmp.numPMuGVlP/pr/4-BUILD/author/books.org:22: include=yes but sold-by-author i
+  caught   gate-ignores-sold          by D3
+           planted: the gate stops looking at "sold by author"
+           D3 said: sold=yes let through;
+  caught   stamp-skips-signature      by D4
+           planted: the stamp stops checking the author's signature
+           D4 said: a notice edited after signing still stamped; a signature by a key the author does not hold still stamped;
+  caught   book-file-smuggled         by D5
+           planted: an e-book file in the author folder
+           D5 said: book-like files: /tmp/tmp.numPMuGVlP/pr/4-BUILD/author/story.epub ; author/ holds [PERMISSION-NOTICE.md books.org story.
+  caught   readme-silent-on-limits    by E1
+           planted: the README drops its list of what was not checked
+           E1 said: no 'What was not checked' section; the section does not mention booted; the section does not mention ISO; the section do
+
+the exit-code paths of lr1ck itself:
+  caught   a missing tool           exit 2 and SKIP ... NOT CHECKED for B3, B4, C9, C10 and D4's signed path (never a pass)
+  caught   an unexpected stop       exit 3 and a line to paste into a session
+PROVE-RED: PASS (exit 0): the control was green and all 40 planted faults and exit paths were caught by the check meant to catch them
+
+[exit status 0]

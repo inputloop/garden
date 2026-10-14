@@ -1,0 +1,1319 @@
+FACTS v=1 format=garden-view/data%20v1 built=2026-10-11T11:44:43Z
+EDGE from=bryant:adapt to=bryant:ethicsminions type=mention state=-
+EDGE from=bryant:adapt to=bryant:ethicsminions type=vs state=-
+EDGE from=bryant:adapt to=bryant:rainbow-eval type=mention state=-
+EDGE from=bryant:adapt to=bryant:rainbow-eval type=vs state=-
+EDGE from=bryant:adapt to=bryant:skill-creator type=hand state=-
+EDGE from=bryant:adapt to=bryant:skill-creator type=mention state=-
+EDGE from=bryant:adapt to=bryant:skill-creator type=vs state=-
+EDGE from=bryant:adapt to=bryant:skilltank type=mention state=-
+EDGE from=bryant:adapt to=bryant:skilltank type=vs state=-
+EDGE from=bryant:aetherflow-runner to=bryant:aetherflow-wire-sdk type=mention state=-
+EDGE from=bryant:aetherflow-runner to=bryant:aetherflow-wire-sdk type=seam state=-
+EDGE from=bryant:aetherflow-runner to=bryant:aetherflow-wire-sdk type=vs state=-
+EDGE from=bryant:aetherflow-runner to=bryant:aethernet-relay type=mention state=-
+EDGE from=bryant:aetherflow-runner to=bryant:aethernet-relay type=use state=-
+EDGE from=bryant:aetherflow-runner to=bryant:aethernet-relay type=vs state=-
+EDGE from=bryant:aetherflow-runner to=bryant:llama-bridge type=mention state=-
+EDGE from=bryant:aetherflow-runner to=bryant:llama-bridge type=seam state=-
+EDGE from=bryant:aetherflow-runner to=bryant:llama-bridge type=vs state=-
+EDGE from=bryant:aetherflow-runner to=bryant:schedule type=dangling state=resolved
+EDGE from=bryant:aetherflow-runner to=bryant:schedule type=mention state=-
+EDGE from=bryant:aetherflow-runner to=bryant:schedule type=vs state=-
+EDGE from=bryant:aetherflow-runner to=bryant:wire-2fa type=mention state=-
+EDGE from=bryant:aetherflow-runner to=bryant:wire-2fa type=use state=-
+EDGE from=bryant:aetherflow-wire-sdk to=bryant:aetherflow-runner type=mention state=-
+EDGE from=bryant:aetherflow-wire-sdk to=bryant:aetherflow-runner type=vs state=-
+EDGE from=bryant:aetherflow-wire-sdk to=bryant:aethernet-relay type=mention state=-
+EDGE from=bryant:aetherflow-wire-sdk to=bryant:aethernet-relay type=vs state=-
+EDGE from=bryant:aetherflow-wire-sdk to=bryant:llama-bridge type=mention state=-
+EDGE from=bryant:aetherflow-wire-sdk to=bryant:llama-bridge type=vs state=-
+EDGE from=bryant:aetherflow-wire-sdk to=bryant:wire-capsules type=mention state=-
+EDGE from=bryant:aetherflow-wire-sdk to=bryant:wire-capsules type=use state=-
+EDGE from=bryant:aetherflow-wire-sdk to=bryant:wire-capsules type=vs state=-
+EDGE from=bryant:aethernet-relay to=corwin:aethernet-relay type=counterpart state=-
+EDGE from=bryant:aethernet-release to=bryant:aethernet-relay type=mention state=-
+EDGE from=bryant:aethernet-release to=bryant:aethernet-relay type=vs state=-
+EDGE from=bryant:aethernet-release to=bryant:colophon type=mention state=-
+EDGE from=bryant:aethernet-release to=bryant:mega-voltron type=hand state=-
+EDGE from=bryant:aethernet-release to=bryant:mega-voltron type=mention state=-
+EDGE from=bryant:aethernet-release to=bryant:mega-voltron type=vs state=-
+EDGE from=bryant:aethernet-release to=bryant:power-glove type=mention state=-
+EDGE from=bryant:aethernet-release to=bryant:rosetta type=mention state=-
+EDGE from=bryant:aethernet-release to=bryant:rosetta type=use state=-
+EDGE from=bryant:aethernet-release to=bryant:rosetta type=vs state=-
+EDGE from=bryant:aethernet-release to=bryant:sandboxer type=mention state=-
+EDGE from=bryant:aethernet-release to=bryant:sandboxer type=use state=-
+EDGE from=bryant:aethernet-release to=bryant:sandboxer type=vs state=-
+EDGE from=bryant:aethernet-release to=bryant:signet type=mention state=-
+EDGE from=bryant:aethernet-release to=bryant:signet type=vs state=-
+EDGE from=bryant:aethernet-release to=bryant:takushi type=hand state=-
+EDGE from=bryant:aethernet-release to=bryant:takushi type=mention state=-
+EDGE from=bryant:aethernet-release to=bryant:takushi type=vs state=-
+EDGE from=bryant:alfred to=bryant:adapt type=mention state=-
+EDGE from=bryant:alfred to=bryant:aetherflow-runner type=mention state=-
+EDGE from=bryant:alfred to=bryant:aetherflow-wire-sdk type=mention state=-
+EDGE from=bryant:alfred to=bryant:aethernet-relay type=mention state=-
+EDGE from=bryant:alfred to=bryant:aethernet-release type=mention state=-
+EDGE from=bryant:alfred to=bryant:caterpillar type=mention state=-
+EDGE from=bryant:alfred to=bryant:colophon type=mention state=-
+EDGE from=bryant:alfred to=bryant:color-theory type=mention state=-
+EDGE from=bryant:alfred to=bryant:connector-forge type=mention state=-
+EDGE from=bryant:alfred to=bryant:consent-gate type=mention state=-
+EDGE from=bryant:alfred to=bryant:consent-gate type=use state=-
+EDGE from=bryant:alfred to=bryant:consolidate-memory type=mention state=-
+EDGE from=bryant:alfred to=bryant:docs type=mention state=-
+EDGE from=bryant:alfred to=bryant:docx type=mention state=-
+EDGE from=bryant:alfred to=bryant:eclipse-pass type=mention state=-
+EDGE from=bryant:alfred to=bryant:ethicsminions type=hand state=-
+EDGE from=bryant:alfred to=bryant:ethicsminions type=mention state=-
+EDGE from=bryant:alfred to=bryant:explain-usage type=mention state=-
+EDGE from=bryant:alfred to=bryant:foaf type=mention state=-
+EDGE from=bryant:alfred to=bryant:frugal-offload type=mention state=-
+EDGE from=bryant:alfred to=bryant:gauntlet type=mention state=-
+EDGE from=bryant:alfred to=bryant:git-wire type=mention state=-
+EDGE from=bryant:alfred to=bryant:ground-truth type=mention state=-
+EDGE from=bryant:alfred to=bryant:llama-bridge type=mention state=-
+EDGE from=bryant:alfred to=bryant:manifest type=mention state=-
+EDGE from=bryant:alfred to=bryant:medley-review type=mention state=-
+EDGE from=bryant:alfred to=bryant:mega-voltron type=mention state=-
+EDGE from=bryant:alfred to=bryant:mentat-skill type=mention state=-
+EDGE from=bryant:alfred to=bryant:morning type=mention state=-
+EDGE from=bryant:alfred to=bryant:omni-tool type=mention state=-
+EDGE from=bryant:alfred to=bryant:omni-tool type=route state=-
+EDGE from=bryant:alfred to=bryant:parallax type=mention state=-
+EDGE from=bryant:alfred to=bryant:parley type=mention state=-
+EDGE from=bryant:alfred to=bryant:pdf type=mention state=-
+EDGE from=bryant:alfred to=bryant:pmo type=mention state=-
+EDGE from=bryant:alfred to=bryant:power-glove type=mention state=-
+EDGE from=bryant:alfred to=bryant:power-glove type=route state=-
+EDGE from=bryant:alfred to=bryant:pptx type=mention state=-
+EDGE from=bryant:alfred to=bryant:primer type=mention state=-
+EDGE from=bryant:alfred to=bryant:principles type=mention state=-
+EDGE from=bryant:alfred to=bryant:rainbow-eval type=mention state=-
+EDGE from=bryant:alfred to=bryant:rosetta type=mention state=-
+EDGE from=bryant:alfred to=bryant:rosetta type=use state=-
+EDGE from=bryant:alfred to=bryant:sandboxer type=mention state=-
+EDGE from=bryant:alfred to=bryant:schedule type=mention state=-
+EDGE from=bryant:alfred to=bryant:session-rotate type=mention state=-
+EDGE from=bryant:alfred to=bryant:signet type=mention state=-
+EDGE from=bryant:alfred to=bryant:skill-creator type=hand state=-
+EDGE from=bryant:alfred to=bryant:skill-creator type=mention state=-
+EDGE from=bryant:alfred to=bryant:skilltank type=hand state=-
+EDGE from=bryant:alfred to=bryant:skilltank type=mention state=-
+EDGE from=bryant:alfred to=bryant:takushi type=mention state=-
+EDGE from=bryant:alfred to=bryant:token-optimizer type=mention state=-
+EDGE from=bryant:alfred to=bryant:vitrine type=mention state=-
+EDGE from=bryant:alfred to=bryant:wire-2fa type=mention state=-
+EDGE from=bryant:alfred to=bryant:wire-capsules type=mention state=-
+EDGE from=bryant:alfred to=bryant:wire-omnibus type=mention state=-
+EDGE from=bryant:alfred to=bryant:wire-protocol type=mention state=-
+EDGE from=bryant:alfred to=bryant:wire-reconcile type=mention state=-
+EDGE from=bryant:alfred to=bryant:wire-reconcile type=route state=-
+EDGE from=bryant:alfred to=bryant:xlsx type=mention state=-
+EDGE from=bryant:alfred to=corwin:drift type=mention state=-
+EDGE from=bryant:alfred to=corwin:kid-glove type=mention state=-
+EDGE from=bryant:alfred to=corwin:persona-engine type=mention state=-
+EDGE from=bryant:alfred to=external:gw-survey type=mention state=-
+EDGE from=bryant:alfred to=soft:outside-reader type=mention state=-
+EDGE from=bryant:caterpillar to=bryant:ground-truth type=mention state=-
+EDGE from=bryant:caterpillar to=bryant:manifest type=mention state=-
+EDGE from=bryant:caterpillar to=bryant:mega-voltron type=mention state=-
+EDGE from=bryant:caterpillar to=bryant:power-glove type=mention state=-
+EDGE from=bryant:caterpillar to=bryant:primer type=mention state=-
+EDGE from=bryant:caterpillar to=bryant:primer type=vs state=-
+EDGE from=bryant:caterpillar to=bryant:rosetta type=mention state=-
+EDGE from=bryant:caterpillar to=bryant:session-rotate type=mention state=-
+EDGE from=bryant:caterpillar to=bryant:session-rotate type=vs state=-
+EDGE from=bryant:caterpillar to=bryant:signet type=mention state=-
+EDGE from=bryant:caterpillar to=bryant:takushi type=mention state=-
+EDGE from=bryant:caterpillar to=bryant:takushi type=vs state=-
+EDGE from=bryant:caterpillar to=bryant:vitrine type=mention state=-
+EDGE from=bryant:colophon to=bryant:aethernet-release type=mention state=-
+EDGE from=bryant:colophon to=bryant:caterpillar type=mention state=-
+EDGE from=bryant:colophon to=bryant:color-theory type=mention state=-
+EDGE from=bryant:colophon to=bryant:consent-gate type=mention state=-
+EDGE from=bryant:colophon to=bryant:eclipse-pass type=mention state=-
+EDGE from=bryant:colophon to=bryant:ethicsminions type=mention state=-
+EDGE from=bryant:colophon to=bryant:ground-truth type=mention state=-
+EDGE from=bryant:colophon to=bryant:manifest type=mention state=-
+EDGE from=bryant:colophon to=bryant:mega-voltron type=mention state=-
+EDGE from=bryant:colophon to=bryant:power-glove type=mention state=-
+EDGE from=bryant:colophon to=bryant:primer type=mention state=-
+EDGE from=bryant:colophon to=bryant:session-rotate type=mention state=-
+EDGE from=bryant:colophon to=bryant:signet type=mention state=-
+EDGE from=bryant:colophon to=bryant:skill-creator type=mention state=-
+EDGE from=bryant:colophon to=bryant:token-optimizer type=mention state=-
+EDGE from=bryant:colophon to=bryant:wire-protocol type=mention state=-
+EDGE from=bryant:colophon to=corwin:kid-glove type=mention state=-
+EDGE from=bryant:color-theory to=bryant:dataviz type=gap state=-
+EDGE from=bryant:color-theory to=corwin:color-theory type=derived-from state=-
+EDGE from=bryant:connector-forge to=bryant:llama-bridge type=mention state=-
+EDGE from=bryant:connector-forge to=bryant:llama-bridge type=vs state=-
+EDGE from=bryant:connector-forge to=bryant:omni-tool type=mention state=-
+EDGE from=bryant:connector-forge to=bryant:power-glove type=mention state=-
+EDGE from=bryant:connector-forge to=bryant:sandboxer type=mention state=-
+EDGE from=bryant:connector-forge to=bryant:sandboxer type=use state=-
+EDGE from=bryant:connector-forge to=bryant:sandboxer type=vs state=-
+EDGE from=bryant:connector-forge to=bryant:skill-creator type=mention state=-
+EDGE from=bryant:connector-forge to=bryant:skill-creator type=vs state=-
+EDGE from=bryant:connector-forge to=bryant:wire-2fa type=mention state=-
+EDGE from=bryant:connector-forge to=bryant:wire-2fa type=use state=-
+EDGE from=bryant:connector-forge to=bryant:wire-2fa type=vs state=-
+EDGE from=bryant:consent-gate to=bryant:ethicsminions type=hand state=-
+EDGE from=bryant:consent-gate to=bryant:ethicsminions type=mention state=-
+EDGE from=bryant:consent-gate to=bryant:mentat-skill type=hand state=-
+EDGE from=bryant:consent-gate to=corwin:consent-gate type=derived-from state=-
+EDGE from=bryant:docs to=bryant:docx type=hand state=-
+EDGE from=bryant:docs to=bryant:pdf type=hand state=-
+EDGE from=bryant:docs to=bryant:pptx type=hand state=-
+EDGE from=bryant:docs to=bryant:xlsx type=hand state=-
+EDGE from=bryant:eclipse-pass to=bryant:ethicsminions type=mention state=-
+EDGE from=bryant:eclipse-pass to=bryant:ethicsminions type=use state=-
+EDGE from=bryant:eclipse-pass to=bryant:mentat-skill type=hand state=-
+EDGE from=bryant:eclipse-pass to=bryant:mentat-skill type=mention state=-
+EDGE from=bryant:eclipse-pass to=bryant:sandboxer type=mention state=-
+EDGE from=bryant:eclipse-pass to=bryant:sandboxer type=use state=-
+EDGE from=bryant:eclipse-pass to=bryant:skilltank type=hand state=-
+EDGE from=bryant:eclipse-pass to=bryant:skilltank type=mention state=-
+EDGE from=bryant:eclipse-pass to=corwin:eclipse-pass type=derived-from state=-
+EDGE from=bryant:ethicsminions to=bryant:cowork-plugin type=gap state=-
+EDGE from=bryant:ethicsminions to=bryant:mentat-skill type=hand state=-
+EDGE from=bryant:ethicsminions to=bryant:principles type=use state=-
+EDGE from=bryant:ethicsminions to=bryant:skill-creator type=mention state=-
+EDGE from=bryant:ethicsminions to=bryant:skilltank type=hand state=-
+EDGE from=bryant:ethicsminions to=corwin:ethicsminions type=derived-from state=-
+EDGE from=bryant:foaf to=corwin:foaf type=counterpart state=-
+EDGE from=bryant:frugal-offload to=bryant:gauntlet type=mention state=-
+EDGE from=bryant:frugal-offload to=bryant:llama-bridge type=mention state=-
+EDGE from=bryant:frugal-offload to=bryant:llama-bridge type=seam state=-
+EDGE from=bryant:frugal-offload to=bryant:llama-bridge type=vs state=-
+EDGE from=bryant:frugal-offload to=bryant:omni-tool type=mention state=-
+EDGE from=bryant:frugal-offload to=bryant:omni-tool type=vs state=-
+EDGE from=bryant:frugal-offload to=bryant:skilltank type=mention state=-
+EDGE from=bryant:frugal-offload to=bryant:skilltank type=vs state=-
+EDGE from=bryant:frugal-offload to=bryant:token-optimizer type=mention state=-
+EDGE from=bryant:frugal-offload to=bryant:token-optimizer type=seam state=-
+EDGE from=bryant:frugal-offload to=bryant:token-optimizer type=vs state=-
+EDGE from=bryant:frugal-offload to=corwin:llama-bridge type=counterpart state=-
+EDGE from=bryant:frugal-offload to=soft:frugal-offload type=counterpart state=-
+EDGE from=bryant:gauntlet to=bryant:color-theory type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:color-theory type=route state=-
+EDGE from=bryant:gauntlet to=bryant:consent-gate type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:consent-gate type=route state=-
+EDGE from=bryant:gauntlet to=bryant:consolidate-memory type=dangling state=resolved
+EDGE from=bryant:gauntlet to=bryant:consolidate-memory type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:docx type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:docx type=route state=-
+EDGE from=bryant:gauntlet to=bryant:eclipse-pass type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:eclipse-pass type=route state=-
+EDGE from=bryant:gauntlet to=bryant:ethicsminions type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:ethicsminions type=route state=-
+EDGE from=bryant:gauntlet to=bryant:foaf type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:foaf type=route state=-
+EDGE from=bryant:gauntlet to=bryant:frugal-offload type=gap state=-
+EDGE from=bryant:gauntlet to=bryant:frugal-offload type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:llama-bridge type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:llama-bridge type=route state=-
+EDGE from=bryant:gauntlet to=bryant:manifest type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:manifest type=route state=-
+EDGE from=bryant:gauntlet to=bryant:medley-review type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:medley-review type=route state=-
+EDGE from=bryant:gauntlet to=bryant:mega-voltron type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:mega-voltron type=route state=-
+EDGE from=bryant:gauntlet to=bryant:mentat-skill type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:mentat-skill type=route state=-
+EDGE from=bryant:gauntlet to=bryant:omni-tool type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:pdf type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:pdf type=route state=-
+EDGE from=bryant:gauntlet to=bryant:pmo type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:pmo type=route state=-
+EDGE from=bryant:gauntlet to=bryant:pptx type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:pptx type=route state=-
+EDGE from=bryant:gauntlet to=bryant:primer type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:principles type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:principles type=route state=-
+EDGE from=bryant:gauntlet to=bryant:rosetta type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:rosetta type=route state=-
+EDGE from=bryant:gauntlet to=bryant:sandboxer type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:sandboxer type=route state=-
+EDGE from=bryant:gauntlet to=bryant:schedule type=dangling state=resolved
+EDGE from=bryant:gauntlet to=bryant:session-rotate type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:session-rotate type=route state=-
+EDGE from=bryant:gauntlet to=bryant:signet type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:signet type=route state=-
+EDGE from=bryant:gauntlet to=bryant:skill-creator type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:skill-creator type=route state=-
+EDGE from=bryant:gauntlet to=bryant:skilltank type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:skilltank type=route state=-
+EDGE from=bryant:gauntlet to=bryant:takushi type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:takushi type=route state=-
+EDGE from=bryant:gauntlet to=bryant:vitrine type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:vitrine type=route state=-
+EDGE from=bryant:gauntlet to=bryant:xlsx type=mention state=-
+EDGE from=bryant:gauntlet to=bryant:xlsx type=route state=-
+EDGE from=bryant:gauntlet to=corwin:candor-gate type=counterpart state=-
+EDGE from=bryant:gauntlet to=soft:gauntlet type=counterpart state=-
+EDGE from=bryant:git-wire to=bryant:connector-forge type=mention state=-
+EDGE from=bryant:git-wire to=bryant:connector-forge type=vs state=-
+EDGE from=bryant:git-wire to=bryant:mega-voltron type=mention state=-
+EDGE from=bryant:git-wire to=bryant:mega-voltron type=vs state=-
+EDGE from=bryant:git-wire to=bryant:parley type=mention state=-
+EDGE from=bryant:git-wire to=bryant:parley type=vs state=-
+EDGE from=bryant:git-wire to=bryant:sandboxer type=mention state=-
+EDGE from=bryant:git-wire to=bryant:sandboxer type=use state=-
+EDGE from=bryant:git-wire to=bryant:sandboxer type=vs state=-
+EDGE from=bryant:git-wire to=bryant:signet type=mention state=-
+EDGE from=bryant:git-wire to=bryant:signet type=use state=-
+EDGE from=bryant:git-wire to=bryant:signet type=vs state=-
+EDGE from=bryant:git-wire to=bryant:wire-2fa type=mention state=-
+EDGE from=bryant:git-wire to=bryant:wire-protocol type=mention state=-
+EDGE from=bryant:ground-truth to=bryant:consent-gate type=mention state=-
+EDGE from=bryant:ground-truth to=bryant:consent-gate type=vs state=-
+EDGE from=bryant:ground-truth to=bryant:eclipse-pass type=mention state=-
+EDGE from=bryant:ground-truth to=bryant:eclipse-pass type=vs state=-
+EDGE from=bryant:ground-truth to=bryant:omni-tool type=mention state=-
+EDGE from=bryant:ground-truth to=bryant:parley type=mention state=-
+EDGE from=bryant:ground-truth to=bryant:power-glove type=mention state=-
+EDGE from=bryant:ground-truth to=bryant:rosetta type=mention state=-
+EDGE from=bryant:ground-truth to=bryant:rosetta type=vs state=-
+EDGE from=bryant:ground-truth to=bryant:sandboxer type=mention state=-
+EDGE from=bryant:ground-truth to=bryant:sandboxer type=vs state=-
+EDGE from=bryant:ground-truth to=bryant:signet type=mention state=-
+EDGE from=bryant:ground-truth to=bryant:signet type=use state=-
+EDGE from=bryant:ground-truth to=bryant:signet type=vs state=-
+EDGE from=bryant:llama-bridge to=bryant:ethicsminions type=mention state=-
+EDGE from=bryant:llama-bridge to=bryant:ethicsminions type=use state=-
+EDGE from=bryant:llama-bridge to=bryant:omni-tool type=mention state=-
+EDGE from=bryant:llama-bridge to=bryant:sandboxer type=hand state=-
+EDGE from=bryant:llama-bridge to=bryant:sandboxer type=mention state=-
+EDGE from=bryant:llama-bridge to=bryant:skilltank type=mention state=-
+EDGE from=bryant:manifest to=bryant:mentat-skill type=mention state=-
+EDGE from=bryant:manifest to=bryant:mentat-skill type=use state=-
+EDGE from=bryant:manifest to=bryant:mentat-skill type=vs state=-
+EDGE from=bryant:manifest to=bryant:parley type=mention state=-
+EDGE from=bryant:manifest to=bryant:parley type=vs state=-
+EDGE from=bryant:manifest to=bryant:session-rotate type=mention state=-
+EDGE from=bryant:manifest to=bryant:session-rotate type=vs state=-
+EDGE from=bryant:manifest to=bryant:skill-creator type=mention state=-
+EDGE from=bryant:manifest to=bryant:skilltank type=mention state=-
+EDGE from=bryant:manifest to=bryant:takushi type=hand state=-
+EDGE from=bryant:manifest to=bryant:takushi type=mention state=-
+EDGE from=bryant:manifest to=bryant:takushi type=vs state=-
+EDGE from=bryant:manifest to=bryant:wire-reconcile type=hand state=-
+EDGE from=bryant:manifest to=bryant:wire-reconcile type=mention state=-
+EDGE from=bryant:manifest to=bryant:wire-reconcile type=vs state=-
+EDGE from=bryant:medley-review to=bryant:pmo type=hand state=-
+EDGE from=bryant:medley-review to=corwin:medley-review type=derived-from state=-
+EDGE from=bryant:mega-voltron to=bryant:caterpillar type=mention state=-
+EDGE from=bryant:mega-voltron to=bryant:colophon type=mention state=-
+EDGE from=bryant:mega-voltron to=bryant:color-theory type=mention state=-
+EDGE from=bryant:mega-voltron to=bryant:consent-gate type=mention state=-
+EDGE from=bryant:mega-voltron to=bryant:consent-gate type=use state=-
+EDGE from=bryant:mega-voltron to=bryant:eclipse-pass type=mention state=-
+EDGE from=bryant:mega-voltron to=bryant:ethicsminions type=mention state=-
+EDGE from=bryant:mega-voltron to=bryant:foaf type=mention state=-
+EDGE from=bryant:mega-voltron to=bryant:manifest type=mention state=-
+EDGE from=bryant:mega-voltron to=bryant:omni-tool type=mention state=-
+EDGE from=bryant:mega-voltron to=bryant:power-glove type=mention state=-
+EDGE from=bryant:mega-voltron to=bryant:principles type=mention state=-
+EDGE from=bryant:mega-voltron to=bryant:sandboxer type=mention state=-
+EDGE from=bryant:mega-voltron to=bryant:signet type=mention state=-
+EDGE from=bryant:mega-voltron to=bryant:signet type=use state=-
+EDGE from=bryant:mega-voltron to=bryant:skill-creator type=mention state=-
+EDGE from=bryant:mega-voltron to=bryant:skilltank type=mention state=-
+EDGE from=bryant:mega-voltron to=bryant:takushi type=mention state=-
+EDGE from=bryant:mega-voltron to=corwin:kid-glove type=mention state=-
+EDGE from=bryant:mega-voltron to=soft:outside-reader type=mention state=-
+EDGE from=bryant:mentat-skill to=bryant:consolidate-memory type=dangling state=resolved
+EDGE from=bryant:mentat-skill to=bryant:consolidate-memory type=mention state=-
+EDGE from=bryant:mentat-skill to=bryant:sandboxer type=mention state=-
+EDGE from=bryant:mentat-skill to=bryant:sandboxer type=use state=-
+EDGE from=bryant:mentat-skill to=corwin:mentat-skill type=derived-from state=-
+EDGE from=bryant:omni-tool to=bryant:color-theory type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:color-theory type=route state=-
+EDGE from=bryant:omni-tool to=bryant:consent-gate type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:consent-gate type=route state=-
+EDGE from=bryant:omni-tool to=bryant:consolidate-memory type=dangling state=resolved
+EDGE from=bryant:omni-tool to=bryant:consolidate-memory type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:docx type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:eclipse-pass type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:eclipse-pass type=route state=-
+EDGE from=bryant:omni-tool to=bryant:ethicsminions type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:foaf type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:frugal-offload type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:gauntlet type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:gauntlet type=route state=-
+EDGE from=bryant:omni-tool to=bryant:llama-bridge type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:llama-bridge type=route state=-
+EDGE from=bryant:omni-tool to=bryant:manifest type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:manifest type=route state=-
+EDGE from=bryant:omni-tool to=bryant:medley-review type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:mega-voltron type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:mega-voltron type=route state=-
+EDGE from=bryant:omni-tool to=bryant:mentat-skill type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:parley type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:pdf type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:pmo type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:power-glove type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:pptx type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:primer type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:principles type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:rosetta type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:sandboxer type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:schedule type=dangling state=resolved
+EDGE from=bryant:omni-tool to=bryant:session-rotate type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:skill-creator type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:skilltank type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:takushi type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:wire-2fa type=mention state=-
+EDGE from=bryant:omni-tool to=bryant:xlsx type=mention state=-
+EDGE from=bryant:omni-tool to=soft:omni-tool type=counterpart state=-
+EDGE from=bryant:parallax to=bryant:caterpillar type=mention state=-
+EDGE from=bryant:parallax to=bryant:caterpillar type=vs state=-
+EDGE from=bryant:parallax to=bryant:eclipse-pass type=mention state=-
+EDGE from=bryant:parallax to=bryant:ethicsminions type=mention state=-
+EDGE from=bryant:parallax to=bryant:git-wire type=mention state=-
+EDGE from=bryant:parallax to=bryant:mega-voltron type=mention state=-
+EDGE from=bryant:parallax to=bryant:parley type=mention state=-
+EDGE from=bryant:parallax to=bryant:wire-protocol type=mention state=-
+EDGE from=bryant:parallax to=soft:parallax type=counterpart state=-
+EDGE from=bryant:parley to=bryant:llama-bridge type=mention state=-
+EDGE from=bryant:parley to=bryant:llama-bridge type=use state=-
+EDGE from=bryant:parley to=bryant:mega-voltron type=hand state=-
+EDGE from=bryant:parley to=bryant:mega-voltron type=mention state=-
+EDGE from=bryant:parley to=bryant:mega-voltron type=vs state=-
+EDGE from=bryant:parley to=bryant:omni-tool type=mention state=-
+EDGE from=bryant:parley to=bryant:omni-tool type=vs state=-
+EDGE from=bryant:parley to=bryant:takushi type=hand state=-
+EDGE from=bryant:parley to=bryant:takushi type=mention state=-
+EDGE from=bryant:parley to=bryant:takushi type=vs state=-
+EDGE from=bryant:parley to=bryant:wire-2fa type=use state=-
+EDGE from=bryant:pmo to=bryant:sandboxer type=mention state=-
+EDGE from=bryant:pmo to=bryant:sandboxer type=use state=-
+EDGE from=bryant:pmo to=corwin:pmo type=derived-from state=-
+EDGE from=bryant:power-glove to=bryant:caterpillar type=mention state=-
+EDGE from=bryant:power-glove to=bryant:colophon type=mention state=-
+EDGE from=bryant:power-glove to=bryant:color-theory type=mention state=-
+EDGE from=bryant:power-glove to=bryant:consent-gate type=mention state=-
+EDGE from=bryant:power-glove to=bryant:eclipse-pass type=mention state=-
+EDGE from=bryant:power-glove to=bryant:ethicsminions type=mention state=-
+EDGE from=bryant:power-glove to=bryant:gauntlet type=mention state=-
+EDGE from=bryant:power-glove to=bryant:gauntlet type=vs state=-
+EDGE from=bryant:power-glove to=bryant:ground-truth type=mention state=-
+EDGE from=bryant:power-glove to=bryant:ground-truth type=slot state=-
+EDGE from=bryant:power-glove to=bryant:ground-truth type=vs state=-
+EDGE from=bryant:power-glove to=bryant:medley-review type=mention state=-
+EDGE from=bryant:power-glove to=bryant:mega-voltron type=mention state=-
+EDGE from=bryant:power-glove to=bryant:omni-tool type=mention state=-
+EDGE from=bryant:power-glove to=bryant:omni-tool type=slot state=-
+EDGE from=bryant:power-glove to=bryant:omni-tool type=vs state=-
+EDGE from=bryant:power-glove to=bryant:parley type=mention state=-
+EDGE from=bryant:power-glove to=bryant:parley type=slot state=-
+EDGE from=bryant:power-glove to=bryant:parley type=vs state=-
+EDGE from=bryant:power-glove to=bryant:rosetta type=mention state=-
+EDGE from=bryant:power-glove to=bryant:signet type=mention state=-
+EDGE from=bryant:power-glove to=bryant:skill-creator type=hand state=-
+EDGE from=bryant:power-glove to=bryant:skill-creator type=mention state=-
+EDGE from=bryant:power-glove to=bryant:skilltank type=hand state=-
+EDGE from=bryant:power-glove to=bryant:skilltank type=mention state=-
+EDGE from=bryant:power-glove to=bryant:wire-2fa type=mention state=-
+EDGE from=bryant:power-glove to=bryant:wire-2fa type=slot state=-
+EDGE from=bryant:power-glove to=bryant:wire-2fa type=vs state=-
+EDGE from=bryant:power-glove to=corwin:kid-glove type=counterpart state=-
+EDGE from=bryant:power-glove to=corwin:kid-glove type=mention state=-
+EDGE from=bryant:primer to=bryant:colophon type=mention state=-
+EDGE from=bryant:primer to=bryant:consent-gate type=mention state=-
+EDGE from=bryant:primer to=bryant:consent-gate type=use state=-
+EDGE from=bryant:primer to=bryant:ground-truth type=mention state=-
+EDGE from=bryant:primer to=bryant:ground-truth type=use state=-
+EDGE from=bryant:primer to=bryant:ground-truth type=vs state=-
+EDGE from=bryant:primer to=bryant:mega-voltron type=mention state=-
+EDGE from=bryant:primer to=bryant:mega-voltron type=vs state=-
+EDGE from=bryant:primer to=bryant:power-glove type=mention state=-
+EDGE from=bryant:primer to=bryant:rosetta type=mention state=-
+EDGE from=bryant:primer to=bryant:rosetta type=use state=-
+EDGE from=bryant:primer to=bryant:rosetta type=vs state=-
+EDGE from=bryant:primer to=bryant:signet type=mention state=-
+EDGE from=bryant:primer to=bryant:signet type=vs state=-
+EDGE from=bryant:primer to=bryant:takushi type=mention state=-
+EDGE from=bryant:primer to=bryant:takushi type=vs state=-
+EDGE from=bryant:primer to=bryant:wire-2fa type=mention state=-
+EDGE from=bryant:principles to=bryant:consent-gate type=hand state=-
+EDGE from=bryant:principles to=bryant:consent-gate type=mention state=-
+EDGE from=bryant:principles to=bryant:ethicsminions type=hand state=-
+EDGE from=bryant:principles to=bryant:ethicsminions type=mention state=-
+EDGE from=bryant:principles to=bryant:mentat-skill type=mention state=-
+EDGE from=bryant:principles to=corwin:principles type=derived-from state=-
+EDGE from=bryant:rainbow-eval to=bryant:mentat-skill type=hand state=-
+EDGE from=bryant:rainbow-eval to=bryant:mentat-skill type=vs state=-
+EDGE from=bryant:rainbow-eval to=bryant:parley type=mention state=-
+EDGE from=bryant:rainbow-eval to=bryant:power-glove type=hand state=-
+EDGE from=bryant:rainbow-eval to=bryant:power-glove type=mention state=-
+EDGE from=bryant:rainbow-eval to=bryant:power-glove type=vs state=-
+EDGE from=bryant:rainbow-eval to=bryant:skill-creator type=hand state=-
+EDGE from=bryant:rainbow-eval to=bryant:skill-creator type=mention state=-
+EDGE from=bryant:rainbow-eval to=bryant:skill-creator type=vs state=-
+EDGE from=bryant:rainbow-eval to=bryant:skilltank type=mention state=-
+EDGE from=bryant:rainbow-eval to=bryant:skilltank type=use state=-
+EDGE from=bryant:rainbow-eval to=bryant:skilltank type=vs state=-
+EDGE from=bryant:rosetta to=bryant:consent-gate type=mention state=-
+EDGE from=bryant:rosetta to=bryant:consent-gate type=use state=-
+EDGE from=bryant:rosetta to=bryant:consent-gate type=vs state=-
+EDGE from=bryant:rosetta to=bryant:manifest type=mention state=-
+EDGE from=bryant:rosetta to=bryant:manifest type=vs state=-
+EDGE from=bryant:rosetta to=bryant:omni-tool type=mention state=-
+EDGE from=bryant:rosetta to=bryant:power-glove type=mention state=-
+EDGE from=bryant:rosetta to=bryant:power-glove type=vs state=-
+EDGE from=bryant:rosetta to=bryant:session-rotate type=mention state=-
+EDGE from=bryant:rosetta to=bryant:session-rotate type=vs state=-
+EDGE from=bryant:rosetta to=bryant:signet type=mention state=-
+EDGE from=bryant:rosetta to=bryant:signet type=use state=-
+EDGE from=bryant:rosetta to=bryant:signet type=vs state=-
+EDGE from=bryant:rosetta to=bryant:skill-creator type=mention state=-
+EDGE from=bryant:rosetta to=bryant:skilltank type=mention state=-
+EDGE from=bryant:rosetta to=bryant:takushi type=mention state=-
+EDGE from=bryant:rosetta to=bryant:takushi type=vs state=-
+EDGE from=bryant:rosetta to=bryant:vitrine type=mention state=-
+EDGE from=bryant:rosetta to=bryant:vitrine type=vs state=-
+EDGE from=bryant:rosetta to=bryant:wire-2fa type=mention state=-
+EDGE from=bryant:rosetta to=bryant:wire-2fa type=use state=-
+EDGE from=bryant:rosetta to=bryant:wire-protocol type=mention state=-
+EDGE from=bryant:rosetta to=bryant:wire-protocol type=use state=-
+EDGE from=bryant:rosetta to=bryant:wire-protocol type=vs state=-
+EDGE from=bryant:sandboxer to=bryant:mentat-skill type=mention state=-
+EDGE from=bryant:sandboxer to=bryant:mentat-skill type=vs state=-
+EDGE from=bryant:sandboxer to=bryant:signet type=mention state=-
+EDGE from=bryant:sandboxer to=corwin:sandboxer type=derived-from state=-
+EDGE from=bryant:session-rotate to=bryant:pmo type=mention state=-
+EDGE from=bryant:session-rotate to=bryant:pmo type=vs state=-
+EDGE from=bryant:session-rotate to=bryant:sandboxer type=mention state=-
+EDGE from=bryant:session-rotate to=bryant:sandboxer type=vs state=-
+EDGE from=bryant:session-rotate to=corwin:session-rotate type=counterpart state=-
+EDGE from=bryant:signet to=bryant:colophon type=mention state=-
+EDGE from=bryant:signet to=bryant:consent-gate type=mention state=-
+EDGE from=bryant:signet to=bryant:consent-gate type=use state=-
+EDGE from=bryant:signet to=bryant:consent-gate type=vs state=-
+EDGE from=bryant:signet to=bryant:git-wire type=mention state=-
+EDGE from=bryant:signet to=bryant:git-wire type=vs state=-
+EDGE from=bryant:signet to=bryant:mega-voltron type=mention state=-
+EDGE from=bryant:signet to=bryant:mega-voltron type=vs state=-
+EDGE from=bryant:signet to=bryant:power-glove type=mention state=-
+EDGE from=bryant:signet to=bryant:rosetta type=mention state=-
+EDGE from=bryant:signet to=bryant:rosetta type=vs state=-
+EDGE from=bryant:signet to=bryant:skill-creator type=mention state=-
+EDGE from=bryant:signet to=bryant:skill-creator type=vs state=-
+EDGE from=bryant:signet to=bryant:wire-2fa type=mention state=-
+EDGE from=bryant:signet to=bryant:wire-2fa type=vs state=-
+EDGE from=bryant:signet to=corwin:skill-sign type=derived-from state=-
+EDGE from=bryant:skilltank to=bryant:mentat-skill type=hand state=-
+EDGE from=bryant:skilltank to=bryant:skill-creator type=hand state=-
+EDGE from=bryant:skilltank to=bryant:skill-creator type=mention state=-
+EDGE from=bryant:skilltank to=corwin:skilltank type=derived-from state=-
+EDGE from=bryant:takushi to=bryant:consent-gate type=mention state=-
+EDGE from=bryant:takushi to=bryant:consent-gate type=use state=-
+EDGE from=bryant:takushi to=bryant:foaf type=use state=-
+EDGE from=bryant:takushi to=bryant:foaf type=vs state=-
+EDGE from=bryant:takushi to=bryant:gauntlet type=vs state=-
+EDGE from=bryant:takushi to=bryant:manifest type=mention state=-
+EDGE from=bryant:takushi to=bryant:primer type=gap state=-
+EDGE from=bryant:takushi to=bryant:rosetta type=use state=-
+EDGE from=bryant:takushi to=bryant:rosetta type=vs state=-
+EDGE from=bryant:takushi to=bryant:sandboxer type=use state=-
+EDGE from=bryant:takushi to=bryant:sandboxer type=vs state=-
+EDGE from=bryant:takushi to=bryant:skilltank type=vs state=-
+EDGE from=bryant:takushi to=bryant:vitrine type=mention state=-
+EDGE from=bryant:takushi to=bryant:vitrine type=use state=-
+EDGE from=bryant:takushi to=bryant:vitrine type=vs state=-
+EDGE from=bryant:takushi to=bryant:wire-2fa type=mention state=-
+EDGE from=bryant:token-optimizer to=bryant:explain-usage type=gap state=-
+EDGE from=bryant:token-optimizer to=bryant:skill-creator type=mention state=-
+EDGE from=bryant:vitrine to=bryant:artifact-design type=gap state=-
+EDGE from=bryant:vitrine to=bryant:color-theory type=mention state=-
+EDGE from=bryant:vitrine to=bryant:color-theory type=use state=-
+EDGE from=bryant:vitrine to=bryant:color-theory type=vs state=-
+EDGE from=bryant:vitrine to=bryant:consent-gate type=mention state=-
+EDGE from=bryant:vitrine to=bryant:docx type=mention state=-
+EDGE from=bryant:vitrine to=bryant:docx type=vs state=-
+EDGE from=bryant:vitrine to=bryant:foaf type=mention state=-
+EDGE from=bryant:vitrine to=bryant:foaf type=vs state=-
+EDGE from=bryant:vitrine to=bryant:git-wire type=mention state=-
+EDGE from=bryant:vitrine to=bryant:rosetta type=mention state=-
+EDGE from=bryant:vitrine to=bryant:rosetta type=use state=-
+EDGE from=bryant:vitrine to=bryant:rosetta type=vs state=-
+EDGE from=bryant:vitrine to=bryant:skill-creator type=mention state=-
+EDGE from=bryant:vitrine to=bryant:skilltank type=mention state=-
+EDGE from=bryant:vitrine to=bryant:takushi type=hand state=-
+EDGE from=bryant:vitrine to=bryant:takushi type=mention state=-
+EDGE from=bryant:vitrine to=bryant:takushi type=vs state=-
+EDGE from=bryant:vitrine to=bryant:wire-2fa type=mention state=-
+EDGE from=bryant:vitrine to=bryant:wire-protocol type=mention state=-
+EDGE from=bryant:wire-2fa to=bryant:consent-gate type=mention state=-
+EDGE from=bryant:wire-2fa to=bryant:consent-gate type=use state=-
+EDGE from=bryant:wire-2fa to=bryant:consent-gate type=vs state=-
+EDGE from=bryant:wire-2fa to=bryant:omni-tool type=mention state=-
+EDGE from=bryant:wire-2fa to=bryant:parley type=mention state=-
+EDGE from=bryant:wire-2fa to=bryant:parley type=vs state=-
+EDGE from=bryant:wire-2fa to=bryant:power-glove type=mention state=-
+EDGE from=bryant:wire-2fa to=bryant:wire-protocol type=mention state=-
+EDGE from=bryant:wire-2fa to=bryant:wire-protocol type=vs state=-
+EDGE from=bryant:wire-omnibus to=bryant:aetherflow-runner type=mention state=-
+EDGE from=bryant:wire-omnibus to=bryant:aetherflow-runner type=use state=-
+EDGE from=bryant:wire-omnibus to=bryant:aetherflow-wire-sdk type=mention state=-
+EDGE from=bryant:wire-omnibus to=bryant:aetherflow-wire-sdk type=use state=-
+EDGE from=bryant:wire-omnibus to=bryant:aethernet-relay type=mention state=-
+EDGE from=bryant:wire-omnibus to=bryant:aethernet-relay type=use state=-
+EDGE from=bryant:wire-omnibus to=bryant:aethernet-release type=mention state=-
+EDGE from=bryant:wire-omnibus to=bryant:aethernet-release type=use state=-
+EDGE from=bryant:wire-omnibus to=bryant:connector-forge type=mention state=-
+EDGE from=bryant:wire-omnibus to=bryant:connector-forge type=use state=-
+EDGE from=bryant:wire-omnibus to=bryant:git-wire type=mention state=-
+EDGE from=bryant:wire-omnibus to=bryant:git-wire type=use state=-
+EDGE from=bryant:wire-omnibus to=bryant:parley type=mention state=-
+EDGE from=bryant:wire-omnibus to=bryant:parley type=use state=-
+EDGE from=bryant:wire-omnibus to=bryant:wire-2fa type=mention state=-
+EDGE from=bryant:wire-omnibus to=bryant:wire-2fa type=use state=-
+EDGE from=bryant:wire-omnibus to=bryant:wire-capsules type=mention state=-
+EDGE from=bryant:wire-omnibus to=bryant:wire-capsules type=use state=-
+EDGE from=bryant:wire-omnibus to=bryant:wire-protocol type=mention state=-
+EDGE from=bryant:wire-omnibus to=bryant:wire-protocol type=use state=-
+EDGE from=bryant:wire-omnibus to=bryant:wire-reconcile type=mention state=-
+EDGE from=bryant:wire-omnibus to=bryant:wire-reconcile type=use state=-
+EDGE from=bryant:wire-protocol to=bryant:consent-gate type=mention state=-
+EDGE from=bryant:wire-protocol to=bryant:consent-gate type=use state=-
+EDGE from=bryant:wire-protocol to=bryant:consent-gate type=vs state=-
+EDGE from=bryant:wire-protocol to=bryant:mega-voltron type=hand state=-
+EDGE from=bryant:wire-protocol to=bryant:mega-voltron type=mention state=-
+EDGE from=bryant:wire-protocol to=bryant:mega-voltron type=vs state=-
+EDGE from=bryant:wire-protocol to=bryant:omni-tool type=mention state=-
+EDGE from=bryant:wire-protocol to=bryant:parley type=mention state=-
+EDGE from=bryant:wire-protocol to=bryant:parley type=vs state=-
+EDGE from=bryant:wire-protocol to=bryant:power-glove type=mention state=-
+EDGE from=bryant:wire-reconcile to=bryant:consent-gate type=mention state=-
+EDGE from=bryant:wire-reconcile to=bryant:consent-gate type=use state=-
+EDGE from=bryant:wire-reconcile to=bryant:consolidate-memory type=mention state=-
+EDGE from=bryant:wire-reconcile to=bryant:manifest type=mention state=-
+EDGE from=bryant:wire-reconcile to=bryant:manifest type=vs state=-
+EDGE from=bryant:wire-reconcile to=bryant:mega-voltron type=mention state=-
+EDGE from=bryant:wire-reconcile to=bryant:mega-voltron type=vs state=-
+EDGE from=bryant:wire-reconcile to=bryant:parley type=mention state=-
+EDGE from=bryant:wire-reconcile to=bryant:parley type=vs state=-
+EDGE from=bryant:wire-reconcile to=bryant:sandboxer type=mention state=-
+EDGE from=bryant:wire-reconcile to=bryant:sandboxer type=use state=-
+EDGE from=bryant:wire-reconcile to=bryant:sandboxer type=vs state=-
+EDGE from=bryant:wire-reconcile to=bryant:skill-creator type=mention state=-
+EDGE from=bryant:wire-reconcile to=bryant:skilltank type=mention state=-
+EDGE from=bryant:wire-reconcile to=bryant:wire-2fa type=mention state=-
+EDGE from=bryant:wire-reconcile to=bryant:wire-2fa type=use state=-
+EDGE from=bryant:wire-reconcile to=bryant:wire-protocol type=mention state=-
+EDGE from=bryant:wire-reconcile to=bryant:wire-protocol type=vs state=-
+EDGE from=c4:on1fl to=bryant:primer type=derived-from state=-
+EDGE from=corwin:aethernet-relay to=corwin:llama-bridge type=mention state=-
+EDGE from=corwin:aethernet-relay to=soft:intake type=mention state=-
+EDGE from=corwin:build-loop to=corwin:tool-lifecycle type=mention state=-
+EDGE from=corwin:build-loop to=corwin:writing-forms type=mention state=-
+EDGE from=corwin:build-loop to=soft:egress type=mention state=-
+EDGE from=corwin:build-loop to=soft:grand-test-manifest type=mention state=-
+EDGE from=corwin:candor-gate to=corwin:altorewired type=mention state=-
+EDGE from=corwin:candor-gate to=corwin:consent-gate type=mention state=-
+EDGE from=corwin:candor-gate to=corwin:ethicsminions type=mention state=-
+EDGE from=corwin:candor-gate to=corwin:principles type=mention state=-
+EDGE from=corwin:candor-gate to=corwin:skill-sign type=mention state=-
+EDGE from=corwin:candor-gate to=corwin:token-optimizer type=mention state=-
+EDGE from=corwin:candor-gate to=soft:egress type=mention state=-
+EDGE from=corwin:candor-gate to=soft:intake type=mention state=-
+EDGE from=corwin:consent-gate to=corwin:ethicsminions type=mention state=-
+EDGE from=corwin:consent-gate to=corwin:principles type=mention state=-
+EDGE from=corwin:containment-during-exec to=corwin:layered-assurance type=mention state=-
+EDGE from=corwin:countable-gauge to=corwin:eclipse-pass type=mention state=-
+EDGE from=corwin:countable-gauge to=corwin:pencil-your-own type=mention state=-
+EDGE from=corwin:countable-gauge to=corwin:prove-a-promise type=mention state=-
+EDGE from=corwin:countable-gauge to=corwin:verify-say type=mention state=-
+EDGE from=corwin:drawer-vs-door to=corwin:consent-gate type=mention state=-
+EDGE from=corwin:drawer-vs-door to=corwin:principles type=mention state=-
+EDGE from=corwin:drawer-vs-door to=corwin:release-runbook type=mention state=-
+EDGE from=corwin:drawer-vs-door to=corwin:run-card type=mention state=-
+EDGE from=corwin:drawer-vs-door to=corwin:shelf-check type=mention state=-
+EDGE from=corwin:drawer-vs-door to=corwin:shelf-check type=vs state=-
+EDGE from=corwin:drawer-vs-door to=corwin:signing-model type=mention state=-
+EDGE from=corwin:drawer-vs-door to=corwin:signing-model type=vs state=-
+EDGE from=corwin:drawer-vs-door to=corwin:skill-sign type=mention state=-
+EDGE from=corwin:drawer-vs-door to=corwin:skill-sign type=vs state=-
+EDGE from=corwin:drawer-vs-door to=corwin:verify-say type=mention state=-
+EDGE from=corwin:drawer-vs-door to=corwin:verify-say type=vs state=-
+EDGE from=corwin:drift to=corwin:principles type=mention state=-
+EDGE from=corwin:eclipse-pass to=corwin:ethicsminions type=mention state=-
+EDGE from=corwin:eclipse-pass to=corwin:mentat-skill type=mention state=-
+EDGE from=corwin:eclipse-pass to=corwin:principles type=mention state=-
+EDGE from=corwin:eclipse-pass to=corwin:sandboxer type=mention state=-
+EDGE from=corwin:eclipse-pass to=corwin:skilltank type=mention state=-
+EDGE from=corwin:emacs-tashaki to=corwin:hand-test type=mention state=-
+EDGE from=corwin:emacs-tashaki to=corwin:mentat-skill type=mention state=-
+EDGE from=corwin:emacs-tashaki to=corwin:prove-a-promise type=mention state=-
+EDGE from=corwin:emacs-tashaki to=corwin:sandboxer type=mention state=-
+EDGE from=corwin:emacs-tashaki to=corwin:shelf-check type=mention state=-
+EDGE from=corwin:emacs-tashaki to=corwin:signing-model type=mention state=-
+EDGE from=corwin:emacs-tashaki to=corwin:skilltank type=mention state=-
+EDGE from=corwin:emacs-tashaki to=corwin:verify-say type=mention state=-
+EDGE from=corwin:ethicsminions to=corwin:principles type=mention state=-
+EDGE from=corwin:ethicsminions to=corwin:skilltank type=mention state=-
+EDGE from=corwin:fortress-palace to=corwin:countable-gauge type=mention state=-
+EDGE from=corwin:fortress-palace to=corwin:eclipse-pass type=mention state=-
+EDGE from=corwin:fortress-palace to=corwin:pencil-your-own type=mention state=-
+EDGE from=corwin:fortress-palace to=corwin:pocket-mentat type=mention state=-
+EDGE from=corwin:fortress-palace to=corwin:skilltank type=mention state=-
+EDGE from=corwin:garden-pony to=corwin:principles type=mention state=-
+EDGE from=corwin:garden-usage to=corwin:candor-gate type=mention state=-
+EDGE from=corwin:garden-usage to=corwin:eclipse-pass type=mention state=-
+EDGE from=corwin:garden-usage to=corwin:vibrobeast type=mention state=-
+EDGE from=corwin:hand-test to=corwin:rolls type=vs state=-
+EDGE from=corwin:hand-test to=corwin:run-card type=mention state=-
+EDGE from=corwin:hand-test to=corwin:run-card type=vs state=-
+EDGE from=corwin:inculcat-boxer to=corwin:run-card type=mention state=-
+EDGE from=corwin:inculcat-boxer to=corwin:sandboxer type=mention state=-
+EDGE from=corwin:inculcat-boxer to=soft:intake type=mention state=-
+EDGE from=corwin:instrument-panel to=corwin:run-card type=mention state=-
+EDGE from=corwin:instrument-panel to=corwin:sandboxer type=mention state=-
+EDGE from=corwin:instrument-panel to=corwin:shelf-check type=mention state=-
+EDGE from=corwin:instrument-panel to=corwin:skill-sign type=mention state=-
+EDGE from=corwin:kid-glove to=corwin:consent-gate type=mention state=-
+EDGE from=corwin:lens to=corwin:eclipse-pass type=mention state=-
+EDGE from=corwin:lens to=corwin:ethicsminions type=mention state=-
+EDGE from=corwin:lens to=corwin:principles type=mention state=-
+EDGE from=corwin:llama-bridge to=bryant:llama-bridge type=derived-from state=-
+EDGE from=corwin:llama-bridge to=corwin:altorewired type=mention state=-
+EDGE from=corwin:llama-bridge to=corwin:ethicsminions type=mention state=-
+EDGE from=corwin:llama-bridge to=corwin:sandboxer type=mention state=-
+EDGE from=corwin:llama-bridge to=corwin:skilltank type=mention state=-
+EDGE from=corwin:llama-bridge to=soft:frugal-offload type=mention state=-
+EDGE from=corwin:llama-bridge to=soft:houseboxer type=mention state=-
+EDGE from=corwin:llama-bridge to=soft:omni-tool type=mention state=-
+EDGE from=corwin:magic-words-persona to=corwin:tool-lifecycle type=mention state=-
+EDGE from=corwin:md-org-canonicity to=corwin:prove-a-promise type=mention state=-
+EDGE from=corwin:md-org-canonicity to=corwin:signing-model type=mention state=-
+EDGE from=corwin:mentat-skill to=corwin:sandboxer type=mention state=-
+EDGE from=corwin:pencil-your-own to=corwin:consent-gate type=mention state=-
+EDGE from=corwin:pencil-your-own to=corwin:eclipse-pass type=mention state=-
+EDGE from=corwin:pencil-your-own to=corwin:ethicsminions type=mention state=-
+EDGE from=corwin:pencil-your-own to=corwin:mentat-skill type=mention state=-
+EDGE from=corwin:pencil-your-own to=corwin:prove-a-promise type=mention state=-
+EDGE from=corwin:pencil-your-own to=corwin:tool-lifecycle type=mention state=-
+EDGE from=corwin:pencil-your-own to=corwin:values-baseline type=mention state=-
+EDGE from=corwin:pencil-your-own to=corwin:verify-say type=mention state=-
+EDGE from=corwin:persona-engine to=corwin:consent-gate type=mention state=-
+EDGE from=corwin:persona-engine to=corwin:eclipse-pass type=mention state=-
+EDGE from=corwin:persona-engine to=corwin:fantasy-operational-boundary type=mention state=-
+EDGE from=corwin:pmo to=corwin:eclipse-pass type=mention state=-
+EDGE from=corwin:pmo to=corwin:sandboxer type=mention state=-
+EDGE from=corwin:pocket-mentat to=corwin:countable-gauge type=mention state=-
+EDGE from=corwin:pocket-mentat to=corwin:fortress-palace type=mention state=-
+EDGE from=corwin:pocket-mentat to=corwin:mentat-skill type=mention state=-
+EDGE from=corwin:pocket-mentat to=corwin:pencil-your-own type=mention state=-
+EDGE from=corwin:pocket-mentat to=corwin:seatkeeper type=mention state=-
+EDGE from=corwin:posix to=corwin:eclipse-pass type=mention state=-
+EDGE from=corwin:posix to=corwin:medley-review type=mention state=-
+EDGE from=corwin:posix to=corwin:sandboxer type=mention state=-
+EDGE from=corwin:posix to=corwin:sandboxer type=route state=-
+EDGE from=corwin:posix to=corwin:session-rotate type=mention state=-
+EDGE from=corwin:principles to=corwin:consent-gate type=mention state=-
+EDGE from=corwin:principles to=corwin:ethicsminions type=mention state=-
+EDGE from=corwin:principles to=corwin:mentat-skill type=mention state=-
+EDGE from=corwin:reformat-prompt to=corwin:skill-sign type=mention state=-
+EDGE from=corwin:release-runbook to=corwin:run-card type=mention state=-
+EDGE from=corwin:release-runbook to=corwin:session-rotate type=mention state=-
+EDGE from=corwin:release-runbook to=corwin:skill-sign type=mention state=-
+EDGE from=corwin:release-runbook to=corwin:skilltank type=mention state=-
+EDGE from=corwin:rolls to=corwin:color-theory type=mention state=-
+EDGE from=corwin:rolls to=corwin:instrument-panel type=mention state=-
+EDGE from=corwin:rolls to=corwin:run-card type=mention state=-
+EDGE from=corwin:rolls to=corwin:session-rotate type=mention state=-
+EDGE from=corwin:rolls to=corwin:shelf-check type=mention state=-
+EDGE from=corwin:rolls to=corwin:verify-say type=mention state=-
+EDGE from=corwin:rolls to=soft:intake type=mention state=-
+EDGE from=corwin:sandboxer to=corwin:mentat-skill type=mention state=-
+EDGE from=corwin:savane-forensics to=corwin:principles type=mention state=-
+EDGE from=corwin:seams to=corwin:consent-gate type=mention state=-
+EDGE from=corwin:seams to=corwin:eclipse-pass type=mention state=-
+EDGE from=corwin:seams to=corwin:ethicsminions type=mention state=-
+EDGE from=corwin:seams to=corwin:run-card type=mention state=-
+EDGE from=corwin:seams to=corwin:sandboxer type=mention state=-
+EDGE from=corwin:seams to=corwin:shelf-check type=mention state=-
+EDGE from=corwin:seams to=corwin:skill-sign type=mention state=-
+EDGE from=corwin:seatkeeper to=corwin:ethicsminions type=mention state=-
+EDGE from=corwin:seatkeeper to=corwin:skilltank type=mention state=-
+EDGE from=corwin:security-digest to=corwin:consent-gate type=mention state=-
+EDGE from=corwin:security-digest to=corwin:mentat-skill type=mention state=-
+EDGE from=corwin:session-rotate to=corwin:mentat-skill type=mention state=-
+EDGE from=corwin:session-rotate to=corwin:sandboxer type=mention state=-
+EDGE from=corwin:session-rotate to=corwin:skilltank type=mention state=-
+EDGE from=corwin:shelf-check to=corwin:candor-gate type=mention state=-
+EDGE from=corwin:shelf-check to=corwin:consent-gate type=mention state=-
+EDGE from=corwin:shelf-check to=corwin:sandboxer type=mention state=-
+EDGE from=corwin:shelf-check to=corwin:skill-sign type=mention state=-
+EDGE from=corwin:shelf-check to=corwin:skilltank type=mention state=-
+EDGE from=corwin:shelf-check to=soft:egress type=mention state=-
+EDGE from=corwin:signing-model to=corwin:guarded-visibility type=mention state=-
+EDGE from=corwin:signing-model to=corwin:prove-a-promise type=mention state=-
+EDGE from=corwin:signing-model to=corwin:run-card type=mention state=-
+EDGE from=corwin:skill-metrics to=corwin:skill-sign type=mention state=-
+EDGE from=corwin:skill-sign to=corwin:consent-gate type=mention state=-
+EDGE from=corwin:skill-sign to=corwin:mentat-skill type=mention state=-
+EDGE from=corwin:skill-sign to=corwin:vibrobeast type=mention state=-
+EDGE from=corwin:skill-sign to=soft:intake type=mention state=-
+EDGE from=corwin:skilltank to=corwin:sandboxer type=mention state=-
+EDGE from=corwin:skilltank to=soft:grand-test-manifest type=mention state=-
+EDGE from=corwin:token-optimizer to=bryant:token-optimizer type=derived-from state=-
+EDGE from=corwin:token-optimizer to=soft:intake type=mention state=-
+EDGE from=corwin:tool-lifecycle to=corwin:hooks-to-knowledge type=mention state=-
+EDGE from=corwin:tool-lifecycle to=corwin:magic-words-persona type=mention state=-
+EDGE from=corwin:topoforge-story to=corwin:principles type=mention state=-
+EDGE from=corwin:two-columns to=corwin:countable-gauge type=mention state=-
+EDGE from=corwin:two-columns to=corwin:fortress-palace type=mention state=-
+EDGE from=corwin:two-columns to=corwin:pocket-mentat type=mention state=-
+EDGE from=corwin:values-baseline to=corwin:principles type=mention state=-
+EDGE from=corwin:verify-say to=corwin:color-theory type=mention state=-
+EDGE from=corwin:verify-say to=corwin:instrument-panel type=mention state=-
+EDGE from=corwin:verify-say to=corwin:shelf-check type=mention state=-
+EDGE from=corwin:verify-say to=corwin:signing-model type=mention state=-
+EDGE from=corwin:verify-say to=corwin:skill-sign type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:aethernet-relay type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:altorewired type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:boundscheck type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:build-loop type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:candor-gate type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:consent-gate type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:containment-during-exec type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:countable-gauge type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:drawer-vs-door type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:eclipse-pass type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:emacs-tashaki type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:ethicsminions type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:fantasy-operational-boundary type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:fortress-palace type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:garden-usage type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:guarded-visibility type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:hand-test type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:hooks-to-knowledge type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:instrument-panel type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:kid-glove type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:layered-assurance type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:llama-bridge type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:magic-words-persona type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:md-org-canonicity type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:medley-review type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:mentat-skill type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:pencil-your-own type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:persona-engine type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:pocket-mentat type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:posix-gotchas type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:principles type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:prove-a-promise type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:reformat-prompt type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:release-runbook type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:rewire-order type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:sandboxer type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:savane-forensics type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:seatkeeper type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:security-digest type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:session-rotate type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:shelf-check type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:signing-model type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:skill-metrics type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:skill-sign type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:skilltank type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:token-optimizer type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:tool-lifecycle type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:two-columns type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:values-baseline type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:verify-say type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:wire-connect type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:wire-ledger type=mention state=-
+EDGE from=corwin:vibrobeast to=corwin:writing-forms type=mention state=-
+EDGE from=corwin:vibrobeast to=soft:considerate-reader type=mention state=-
+EDGE from=corwin:vibrobeast to=soft:egress type=mention state=-
+EDGE from=corwin:vibrobeast to=soft:frugal-offload type=mention state=-
+EDGE from=corwin:vibrobeast to=soft:grand-test-manifest type=mention state=-
+EDGE from=corwin:vibrobeast to=soft:houseboxer type=mention state=-
+EDGE from=corwin:vibrobeast to=soft:intake type=mention state=-
+EDGE from=corwin:vibrobeast to=soft:intern type=mention state=-
+EDGE from=corwin:vibrobeast to=soft:nongnu-steward type=mention state=-
+EDGE from=corwin:vibrobeast to=soft:omni-tool type=mention state=-
+EDGE from=corwin:vibrobeast to=soft:parallax type=mention state=-
+EDGE from=corwin:vibrobeast to=soft:retro-apply type=mention state=-
+EDGE from=corwin:vibrobeast to=soft:soft-skills type=mention state=-
+EDGE from=corwin:wire-connect to=bryant:parley type=derived-from state=-
+EDGE from=corwin:wire-connect to=bryant:parley type=route state=-
+EDGE from=corwin:wire-connect to=bryant:wire-omnibus type=derived-from state=-
+EDGE from=corwin:wire-connect to=corwin:aethernet-relay type=mention state=-
+EDGE from=corwin:wire-connect to=corwin:candor-gate type=mention state=-
+EDGE from=corwin:wire-connect to=corwin:consent-gate type=mention state=-
+EDGE from=corwin:wire-connect to=corwin:wire-ledger type=mention state=-
+EDGE from=corwin:wire-ledger to=bryant:wire-omnibus type=derived-from state=-
+EDGE from=corwin:wire-ledger to=corwin:consent-gate type=mention state=-
+EDGE from=corwin:wire-ledger to=corwin:signing-model type=mention state=-
+EDGE from=corwin:wire-ledger to=corwin:wire-connect type=mention state=-
+EDGE from=corwin:writing-forms to=corwin:eclipse-pass type=mention state=-
+EDGE from=corwin:writing-forms to=corwin:reformat-prompt type=mention state=-
+EDGE from=corwin:writing-forms to=corwin:run-card type=mention state=-
+EDGE from=corwin:writing-forms to=corwin:skill-sign type=mention state=-
+EDGE from=corwin:writing-forms to=corwin:verify-say type=mention state=-
+EDGE from=corwin:writing-forms to=soft:intake type=mention state=-
+EDGE from=people to=persona:mentat type=checks state=withheld
+EDGE from=people to=persona:penumbra type=checks state=withheld
+EDGE from=people to=persona:shopgarden type=checks state=withheld
+EDGE from=people to=persona:vibrobeast type=checks state=withheld
+EDGE from=persona:gh7 to=persona:mentat type=checks state=proposed
+EDGE from=persona:gh7 to=persona:shopgarden type=checks state=proposed
+EDGE from=persona:ilunga to=persona:solberg-maas type=checks state=proposed
+EDGE from=persona:mentat to=persona:gh7 type=checks state=proposed
+EDGE from=persona:mentat to=persona:shopgarden type=checks state=proposed
+EDGE from=persona:mentat to=persona:vibrobeast type=checks state=proposed
+EDGE from=persona:merlin to=people type=checks state=withheld
+EDGE from=persona:pell to=persona:solberg-maas type=checks state=proposed
+EDGE from=persona:roux-abara to=persona:solberg-maas type=checks state=proposed
+EDGE from=persona:shopgarden to=persona:gh7 type=checks state=proposed
+EDGE from=persona:shopgarden to=persona:mentat type=checks state=proposed
+EDGE from=persona:solberg-maas to=persona:ilunga type=checks state=proposed
+EDGE from=persona:solberg-maas to=persona:pell type=checks state=proposed
+EDGE from=persona:solberg-maas to=persona:roux-abara type=checks state=proposed
+EDGE from=persona:solberg-maas to=persona:vanth type=checks state=proposed
+EDGE from=persona:vanth to=persona:solberg-maas type=checks state=proposed
+EDGE from=persona:vibrobeast to=persona:mentat type=checks state=proposed
+EDGE from=server:c4face to=c4:c4-mcp.js type=wraps state=-
+EDGE from=server:llamabridge to=bryant:llama-bridge type=wraps state=-
+EDGE from=server:tavernface to=external:tavern type=wraps state=-
+EDGE from=soft:build-loop to=corwin:tool-lifecycle type=mention state=-
+EDGE from=soft:build-loop to=corwin:writing-forms type=mention state=-
+EDGE from=soft:build-loop to=soft:egress type=mention state=-
+EDGE from=soft:build-loop to=soft:grand-test-manifest type=mention state=-
+EDGE from=soft:considerate-reader to=corwin:candor-gate type=mention state=-
+EDGE from=soft:considerate-reader to=corwin:verify-say type=mention state=-
+EDGE from=soft:considerate-reader to=soft:egress type=mention state=-
+EDGE from=soft:considerate-reader to=soft:nongnu-steward type=mention state=-
+EDGE from=soft:depth-overlap to=corwin:principles type=mention state=-
+EDGE from=soft:depth-overlap to=soft:grand-test-manifest type=mention state=-
+EDGE from=soft:egress to=soft:family-shelf type=mention state=-
+EDGE from=soft:family-shelf to=soft:egress type=mention state=-
+EDGE from=soft:frugal-offload to=bryant:frugal-offload type=derived-from state=-
+EDGE from=soft:frugal-offload to=corwin:llama-bridge type=mention state=-
+EDGE from=soft:frugal-offload to=corwin:llama-bridge type=route state=-
+EDGE from=soft:frugal-offload to=corwin:llama-bridge type=vs state=-
+EDGE from=soft:frugal-offload to=corwin:skilltank type=mention state=-
+EDGE from=soft:frugal-offload to=corwin:skilltank type=vs state=-
+EDGE from=soft:frugal-offload to=corwin:token-optimizer type=mention state=-
+EDGE from=soft:frugal-offload to=corwin:token-optimizer type=vs state=-
+EDGE from=soft:frugal-offload to=soft:gauntlet type=mention state=-
+EDGE from=soft:frugal-offload to=soft:intake type=mention state=-
+EDGE from=soft:frugal-offload to=soft:omni-tool type=mention state=-
+EDGE from=soft:gauntlet to=bryant:docx type=route state=-
+EDGE from=soft:gauntlet to=bryant:gauntlet type=derived-from state=-
+EDGE from=soft:gauntlet to=bryant:vitrine type=route state=-
+EDGE from=soft:gauntlet to=corwin:color-theory type=mention state=-
+EDGE from=soft:gauntlet to=corwin:consent-gate type=mention state=-
+EDGE from=soft:gauntlet to=corwin:consent-gate type=route state=-
+EDGE from=soft:gauntlet to=corwin:eclipse-pass type=mention state=-
+EDGE from=soft:gauntlet to=corwin:ethicsminions type=mention state=-
+EDGE from=soft:gauntlet to=corwin:llama-bridge type=mention state=-
+EDGE from=soft:gauntlet to=corwin:medley-review type=mention state=-
+EDGE from=soft:gauntlet to=corwin:mentat-skill type=mention state=-
+EDGE from=soft:gauntlet to=corwin:principles type=mention state=-
+EDGE from=soft:gauntlet to=corwin:sandboxer type=mention state=-
+EDGE from=soft:gauntlet to=corwin:session-rotate type=mention state=-
+EDGE from=soft:gauntlet to=corwin:skill-sign type=mention state=-
+EDGE from=soft:gauntlet to=corwin:skilltank type=mention state=-
+EDGE from=soft:gauntlet to=soft:frugal-offload type=mention state=-
+EDGE from=soft:gauntlet to=soft:intake type=mention state=-
+EDGE from=soft:gauntlet to=soft:omni-tool type=mention state=-
+EDGE from=soft:grand-test-manifest to=corwin:build-loop type=mention state=-
+EDGE from=soft:grand-test-manifest to=corwin:principles type=mention state=-
+EDGE from=soft:grand-test-manifest to=corwin:skilltank type=mention state=-
+EDGE from=soft:grand-test-manifest to=corwin:writing-forms type=mention state=-
+EDGE from=soft:houseboxer to=corwin:llama-bridge type=mention state=-
+EDGE from=soft:houseboxer to=corwin:sandboxer type=mention state=-
+EDGE from=soft:hui to=soft:intake type=mention state=-
+EDGE from=soft:intake to=soft:egress type=mention state=-
+EDGE from=soft:omni-tool to=bryant:omni-tool type=derived-from state=-
+EDGE from=soft:omni-tool to=corwin:color-theory type=mention state=-
+EDGE from=soft:omni-tool to=corwin:consent-gate type=mention state=-
+EDGE from=soft:omni-tool to=corwin:consent-gate type=route state=-
+EDGE from=soft:omni-tool to=corwin:eclipse-pass type=mention state=-
+EDGE from=soft:omni-tool to=corwin:ethicsminions type=mention state=-
+EDGE from=soft:omni-tool to=corwin:llama-bridge type=mention state=-
+EDGE from=soft:omni-tool to=corwin:medley-review type=mention state=-
+EDGE from=soft:omni-tool to=corwin:mentat-skill type=mention state=-
+EDGE from=soft:omni-tool to=corwin:mentat-skill type=route state=-
+EDGE from=soft:omni-tool to=corwin:principles type=mention state=-
+EDGE from=soft:omni-tool to=corwin:sandboxer type=mention state=-
+EDGE from=soft:omni-tool to=corwin:session-rotate type=mention state=-
+EDGE from=soft:omni-tool to=corwin:skilltank type=mention state=-
+EDGE from=soft:omni-tool to=soft:frugal-offload type=mention state=-
+EDGE from=soft:omni-tool to=soft:gauntlet type=mention state=-
+EDGE from=soft:omni-tool to=soft:intake type=mention state=-
+EDGE from=soft:outside-reader to=corwin:kid-glove type=mention state=-
+EDGE from=soft:outside-reader to=corwin:persona-engine type=mention state=-
+EDGE from=soft:outside-reader to=corwin:verify-say type=mention state=-
+EDGE from=soft:parallax to=bryant:caterpillar type=vs state=-
+EDGE from=soft:parallax to=bryant:parallax type=derived-from state=-
+EDGE from=soft:parallax to=corwin:eclipse-pass type=mention state=-
+EDGE from=soft:parallax to=corwin:ethicsminions type=mention state=-
+EDGE from=soft:parallax to=corwin:wire-ledger type=mention state=-
+EDGE from=soft:prior-instruction to=corwin:consent-gate type=mention state=-
+EDGE from=soft:prior-instruction to=corwin:containment-during-exec type=mention state=-
+EDGE from=soft:prior-instruction to=corwin:verify-say type=mention state=-
+EDGE from=soft:prior-instruction to=soft:retro-apply type=mention state=-
+EDGE from=soft:reformat-session to=corwin:reformat-prompt type=mention state=-
+EDGE from=soft:reformat-session to=soft:intake type=mention state=-
+EDGE from=soft:retro-apply to=soft:prior-instruction type=mention state=-
+NODE id=bryant:adapt kind=skill garden=bryant state=installed
+NODE id=bryant:aetherflow-runner kind=skill garden=bryant state=installed
+NODE id=bryant:aetherflow-wire-sdk kind=skill garden=bryant state=installed
+NODE id=bryant:aethernet-relay kind=skill garden=bryant state=installed
+NODE id=bryant:aethernet-release kind=skill garden=bryant state=installed
+NODE id=bryant:alfred kind=skill garden=bryant state=installed
+NODE id=bryant:artifact-capabilities kind=skill garden=bryant state=installed
+NODE id=bryant:artifact-design kind=skill garden=bryant state=installed
+NODE id=bryant:artifact-diagramming kind=skill garden=bryant state=installed
+NODE id=bryant:caterpillar kind=skill garden=bryant state=installed
+NODE id=bryant:claude-in-chrome kind=skill garden=bryant state=installed
+NODE id=bryant:colophon kind=skill garden=bryant state=installed
+NODE id=bryant:color-theory kind=skill garden=bryant state=installed
+NODE id=bryant:connector-forge kind=skill garden=bryant state=installed
+NODE id=bryant:consent-gate kind=skill garden=bryant state=installed
+NODE id=bryant:consolidate-memory kind=external garden=bryant state=ghost
+NODE id=bryant:cowork-plugin kind=skill garden=bryant state=installed
+NODE id=bryant:cowork-plugin-customizer kind=skill garden=bryant state=installed
+NODE id=bryant:create-cowork-plugin kind=skill garden=bryant state=installed
+NODE id=bryant:dataviz kind=skill garden=bryant state=installed
+NODE id=bryant:docs kind=skill garden=bryant state=installed
+NODE id=bryant:docx kind=skill garden=bryant state=installed
+NODE id=bryant:eclipse-pass kind=skill garden=bryant state=installed
+NODE id=bryant:ethicsminions kind=skill garden=bryant state=installed
+NODE id=bryant:explain-usage kind=skill garden=bryant state=installed
+NODE id=bryant:foaf kind=skill garden=bryant state=installed
+NODE id=bryant:frugal-offload kind=skill garden=bryant state=installed
+NODE id=bryant:gauntlet kind=skill garden=bryant state=installed
+NODE id=bryant:git-wire kind=skill garden=bryant state=installed
+NODE id=bryant:ground-truth kind=skill garden=bryant state=installed
+NODE id=bryant:import-memory kind=skill garden=bryant state=installed
+NODE id=bryant:llama-bridge kind=skill garden=bryant state=installed
+NODE id=bryant:manifest kind=skill garden=bryant state=installed
+NODE id=bryant:medley-review kind=skill garden=bryant state=installed
+NODE id=bryant:mega-voltron kind=skill garden=bryant state=installed
+NODE id=bryant:mentat-skill kind=skill garden=bryant state=installed
+NODE id=bryant:morning kind=skill garden=bryant state=installed
+NODE id=bryant:omni-tool kind=skill garden=bryant state=installed
+NODE id=bryant:parallax kind=skill garden=bryant state=installed
+NODE id=bryant:parley kind=skill garden=bryant state=installed
+NODE id=bryant:pdf kind=skill garden=bryant state=installed
+NODE id=bryant:pmo kind=skill garden=bryant state=installed
+NODE id=bryant:power-glove kind=skill garden=bryant state=installed
+NODE id=bryant:pptx kind=skill garden=bryant state=installed
+NODE id=bryant:primer kind=skill garden=bryant state=installed
+NODE id=bryant:principles kind=skill garden=bryant state=installed
+NODE id=bryant:rainbow-eval kind=skill garden=bryant state=installed
+NODE id=bryant:rosetta kind=skill garden=bryant state=installed
+NODE id=bryant:sandboxer kind=skill garden=bryant state=installed
+NODE id=bryant:schedule kind=external garden=bryant state=ghost
+NODE id=bryant:session-rotate kind=skill garden=bryant state=installed
+NODE id=bryant:setup-claude kind=skill garden=bryant state=installed
+NODE id=bryant:signet kind=skill garden=bryant state=installed
+NODE id=bryant:skill-creator kind=skill garden=bryant state=installed
+NODE id=bryant:skilltank kind=skill garden=bryant state=installed
+NODE id=bryant:takushi kind=skill garden=bryant state=installed
+NODE id=bryant:token-optimizer kind=skill garden=bryant state=installed
+NODE id=bryant:vitrine kind=skill garden=bryant state=installed
+NODE id=bryant:wire-2fa kind=skill garden=bryant state=installed
+NODE id=bryant:wire-capsules kind=skill garden=bryant state=installed
+NODE id=bryant:wire-omnibus kind=skill garden=bryant state=installed
+NODE id=bryant:wire-protocol kind=skill garden=bryant state=installed
+NODE id=bryant:wire-reconcile kind=skill garden=bryant state=installed
+NODE id=bryant:xlsx kind=skill garden=bryant state=installed
+NODE id=c4:c4-mcp.js kind=external garden=corwin state=-
+NODE id=c4:on1fl kind=external garden=corwin state=-
+NODE id=corwin:aethernet-relay kind=skill garden=corwin state=installed
+NODE id=corwin:altorewired kind=skill garden=corwin state=installed
+NODE id=corwin:boundscheck kind=skill garden=corwin state=installed
+NODE id=corwin:build-loop kind=skill garden=corwin state=installed
+NODE id=corwin:candor-gate kind=skill garden=corwin state=installed
+NODE id=corwin:color-theory kind=skill garden=corwin state=installed
+NODE id=corwin:consent-gate kind=skill garden=corwin state=installed
+NODE id=corwin:containment-during-exec kind=skill garden=corwin state=installed
+NODE id=corwin:countable-gauge kind=skill garden=corwin state=installed
+NODE id=corwin:drawer-vs-door kind=skill garden=corwin state=installed
+NODE id=corwin:drift kind=skill garden=corwin state=installed
+NODE id=corwin:eclipse-pass kind=skill garden=corwin state=installed
+NODE id=corwin:emacs-tashaki kind=skill garden=corwin state=installed
+NODE id=corwin:ethicsminions kind=skill garden=corwin state=installed
+NODE id=corwin:fantasy-operational-boundary kind=skill garden=corwin state=installed
+NODE id=corwin:foaf kind=skill garden=corwin state=installed
+NODE id=corwin:fortress-palace kind=skill garden=corwin state=installed
+NODE id=corwin:garden-pony kind=skill garden=corwin state=installed
+NODE id=corwin:garden-usage kind=skill garden=corwin state=installed
+NODE id=corwin:guarded-visibility kind=skill garden=corwin state=installed
+NODE id=corwin:hand-test kind=skill garden=corwin state=installed
+NODE id=corwin:hooks-to-knowledge kind=skill garden=corwin state=installed
+NODE id=corwin:inculcat-boxer kind=skill garden=corwin state=installed
+NODE id=corwin:instrument-panel kind=skill garden=corwin state=installed
+NODE id=corwin:kid-glove kind=skill garden=corwin state=installed
+NODE id=corwin:layered-assurance kind=skill garden=corwin state=installed
+NODE id=corwin:lens kind=skill garden=corwin state=installed
+NODE id=corwin:llama-bridge kind=skill garden=corwin state=installed
+NODE id=corwin:magic-words-persona kind=skill garden=corwin state=installed
+NODE id=corwin:md-org-canonicity kind=skill garden=corwin state=installed
+NODE id=corwin:medley-review kind=skill garden=corwin state=installed
+NODE id=corwin:mentat-skill kind=skill garden=corwin state=installed
+NODE id=corwin:pencil-your-own kind=skill garden=corwin state=installed
+NODE id=corwin:persona-engine kind=skill garden=corwin state=installed
+NODE id=corwin:pmo kind=skill garden=corwin state=installed
+NODE id=corwin:pocket-mentat kind=skill garden=corwin state=installed
+NODE id=corwin:posix kind=skill garden=corwin state=installed
+NODE id=corwin:posix-gotchas kind=skill garden=corwin state=installed
+NODE id=corwin:principles kind=skill garden=corwin state=installed
+NODE id=corwin:prove-a-promise kind=skill garden=corwin state=installed
+NODE id=corwin:reformat-prompt kind=skill garden=corwin state=installed
+NODE id=corwin:release-runbook kind=skill garden=corwin state=installed
+NODE id=corwin:rewire-order kind=skill garden=corwin state=installed
+NODE id=corwin:rolls kind=skill garden=corwin state=installed
+NODE id=corwin:run-card kind=skill garden=corwin state=installed
+NODE id=corwin:sandboxer kind=skill garden=corwin state=installed
+NODE id=corwin:savane-forensics kind=skill garden=corwin state=installed
+NODE id=corwin:seams kind=skill garden=corwin state=installed
+NODE id=corwin:seatkeeper kind=skill garden=corwin state=installed
+NODE id=corwin:security-digest kind=skill garden=corwin state=installed
+NODE id=corwin:session-rotate kind=skill garden=corwin state=installed
+NODE id=corwin:shelf-check kind=skill garden=corwin state=installed
+NODE id=corwin:signing-model kind=skill garden=corwin state=installed
+NODE id=corwin:skill-metrics kind=skill garden=corwin state=installed
+NODE id=corwin:skill-sign kind=skill garden=corwin state=installed
+NODE id=corwin:skilltank kind=skill garden=corwin state=installed
+NODE id=corwin:token-optimizer kind=skill garden=corwin state=installed
+NODE id=corwin:tool-lifecycle kind=skill garden=corwin state=installed
+NODE id=corwin:topoforge-story kind=skill garden=corwin state=installed
+NODE id=corwin:two-columns kind=skill garden=corwin state=installed
+NODE id=corwin:values-baseline kind=skill garden=corwin state=installed
+NODE id=corwin:verify-say kind=skill garden=corwin state=installed
+NODE id=corwin:vibrobeast kind=skill garden=corwin state=installed
+NODE id=corwin:wire-connect kind=skill garden=corwin state=installed
+NODE id=corwin:wire-ledger kind=skill garden=corwin state=installed
+NODE id=corwin:writing-forms kind=skill garden=corwin state=installed
+NODE id=external:google-workspace kind=external garden=platform state=named
+NODE id=external:gw-survey kind=external garden=platform state=named
+NODE id=external:tavern kind=external garden=bryant state=-
+NODE id=persona:gh7 kind=persona garden=corwin state=host
+NODE id=persona:ilunga kind=persona garden=corwin state=fiction
+NODE id=persona:mentat kind=persona garden=corwin state=system
+NODE id=persona:merlin kind=persona garden=corwin state=synthetic
+NODE id=persona:pell kind=persona garden=corwin state=fiction
+NODE id=persona:penumbra kind=persona garden=corwin state=system
+NODE id=persona:pub-item kind=persona garden=corwin state=place
+NODE id=persona:roux-abara kind=persona garden=corwin state=fiction
+NODE id=persona:shopgarden kind=persona garden=corwin state=place
+NODE id=persona:solberg-maas kind=persona garden=corwin state=fiction
+NODE id=persona:vanth kind=persona garden=corwin state=fiction
+NODE id=persona:vibrobeast kind=persona garden=corwin state=model,%20not%20a%20person
+NODE id=server:c4face kind=server garden=corwin state=gated
+NODE id=server:llamabridge kind=server garden=corwin state=gated
+NODE id=server:mentcached kind=server garden=corwin state=installed
+NODE id=server:persona kind=server garden=corwin state=installed
+NODE id=server:skillx kind=server garden=corwin state=installed
+NODE id=server:tavernface kind=server garden=corwin state=gated
+NODE id=soft:build-loop kind=soft garden=corwin state=soft
+NODE id=soft:comic-avatars kind=soft garden=corwin state=soft
+NODE id=soft:considerate-reader kind=soft garden=corwin state=soft
+NODE id=soft:depth-overlap kind=soft garden=corwin state=soft
+NODE id=soft:egress kind=soft garden=corwin state=soft
+NODE id=soft:family-shelf kind=soft garden=corwin state=soft
+NODE id=soft:frugal-offload kind=soft garden=corwin state=soft
+NODE id=soft:gauntlet kind=soft garden=corwin state=soft
+NODE id=soft:grand-test-manifest kind=soft garden=corwin state=soft
+NODE id=soft:houseboxer kind=soft garden=corwin state=soft
+NODE id=soft:hui kind=soft garden=corwin state=soft
+NODE id=soft:intake kind=soft garden=corwin state=soft
+NODE id=soft:intern kind=soft garden=corwin state=soft
+NODE id=soft:ngen kind=soft garden=corwin state=soft
+NODE id=soft:nongnu-steward kind=soft garden=corwin state=soft
+NODE id=soft:omni-tool kind=soft garden=corwin state=soft
+NODE id=soft:outside-reader kind=soft garden=corwin state=soft
+NODE id=soft:parallax kind=soft garden=corwin state=soft
+NODE id=soft:prior-instruction kind=soft garden=corwin state=soft
+NODE id=soft:public-stage kind=soft garden=corwin state=soft
+NODE id=soft:question-economy kind=soft garden=corwin state=soft
+NODE id=soft:reformat-session kind=soft garden=corwin state=soft
+NODE id=soft:retro-apply kind=soft garden=corwin state=soft
+NODE id=soft:soft-skills kind=soft garden=corwin state=soft
+SOURCE path=AS4CE0001/ERRATA reader=errata state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/build-loop/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/comic-avatars/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/considerate-reader/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/depth-overlap/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/egress/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/family-shelf/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/frugal-offload/NOTICE.md reader=notice state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/frugal-offload/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/gauntlet/NOTICE.md reader=notice state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/gauntlet/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/grand-test-manifest/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/houseboxer/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/hui/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/intake/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/intern/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/ngen/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/nongnu-steward/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/omni-tool/NOTICE.md reader=notice state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/omni-tool/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/outside-reader/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/parallax/NOTICE.md reader=notice state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/parallax/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/prior-instruction/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/public-stage/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/question-economy/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/reformat-session/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/retro-apply/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/SOFT-SKILLS/soft-skills/SKILL.md reader=soft state=read
+SOURCE path=AS4CE0001/advice/EXTENSION-2026-10-10/persona-ledger/LEDGER-2026-10-10-r2.md reader=ledger state=read
+SOURCE path=AS4CE0001/conventions/bryant-counterparts.tsv reader=counterparts state=read
+SOURCE path=AS4CE0001/dist/vibrobeast/.mcp.json reader=mcp.json state=read
+SOURCE path=AS4CE0001/polygram/mcp/c4face.py reader=server state=read
+SOURCE path=AS4CE0001/polygram/mcp/llamabridge.py reader=server state=read
+SOURCE path=AS4CE0001/polygram/mcp/mentcached.py reader=server state=read
+SOURCE path=AS4CE0001/polygram/mcp/persona.py reader=server state=read
+SOURCE path=AS4CE0001/polygram/mcp/prefs.py reader=prefs state=read
+SOURCE path=AS4CE0001/polygram/mcp/skillx.py reader=server state=read
+SOURCE path=AS4CE0001/polygram/mcp/tavernface.py reader=server state=read
+SOURCE path=AS4CE0001/skills/aethernet-relay/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/altorewired/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/boundscheck/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/build-loop/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/candor-gate/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/color-theory/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/consent-gate/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/containment-during-exec/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/countable-gauge/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/drawer-vs-door/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/drift/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/eclipse-pass/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/emacs-tashaki/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/ethicsminions/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/fantasy-operational-boundary/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/foaf/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/fortress-palace/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/garden-pony/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/garden-usage/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/guarded-visibility/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/hand-test/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/hooks-to-knowledge/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/inculcat-boxer/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/instrument-panel/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/kid-glove/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/layered-assurance/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/lens/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/llama-bridge/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/magic-words-persona/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/md-org-canonicity/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/medley-review/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/mentat-skill/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/pencil-your-own/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/persona-engine/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/pmo/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/pocket-mentat/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/posix-gotchas/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/posix/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/principles/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/prove-a-promise/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/reformat-prompt/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/release-runbook/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/rewire-order/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/rolls/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/run-card/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/sandboxer/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/savane-forensics/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/seams/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/seatkeeper/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/security-digest/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/session-rotate/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/shelf-check/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/signing-model/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/skill-metrics/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/skill-sign/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/skilltank/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/token-optimizer/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/tool-lifecycle/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/topoforge-story/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/two-columns/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/values-baseline/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/verify-say/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/vibrobeast/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/wire-connect/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/wire-ledger/SKILL.md reader=skill state=read
+SOURCE path=AS4CE0001/skills/writing-forms/SKILL.md reader=skill state=read
+SOURCE path=c4/from-bryant/2026-09-17/skill-tree.html reader=skill-tree state=read
+SOURCE path=c4/from-bryant/2026-10-05-r3/gauntlet-nexus-map%202.html reader=nexus-map state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/INDEX.md reader=cards state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-01-trust-source.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-02-wire-placement.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-03-discovery-announce.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-04-recipe-surface.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-05-delegation-record.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-06-socialized-prefs.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-07-prefs-store-location.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-08-org-policy-vs-room-rules.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-09-read-first-witness.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-10-tone-derived-pair.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-11-persona-voice-default.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-12-person-tone-facts-home.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-13-question-surface.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-14-usage-frame-sharing.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-15-reset-prompt-label.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-16-llama-serialization.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-17-tavern-drop-road.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-18-table-source-format.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-19-ledger-signing-carry.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-20-resident-edge-reader.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-21-seating-order.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-22-decline-memory.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-23-session-open-check.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-24-hook-points.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-25-drop-transport.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-26-release-gate.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/cards/OPTION-27-reach-or-wear.md reader=card state=read
+SOURCE path=c4/spells/extension/runs/2026-10-10/turn2/study/S8-ui-threads-and-spa.md reader=compass state=read
+TENSION id=card:01 state=open rule=both
+TENSION id=card:02 state=open rule=both
+TENSION id=card:03 state=open rule=both
+TENSION id=card:04 state=open rule=both
+TENSION id=card:05 state=open rule=accessible
+TENSION id=card:06 state=resolved rule=accessible
+TENSION id=card:07 state=open rule=technical
+TENSION id=card:08 state=open rule=both
+TENSION id=card:09 state=open rule=both
+TENSION id=card:10 state=open rule=accessible
+TENSION id=card:11 state=resolved rule=accessible
+TENSION id=card:12 state=open rule=technical
+TENSION id=card:13 state=resolved rule=accessible
+TENSION id=card:14 state=open rule=both
+TENSION id=card:15 state=resolved rule=technical
+TENSION id=card:16 state=resolved rule=technical
+TENSION id=card:17 state=open rule=both
+TENSION id=card:18 state=resolved rule=accessible
+TENSION id=card:19 state=open rule=accessible
+TENSION id=card:20 state=open rule=technical
+TENSION id=card:21 state=resolved rule=accessible
+TENSION id=card:22 state=resolved rule=accessible
+TENSION id=card:23 state=open rule=both
+TENSION id=card:24 state=resolved rule=technical
+TENSION id=card:25 state=open rule=accessible
+TENSION id=card:26 state=resolved rule=both
+TENSION id=card:27 state=resolved rule=both
+TENSION id=errata:E15 state=open rule=-
+TENSION id=errata:E25 state=open rule=-
+TENSION id=errata:E26 state=open rule=-
+TENSION id=errata:E27 state=open rule=-
+TENSION id=errata:E28 state=open rule=-
+TENSION id=errata:E29 state=open rule=-
+TENSION id=errata:E30 state=open rule=-
+TENSION id=errata:E31 state=open rule=-
+TENSION id=errata:E32 state=open rule=-
+TENSION id=errata:E33 state=open rule=-
+TENSION id=errata:E34 state=open rule=-
+TENSION id=errata:E35 state=open rule=-
+TENSION id=errata:E6 state=open rule=-

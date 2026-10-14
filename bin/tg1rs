@@ -1,0 +1,212 @@
+#!/bin/sh
+# tg1rs -- TAG 1 RESOLVE: the C4QL tag resolver.  Reads a tag [PERSONA (CAST)FACT], finds the table
+# row FACT names through the cast table, and checks both links: the row names the persona (forward)
+# and the persona's journal names the row (back).  Answers one of five words:
+#   LINKED  FORWARD-ONLY  BACK-ONLY  GAP  WORD
+# Spec: tests/tg1rs-SPEC.txt (T1-T11).  Guide: conventions/C4QL-TAG.md.  Reads only; writes nothing.
+#
+# usage: tg1rs [--casts F] [--journals D] [--seat D] [--c4 D] resolve TAG...
+#        tg1rs [...] persona NAME        walk one persona's journal once (n1) and resolve what it names
+#        tg1rs [...] scan FILE...        resolve every tag found in the files
+#        tg1rs [...] sweep               every tag the tables and journals imply, then the counts
+# Output: answer <TAB> persona <TAB> cast <TAB> fact <TAB> reason, one row per tag; lines starting
+# with "#" are notes.  Exit 0 whatever the answers; 2 on a usage error or a missing cast table.
+# Environment: TG1RS_CASTS, TG1RS_JOURNALS, MENTCACHED_SEAT, C4_ROOT (the flags win).
+#
+# Authored by Mentat (for Corwin; claude-opus-5-5).
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+# SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later
+set -u
+LEADS=leads-to
+MAXHOPS=4
+ws=$(cd "$(dirname "$0")/.." && pwd)
+CASTS=${TG1RS_CASTS:-$ws/conventions/c4ql-casts.tsv}
+C4=${C4_ROOT:-$ws/../c4}
+SEAT=${MENTCACHED_SEAT:-}
+JOURNALS=${TG1RS_JOURNALS:-}
+while [ $# -gt 0 ]; do
+  case $1 in
+    --casts) CASTS=$2; shift 2;;
+    --journals) JOURNALS=$2; shift 2;;
+    --seat) SEAT=$2; shift 2;;
+    --c4) C4=$2; shift 2;;
+    *) break;;
+  esac
+done
+case $SEAT in *'${'*|'$'*) SEAT= ;; esac
+[ -z "$JOURNALS" ] && [ -n "$SEAT" ] && JOURNALS=$SEAT/persona/notes
+[ -f "$CASTS" ] || { echo "tg1rs: no cast table at $CASTS" >&2; exit 2; }
+TAGRE='\[[A-Za-z][A-Za-z0-9_-]* \([a-z][a-z0-9_-]*\)[^]	 ]+\]'
+
+emit() { printf '%s\t%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$4" "$5"; }
+
+where() {  # a table address -> a local path; empty when its root is not known here
+  case $1 in
+    ws:*) echo "$ws/${1#ws:}";;
+    c4:*) echo "$C4/${1#c4:}";;
+    seat:*) if [ -n "$SEAT" ]; then echo "$SEAT/${1#seat:}"; fi;;
+    *) echo "$1";;
+  esac
+}
+
+castrow() { awk -F'\t' -v c="$1" '!/^#/ && $1==c && $4!="alias" && $4!="names" { print $2 "\t" $3 "\t" $4 "\t" $5; exit }' "$CASTS"; }
+
+names_for() {  # " persona alias... " : the persona and every alias that includes it
+  awk -F'\t' -v p="$1" 'BEGIN { s=" " p " " }
+    !/^#/ && $4=="alias" { n=split($2, m, " "); for (i=1;i<=n;i++) if (tolower(m[i])==p) s=s tolower($1) " " }
+    END { print s }' "$CASTS"
+}
+
+journal_back() {  # persona cast fact -> 0 linked, 1 not, 2 journal not readable
+  [ -n "$JOURNALS" ] && [ -d "$JOURNALS/$1" ] || return 2
+  set -- "$1" "$2" "$3" "$JOURNALS/$1"/g*.md
+  [ -f "$4" ] || return 2
+  p=$1; c=$2; f=$3; shift 3
+  awk -v L="$LEADS" -v c="$c" -v f="$f" '
+    FNR==1 { fm=0 }
+    /^---[ \t]*$/ { fm++; next }
+    fm==1 && index($0, L ":")==1 {
+      if (index($0, "[[" f "]]") || index($0, "[[" f "|") || index($0, "[[" c ":" f "]]") || index($0, "[[" c ":" f "|")) { hit=1 }
+    }
+    END { exit (hit ? 0 : 1) }' "$@"
+}
+
+resolve1() {  # persona cast fact tag
+  p=$(printf '%s' "$1" | tr 'A-Z' 'a-z'); c0=$2; f=$3; tag=$4
+  c=$c0; hops=0
+  while :; do
+    row=$(castrow "$c")
+    if [ -z "$row" ]; then emit WORD "$p" "$c0" "$f" "cast ($c) is not in the cast table; kept as written: $tag"; return; fi
+    table=$(printf '%s' "$row" | cut -f1); key=$(printf '%s' "$row" | cut -f2)
+    kind=$(printf '%s' "$row" | cut -f3); by=$(printf '%s' "$row" | cut -f4)
+    [ "$kind" = indirect ] || break
+    hops=$((hops+1))
+    if [ $hops -gt $MAXHOPS ]; then emit WORD "$p" "$c0" "$f" "indirection past $MAXHOPS hops at ($c); kept as written: $tag"; return; fi
+    c=${table#cast:}
+  done
+  path=$(where "$table")
+  case /$f/ in */../*|//*) emit GAP "$p" "$c0" "$f" "the key is not a row name (a path step); $table"; return;; esac
+  names=$(names_for "$p")
+  found=0; fw=0; back2=0
+  case $kind in
+    tsv|words)
+      if [ -z "$path" ] || [ ! -f "$path" ]; then emit GAP "$p" "$c0" "$f" "table not reachable here: $table"; return; fi
+      r=$(awk -v key="$key" -v f="$f" -v by="$by" -v names="$names" -v words="$([ "$kind" = words ] && echo 1 || echo 0)" '
+        BEGIN { nk=split(key, K, ":") }
+        /^#/ { next }
+        { if (words) n=split($0, F, /[ \t]+/); else n=split($0, F, "\t")
+          k=""; for (i=1;i<=nk;i++) k = k (i>1 ? ":" : "") F[K[i]]
+          if (words ? (tolower(k)!=tolower(f)) : (k!=f)) next
+          fw=0
+          if (by != "-") { m=split(tolower(F[by]), W, /[^a-z0-9_-]+/); for (j=1;j<=m;j++) if (W[j]!="" && index(names, " " W[j] " ")) fw=1 }
+          print "1 " fw; exit }' "$path")
+      [ -n "$r" ] && { found=1; fw=${r#1 }; } ;;
+    file)
+      if [ -z "$path" ] || [ ! -d "$path" ]; then emit GAP "$p" "$c0" "$f" "table not reachable here: $table"; return; fi
+      if [ -f "$path/$f.md" ]; then
+        found=1
+        awk -v names="$names" '/^---[ \t]*$/ { fm++; next }
+          fm==1 && /^(by|author|came-from):/ { m=split(tolower($0), W, /[^a-z0-9_-]+/); for (j=2;j<=m;j++) if (W[j]!="" && index(names, " " W[j] " ")) hit=1 }
+          fm>=2 { exit } END { exit (hit ? 0 : 1) }' "$path/$f.md" && fw=1
+      fi ;;
+    store)
+      if [ -z "$path" ] || [ ! -d "$path" ]; then emit GAP "$p" "$c0" "$f" "table not reachable here: $table"; return; fi
+      set -- "$path/$f"/g*.md
+      if [ -f "$1" ]; then
+        found=1
+        awk -v names="$names" 'FNR==1 { fm=0 } /^---[ \t]*$/ { fm++; next }
+          fm==1 && /^came-from:/ { n=split(names, N, " "); for (i=1;i<=n;i++) if (index($0, "[[persona:" N[i] "]]") || index($0, "[[persona:" N[i] "|")) hit=1 }
+          END { exit (hit ? 0 : 1) }' "$@" && fw=1
+        lg=$(dirname "$path")/cited/$f.log
+        [ -f "$lg" ] && awk -F'\t' -v p="$p" 'tolower($2)==p { hit=1 } END { exit (hit ? 0 : 1) }' "$lg" && back2=1
+      fi ;;
+    *) emit WORD "$p" "$c0" "$f" "cast ($c) has kind '$kind', which tg1rs does not read; kept as written: $tag"; return;;
+  esac
+  if [ $found -eq 0 ]; then emit GAP "$p" "$c0" "$f" "no row '$f' in $table"; return; fi
+  journal_back "$p" "$c" "$f"; jb=$?
+  bk=0; [ $jb -eq 0 ] && bk=1; [ $back2 -eq 1 ] && bk=1
+  note=""; [ $jb -eq 2 ] && note="; $p's journal is not readable here"
+  if [ $fw -eq 1 ] && [ $bk -eq 1 ]; then emit LINKED "$p" "$c0" "$f" "row names $p and $p's journal names the row"
+  elif [ $fw -eq 1 ]; then emit FORWARD-ONLY "$p" "$c0" "$f" "row names $p; no back link$note"
+  elif [ $bk -eq 1 ]; then emit BACK-ONLY "$p" "$c0" "$f" "$p's journal names the row; the row does not name $p"
+  else emit GAP "$p" "$c0" "$f" "row found, no link either way$note"; fi
+}
+
+tags_in() {  # files... -> one tag per line
+  TAGRE=$TAGRE awk 'BEGIN { re=ENVIRON["TAGRE"] } { s=$0; while (match(s, re)) { print substr(s, RSTART, RLENGTH); s=substr(s, RSTART+RLENGTH) } }' "$@"
+}
+
+resolve_tag() {  # "[P (c)f]"
+  t=$1; body=${t#\[}; body=${body%\]}
+  p=${body%% *}; rest=${body#* }; c=${rest#\(}; c=${c%%\)*}; f=${rest#*\)}
+  resolve1 "$p" "$c" "$f" "$t"
+}
+
+findcast() {  # fact -> the first readable tsv/words cast holding that key, else "seam"
+  awk -F'\t' '!/^#/ && ($4=="tsv" || $4=="words") { print $1 }' "$CASTS" | while read -r cc; do
+    out=$(resolve1 x "$cc" "$1" "" | cut -f1)
+    if [ "$out" != GAP ] || [ -n "$(resolve1 x "$cc" "$1" "" | grep 'row found')" ]; then echo "$cc"; exit 0; fi
+  done | head -1
+}
+
+persona_links() {  # persona -> "persona<TAB>cast<TAB>fact" for every leads-to target, one pass over the journal
+  p=$1
+  [ -n "$JOURNALS" ] && [ -d "$JOURNALS/$p" ] || return 0
+  set -- "$JOURNALS/$p"/g*.md; [ -f "$1" ] || return 0
+  awk -v L="$LEADS" 'FNR==1 { fm=0 } /^---[ \t]*$/ { fm++; next }
+    fm==1 && index($0, L ":")==1 { s=$0; while (match(s, /\[\[[^]|]+/)) { print substr(s, RSTART+2, RLENGTH-2); s=substr(s, RSTART+RLENGTH) } }' "$@" |
+  sort -u | while IFS= read -r tgt; do
+    pre=${tgt%%:*}
+    if [ "$pre" != "$tgt" ] && [ -n "$(castrow "$pre")" ]; then printf '%s\t%s\t%s\n' "$p" "$pre" "${tgt#*:}"
+    else cc=$(findcast "$tgt"); printf '%s\t%s\t%s\n' "$p" "${cc:-seam}" "$tgt"; fi
+  done
+}
+
+run_rows() { while IFS="	" read -r p c f; do resolve1 "$p" "$c" "$f" "[$p ($c)$f]"; done; }
+
+cmd=${1:-}; [ $# -gt 0 ] && shift
+case $cmd in
+  resolve)
+    [ $# -gt 0 ] || { echo "usage: tg1rs resolve '[PERSONA (CAST)FACT]'..." >&2; exit 2; }
+    for t in "$@"; do
+      if printf '%s\n' "$t" | grep -Eq "^$TAGRE\$"; then resolve_tag "$t"
+      else emit WORD "-" "-" "-" "not a tag; kept as written: $t"; fi
+    done ;;
+  persona)
+    [ $# -eq 1 ] || { echo "usage: tg1rs persona NAME" >&2; exit 2; }
+    p=$(printf '%s' "$1" | tr 'A-Z' 'a-z')
+    if [ -z "$JOURNALS" ] || [ ! -d "$JOURNALS/$p" ]; then echo "# $p: no journal readable here (journals: ${JOURNALS:-none})"; exit 0; fi
+    persona_links "$p" | run_rows ;;
+  scan)
+    [ $# -gt 0 ] || { echo "usage: tg1rs scan FILE..." >&2; exit 2; }
+    tags_in "$@" | while IFS= read -r t; do resolve_tag "$t"; done ;;
+  sweep)
+    {
+      awk -F'\t' '!/^#/ && ($4=="tsv" || $4=="words") && $5!="-" { print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 }' "$CASTS" |
+      while IFS="	" read -r c table key kind by; do
+        path=$(where "$table"); [ -n "$path" ] && [ -f "$path" ] || continue
+        awk -v c="$c" -v key="$key" -v by="$by" -v words="$([ "$kind" = words ] && echo 1 || echo 0)" -v casts="$CASTS" '
+          BEGIN { nk=split(key, K, ":"); FS="\t"
+                  while ((getline ln < casts) > 0) { if (ln ~ /^#/) continue; split(ln, A, "\t")
+                    if (A[4]=="alias") al[tolower(A[1])]=tolower(A[2])
+                    if (A[4]=="alias" || A[4]=="names") { q=split(tolower(A[2]), M, " "); for (r=1;r<=q;r++) known[M[r]]=1 } } }
+          /^#/ { next }
+          { if (words) n=split($0, F, /[ \t]+/); else n=split($0, F, "\t")
+            k=""; for (i=1;i<=nk;i++) k = k (i>1 ? ":" : "") F[K[i]]
+            m=split(tolower(F[by]), W, /[^a-z0-9_-]+/)
+            for (j=1;j<=m;j++) { w=W[j]; if (w=="") continue
+              if (w in al) { q=split(al[w], M, " "); for (r=1;r<=q;r++) print M[r] "\t" c "\t" k }
+              else if (w in known) print w "\t" c "\t" k } }' "$path"
+      done
+      if [ -n "$JOURNALS" ] && [ -d "$JOURNALS" ]; then
+        for d in "$JOURNALS"/*/; do [ -d "$d" ] || continue; n=${d%/}; persona_links "${n##*/}"; done
+      fi
+    } | sort -u | run_rows > "${TMPDIR:-/tmp}/tg1rs.$$"
+    cat "${TMPDIR:-/tmp}/tg1rs.$$"
+    awk -F'\t' '{ n++; a[$1]++ } END {
+      printf "# counts: %d tags: %d LINKED, %d FORWARD-ONLY, %d BACK-ONLY, %d GAP, %d WORD\n", n, a["LINKED"], a["FORWARD-ONLY"], a["BACK-ONLY"], a["GAP"], a["WORD"] }' "${TMPDIR:-/tmp}/tg1rs.$$"
+    echo "# journals read: ${JOURNALS:-none (no seat here)}"
+    rm -f "${TMPDIR:-/tmp}/tg1rs.$$" ;;
+  *) sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; [ -z "$cmd" ] && exit 2; [ "$cmd" = -h ] || [ "$cmd" = --help ] && exit 0; exit 2;;
+esac
+exit 0

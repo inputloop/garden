@@ -1,0 +1,21 @@
+# CHARACTER TSV — Teodoro Ilunga (author, Make It Out Alive); dungeon-mode shape; double-entry: every row names its source
+table	key	count	value	treatment	source
+cs-intrinsics	name		Teodoro Ilunga	identity	book/ILUNGA.md s0
+cs-intrinsics	shortname		Teo	lineage	book/games/BOOK-4 byline
+cs-intrinsics	class		author (builds futures for a living)	tier	book/ILUNGA.md s0
+cs-intrinsics	actor		fiction	kind	book/ILUNGA.md header
+cs-intrinsics	gold		unstated; the work is the pay and idle time feels wrong	economy	book/ILUNGA.md s1
+cs-intrinsics	special		asks what a future's date will be, the other kind of date	specialness	book/ILUNGA.md s5 founding
+cs-intrinsics	orderliness	3	tidy enough	trait	pg1rl roll seed 36
+cs-intrinsics	decisiveness	4	decides promptly	trait	pg1rl roll seed 36
+cs-intrinsics	work-ethic	5	idle time feels wrong	trait	pg1rl roll seed 36
+cs-intrinsics	hope	5	tenacious, many pathways (amped, high doubles)	trait	pg1rl roll seed 36
+cs-intrinsics	news-bias		Associated Press (least-biased); fate die: badguy	stripe	pg1rl roll seed 36
+cs-skills	count-the-routes	1	pathways sayable without "maybe"	practice	book/games/BOOK-4 a-term
+cs-skills	independence-check	1	acquired gen 1; pairs, out loud, before term one	practice	book/ILUNGA.md s9 gen 1
+cs-skills	name-the-debt-in-the-body	1	Traveller, Crawford, Tuesday Knight; not in a colophon	practice	book/ILUNGA.md s4
+cs-skills	the-autopsy	6	six questions over a dead future, twenty minutes	practice	book/games/BOOK-4 the-autopsy
+cs-posessions	the-village-date	1	not a founding date; the other kind	burden	book/ILUNGA.md s5 founding
+cs-posessions	the-faction-turn	1	Crawford's, borrowed openly	debt	book/games/BOOK-4 the-factions
+cs-posessions	a-future-that-died-in-term-one	1	printed anyway, autopsy included	tool	book/games/BOOK-4 three-futures
+cs-posessions	the-fate-die	1	badguy; argued with, kept, then converted to a rule	mechanic	book/ILUNGA.md s9 gen 1

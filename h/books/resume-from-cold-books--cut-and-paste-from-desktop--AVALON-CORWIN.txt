@@ -1,0 +1,544 @@
+# prompt 1 (resume from cold)
+
+Picking this back up now that skills seems to be in decent shape.
+Planning (and maybe run-it) turn.   
+This tasks requires LENS/eclipse/microscope as you are able to apply it noting budget and remaining token aware so we can finish the task prior Fabel budget reset, in particular.
+This said: approval given hereby for sub-agents including skilled as needed up to GREAT (for this fabel session or else for the session you design around/for this work).
+
+We are working with persona and not for the first time, so: the persona engine is entitled to have a person if/when this task is completed.   I expect that person will get many healthy doses of mutating variation of maybe-not-reaching-final-deliverable-this-round persona generation ideation.  Centering around that "story" (vs having such insight "hiding" in an eclipse pass outcomes notes file, or some memories influenced by those, for example) shows the practical side of this: a problem space that looks, to me, like a head grown fully enough someone might pop out.  This said: my style and preference is to stop just short of a *directive* to create an particular systemic persona until such time as that process is rather more rules (and not prompt to prompt) driven.
+
+More variation and evolution and depth of reach into the shaping tables during synth.   Better, more, alternate index tables.  Variants on the "bad guys" table. Make the chance 1/4 of points-of-entry to the main trait color wheel inspired table-set, then 50/50 (high-doubles, first number higher combinations making seven: semetarian -> mench, lower doub les, second number higher seven combinations: malcontent->evil doer), however on those tables we should still/also have a 1/6 of "bumping" (increasing intensity, maybe with a change of track) which "bumps" I am generally thinking of as doubles only -so sevens  only bump on the first set of rolls into the table, not once we've bumped within the table, then that too is split 50/50 between (higher) greater intensity on the same track and (lower) greater intensity with a "curve" in track.  
+
+If you are ready to work on this, I am ready too :) That said, you feel we should model and discuss our way a little closer and then you can suggest a small kick-off prompt to do the main work elsewhere.
+
+review the recent sessions which have done work using and looking at enhancements for the persona minting facilities 1. make sure to put everything current to Google Drive as part of this, if find it isn't: that doesn't have to wait even if you elect toward discuss/plan first and run the work separately 2. keep separate track of my ideas (originally, above, elsewhere as you find) and your own as well as our comments/concerns;
+Next consider and model persona generation and mutation mechanics opportunities 1. here pay especial attention to the minimalist mechanics of dungeon, especially: 1. square tables - 6x6 or 2-12x3-18 and other N dice across by M dice down (sometimes with modifiers based on circumstance generally or from a prior roll during a series of rolls) 2. weighed index tables - these let a rising column of numbers point into a more slowly or rapidly rising (or falling) sent of indexed/referent numbers similar to picking a number from a grid but generally use to accumulate/tabulate "buffs" or other circumstantial effects); 2. look for ways to make different mechanisms that apply the general sets of (structured, not randomized) tables we can make and each a offer a dungeon feel
+Sift though those ideas to pick the four best permeations updating the kit to a main implementations plus three variants 1. main kit - generally what we have been working with but with the additional depths and a greater sense of balance (evenness of chance between samaritan/hero and nare-do-well/villain); written like the "main book" for some dungeon game that is about using real-life to generate character ideas (which, in context of fiction/games and systemic mindful diligence, is exactly correct). The main section must fold in and give general bias for our system actor and other use-cases where motive/action against principle cause -e.g. watching a program or service to see it behaves as expected- cannot be tolerated; this is clear "lift the governance" (not the sermon) task from a fantasy and operational context seaming standpoint: play out your thinking to chat so I help you understand what's up here. 2. simple kit - fewer rolls, easier to understand rules, still balanced (e.g. N x M dice instead of 1x1 over and over); this is like a stand-alone expansion although it should be included also as a next section after big module in the consolidated deliverable centering on what I described as the main kit, above 3. Hench to Mench - simple with more extreem bias: 1/6 to create a "normal" persona, 1/6 within the 5/6 to create max extreem 4. Your idea - any additional "expansion model" and/or respin of mechancis that helps demonstrate how someone can try making the approaches (mechanical and conceptual) their own.
+Double check carefully before handing as a well tested tool made tabular Visualization 1. table shows usage sketches for each variant. Columns: 1. Kit/varient (task/step) 2. tabletop 3. iT assisted (when for system persona..) 2. keep the table structure simple by reusing these same three sections and using row groupings and formatting and gadgetry such as show/hide "disclosure triange" accessible insights within table cells
+
+Start by confirming the prompt was clear, then please Whistle While You Work :)
+
+Mutating intersectional idea:   should we have a skill and   perhaps even an MCP server and thus coverage in our plug-in for this?  (Should that be built in a separate pass after?  How much will planning around doing that inform vs over complicate the main work described here?)
+
+Thought process
+
+Prompt read clearly: (1) review + Drive sync + three-pile ideas ledger, (2) a mechanics model in dungeon terms, (3) the sift to four kits with your new entry/bump arithmetic, (4) a tool-made usage table with disclosure triangles, (5) a small kick-off prompt for the main build elsewhere; sub-agents up to GREAT; stop short of any directive to mint a systemic persona. Working.
+
+Ran 51 commands, created 19 files, read 14 files
+Loaded tools
+List sessions
+Bash
+Bash
+Bash
+Bash
+Bash
+Added task: Review recent persona work (PENUMBRA, callings/good-guys, front-door fact, two-servers plan) + Drive sync of everything current (ferry) + three-pile ideas ledger
+Added task: Model persona generation + mutation mechanics in dungeon terms (square NxM tables, weighted index tables, modifiers, tracks/curves, ladders) → MODEL-2026-09-12-persona-mechanics.md; LENS at GRAIN via sub-agents
+Added task: Sift to four kits (main book w/ system-actor governance lifted; simple NxM; Hench-to-Mench; my expansion) → KITS spec draft + the tabletop/iT-assisted usage table tool (pk1tv, tests) + widget + kick-off prompt + memory/C4 landing
+Started task
+Search files
+Bash
+Bash
+Updating file
+Read PERSONA-CORPUS.md
+Creating a file
+Read pset.b64
+Bash
+Read pset.b64
+Read PERSONA-TRAITS-GRID.md
+Read PERSONA-TRAITS-GRID.md
+Bash
+Read PENUMBRA.md
+Creating a file
+Read METHOD-lens-persona-seeds.md
+Creating a file
+Read CHARACTER-2026-09-06-mentat.md
+Creating a file
+Read CHARACTER-2026-09-05-shopgarden.md
+Creating a file
+Read PERSONA-gw7.md
+Creating a file
+Download file content
+Bash
+Creating a file
+Created IDEAS-2026-09-12-persona-engine.md
+Completed task
+Started task
+Created MODEL-2026-09-12-persona-mechanics.md
+Ran 4 agents
+· 8 steps
+LENS reader 1: doubt-first
+2 steps
+LENS reader 2: reward-first
+2 steps
+LENS reader 3: game master
+2 steps
+LENS reader 4: sysop persona
+2 steps
+Bash
+Created reader-1-doubt.md
+Created reader-2-reward.md
+Created reader-3-gm.md
+Created reader-4-sysop.md
+Bash
+Completed task
+Started task
+Created pk1tv
+Created KITS-2026-09-12-usage.tsv
+Created pk1tv-tests.sh
+Bash
+Bash
+Created KICKOFF-2026-09-12-persona-kits.md
+Bash
+Created Persona kits plan 2026 09 12
+Edited MEMORY.md
+Bash
+Bash
+Bash
+Read MEMORY.compact.md
+Bash
+Bash
+Bash
+Bash
+Bash
+Read MEMORY.compact.md
+Bash
+Read MEMORY.md
+Read MEMORY.compact.md
+Bash
+Bash
+Created MEMORY.md
+Bash
+Bash
+Read MEMORY.packed.md
+Created MEMORY.md
+Read Memory index archive 2026 09
+Bash
+Bash
+Read lifted.changed.md
+Updated memory
+Memory index archive 2026 09
+Created persona-kits-plan-2026-09-12.md
+Bash
+Bash
+Bash
+Bash
+Bash
+Read MEMORY.md
+Edited MEMORY.md
+Bash
+Bash
+Read kits-widget.tokens.html
+Bash
+Bash
+Bash
+Bash
+Bash
+Bash
+Bash
+Bash
+Bash
+Bash
+Bash
+Bash
+Bash
+Bash
+Read kits-widget.tokens.html
+
+The tabular visualization is complete — four kits organized into row groups with three columns each, and disclosure triangles marking insight-bearing cells, all passing 17/17 tests with --prove-red green.
+
+Loaded tools
+Completed task
+Shared files
+
+What landed (masters in /f/claude/AS4CE/AS4CE0001/h/, same bytes in /f/claude/c4/h/, manifest DELTAS-2026-09-12-persona-kits.sha256 113/113, bank Q518): the mechanics model with the four-reader LENS folded in as §9, the three-pile ideas ledger (HIS · MINE · COMMENTS), the usage record + pk1tv (17/17, --prove-red), the kick-off prompt, memory in A and the seat. Drive carry: 7 files up (2 hash-verified, 4 size-verified); the col TSVs ride in the .xz for a host carry, per INDEX-2026-09-12.md there.
+
+Your arithmetic, played out. Exactly 1/4 of entries as fate stripes and an exact 50/50 by die pattern can't both sit on one 2d6 index — 9 is odd. So the index becomes d6 × d4 (domain × depth, 6 shaded of 24) and decides only stripe or not; the ladder is one 2d6 after: light die 1–3 BAD / 4–6 GOOD, dark die = rung. Doubles-only bumps inside a table at 1/6, high = same trait +1, low = next row +1; sevens live on the entry throw only. "Two d6 of different colours, the light die reads first" is line one of every kit — without it "high-first seven" doesn't exist at a table.
+
+The governance lift, thought out loud. I tried the clamp first: a system actor's BAD ladder = what it watches for in itself, never what it does. The sysop reader broke it three ways — omission by disposition, true facts in a false tone, lateness by weathering — none stopped by a clamp on rungs. That's what cut the sermon: a wired persona is a different artifact, and the honest lift is a watcher contract (verdict before prose, log-range receipt, coverage line, fixed report-within) that the kit names and does not ship. Rows and lints, no paragraph; the fiction mark stays true because the kit stops at that door.
+
+Forks for you (all in the ideas ledger): F9 — does a low-first seven lower or rise? · the Hench/Mench name (reads bad↔good; the gate is normal↔extreme) · the watcher contract's home · the ladders' middle rungs (poles yours, middles [MINE]).
+
+The kick-off is h/KICKOFF-2026-09-12-persona-kits.md, paste-ready; it opens with se1sn, reads three files in order, builds tests-first, forbids minting or naming a systemic persona.
+
+MCP/skill: the contract is the pg1rl JSON shape now (kit·seed·engine·trace·results·mark); a server or skill is a separate pass after the kits, per your "mutating intersectional" question.
+
+One thing to know: the auto-memory index hit the harness's 200-line read limit, so I compacted it to 122 lines — nothing dropped, closed notes packed several per line, long hooks verbatim in memory-index-archive-2026-09.md.
+
+# prompt 2 (model change)
+
+F:\claude\AS4CE\AS4CE0001\h\KITS-2026-09-12-usage.tsv
+Table 
+
+F:\claude\AS4CE\AS4CE0001\h\lens-2026-09-12\README.md
+Document 
+This is another monster round.  LENS (choice of SKILLS, up to three tiers for bigger second side, taking another pass at the first task after each tier wraps and then again after wrapping the last tier so that Mentat outcomes have full awareness of insights from developing each writing).  Leaning on the context engineering skills each other that you can apply throughout this work.  Keep careful note ENHANCE falling outside the scope of the work-itself. 
+
+SCOPE: GRAND
+
+The above work was Fabel; I have switched us now to opus5 which I think will send you quite a bit of context.  Two new tasks:
+
+Double check the memory work very carefully: drive some Mentat improvements. Consider integrating this "swing style" with part #2. DETAIL: I didn't see the Mentat skill fire. Is that fine? Is their outstanding work to ensure Mentat gets the chance to integrate potentially into our who system of skills while we walk important writes to memory such as compaction? Are there literal gaps here? (Some completely new idea in this vs all other writing/direction I have done myself or expressly bless or simply been using toward Mentat? How much is drift vs breakage vs lack of sufficient clarity every well enough defined to write down until now? How much can you just take care of now and what do I then have to do next to get Mentat ship shape, so to speak? As an added complexity (ensuring we have at least some improvement specific enough to drive improvements/change): Mentat should reference and support the persona where it is available and linked for use by some other (so third, in this case my poly or c4 or whatever other model and "shop door" instructions) preference or similar instruction. If we happened to be building a thick client (instead of a literate wrapper than can make thick clients) we would likely make linking the Mentat skill with a persona file (and having that be global using the mcp servers or implicitly usually per project and desktop only via a file with an exact name or pattern, as obvious options for linking skill and character sheet file handling the bookkeeping and journaling to represent our consistent growingly uniquely voiced persona-sets thus more and more according to potentially user-defined systems and sub-systems of "cooperative learning agent" that may or may not share notes or models/instruction sets via tool/api and service/app as we do, but can still use things like Mentat either directly (to manage memory or as memory focused harness point or both) or as models to "teach" new skills and/or agentic persona being minted different ways to organize (administratively such as cooperate and/or delegate, and physically in terms character sheets and doubly-linked lists and double sourcing and weighting to paired tests/calculations/specs/implementations, and peaking to feature with a fall-back to foundations followed by our climb toward accessability via swing, rudimentary drift and rotation and even four point diocritical vis dilectical (a point, it's oppositive resonable and supportable point, the extreem supportable positions that most inclusively either both do or both no not intersect the first two -or all four of these to get six then adding inversions of the first to get eight and with the basic supplied principle set or compatible ethics sesitive persona implemetation provided or brought, an even including the "full universe" magic numbers lensing ring forumula showing that two different implementations of these nine that produce the same results from different data or different data from the same tool where we considered different information or didn't as needed to make a given proof or guess or intersection of these from within the same set while using only 17 by subtracting one person or other 'ninth' from the comparable sets as demonstrations of compatibility and suitable mutation (or not, as cases may be, but generally of learning within and useful to such systems as implement this), generally thinking in terms relating to other exist ideas that interset machine learning and practical technologies such as our extern context engineering (which see, and cite as we can find good opportunities to use this to live our value of celebrating the work of others even if we have no particular relationship to/with them so far) of progressive disclosure (there) used to bring in "layered" elements of context per/using skill mechanics, and for us implementing the gardening and tending philosophies while supporting both more direct mechanism such as Jeff's project supports and also using more complex pull toward live up-to per operation systems such as poly+ccspt provide.) Overall: Mentat is our ambassador in a big way.
+We want to repeat the work of the above prompt three times, with each one a little cooler than the last, and going back and improving the prior (up to three, as we work the last) each time before calling the pass good. Devise a process like we use generally for building (design->QA plan->build/test->QA-loop(three loops to get a clean solid build of all the asked features, with "last-try then report" after the third), redesign during build is OK but only a single redesign can be triggered after starting QA loop the first time at which point the QA loop count DOES reset). The outcome from this is four variations on "game book" each representing a standalone work (nominally) suitable for publication useful for the two audiences Fable defined (gamer, sys-admin), and each having a virtual author with a persona that specifically deepens their interest -via story of their interests, realized- in some specific gaming community interests and social intersectionality of real world context, meaning these "author" personas each need to build up chracter sheets around persona facets and specifically topical -ie. news relivant, so what do they read?- things leading to specific interests intersecting in motivation to bring their -initially, in their views prior interaction between authors or works- unique ideation forward. In considering the IRL boundry handling with these persona for the writing work: think how Paarfi of Roundwood -and not Dad, in the context of the stores- write the Khaavren romances, how these books have had "dueling" about the author sections: we aren't denying the existence of Corwin or Claude but we are having some fun with tensions, for example tending to bury more direct treatment at the end in a witty About the Authors section rather than ruining the magic by focusing on a reader who might be confused that our gaming books are a system operators manuals. But maybe some of the author personas will perspective that send the works different directions in this regard. Finally, build an editorial persona to sit in on all levels of review session and to specifically help bring two already "discovered" two readers from fabel together with broad gaming and publication marketing -including digital and hibread- marketing depth. Here are the four target gaming book by conceptual segment (which polish per the editorial discursions just designed over the whole course of the X*Y*Z sub-agent work; don't craft an overarching shape for a given work before it has a shape to bring it outward as something that shows an editor promise and engages them to apply their insight): 1. D&D flavored - use whatever dice, let the math and balancing drive. Use what Fabel worked with/from as the basis for this(archive off whatever, obvs, but then mutate as if your own creating ready to print, engaging to read, and fun to play stand alone game books) 2. Strict Dungeon - nothing needed (for table-top, not the agentic play side) except six sided died, graph paper, and a pencil (plus a copy of the book obvs; thanks for buying the book!) and not much to remember to based a growing understanding of how the mechanics work than 4/9/17, doubles and seven, low-doubles and high doubles, increasing significance meaning "turn it up" unless "gets better" fits, for seven when we distinguish -as down across- we consider the first die more significant Coloring in tables -or even dice- is handy but can be an access boundary so dungeon uses this just to draw the eye and not to convey "extra" information. Similarly, sometimes it's handy to have two dice to roll together but we avoid phrasing that could call attention to someone that only had one die of their own that they brought and always want to use for everything while we are reading some rule out-loud by just writing in terms of simple practical requirements without -or with barest- embellishment, notwithstanding where we can send a little extra information with clever application of voice (word section generally, but sometimes structuring especially how we are including tabular and illustration/artwork and forumula and things, and anything that let's us develop pacing: often to support different paces in different parts of every section); try very hard to shape things so we are rolling into "square" (6x6) tables, building city-blocks of squares that dinimish in the same "picture" as bumping and adjustment-change "roll-again" cells being a microcosm in a table general of a pattern of tables in the large patterns more generally and which emulate the "D+7" diminishing to "just D" then "just Hi-D" as we move from lower left (1,1) to upper right (6,6, n,n). To conceptualize mood of number value: consider together "high" and "good" and "safe" and also "more intense, more risk apatite"; have a good look at the real dungeon project files for this, not *just* our notes in memory and the materials in C4 and the projects/dungeon-roguelike work, follow best doubly linked practices if you find important updates to cross-convey, or simply copy files around and append footer with the history/choice explained in prose where the bookkeeping load to institute first-seen/last-cited linkages would be too much extra work for the task): /h/arc/from/CCC4_G401/dungeon 3. GURPS inspired: everything is tables and tables to make tables, and tables have whatever shapes make sense to do a good job with that table. I always need tape flags for GURPS. 4. SF Inspired: surprise me. Study some SF games, figure out what will inspire an author you dream up according to our methods (which you may be adopting here to make things work well, so take great notes back for the LAB, as always), then see if our rules help that person write a book that shows people how to make SF games/campaigns of their own or run them or whatever this one does to get out the door as a "book".
+Note on formatting: we are aiming gently for "print ready" but do not invent formats or formatting or suddenly expect that I have some new authoring or viewing tool we didn't discuss (or that readers/users will have or want to use them).  Literate is nearly always fine however in context of book writing these then must look good in MD and TXT outputs, not just PDF and don't claim what you cannot test yourself; whatever formats we support we must provide the tooling for; formatting/presentation concerns may but are not required to be handled distinctly among the books
+
+Handbacks: (a) confirm I'm ready to wear mentat after skill-sign/make dist (or let me know where you did leave things and what I need to do), (b) four books for me to read
+
+
+Thought process
+Thought process
+I'll take this in order: open the door, read what Mentat actually is right now, and verify the memory work — then plan the book program.
+
+
+Ran 54 commands, updated tasks, created 15 files · 33 notes
+Ran 54 commands, updated tasks, created 15 files · 33 notes
+
+Bash
+
+Bash
+
+Bash
+Found something already. Let me read what Mentat actually says.
+
+
+Ran skill: mentat-skill
+
+Bash
+
+Loaded tools
+
+Added task: Mentat audit A: verify the compaction, name the literal gaps
+
+Added task: Mentat fixes I can land now: ms1dg multi-index, index convention, skill v2 draft
+
+Added task: Persona link: Mentat reads a sheet a third instruction layer declares
+
+Added task: Read the real dungeon corpus (H:\arc\from\CCC4_G401\dungeon + projects)
+
+Added task: Cast: editorial persona + four author personas (sheets, topical grounding)
+
+Added task: Book tooling: MD→TXT renderer + book lint, tests + --prove-red
+
+Added task: Book 1 — D&D flavored: design → QA plan → build → QA loop
+
+Added task: Tier 1 wrap: LENS, then revisit Mentat with what the writing taught
+
+Added task: Book 2 — Strict Dungeon (d6, graph paper, pencil) + improve book 1
+
+Added task: Tier 2 wrap: LENS, then revisit Mentat again
+
+Added task: Book 3 — GURPS inspired (tables making tables) + improve books 1–2
+
+Added task: Book 4 — SF inspired (study first, then surprise) + improve books 1–3
+
+Added task: Tier 3 wrap: final LENS, final Mentat pass with full awareness
+
+Added task: Land it: ENHANCE ledger, C4, memory, journal, dist status, handbacks
+
+Started task
+Now the audit proper — two readers, receipts on every claim.
+
+
+Bash
+Two findings. Cross-reading the first with the file tool before I call anything absent.
+
+
+Couldn’t read memory
+
+Bash
+Both readers agree, and the overlap check comes back clean. Fixing my own capture defect first.
+
+
+Read Memory index archive 2026 09
+
+Updated memory
+Memory index archive 2026 09
+
+Bash
+Now the gauge that manufactures keeper work. Let me see how it picks the index.
+
+
+Bash
+
+Bash
+
+Bash
+The gauge has been putting ~162 lines of invented hand-work on his desk every session. Patching it.
+
+
+Read ms1dg
+
+Edited ms1dg
+
+Edited ms1dg
+
+Edited ms1dg
+
+Edited ms1dg
+
+Bash
+
+Edited ms1dg
+
+Bash
+
+Bash
+
+Bash
+
+Bash
+ms1dg: 37/37 green, --prove-red holds. Now let me scout the dungeon corpus before dispatching readers.
+
+
+Bash
+The real dungeon project is here — and so is a Mentat lineage that predates the memory skill. Launching readers.
+
+
+Read dungeon project corpus
+52 steps
+
+That report is gold — and it contains a Task-1 bombshell: Author: Mentat (for Corwin) is already a byline in his tree. Let me read the saving-throw spine myself.
+
+
+Bash
+4/9/17 just resolved: they're the three anchor difficulties on his own saving-throw ladder — avoid D+7 (24/36), need D+7 (12/36), boxcars (1/36). Exact complements. Launching two more readers.
+
+
+Read the Mentat lineage in dungeon
+26 steps
+
+Both readers back. The lineage finding reframes the whole audit. Writing it up.
+
+
+Created MODEL-2026-09-13-mentat-audit.md
+
+Created CONVENTION-2026-09-13-memory-index.md
+Now the persona link — the resolver, in shell so he can line-edit it.
+
+
+Created mt1pl
+
+Created mt1pl-tests.sh
+
+Bash
+
+Edited mt1pl-tests.sh
+
+Bash
+23/23. Now the design doc and the skill draft he'd actually sign.
+
+
+Created PERSONA-LINK-2026-09-13.md
+
+Created SKILL.md
+Task 1's first pass is landed. Now the book tooling — the formats I claim, I must be able to test.
+
+
+Completed task
+
+Created gb1md
+
+Created gb1md-tests.sh
+
+Bash
+
+Bash
+Tooling is green — and it just cross-validated 14 rows of his own saving-throw table. Now the ground the authors stand on.
+
+
+TTRPG landscape and communities 2026
+46 steps
+
+Real ground to stand on. Now I'll roll the cast with our own engine rather than inventing them.
+
+
+Bash
+
+Bash
+
+Bash
+Four authors and an editor, rolled — seeds declared before the throw, taken as they landed.
+
+
+Created CAST-2026-09-13.md
+Archiving Fable's source before I mutate it, then the design and QA plan.
+
+
+Bash
+
+Created DESIGN-2026-09-13-four-books.md
+Book 1 makes 3d6 and d20 claims, so the checker has to grow before it can police them.
+
+
+Edited gb1md
+
+Edited gb1md
+
+Bash
+Tool's ready. Writing Book 1.
+
+
+Created BOOK-1-commons-at-the-table.md
+
+Bash
+Loop 1 finds a real one: the 6×6 Price table won't survive plain text. Let me see it.
+
+
+Bash
+Two real defects — one in the book, one in my renderer (it truncated a cell to a hab~, which is data loss). Fixing the tool first.
+
+
+Edited gb1md
+
+Edited gb1md
+
+Edited gb1md
+
+Bash
+
+Bash
+
+Bash
+
+Bash
+
+Bash
+
+Bash
+
+Bash
+
+Bash
+Book 1 is through loop 1. Now Book 2 — and it carries an obligation: the saving-throw ladder is Erik Elmshauser's work, and it gets credited.
+
+
+Created BOOK-2-six-sides-and-a-pencil.md
+
+Bash
+The tool just caught something real: two rows of Erik Elmshauser's 2020 table don't match their own patterns. Let me pin the mechanism exactly.
+
+
+Bash
+Pinned: rows 5 and 8 added the set sizes without subtracting outcomes counted twice — (4,4), and (3,3)+(4,4). Every other row is right because odd sums can't be doubles. Into the book.
+
+
+Bash
+
+Created FINDING-2026-09-13-savingthrow-rows-5-and-8.md
+
+Created BOOK-3-the-flagged-book.md
+
+Bash
+Book 3's training bands were wrong — I'd reused Book 1's shape. Recounting and fixing.
+
+
+Bash
+Book 4 — the SF one, built on what the study turned up.
+
+
+Created BOOK-4-make-it-out-alive.md
+
+Bash
+All four lint clean. Now the cold readers — Solberg-Maas's two, plus her own pass.
+
+
+Cold GM read of four books
+6 steps
+
+That is exactly what a cold read is for — including the finding that all four author's-notes run the same move, which means the persona is absorbing criticism the rules deserve. Now the sysop.
+
+
+Cold sysop read of four books
+8 steps
+
+Both readers land. I'm triggering the one redesign — the back matter — and folding every mechanical hole. Book 1 first.
+
+
+Bash
+
+Bash
+The lint was enforcing exactly the uniformity the cold reader flagged. Fixing the check, and making back-matter sameness detectable across the set.
+
+
+Bash
+
+Bash
+
+Bash
+Book 3 is the one that strands the reader. Writing the three missing tables and the trade table, plus the flaw the sysop found.
+
+
+Bash
+
+Bash
+
+Bash
+
+Bash
+
+Bash
+
+Bash
+A crash — my table parser is eating Book 3's ASCII flag art inside a fenced code block. Three fixes.
+
+
+Bash
+42/42 green, all four render at 76 columns in pure ASCII. Now the verification pass — did the fixes actually land?
+
+
+Ran 26 commands, updated tasks, added 5 memories · 5 notes
+Ran 26 commands, updated tasks, added 5 memories · 5 notes
+(a) Are you ready to wear Mentat?
+No, and deliberately not. The v2 draft sits unsigned and uninstalled at h/mentat-skill-v2/SKILL.md. Two reasons: I never install your skills, and this draft claims a byline for Mentat, which is a decision about your tree and not mine to make.
+
+What I did land, because it was mechanical and wrong: bin/ms1dg now treats the index as a set. It had assumed one page since you made page 2 on 09-11, and had therefore been putting about 162 lines of invented hand-work on your desk every session — "add one index line each" ×111, "append those lines" ×51 — all of it already indexed. That's a tool of mine moving your own deferral gauge with fake rows. It's fixed, 37/37, and there's a new check (G2b) for a continuation page nothing links to.
+
+Why the skill didn't fire. Compaction isn't in its trigger, and its own bulk-write safeguard lives inside the body where only an already-triggered session can read it. It had bitten: nine of fifty-four lifted hooks never reached the archive on 09-12. Repaired, 54/54.
+
+The find that reframes the question. ;; Author: Mentat (for Corwin) — five source modules and seven documents in your dungeon repo, since 2026-06-23, copyright vesting in you every time, with the split spelled out: Corwin Brust (rules), transcribed & formalized by Mentat. And that corpus contains nothing about memory — an explicit negative result, not an omission. So the answer to drift-vs-breakage-vs-never-written is mostly the third, and the proof is that the eight mutations you adopted in September were already being practised in June.
+
+Your next moves, four forks, all in the audit §5: the packed index line (mine, unblessed — keep or revert); the sixteen A-index lines naming seat-only notes; Mentat's scope — byline only, or the formalizer role your tree already uses; and whether to correct dungeon's Savingthrow.org. To actually wear it: read the draft, then skill-sign.sh and install yourself.
+
+(b) Four books
+16,810 words, Markdown and plain text, both rendered and read — no PDF claimed because I can't check one. Four authors rolled off the trait grid with seeds declared before the throw and taken as they landed.
+
+Two things I'd want you to see. The tool refused two rows of Erik Elmshauser's 2020 saving-throw table: rungs 5 and 8 add set sizes without removing throws in two sets at once — (4,4), and (3,3)+(4,4). Seventeen of nineteen recompute exactly, because every other row names odd sums and an odd sum is never a double. Written up with the check that would confirm it; your project untouched.
+
+And a cold reader found that all four author's-notes made the same move in the same order — "the persona absorbs the criticism the rules deserved." That triggered the one redesign, and the gate is now mechanical: gb1md --voices refuses a set whose back-matter kinds repeat.
+
+Two rules came back from the writing into Mentat: a ninth mutation (a finding a reader had to make by hand is a check not yet written — two became lints the same day) and a fifth persona refusal (a persona's voice may not be where a defect is explained).
+
+Landed: c4 copies byte-identical, manifest 24/24, bank Q519, memory notes in A and the index paged rather than shortened, journal 004, ENHANCE queue kept separate, SIGN-QUEUE updated. Tools 37/23/45/17, all --prove-red.
+
+One honest gap: the two cold readers found their defects and the fixes were verified, but nobody has re-read the current four books end to end. That's the next read, and I didn't do it.
+
+
+F:\claude\AS4CE\AS4CE0001\h\books\BOOK-1-commons-at-the-table.md
+Document 
+
+F:\claude\AS4CE\AS4CE0001\h\books\BOOK-2-six-sides-and-a-pencil.md
+Document 
+
+F:\claude\AS4CE\AS4CE0001\h\books\BOOK-3-the-flagged-book.md
+Document 
+
+F:\claude\AS4CE\AS4CE0001\h\books\BOOK-4-make-it-out-alive.md
+Document 
+
+F:\claude\AS4CE\AS4CE0001\h\MODEL-2026-09-13-mentat-audit.md
+Document 
+
+F:\claude\AS4CE\AS4CE0001\h\MODEL-2026-09-13-mentat-audit-ADDENDUM.md
+Document 
+
+F:\claude\AS4CE\AS4CE0001\h\mentat-skill-v2\SKILL.md
+Document 
+
+F:\claude\AS4CE\AS4CE0001\h\books\CAST-2026-09-13.md
+Document 
+
+F:\claude\AS4CE\AS4CE0001\h\books\QA-2026-09-13-log.md
+Document 
+
+F:\claude\AS4CE\AS4CE0001\journal\2026-09-13-graders-tales-004.md
+Document 

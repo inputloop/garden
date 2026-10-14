@@ -1,0 +1,453 @@
+#!/bin/sh
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st>
+# Authored by Mentat (for Corwin).
+# SPDX-License-Identifier: GPL-3.0-or-later
+# This file is part of polygram.  polygram is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later version.  It is
+# distributed WITHOUT ANY WARRANTY; see <https://www.gnu.org/licenses/>.
+# release — polygram release turnaround: gate, sign, tag, Forgejo release.
+# House rules: POSIX sh; dry-run default; nothing leaves this machine
+# without --push; token only via $FORGEJO_TOKEN, never stored anywhere.
+# Runs on the HOST (the sandbox can't reach code.bru.st) — MINGW64 is fine.
+
+SELF_VERSION='release 0.1 (polygram release helper)'
+PIN=${RELEASE_PIN:-ECE77CF417C76C1ACFCE7C2B5B6135511580F007}   # RELEASE_PIN: a rehearsal key only
+API=${FORGEJO_API:-https://code.bru.st/api/v1/repos/corwin/as4ce}
+REMOTE=${RELEASE_REMOTE:-upstream}
+
+usage() {
+cat <<'USAGE'
+usage: release [VERSION] [--apply] [--push] [--no-sign-tag]
+
+Gates (always run, read-only):
+  clean work tree · dist artifacts exist for VERSION · built from this tree · MANIFEST stray-free
+  NEWS carries a "Version VERSION" entry (or a --news-reason line) · no retired bracket tag and
+  no code licence on prose in what ships (or a --news-reason line) · tests green · tag vVERSION absent
+
+  --apply        sign artifacts (detached .asc, pinned key) + create the tag
+  --push         push the signed tag (implies --apply): SSH, or HTTPS-with-token when $FORGEJO_TOKEN
+                 is set (then SSH is not tried at all; see bin/gtmode). With $FORGEJO_TOKEN set, also
+                 create the Forgejo release page with its 6 assets over the HTTP API (optional)
+  --no-sign-tag  annotated tag instead of a GPG-signed one
+  --accept-red=WHY
+                 release even though the tests are red, for the reason you give. Your call, on the
+                 record: the reason and the failing tests go into the tag message. (Or RELEASE_ACCEPT_RED.)
+  --news-reason=WHY
+                 the reason line, in plain words. With no NEWS entry for VERSION, it is written into
+                 NEWS as that version's entry (then commit NEWS and run again); with a retired bracket
+                 tag or a code licence on prose in what ships, it lets the release go on the record
+                 (it goes into the tag message). (Or RELEASE_NEWS_REASON.)
+  --prose-gates  run only the three prose gates (NEWS entry, retired bracket tags, licence lines via
+                 bin/lc1ck) on the shipped prose ($RELEASE_PROSE, default dist/vibrobeast), and stop
+  --gauge        the NEWS-lag gauge: print __version__ beside NEWS's top heading and count the minted
+                 versions (releases/) newer than it. A gauge: it counts, says, and always exits 0
+  --accept-secret=WHY
+                 release even though the secrets gate stopped it -- secret-shaped text found, or NO
+                 checker found (sb1rn: $SB1RN, C4_ROOT, /f/claude/c4, ~/mnt/c4, then this bin/). The
+                 reason (and any hits, never the secret) go into the tag message. (Or RELEASE_ACCEPT_SECRET.)
+
+VERSION defaults to polygram/__init__.py's __version__.
+Dry-run (no flags) prints the plan and touches nothing.
+USAGE
+}
+
+die() { printf 'release: %s\n' "$*" >&2; exit 1; }
+
+apply=0; push=0; signtag=1; ver=''; accept_red=${RELEASE_ACCEPT_RED:-}; accept_secret=${RELEASE_ACCEPT_SECRET:-}
+news_reason=${RELEASE_NEWS_REASON:-}; only=''
+for a in "$@"; do
+  case $a in
+    --apply) apply=1 ;;
+    --push) push=1; apply=1 ;;
+    --no-sign-tag) signtag=0 ;;
+    --accept-red=*) accept_red=${a#--accept-red=} ;;
+    --accept-red) die '--accept-red needs a reason: --accept-red="why"' ;;
+    --news-reason=?*) news_reason=${a#--news-reason=} ;;
+    --news-reason|--news-reason=) die '--news-reason needs a reason: --news-reason="why" (it goes into NEWS or the tag message as written)' ;;
+    --prose-gates) only=prose ;;
+    --gauge) only=gauge ;;
+    --accept-secret=?*) accept_secret=${a#--accept-secret=} ;;
+    --accept-secret|--accept-secret=) die '--accept-secret needs a reason: --accept-secret="why" (it goes in the tag message)' ;;
+    -h|--help|help) usage; exit 0 ;;
+    -V|--version) printf '%s\n' "$SELF_VERSION"; exit 0 ;;
+    -*) die "unknown flag: $a" ;;
+    *) ver=$a ;;
+  esac
+done
+
+# sha256 hex of stdin (2026-09-27, audit B9): sha256sum, else shasum -a 256. With neither, an empty
+# hash made the content gate say "built from a different tree"; now it says what is missing.
+if command -v sha256sum >/dev/null 2>&1; then sha256() { sha256sum | cut -d' ' -f1; }
+elif command -v shasum >/dev/null 2>&1; then sha256() { shasum -a 256 | cut -d' ' -f1; }
+else die 'no sha256 tool on PATH: install sha256sum (GNU coreutils) or shasum (Perl); the built-from-this-tree gate needs one'; fi
+
+here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+root=$(CDPATH= cd -- "$here/.." && pwd)
+[ -f "$root/polygram/__init__.py" ] || die "cannot find repo root above $here"
+
+[ -n "$ver" ] || ver=$(sed -n 's/^__version__ = "\(.*\)"$/\1/p' "$root/polygram/__init__.py")
+[ -n "$ver" ] || die 'cannot determine version (pass it explicitly)'
+
+# ---- 2026-10-10 (extension edition, lane C task C2): the reason line, the NEWS-lag gauge, and two
+# refusals.  Four mints (1.0.2-1.0.5) went out with no NEWS entry because nothing between a mint and
+# NEWS asked; these gates ask, and each can be passed by the keeper with one line of reason, on the
+# record.  Spec: tests/release-gate-spec.tcl (Tcl; this file and its earlier tests are sh).
+news_lag() {   # a gauge: says, never stops
+  top=$(sed -n 's/^Version \([0-9][0-9.]*\).*/\1/p' "$root/NEWS" 2>/dev/null | head -1)
+  newer=''
+  if [ -d "$root/releases" ] && [ -n "$top" ]; then
+    for r in $(ls "$root/releases"); do
+      case $r in *[!0-9.]*|'') continue ;; esac
+      [ "$r" = "$top" ] && continue
+      [ "$(printf '%s\n%s\n' "$top" "$r" | sort -t. -k1,1n -k2,2n -k3,3n | tail -1)" = "$r" ] && newer="$newer $r"
+    done
+  fi
+  n=$(printf '%s' "$newer" | wc -w | tr -d ' ')
+  printf 'NEWS-lag: __version__ is %s; the top NEWS heading is %s; %s minted version(s) newer than it%s\n' \
+    "$ver" "${top:-none}" "$n" "${newer:+:$newer}"
+}
+news_note=''
+news_written=0
+prose_gates() {   # NEWS entry, retired bracket tags, licence lines; dies on a refusal
+  if grep -Eq "^Version $(printf '%s' "$ver" | sed 's/\./\\./g')( |\$)" "$root/NEWS" 2>/dev/null; then
+    printf 'GATE   ok  NEWS entry present\n'
+  elif [ -n "$news_reason" ]; then
+    NR_VER=$ver NR_DAY=$(date -u +%Y-%m-%d) NR_WHY=$news_reason awk '
+      NR == 1 { print; next }
+      !done && /^Version / {
+        print "Version " ENVIRON["NR_VER"] " (" ENVIRON["NR_DAY"] ")"
+        print ""
+        print "- Released without a written story of what changed, by the keeper'"'"'s choice. The reason"
+        print "  given: " ENVIRON["NR_WHY"]
+        print ""
+        done = 1 }
+      { print }
+      END { if (!done) { print ""; print "Version " ENVIRON["NR_VER"] " (" ENVIRON["NR_DAY"] ")"; print "";
+            print "- Released without a written story of what changed, by the keeper'"'"'s choice. The reason";
+            print "  given: " ENVIRON["NR_WHY"] } }' "$root/NEWS" > "${TMPDIR:-/tmp}/release-news.$$" \
+      && cat "${TMPDIR:-/tmp}/release-news.$$" > "$root/NEWS" || die "could not write NEWS"
+    rm -f "${TMPDIR:-/tmp}/release-news.$$"
+    news_written=1
+    printf 'GATE   --  NEWS had no entry for %s: one was written from your reason line (commit NEWS, then run again)\n' "$ver"
+  else
+    die "NEWS has no entry for $ver -- write the user-visible story first, or give the reason in one line: --news-reason=\"why\" (it is written into NEWS as the entry)"
+  fi
+  prose=${RELEASE_PROSE:-$root/dist/vibrobeast}
+  if [ ! -d "$prose" ]; then
+    printf 'GATE   --  shipped prose NOT CHECKED: %s is not there (tags and licence lines unread)\n' "$prose"
+    return 0
+  fi
+  # retired bracket tags ([HIS] [DOMAIN] [SKILL] [PLATFORM] [MINE], retired 2026-09-24): bare ones in
+  # prose outside code fences.  A tag quoted in backticks is a mention of the tag, counted, not refused.
+  tags=$(find "$prose" -type d \( -name .git -o -name __pycache__ -o -name '_archive*' \) -prune -o -type f \
+      \( -name '*.md' -o -name '*.org' -o -name '*.txt' \) -print | tr '\n' '\0' | xargs -0 awk '
+    FNR == 1 { fence = 0 }
+    /^[ \t]*(```|~~~)/ { fence = !fence; next }
+    fence { next }
+    { t = $0; gsub(/`[^`]*`/, "", t)
+      if (t ~ /\[(HIS|DOMAIN|SKILL|PLATFORM|MINE)\]/) printf "%s:%d\n", FILENAME, FNR }' 2>/dev/null)
+  ntag=$(printf '%s' "$tags" | grep -c . | tr -d ' ')
+  if [ "$ntag" -gt 0 ]; then
+    printf '%s\n' "$tags" | sed "s#^$prose/##" | head -12 | sed 's/^/       retired tag at /'
+    [ "$ntag" -gt 12 ] && printf '       ... and %s more\n' "$((ntag - 12))"
+    [ -n "$news_reason" ] || die "$ntag line(s) of shipped prose carry a retired bracket tag (above). Cite the source instead, or pass it on the record: --news-reason=\"why\""
+    news_note="$news_note
+Shipped with $ntag retired bracket tag line(s), by the keeper's choice: $news_reason"
+    printf 'GATE   --  %s retired bracket tag line(s) accepted: %s (recorded in the tag message)\n' "$ntag" "$news_reason"
+  else
+    printf 'GATE   ok  no retired bracket tag in shipped prose\n'
+  fi
+  if [ ! -f "$here/lc1ck" ]; then
+    printf 'GATE   --  licence lines NOT CHECKED: bin/lc1ck is not there\n'
+  elif lco=$(sh "$here/lc1ck" "$prose" 2>&1); then
+    printf 'GATE   ok  licence lines (lc1ck): %s\n' "$(printf '%s\n' "$lco" | tail -1 | sed 's/^lc1ck: //')"
+  else
+    nlc=$(printf '%s\n' "$lco" | grep -c '^FAULT')
+    printf '%s\n' "$lco" | grep '^FAULT' | sed "s#$prose/##" | head -12 | sed 's/^/       /'
+    [ "$nlc" -gt 12 ] && printf '       ... and %s more\n' "$((nlc - 12))"
+    [ -n "$news_reason" ] || die "lc1ck found $nlc licence fault(s) in shipped prose (above): writing is CC-BY-SA-4.0 and prose never carries a code licence. Fix them, or pass it on the record: --news-reason=\"why\""
+    news_note="$news_note
+Shipped with $nlc licence fault(s) in prose (lc1ck), by the keeper's choice: $news_reason"
+    printf 'GATE   --  %s licence fault(s) accepted: %s (recorded in the tag message)\n' "$nlc" "$news_reason"
+  fi
+}
+if [ "$only" = gauge ]; then news_lag; exit 0; fi
+if [ "$only" = prose ]; then
+  printf '== release %s -- prose gates only ==\n' "$ver"
+  prose_gates
+  news_lag
+  exit 0
+fi
+
+tgz="$root/dist/polygram-curation-$ver.tar.gz"
+zip="$root/dist/polygram-curation-$ver.zip"
+man="$root/dist/polygram-curation-$ver.MANIFEST"
+# 2026-09-27 (plugin audit F1): the installable plugin -- servers and plugin.json included, the code that
+# actually runs -- is signed with the archives when it is there, and only when it names this version.
+plg="$root/dist/vibrobeast.plugin"
+
+printf '== release %s — gates ==\n' "$ver"
+
+[ -z "$(git --no-optional-locks -C "$root" status --porcelain)" ] \
+  || die 'work tree not clean — commit first (releases are made of commits)'
+printf 'GATE   ok  work tree clean\n'
+
+for f in "$tgz" "$zip" "$man"; do
+  [ -f "$f" ] || die "missing artifact: $f (run: bin/polygram dist)"
+done
+printf 'GATE   ok  artifacts present\n'
+
+# Artifacts must be built FROM what is committed. (2026-09-13 this was a timestamp gate: artifacts
+# must postdate the last commit. 2026-09-25, cutting 0.8.50 for the first time: `make dist` itself
+# writes tracked files -- __version__, releases/<ver>, advice/, express manifests -- so the tree is
+# dirty after every mint, the commit that cleans it lands AFTER the artifacts, and the timestamp
+# gate could never pass. The question it stood in for is about CONTENT, so it now asks that.)
+#   1. the MANIFEST names this version;
+#   2. the tar.gz and the zip each carry that same MANIFEST, byte for byte;
+#   3. every "workspace" row's sha256 matches the file in this tree (clean, so == HEAD).
+#      Rows from outside this repo ("installed", C4 canon) are counted and said, not checked here.
+grep -q "^version: $ver\$" "$man" || die "MANIFEST is not for $ver (its version line: $(sed -n 's/^version: //p' "$man"))"
+top="polygram-curation-$ver"
+tar -xzOf "$tgz" "$top/MANIFEST" 2>/dev/null | cmp -s - "$man" \
+  || die "the tar.gz does not carry this MANIFEST -- the artifacts are from different mints; remint"
+python3 -c 'import sys,zipfile; sys.stdout.buffer.write(zipfile.ZipFile(sys.argv[1]).read(sys.argv[2]))' "$zip" "$top/MANIFEST" 2>/dev/null | cmp -s - "$man" \
+  || die "the zip does not carry this MANIFEST -- the artifacts are from different mints; remint"
+rows=0; other=0; diffs=''
+while read -r sha origin path; do
+  case $sha in ''|'#'*) continue ;; esac
+  [ ${#sha} -eq 64 ] || continue
+  if [ "$origin" = workspace ]; then
+    rows=$((rows+1))
+    now=$(sha256 2>/dev/null < "$root/$path")
+    [ "$now" = "$sha" ] || diffs="$diffs $path"
+  else other=$((other+1)); fi
+done < "$man"
+[ -z "$diffs" ] || die "built from a different tree than this one:$diffs -- remint (make dist), then commit"
+printf 'GATE   ok  artifacts built from this tree: %s rows match, both archives carry the MANIFEST (%s rows from outside the repo, not checked here)\n' "$rows" "$other"
+
+if grep -Eq '/sed[A-Za-z0-9]{6}$' "$man"; then
+  die 'MANIFEST lists a sed-stray — do not release; remint'
+fi
+printf 'GATE   ok  MANIFEST stray-free\n'
+
+prose_gates
+[ "$news_written" -eq 0 ] || die "NEWS now carries the entry for $ver from your reason line: commit it (releases are made of commits), then run again"
+news_lag
+
+# SECRETS (Corwin 2026-09-26: a secrets check runs at every boundary; a pushed tag is one). C4's sb1rn
+# picks one of two checkers written apart (awk, Perl) and has the other confirm a hit. It prints file,
+# line and kind, never the secret. Fix it, or mark a line that must show an example with sb:allow.
+# Always runs, always reported; passable by the keeper on the record (--accept-secret=WHY): the hits and
+# the reason go in the tag message, like --accept-red (h/DESIGN-2026-09-26-honest-boundaries.md).
+# 2026-09-27 (audit B3): where to look -- SB1RN names it outright (set but not a file = none found);
+# else C4, then this garden's own bin/ (sb1aw/sb1pl/sb1rn vendored for a garden with no C4). NO checker
+# is treated like a hit: in a garden with no C4 the gate used to say "NOT checked" and go on to push.
+sec_note=
+sbrn=''
+if [ -n "${SB1RN+x}" ]; then
+  [ -f "$SB1RN" ] && sbrn=$SB1RN
+else
+  for sbd in "${C4_ROOT:+$C4_ROOT/bin}" /f/claude/c4/bin "$HOME/mnt/c4/bin" "$here"; do
+    [ -n "$sbd" ] && [ -f "$sbd/sb1rn" ] && { sbrn=$sbd/sb1rn; break; }
+  done
+fi
+# 2026-10-04 (his word: skip "when literally nothing has changed since we last got called to do the same
+# checks"): bin/ck1sk keys a pass on the tree's content and the checkers' own bytes; CK1SK=0 runs it anyway.
+sbsalt=$(cat "${sbrn%/*}"/sb1rn "${sbrn%/*}"/sb1aw "${sbrn%/*}"/sb1pl 2>/dev/null | cksum)
+if [ -n "$sbrn" ] && ( cd "$root" && CK1SK_SALT="$sbsalt" sh "$here/ck1sk" seen release-secrets >/dev/null 2>&1 ); then
+  printf 'GATE   ok  no secret-shaped text in the tracked files (sb1rn; skipped: nothing changed since it last passed here)\n'
+elif [ -n "$sbrn" ]; then
+  sbrc=0; sbout=$(cd "$root" && git ls-files -z | xargs -0 sh "$sbrn" 2>/dev/null) || sbrc=$?
+  if [ "$sbrc" -ne 0 ]; then
+    printf '%s\n' "$sbout" | grep -v '^sb: clean' | sed 's/^/       /'
+    [ -n "$accept_secret" ] || die "secret-shaped text in what the tag would publish (above). Fix it, mark a documentation line sb:allow, or pass it on the record: --accept-secret=\"why\"."
+    sec_note="Released with secret-shaped text, by the keeper's choice: $accept_secret
+$(printf '%s\n' "$sbout" | grep '^HIT ' | sed 's/^/  /')"
+    printf 'GATE   --  secret-shaped text accepted: %s (recorded in the tag message)\n' "$accept_secret"
+  else
+    printf 'GATE   ok  no secret-shaped text in the tracked files (sb1rn)\n'
+    ( cd "$root" && CK1SK_SALT="$sbsalt" sh "$here/ck1sk" pass release-secrets ) 2>/dev/null || true
+  fi
+else
+  printf 'GATE   --  no secrets checker found (sb1rn: $SB1RN, C4_ROOT, /f/claude/c4, ~/mnt/c4, bin/)\n'
+  [ -n "$accept_secret" ] || die "secrets NOT checked -- no sb1rn found, and a pushed tag is a boundary. Vendor sb1aw/sb1pl/sb1rn into bin/, point SB1RN at one, or release anyway on the record: --accept-secret=\"why\"."
+  sec_note="Released with secrets NOT checked (no sb1rn found), by the keeper's choice: $accept_secret"
+  printf 'GATE   --  secrets NOT checked, accepted: %s (recorded in the tag message)\n' "$accept_secret"
+fi
+
+# 2026-09-26: this ran silent for minutes and threw its output away, so a red kit on the host
+# could not be read. Now it says it is running, keeps the whole output where git will not count it
+# as a change (.git/), names what failed, and -- the choice being his -- can be overridden on the record.
+tlog="$root/.git/polygram-release-tests.log"
+printf 'GATE   ..  running the Python tests (a few minutes on some hosts; full output: %s)\n' "$tlog"
+red_note=''
+pysalt=$(python3 --version 2>&1)
+if ( cd "$root" && CK1SK_SALT="$pysalt" sh "$here/ck1sk" seen release-tests >/dev/null 2>&1 ); then
+  printf 'GATE   ok  tests green (skipped: nothing changed since they last passed here; %s)\n' "$(grep -E '^Ran [0-9]+ tests' "$tlog" 2>/dev/null | tail -1)"
+elif ( cd "$root" && python3 -m unittest discover -s tests ) >"$tlog" 2>&1; then
+  printf 'GATE   ok  tests green (%s)\n' "$(grep -E '^Ran [0-9]+ tests' "$tlog" | tail -1)"
+  ( cd "$root" && CK1SK_SALT="$pysalt" sh "$here/ck1sk" pass release-tests ) 2>/dev/null || true
+else
+  fails=$(grep -E '^(FAIL|ERROR): ' "$tlog" | sed 's/^/             /' | head -40)
+  printf 'GATE   RED tests: %s\n%s\n' "$(grep -E '^(Ran|FAILED)' "$tlog" | tr '\n' ' ')" "$fails"
+  if [ -n "$accept_red" ]; then
+    red_note="Released over red tests, by the keeper's choice: $accept_red
+$(grep -E '^(Ran|FAILED)' "$tlog")
+$(grep -E '^(FAIL|ERROR): ' "$tlog" | head -40)"
+    printf 'GATE   --  red accepted: %s (recorded in the tag message)\n' "$accept_red"
+  else
+    die "tests are not green. Read $tlog; or release anyway, on the record: --accept-red=\"why\""
+  fi
+fi
+
+# 2026-09-25: --apply then --push (two runs) always died here, because --push implies --apply and
+# the tag already existed. Resume instead: if the tag exists AND all three signatures verify, a
+# --push skips signing and tagging and publishes what is there. Anything short of that still dies.
+if [ -f "$plg" ]; then
+  pv=$(python3 -c 'import json,sys,zipfile; print(json.loads(zipfile.ZipFile(sys.argv[1]).read(".claude-plugin/plugin.json")).get("version",""))' "$plg" 2>/dev/null)
+  [ "$pv" = "$ver" ] || die "dist/vibrobeast.plugin names version '${pv:-?}', not $ver: run make dist before releasing (a stale plugin is not signed)"
+  printf 'GATE   ok  dist/vibrobeast.plugin is %s; it is signed with the archives\n' "$ver"
+else
+  printf 'GATE   --  no dist/vibrobeast.plugin; only the archives are signed\n'
+fi
+# 2026-09-29 (ERRATA E9): sized editions and flavors (dist/vibrobeast-*.plugin) are signed beside the
+# full one when they name this version; one naming another version is left unsigned, and that is said.
+pver() { python3 -c 'import json,sys,zipfile; print(json.loads(zipfile.ZipFile(sys.argv[1]).read(".claude-plugin/plugin.json")).get("version",""))' "$1" 2>/dev/null; }
+extras() { for e in "$root"/dist/vibrobeast-*.plugin; do [ -f "$e" ] && [ "$(pver "$e")" = "$ver" ] && printf '%s\n' "$e"; done; }
+for e in "$root"/dist/vibrobeast-*.plugin; do
+  [ -f "$e" ] || continue
+  ev=$(pver "$e")
+  if [ "$ev" = "$ver" ]; then printf 'GATE   ok  %s is %s; it is signed with the archives\n' "${e##*/}" "$ver"
+  else printf 'GATE   --  %s names %s, not %s: left unsigned\n' "${e##*/}" "${ev:-?}" "$ver"; fi
+done
+plg_ok() { [ ! -f "$plg" ] || { [ -f "$plg.asc" ] && gpg --batch --verify "$plg.asc" "$plg" >/dev/null 2>&1; } || return 1
+  extras | while IFS= read -r e; do [ -f "$e.asc" ] && gpg --batch --verify "$e.asc" "$e" >/dev/null 2>&1 || exit 1; done; }
+
+resume=0
+if git -C "$root" rev-parse -q --verify "refs/tags/v$ver" >/dev/null; then
+  if [ "$push" -eq 1 ] && [ -f "$tgz.asc" ] && [ -f "$zip.asc" ] && [ -f "$man.asc" ] \
+     && gpg --batch --verify "$tgz.asc" "$tgz" >/dev/null 2>&1 \
+     && gpg --batch --verify "$zip.asc" "$zip" >/dev/null 2>&1 \
+     && gpg --batch --verify "$man.asc" "$man" >/dev/null 2>&1 && plg_ok; then
+    resume=1; printf 'GATE   ok  tag v%s exists and all three signatures verify -- resuming at publish\n' "$ver"
+  else
+    die "tag v$ver already exists — bump the version or delete the tag deliberately (a --push resumes only when all three .asc verify)"
+  fi
+else
+  printf 'GATE   ok  tag v%s free\n' "$ver"
+fi
+
+printf '\n  PLAN:\n'
+printf '   1. detach-sign (pinned %s...):\n' "$(printf '%s' "$PIN" | cut -c1-16)"
+printf '        %s.asc\n        %s.asc\n        %s.asc\n' \
+  "${tgz##*/}" "${zip##*/}" "${man##*/}"
+[ -f "$plg" ] && printf '        %s.asc\n' "${plg##*/}"
+extras | while IFS= read -r e; do printf '        %s.asc\n' "${e##*/}"; done
+if [ "$signtag" -eq 1 ]; then tagkind='signed'; else tagkind='annotated'; fi
+printf '   2. git tag (%s) v%s\n' "$tagkind" "$ver"
+printf '   3. [--push] git push %s v%s; POST release + 6 assets -> %s\n' \
+  "$REMOTE" "$ver" "$API"
+
+if [ "$apply" -eq 0 ]; then
+  printf '\nDry-run complete. Re-run with --apply (and --push) to act.\n'
+  exit 0
+fi
+
+if [ "$resume" -eq 0 ]; then
+printf '\n== applying ==\n'
+for f in "$tgz" "$zip" "$man"; do
+  rm -f "$f.asc"
+  gpg --batch --armor --local-user "$PIN" --detach-sign --output "$f.asc" "$f" \
+    || die "signing failed: $f"
+  gpg --batch --verify "$f.asc" "$f" >/dev/null 2>&1 \
+    || die "signature does not verify: $f.asc"
+  printf 'SIGN   ok  %s.asc\n' "${f##*/}"
+done
+if [ -f "$plg" ]; then
+  rm -f "$plg.asc"
+  gpg --batch --armor --local-user "$PIN" --detach-sign --output "$plg.asc" "$plg" || die "signing failed: $plg"
+  gpg --batch --verify "$plg.asc" "$plg" >/dev/null 2>&1 || die "signature does not verify: $plg.asc"
+  printf 'SIGN   ok  %s.asc\n' "${plg##*/}"
+fi
+extras > "${TMPDIR:-/tmp}/release-extras.$$"
+while IFS= read -r e; do
+  rm -f "$e.asc"
+  gpg --batch --armor --local-user "$PIN" --detach-sign --output "$e.asc" "$e" || die "signing failed: $e"
+  gpg --batch --verify "$e.asc" "$e" >/dev/null 2>&1 || die "signature does not verify: $e.asc"
+  printf 'SIGN   ok  %s.asc\n' "${e##*/}"
+done < "${TMPDIR:-/tmp}/release-extras.$$"
+rm -f "${TMPDIR:-/tmp}/release-extras.$$"
+
+if [ "$signtag" -eq 1 ]; then
+  git -C "$root" tag -s "v$ver" -m "polygram $ver${red_note:+
+
+$red_note}${sec_note:+
+
+$sec_note}${news_note:+
+
+$news_note}" || die 'signed tag failed (try --no-sign-tag)'
+else
+  git -C "$root" tag -a "v$ver" -m "polygram $ver${red_note:+
+
+$red_note}${sec_note:+
+
+$sec_note}${news_note:+
+
+$news_note}" || die 'tag failed'
+fi
+printf 'TAG    ok  v%s (%s)\n' "$ver" "$tagkind"
+fi
+
+[ "$push" -eq 1 ] || { printf '\nLocal release ready. Re-run with --push to publish.\n'; exit 0; }
+
+# 2026-09-25 (Corwin): "I have SSH public key access setup; I don't use API based methods to connect
+# my desktop shell environment upstream." Publishing IS the signed tag, pushed over SSH -- git's own
+# transport, the one this host is set up for. The Forgejo release page (NEWS body + 6 files over the
+# HTTP API) is an optional extra, done only when FORGEJO_TOKEN is set; without it nothing is asked.
+# Later the same day (Corwin): with a token, do not touch SSH at all. bin/gtmode decides: token set ->
+# HTTPS with the token for this process only, SSH switched off; unset -> SSH as configured.
+GT_DIR=$root; . "$root/bin/gtmode"
+printf 'PUSH   by  %s -- %s\n' "$GT_MODE" "$GT_WHY"
+git -C "$root" push "$REMOTE" "v$ver" || die "tag push failed (git push $REMOTE v$ver, $GT_MODE)"
+printf 'PUSH   ok  v%s -> %s (%s)\n' "$ver" "$REMOTE" "$GT_MODE"
+if [ -z "${FORGEJO_TOKEN:-}" ]; then
+  printf '\nrelease %s published: signed tag v%s pushed over SSH. Its artifacts and .asc stay in dist/.\n' "$ver" "$ver"
+  printf '(No release page was made: that needs the HTTP API and FORGEJO_TOKEN, which is optional.)\n'
+  exit 0
+fi
+
+# From here the release is already public (the tag is up). A release-page failure is reported, not
+# fatal: the card would otherwise call a published release "failed". Re-running --push retries it.
+page_fail() {
+  printf '\nrelease %s published: signed tag v%s is upstream.\n' "$ver" "$ver"
+  printf 'BUT the release page was not made: %s\n' "$*"
+  printf 'Retry just the page:  FORGEJO_TOKEN=... sh bin/release %s --push   (the tag push is a no-op)\n' "$ver"
+  exit 0
+}
+# NEWS section for this version becomes the release body (JSON-escaped).
+body=$(awk -v v="$ver" '
+  $0 ~ "^Version " v " " {f=1}
+  f && /^Version / && $0 !~ "^Version " v " " {exit}
+  f {print}' "$root/NEWS" \
+  | sed 's/\\/\\\\/g; s/"/\\"/g' | awk '{printf "%s\\n", $0}')
+
+resp=$(curl -sS -X POST "$API/releases" \
+  -H "Authorization: token $FORGEJO_TOKEN" -H 'Content-Type: application/json' \
+  -d "{\"tag_name\":\"v$ver\",\"name\":\"polygram $ver\",\"body\":\"$body\"}") \
+  || page_fail 'the release POST did not complete'
+rid=$(printf '%s' "$resp" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2)
+[ -n "$rid" ] || page_fail "Forgejo answered: $resp"
+printf 'REL    ok  id=%s\n' "$rid"
+
+set -- "$tgz" "$zip" "$man" "$tgz.asc" "$zip.asc" "$man.asc"
+[ -f "$plg" ] && set -- "$@" "$plg" "$plg.asc"
+nassets=$#
+for f in "$@"; do
+  curl -sS -X POST "$API/releases/$rid/assets?name=${f##*/}" \
+    -H "Authorization: token $FORGEJO_TOKEN" -F "attachment=@$f" >/dev/null \
+    || page_fail "asset upload failed: ${f##*/} (the page exists, id=$rid; add it by hand or delete the page and retry)"
+  printf 'ASSET  ok  %s\n' "${f##*/}"
+done
+
+printf '\nrelease %s published: tag v%s + %s assets on the Forgejo release.\n' "$ver" "$ver" "$nassets"

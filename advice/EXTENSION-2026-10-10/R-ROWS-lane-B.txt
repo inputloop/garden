@@ -1,0 +1,57 @@
+R-ROWS-lane-B.txt -- lane B's refusal rows for polygram/mcp/__main__.py --prove-red (R19, R20).
+The conductor folds these in; lane B did not edit __main__.py.  Each row: the words line first,
+then the code, written to sit inside _prove_red()'s "with tempfile.TemporaryDirectory() as td:"
+block after R16, where want, persona, Path and td are in scope.  Both were run as written
+against the lane-B tree in a scratch harness (see HANDBACK-lane-B.md): PASS, and FAIL under
+their plants.
+
+R19  A PERSONA-less actor still speaks: with no sheet anywhere, persona_resolve returns a
+     default_voice of one plain line, still refusing to mint (refusal 1 stands).
+
+        # R19 -- a PERSONA-less actor still speaks (lane B, card 11).
+        import os as _os19
+        _ks = _os19.environ.get("PERSONA_SHEETS")
+        (Path(td) / "no-sheets").mkdir(exist_ok=True)
+        _os19.environ["PERSONA_SHEETS"] = str(Path(td) / "no-sheets")
+        try:
+            r19 = persona.build(by="prove-red", root=Path(td) / "p19", jail=None).call(
+                "persona_resolve", {"name": "nobody"})
+            dv = r19.get("default_voice") or {}
+            want("a persona-less actor still speaks",
+                 "NOT SERVED" in r19.get("say", "") and dv.get("voice") == "plain"
+                 and bool(str(dv.get("line", "")).strip()) and "\n" not in dv.get("line", ""),
+                 repr(r19)[:200])
+        finally:
+            if _ks is None:
+                _os19.environ.pop("PERSONA_SHEETS", None)
+            else:
+                _os19.environ["PERSONA_SHEETS"] = _ks
+
+R20  The ledger states nothing that no sheet says: a sheet line naming a persona that does not
+     exist is a FAULT and never an edge, and a line outside the head, version and "Whose inverse
+     I carry" section never appears.
+
+        # R20 -- the ledger states nothing that no sheet says (lane B, card 19).
+        import os as _os20
+        _ks = _os20.environ.get("PERSONA_SHEETS")
+        d20 = Path(td) / "sheets20"; d20.mkdir(exist_ok=True)
+        (d20 / "CHARACTER-alpha.md").write_text(
+            "# CHARACTER SHEET -- alpha\nactor: system\n" + "x\n" * 16
+            + "R20-BODY-LINE\n\n## Whose inverse I carry\n\n- nobodyr20 : a name no sheet is\n",
+            encoding="utf-8", newline="\n")
+        _os20.environ["PERSONA_SHEETS"] = str(d20)
+        try:
+            l20 = persona.ledger([])
+            want("the ledger states nothing that no sheet says",
+                 not l20["edges"] and any(f["name"] == "nobodyr20" for f in l20["faults"])
+                 and "R20-BODY-LINE" not in l20["markdown"],
+                 l20.get("say", "")[:200])
+        finally:
+            if _ks is None:
+                _os20.environ.pop("PERSONA_SHEETS", None)
+            else:
+                _os20.environ["PERSONA_SHEETS"] = _ks
+
+Authored by Mentat (for Corwin; claude-opus-5-5).
+Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+SPDX-License-Identifier: CC-BY-SA-4.0

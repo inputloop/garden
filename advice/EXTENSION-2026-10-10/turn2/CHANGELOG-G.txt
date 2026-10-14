@@ -1,0 +1,51 @@
+2026-10-10  Claude (Cowork, lane G of the extension edition, turn 2, swing 1)  for Corwin  <corwin@bru.st>
+
+	The conductor's swing on the garden view, after 6ee9b47.
+	* bin/gv1mt (ring_svg, layout, spread): The tensions get a track of their own, spread by a 1-D
+	placer so no two labels meet; the servers and personas sit in two columns; things named from
+	elsewhere move inward.  (compass_svg): Stacked points spread wider; the axis words sit past the
+	plotted area.  (read_servers, read_doorways): A gated server is "off by default (preference X)",
+	with state `gated`, and the page says this build cannot see the person's setting; a new Ask
+	Claude prompt reads it live with pref_list; the Tavern and C4 prompts read the setting before
+	changing it.  (public_copy, mask_text): New `--public`: writes OUT/public/ with drive letters,
+	msys paths, UNC hosts and claude.ai links masked, nothing dropped, counted in data.masked.
+	* Makefile (garden-view, dist): Pass --public.
+	* tests/gv1mt-SPEC.txt: Rows GV17 (no text boxes overlap), GV18 (no default shown as state) and
+	GV19 (the copy for sharing passes pb1ck).
+	* tests/gv1mt-browser.py: GV17, by getBBox and the separating-axis test; a fourth plant (a ring
+	label drawn twice).
+	* tests/gv1mt-spec.rb: GV18.
+	* tests/gv1mt-tests.sh: GV19 with C4's pb1ck; the public copy recounted and spec-checked; plants
+	for GV18 and GV19.
+
+2026-10-10  Claude (Cowork, lane G of the extension edition, turn 2)  for Corwin  <corwin@bru.st>
+
+	The garden view: Bryant's garden and ours, side by side, with the tensions between them.
+	* bin/gv1mt: New.  Rebuilds site/garden/ from the files as they are at build time, to the
+	garden-view/data v1 model (c4 spells/extension/runs/2026-10-10/turn2/study/S7, Part 3): Bryant's
+	Nexus Skill Tree (09-17) and newest Gauntlet Nexus Map, our skills and soft skills, the six
+	servers with their state words and tools (source-read), the persona ledger's sheets and checks
+	edges (proposed and withheld kept apart; person models counted, never drawn), the 27 option
+	cards and the open ERRATA entries as tensions, conventions/bryant-counterparts.tsv, and the S8
+	compass guesses.  Writes data.json (sealed: sha256 of the data without its seal, keys sorted),
+	index.html (one self-contained page), garden-view.facts (one line per thing) and pairs.txt.
+	* site/garden/index.html, site/garden/data.json, site/garden/garden-view.facts,
+	site/garden/pairs.txt: New, built by bin/gv1mt.  His ring redrawn beside ours; a compass with
+	his two axes; doorway cards for MCP, the Wire, the Tavern and C4 with copy-a-prompt actions and
+	two opt-in loopback probes (org-httpd 8042, c4-serve 8781); tensions as marks with words;
+	a text story of every node; light and dark from the system plus a manual switch; works with
+	JavaScript off; credits Bryant's graph by name as the starting point.
+	* Makefile (garden-view): New target.  (dist): Calls bin/gv1mt before rl2bp finish, so the page
+	is current at every build; a failure is said and never stops the mint.  `garden` is unchanged:
+	it is the sg1ck gauge that bin/gd1ck reads with make -n.
+	* tests/gv1mt-SPEC.txt: New, rows GV1-GV16.
+	* tests/gv1mt-recount.awk: New.  GV6, the recount in a second language.
+	* tests/gv1mt-spec.rb: New.  GV1-5, GV7, GV8, GV10, GV14, GV16 in Ruby.
+	* tests/gv1mt-browser.py: New.  GV9, GV12, GV13 and the page's own self-test in headless
+	Chromium with axe-core, light, dark and the manual switch; --prove-red plants three faults;
+	exits 77 NOT CHECKED without Playwright, Chromium or axe-core.
+	* tests/gv1mt-tests.sh: New.  Runs all of the above; --prove-red plants one fault per check.
+
+Authored by Mentat (for Corwin; claude-opus-5-5).
+Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+SPDX-License-Identifier: CC-BY-SA-4.0

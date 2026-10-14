@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+#+property: header-args :tangle no :padline no :mkdirp yes
+#+name: g
+#+begin_src text
+a
+#+end_src
+#+begin_src text :tangle out/x.txt :noweb yes
+  <<g>>
+#+end_src

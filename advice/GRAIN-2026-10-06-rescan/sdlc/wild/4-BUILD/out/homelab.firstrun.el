@@ -1,0 +1,67 @@
+;;; larder-firstrun.el --- Larder first-run menu, one frame, mouse only  -*- lexical-binding: t; -*-
+
+;; SPDX-License-Identifier: GPL-3.0-or-later
+;; Copyright (C) 2026 the Larder software contributors
+
+;;; Commentary:
+
+;; Profile: homelab.  Template: gen.sh fills `larder-choices' from recipes.conf.
+;; Start it with:  emacs -Q --fullscreen -l larder-firstrun.el -f larder-firstrun
+;; A button runs `larder-open-program' with larder://ID; the same launcher the
+;; HTML page uses, so both pages can only do what recipes.conf names.
+
+;;; Code:
+
+(require 'button)
+
+(defvar larder-open-program "larder-open"
+  "Program that runs one named action; takes larder://ID as its only argument.")
+
+(defconst larder-choices
+  '(
+("setup" "Set up this stick" "Choose a name and a PIN. Do this first.")
+("guide" "Read the short guide" "Five minutes, plain words.")
+("network" "Connect to a network" "Wifi or a cable.")
+("chat" "Message other organizers" "Over the mesh radio or over the internet.")
+("library" "Open the offline library" "Books, first aid, food safety. No internet needed.")
+("editions" "Books & extras on this stick" "Extra editions this stick carries.")
+("close" "Close this and use the laptop" "Nothing is lost.")
+("shutdown" "Lock and shut down" "Your files stay safe on the stick.")
+    )
+  "Choices as (ID LABEL HELP), generated from recipes.conf.")
+
+(defun larder--click (button)
+  "Run the action named by BUTTON without waiting for it."
+  (start-process "larder-open" nil larder-open-program
+                 (concat "larder://" (button-get button 'larder-id))))
+
+(defun larder-render ()
+  "Fill the current buffer with one button per choice."
+  (let ((inhibit-read-only t))
+    (erase-buffer)
+    (insert (propertize "Welcome to Larder\n" 'face '(:height 2.0 :weight bold))
+            "Click a button to begin. If this is your first time, click the first one.\n\n")
+    (dolist (choice larder-choices)
+      (insert-text-button (format "  %s  " (nth 1 choice))
+                          'larder-id (nth 0 choice)
+                          'action #'larder--click
+                          'follow-link t
+                          'face '(:box (:line-width 3) :height 1.5))
+      (insert "\n    " (nth 2 choice) "\n\n"))
+    (goto-char (point-min))))
+
+;;;###autoload
+(defun larder-firstrun ()
+  "Show the first-run menu in the selected frame."
+  (interactive)
+  (when (fboundp 'menu-bar-mode) (menu-bar-mode -1))
+  (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+  (set-frame-parameter nil 'fullscreen 'fullboth)
+  (switch-to-buffer (get-buffer-create "*Larder*"))
+  (larder-render)
+  (special-mode)
+  (setq cursor-type nil))
+
+(provide 'larder-firstrun)
+
+;;; larder-firstrun.el ends here

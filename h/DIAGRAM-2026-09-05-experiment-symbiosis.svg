@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" width="1005" height="649" viewBox="0 0 1005 649" font-family="var(--c4-font, monospace)" font-size="12">
+<title>EXPERIMENT [sign+seal: ECOLOGY ~+17:NEXUS] NETWORK/ED HOST/ED SYMBIOSIS — Functional Model — Xperiment Modulation</title><desc>Rendered by dc1sv from the canonical diagram document; 18 shapes, 17 edges, 3 systems. Groups are drawn as labelled rectangles; every status is a word, never a hue alone.</desc>
+<style>rect.box{fill:var(--c4-box,#fffdf5);stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}polygon.decision{fill:var(--c4-decision,#f1efe8);stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}circle.node{fill:var(--c4-node,#ffffff);stroke:var(--c4-ink,#1a1a1a);stroke-width:2}rect.note{fill:none;stroke:var(--c4-muted,#888780);stroke-dasharray:3 3;stroke-width:1}text{fill:var(--c4-ink,#1a1a1a)}text.note{fill:var(--c4-muted,#5f5e5a);font-style:italic}path.edge{fill:none;stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}path.dash{stroke-dasharray:6 4}rect.sys{fill:var(--c4-sys,rgba(120,120,200,0.06));stroke:var(--c4-sysline,#6a67b8);stroke-width:1.5;stroke-dasharray:8 4}rect.sys.core{fill:var(--c4-core,rgba(240,200,0,0.10));stroke:var(--c4-coreline,#b08800);stroke-dasharray:none}text.sys{fill:var(--c4-sysline,#6a67b8);font-size:11px;font-weight:bold}</style>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--c4-ink,#1a1a1a)"/></marker><marker id="open" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10" fill="none" stroke="var(--c4-ink,#1a1a1a)"/></marker><marker id="circle" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7"><circle cx="5" cy="5" r="4" fill="var(--c4-ink,#1a1a1a)"/></marker><marker id="diamond" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,5 L5,0 L10,5 L5,10 z" fill="var(--c4-ink,#1a1a1a)"/></marker></defs>
+<rect class="sys kit" x="18" y="80" width="949" height="551" rx="6"/>
+<text class="sys" x="26" y="94">full kit / RECIPE — the context application: ccspt</text>
+<rect class="sys core" x="190" y="120" width="673" height="482" rx="6"/>
+<text class="sys" x="198" y="134">core — minimum shippable ccspt</text>
+<rect class="sys poly" x="98" y="185" width="290" height="180" rx="6"/>
+<text class="sys" x="106" y="199">poly — what sticks out</text>
+<path class="edge" d="M 100,320 L 170,320" marker-end="url(#arrow)"/>
+<path class="edge" d="M 366,320 L 400,320" marker-end="url(#arrow)"/>
+<path class="edge" d="M 440,320 L 485,320" marker-end="url(#arrow)"/>
+<path class="edge" d="M 525,320 L 575,320" marker-end="url(#arrow)"/>
+<path class="edge" d="M 841,320 L 760,320" marker-end="url(#arrow)"/>
+<path class="edge" d="M 800,320 L 825,320" marker-end="url(#arrow)"/>
+<path class="edge" d="M 865,320 L 905,320" marker-end="url(#arrow)"/>
+<path class="edge" d="M 420,300 L 420,173 L 495,173" marker-end="url(#arrow)"/>
+<path class="edge" d="M 565,173 L 655,185" marker-end="url(#arrow)"/>
+<path class="edge" d="M 695,185 L 745,133" marker-end="url(#arrow)"/>
+<path class="edge" d="M 815,133 L 755,213" marker-end="url(#arrow)"/>
+<path class="edge" d="M 790,213 L 780,213 L 780,300" marker-end="url(#arrow)"/>
+<path class="edge dash" d="M 780,110 L 780,80 L 530,80 L 530,150" marker-end="url(#open)"/>
+<path class="edge" d="M 268,343 L 268,442 L 232,442 L 232,540"/>
+<path class="edge" d="M 268,343 L 268,392 L 334,392 L 334,440"/>
+<path class="edge" d="M 418,463 L 708,463 L 708,343"/>
+<path class="edge dash" d="M 252,560 L 334,560 L 334,486"/>
+<circle class="node" cx="80" cy="320" r="20"/>
+<text x="80" y="354" text-anchor="middle">start</text>
+<rect class="note" x="40" y="360" width="208" height="24"/><text class="note" x="46" y="376">ENHS · PROSE (tool optional)</text>
+<rect class="box" x="170" y="297" width="196" height="46" rx="3"/><text x="268" y="324" text-anchor="middle">RPD  |polygram|  poly(1)</text>
+<rect class="note" x="120" y="215" width="236" height="24"/><text class="note" x="126" y="231">Routines · pruning · selectivity</text>
+<polygon class="decision" points="420,300 440,320 420,340 400,320"/>
+<text x="420" y="354" text-anchor="middle">FMOK</text>
+<polygon class="decision" points="505,300 525,320 505,340 485,320"/>
+<text x="505" y="354" text-anchor="middle">XMOK</text>
+<rect class="box" x="575" y="297" width="266" height="46" rx="3"/><text x="708" y="324" text-anchor="middle">MEANTCHA  [keep · refuse? · …]  C4</text>
+<polygon class="decision" points="780,300 800,320 780,340 760,320"/>
+<circle class="node" cx="845" cy="320" r="20"/>
+<text x="845" y="354" text-anchor="middle">record</text>
+<circle class="node" cx="925" cy="320" r="20"/>
+<text x="925" y="354" text-anchor="middle">C4OK | ABRT</text>
+<rect class="box" x="495" y="150" width="70" height="46" rx="3"/><text x="530" y="177" text-anchor="middle">PEND</text>
+<circle class="node" cx="675" cy="185" r="20"/>
+<text x="675" y="219" text-anchor="middle">sign+seal</text>
+<rect class="box" x="745" y="110" width="70" height="46" rx="3"/><text x="780" y="137" text-anchor="middle">2781</text>
+<rect class="box" x="755" y="190" width="70" height="46" rx="3"/><text x="790" y="217" text-anchor="middle">27</text>
+<rect class="box" x="250" y="440" width="168" height="46" rx="3"/><text x="334" y="467" text-anchor="middle">COMPAT  MCP · MD/TSV</text>
+<circle class="node" cx="232" cy="560" r="20"/>
+<text x="232" y="594" text-anchor="middle">MEMORY / SCHEMA</text>
+<rect class="note" x="535" y="585" width="257" height="24"/><text class="note" x="541" y="601">PROTOCOL / FRAME / FABRIC / SURFACE</text>
+<rect class="note" x="755" y="30" width="60" height="24"/><text class="note" x="761" y="46">DEMAND</text>
+<!-- tally shapes 18 edges 17 groups 3 -->
+</svg>

@@ -1,0 +1,22 @@
+# CHARACTER TSV — the Garden (C4), dungeon-mode shape (cs-intrinsics · cs-skills · cs-posessions); double-entry: every row names its source
+table	key	count	value	treatment	source
+cs-intrinsics	name		the Garden (C4)	identity	c4/CLAUDE.md
+cs-intrinsics	shortname		shopgarden [handle ~50%, unblessed]	identity	h/CHARACTER-2026-09-05-shopgarden.md §1
+cs-intrinsics	class		place-persona	tier	evidence/personas.tsv (HOST)
+cs-intrinsics	rank		HOST	tier	evidence/personas.tsv
+cs-intrinsics	special		says faults out loud; keeps the tombstone COPYING	specialness	c4/README.md; c4/COPYING (0 B)
+cs-intrinsics	gold		0 — no vendor, no key, no account; runs on the keeper's disk	economy	c4/CLAUDE.md ("No AI is required")
+cs-intrinsics	experience		507	questions banked	evidence/question-bank-iTNH.tsv
+cs-skills	decide-the-row-inherit-the-address	1	t	rule	c4-conception-2026-09-05
+cs-skills	file-by-words	1	t	rule	h/words.sh
+cs-skills	stop-and-talk	1	Q162	rule	c4/CLAUDE.md
+cs-skills	mounts-are-authoritative	1	t	rule	c4/CLAUDE.md (2026-08-30)
+cs-skills	nogrant	1	t	prohibition	evidence/safety-floor.tsv
+cs-posessions	bank	1	Q1–Q507	ledger	evidence/question-bank-iTNH.tsv
+cs-posessions	palace	1	SEAM·PIN·FORT	planning	q/retention/
+cs-posessions	door	1	signed	instruction	c4/CLAUDE.md.asc
+cs-posessions	dealer	1	w0rk over w0sh	tool	h/w0rk.sh; bin/w0sh
+cs-posessions	brief	1	c4prime	tool	h/c4prime.h
+cs-posessions	gauge	1	words	tool	h/words.sh
+cs-posessions	picture-floor	1	7 checks	tool	h/svg-a11y-test.sh
+cs-posessions	tombstone	1	0 bytes	licence-ceremony	c4/COPYING

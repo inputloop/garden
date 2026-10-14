@@ -1,0 +1,230 @@
+#!/bin/sh
+# c4/bin/on1fl -- ONE FILE.  Wrap a payload into a single self-contained HTML page
+# that explains itself, carries the payload, computes its OWN hash from the bytes
+# it is holding, and can be made to fail on command.
+#
+# PROVENANCE.  The emitter below is Bryant's, shipped inline inside the `primer`
+# skill (from-bryant/2026-09-17/primer.skill) expressly to be written out rather
+# than pointed at.  NAMED, NEVER VENDORED runs both ways: this file says whose it
+# is, and where this shop and that skill disagree, this shop's canon wins.
+# Blessed in 2026-09-17 after it passed its own gate here -- see --prove-red, and
+# the three-witness receipt in facts/a-page-that-hashes-itself-needs-three-witnesses.
+#
+# WHAT THIS SHOP ADDED: --prove-red (eight checks, four of them planted faults)
+# and --witness (an independent third hasher when one is on the machine).
+# The emitter itself is unchanged; that is deliberate, so the two gardens can
+# diff it byte for byte.
+#
+# TWO DECLARATIONS, because an undeclared check reads as MUST:
+#
+#   MUST     the payload's sha256; that the base64 the page carries decodes back to those same
+#            bytes; the declared byte count against the real one; the number of `https?://`
+#            references in the emitted page; the refusal when the payload is not there; and under
+#            --witness, the three readings side by side, plus WITNESS ABSENT when no JS engine is
+#            on the machine.  All computed from the bytes; none of it taken on anyone's word.
+#
+#   JOURNEY  THE THREE PROPERTIES ARE A STANDARD, NOT A MEASUREMENT.  That a hand-back must
+#            UNPACK, PROVE and FAIL ON COMMAND -- and that all three are required or there is a
+#            hole -- is the gate this shop blessed in on 2026-09-17.  A destination could be well
+#            served by a form holding two of them; nothing here weighs that.
+#            WHAT THE DESTINATION HAS IS ASSUMED, NEVER ASKED.  "Only what the far machine already
+#            has" is read here as A BROWSER OPENING A file:// URL.  That assumption is the whole
+#            of UNPACKS and it is never checked against an actual destination.  For GIZA it holds;
+#            name the destination before carrying the assumption anywhere else.
+#            ZERO `https?://` IS A PROXY FOR SELF-CONTAINED.  A page could reach the network by
+#            other spellings and this grep would not see it.
+#            ONE FLIPPED BYTE IN THE FIRST POSITION is this tool's demonstration that the check
+#            can fail -- sufficient to show red, not exhaustive.
+#            THE PAGE'S BEHAVIOUR IN A BROWSER IS NOT OBSERVED HERE.  --prove-red checks bytes and
+#            claim with shell tools; the green-then-red the READER will see is the emitted
+#            script's, and it is exercised only when --witness finds a JS engine.  THREE witnesses
+#            is a number this shop chose, not one anything derived.
+#            THE EMITTER IS BRYANT'S, kept unchanged on purpose so the two gardens can diff it
+#            byte for byte.  That this shop's canon wins where his skill and this shop differ is a
+#            governance call, not a computation.
+#
+# Depends on: sh, base64, sha256sum or shasum, sed, wc.  Nothing else.
+set -eu
+
+emit() {
+# onefile.sh - wrap a payload into ONE self-contained HTML page that explains it,
+# carries it, proves itself, and fails on command.
+F=${1:?usage: onefile.sh PAYLOAD [TITLE] [WHAT]}
+T=${2:-$(basename "$F")}
+W=${3:-"A single-file deliverable."}
+[ -f "$F" ] || { echo "no such file: $F" >&2; exit 2; }
+if command -v sha256sum >/dev/null 2>&1; then SUM=$(sha256sum "$F" | cut -d' ' -f1)
+else SUM=$(shasum -a 256 "$F" | cut -d' ' -f1); fi
+B64=$(base64 "$F" | tr -d '\n')
+SIZE=$(wc -c < "$F" | tr -d ' ')
+NAME=$(basename "$F")
+esc() { printf '%s' "$1" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g'; }
+cat <<HTML
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>$(esc "$T")</title>
+<style>
+:root{--bg:#14161a;--card:#1e2127;--edge:#2b2f36;--ink:#e8e6e3;--dim:#a29a90;--faint:#7d766e;--ok:#7fb069;--bad:#e06c5f;--brass:#d9a441;
+--mono:ui-monospace,SFMono-Regular,Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+@media(prefers-color-scheme:light){:root{--bg:#f4f1ec;--card:#fffdfa;--edge:#ded8cf;--ink:#1d1b18;--dim:#5c554c;--faint:#8a8279;--ok:#3f6b2b;--bad:#a32d2d;--brass:#9a6b12}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;padding:40px 20px}
+.w{max-width:720px;margin:0 auto}
+h1{font-size:26px;font-weight:600;letter-spacing:-.01em}
+.what{color:var(--dim);margin:8px 0 26px}
+.card{background:var(--card);border:1px solid var(--edge);border-radius:12px;padding:20px 22px;margin:0 0 16px}
+.card h2{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);margin-bottom:12px;font-weight:600}
+dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-family:var(--mono);font-size:12.5px}
+dt{color:var(--faint)}dd{word-break:break-all}
+.v{display:flex;align-items:center;gap:10px;margin-top:14px;font-family:var(--mono);font-size:13px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--faint);flex:none}
+.dot.ok{background:var(--ok)}.dot.bad{background:var(--bad)}
+.st.ok{color:var(--ok)}.st.bad{color:var(--bad)}
+button{font-family:inherit;font-size:13.5px;padding:9px 16px;border-radius:8px;border:1px solid var(--edge);
+background:transparent;color:var(--ink);cursor:pointer;margin:14px 8px 0 0}
+button:hover{border-color:var(--brass)}
+button.go{background:var(--brass);border-color:var(--brass);color:#14161a;font-weight:600}
+code{font-family:var(--mono);font-size:12.5px;background:rgba(127,140,160,.14);padding:1px 5px;border-radius:4px}
+.note{color:var(--faint);font-size:12.5px;margin-top:12px}
+</style></head><body><div class="w">
+<h1>$(esc "$T")</h1>
+<p class="what">$(esc "$W")</p>
+<div class="card"><h2>What you are holding</h2>
+<dl><dt>file</dt><dd>$(esc "$NAME")</dd>
+<dt>bytes</dt><dd>$SIZE</dd>
+<dt>sha256</dt><dd id="claim">$SUM</dd></dl>
+<div class="v"><span class="dot" id="dot"></span><span class="st" id="st">checking...</span></div>
+<div class="note">This page computed that hash itself, from the bytes it carries, using its own
+SHA-256. No network, no library, no secure context required.</div>
+</div>
+<div class="card"><h2>Prove the check works</h2>
+<p style="color:var(--dim);font-size:14px">A green light means nothing until you have watched it go red.
+Flip a byte and the verification fails on command. Then put it back.</p>
+<button id="break">Break a byte</button><button id="fix">Restore</button>
+</div>
+<div class="card"><h2>Take it</h2>
+<button class="go" id="dl">Download $(esc "$NAME")</button>
+<div class="note">Verify on your side before you trust it:
+<code>sha256sum $(esc "$NAME")</code> should print the hash above.</div>
+</div>
+<script>
+var B64="$B64",NAME="$NAME",CLAIM="$SUM";
+function sha256(b){function r(n,c){return n>>>c|n<<32-c}var K=[1116352408,1899447441,3049323471,3921009573,961987163,1508970993,2453635748,2870763221,3624381080,310598401,607225278,1426881987,1925078388,2162078206,2614888103,3248222580,3835390401,4022224774,264347078,604807628,770255983,1249150122,1555081692,1996064986,2554220882,2821834349,2952996808,3210313671,3336571891,3584528711,113926993,338241895,666307205,773529912,1294757372,1396182291,1695183700,1986661051,2177026350,2456956037,2730485921,2820302411,3259730800,3345764771,3516065817,3600352804,4094571909,275423344,430227734,506948616,659060556,883997877,958139571,1322822218,1537002063,1747873779,1955562222,2024104815,2227730452,2361852424,2428436474,2756734187,3204031479,3329325298],H=[1779033703,3144134277,1013904242,2773480762,1359893119,2600822924,528734635,1541459225],l=b.length,wl=l+9+63&-64,p=new Uint8Array(wl);p.set(b);p[l]=128;var bl=l*8;p[wl-4]=bl>>>24&255;p[wl-3]=bl>>>16&255;p[wl-2]=bl>>>8&255;p[wl-1]=bl&255;var w=new Int32Array(64);for(var i=0;i<wl;i+=64){for(var j=0;j<16;j++)w[j]=p[i+4*j]<<24|p[i+4*j+1]<<16|p[i+4*j+2]<<8|p[i+4*j+3];for(j=16;j<64;j++){var s0=r(w[j-15],7)^r(w[j-15],18)^w[j-15]>>>3,s1=r(w[j-2],17)^r(w[j-2],19)^w[j-2]>>>10;w[j]=w[j-16]+s0+w[j-7]+s1|0}var a=H[0],b2=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(j=0;j<64;j++){var S1=r(e,6)^r(e,11)^r(e,25),ch=e&f^~e&g,t1=h+S1+ch+K[j]+w[j]|0,S0=r(a,2)^r(a,13)^r(a,22),mj=a&b2^a&c^b2&c,t2=S0+mj|0;h=g;g=f;f=e;e=d+t1|0;d=c;c=b2;b2=a;a=t1+t2|0}H[0]=H[0]+a|0;H[1]=H[1]+b2|0;H[2]=H[2]+c|0;H[3]=H[3]+d|0;H[4]=H[4]+e|0;H[5]=H[5]+f|0;H[6]=H[6]+g|0;H[7]=H[7]+h|0}var o="";for(i=0;i<8;i++)for(j=3;j>=0;j--)o+=("0"+(H[i]>>>8*j&255).toString(16)).slice(-2);return o}
+function dec(s){var bin=atob(s),u=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u}
+var ORIG=dec(B64),CUR=ORIG.slice(0);
+function check(){var got=sha256(CUR),ok=got===CLAIM;
+document.getElementById("dot").className="dot "+(ok?"ok":"bad");
+document.getElementById("st").className="st "+(ok?"ok":"bad");
+document.getElementById("st").textContent=ok?"verified · bytes match the hash":"MISMATCH · computed "+got.slice(0,16)+"...";}
+document.getElementById("break").onclick=function(){CUR=ORIG.slice(0);CUR[0]=CUR[0]^1;check()};
+document.getElementById("fix").onclick=function(){CUR=ORIG.slice(0);check()};
+document.getElementById("dl").onclick=function(){var a=document.createElement("a");
+a.href=URL.createObjectURL(new Blob([CUR],{type:"application/octet-stream"}));a.download=NAME;a.click()};
+check();
+</script></div></body></html>
+HTML
+}
+
+hash_of() {
+  if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1" | cut -d' ' -f1
+  else shasum -a 256 "$1" | cut -d' ' -f1; fi
+}
+
+usage() {
+  cat <<'USAGE'
+usage:
+  on1fl PAYLOAD [TITLE] [WHAT] > deliver.html   emit the one-file page
+  on1fl --prove-red                             plant every fault; show them all red
+  on1fl --witness PAGE PAYLOAD                  third hasher, if one is on the machine
+  on1fl -h                                      this header
+
+THE THREE PROPERTIES, and the third is the one people leave out:
+  UNPACKS   needs only what the far machine already has -- here, a browser, from file://
+  PROVES    the page computes the hash itself, from the bytes it carries, not from a README
+  FAILS ON COMMAND  a button flips a byte so the reader WATCHES it go red before trusting green
+
+A green light nobody has ever seen turn red is not evidence, it is decoration.
+So this program refuses to claim green without having shown you red: --prove-red
+plants four faults and requires every one of them to fire.
+USAGE
+}
+
+# ---------------------------------------------------------------- --prove-red
+chk() { # chk NAME WANT GOT
+  if [ "$2" = "$3" ]; then printf '  ok    %s\n' "$1"
+  else printf '  FAIL  %s\n        want %s\n        got  %s\n' "$1" "$2" "$3"; fails=$((fails+1)); fi
+}
+
+prove_red() {
+  d=$(mktemp -d) || exit 1
+  trap 'rm -rf "$d"' EXIT INT TERM
+  fails=0
+  printf 'the index can be wrong and say so\n' > "$d/p"
+  emit "$d/p" "self test" "a planted payload" > "$d/page.html"
+  claim=$(sed -n 's/.*id="claim">\([0-9a-f]*\).*/\1/p' "$d/page.html")
+  b64=$(sed -n 's/^var B64="\([^"]*\)".*/\1/p' "$d/page.html")
+  size=$(sed -n 's,.*<dt>bytes</dt><dd>\([0-9]*\)</dd>.*,\1,p' "$d/page.html")
+
+  echo "GREEN -- what must hold:"
+  chk "claim agrees with an independent sha256"      "$(hash_of "$d/p")" "$claim"
+  chk "page carries zero external references"        "0" "$(grep -c 'https\?://' "$d/page.html" || true)"
+  chk "carried base64 decodes back to the payload"   "$(hash_of "$d/p")" "$(printf '%s' "$b64" | base64 -d > "$d/back" && hash_of "$d/back")"
+  chk "declared byte count is the real byte count"   "$(wc -c < "$d/p" | tr -d ' ')" "$size"
+
+  echo "RED -- four planted faults, every one must fire:"
+  printf 'x' >> "$d/p"                               # fault 1: the payload moved
+  if [ "$claim" != "$(hash_of "$d/p")" ]; then echo "  ok    a changed payload no longer matches the claim"
+  else echo "  FAIL  a changed payload still matched the claim"; fails=$((fails+1)); fi
+
+  sed 's,</head>,<script src="https://cdn.example/x.js"></script></head>,' "$d/page.html" > "$d/cdn.html"
+  if [ "$(grep -c 'https\?://' "$d/cdn.html" || true)" != "0" ]; then echo "  ok    an injected CDN reference is seen"
+  else echo "  FAIL  an injected CDN reference was not seen"; fails=$((fails+1)); fi
+
+  bad=$(printf '%s' "$b64" | sed 's/^./Z/')          # fault 3: the carried bytes moved
+  printf '%s' "$bad" | base64 -d > "$d/bad" 2>/dev/null || true
+  if [ "$claim" != "$(hash_of "$d/bad" 2>/dev/null || echo none)" ]; then echo "  ok    corrupted carried bytes no longer match the claim"
+  else echo "  FAIL  corrupted carried bytes still matched the claim"; fails=$((fails+1)); fi
+
+  if ( emit "$d/nope" x y >/dev/null 2>&1 ); then     # fault 4: a payload that is not there
+    echo "  FAIL  a missing payload was accepted"; fails=$((fails+1))
+  else echo "  ok    a missing payload is refused, not papered over"; fi
+
+  echo
+  if [ "$fails" -eq 0 ]; then echo "on1fl: 8/8 -- four held, four fired."; else echo "on1fl: $fails FAILED"; fi
+  [ "$fails" -eq 0 ]
+}
+
+# ------------------------------------------------------------------ --witness
+# A page that hashes itself with its own JavaScript is ONE witness.  sha256sum is
+# a second.  This runs the page's OWN script under a JS engine when the machine
+# has one -- a third reading, from the same bytes, by a different implementation.
+# ABSENT is a real answer here and is reported as ABSENT, never as agreement.
+witness() {
+  page=${1:?usage: on1fl --witness PAGE PAYLOAD}; pay=${2:?}
+  js=$(command -v node || command -v nodejs || true)
+  if [ -z "$js" ]; then echo "WITNESS ABSENT -- no JS engine on this machine; two readings, not three."; return 0; fi
+  w=$(mktemp -d); trap 'rm -rf "$w"' EXIT INT TERM
+  { echo 'var atob=function(s){return Buffer.from(s,"base64").toString("binary")};'
+    sed -n '/^var B64=/,/^function check()/p' "$page" | sed '$d'
+    echo 'var g=sha256(ORIG), b=ORIG.slice(0); b[0]=b[0]^1;'
+    echo 'console.log(g); console.log(sha256(b)); console.log(CLAIM);'
+  } > "$w/run.js"
+  out=$("$js" "$w/run.js" 2>/dev/null) || {
+    echo "WITNESS ABSENT -- the page's script would not run standalone here."; return 0; }
+  green=$(echo "$out" | sed -n 1p); red=$(echo "$out" | sed -n 2p); said=$(echo "$out" | sed -n 3p)
+  third=$(hash_of "$pay")
+  printf '  page JS, carried bytes : %s\n  page claim             : %s\n  %-22s : %s\n' "$green" "$said" "$(basename "${js}") vs sha256sum" "$third"
+  printf '  after one flipped byte : %s...\n' "$(echo "$red" | cut -c1-16)"
+  if [ "$green" = "$said" ] && [ "$green" = "$third" ] && [ "$red" != "$said" ]; then
+    echo "WITNESS AGREE -- three readings of the same bytes, and it still goes red on command."
+  else
+    echo "WITNESS DISAGREE -- do not carry this page."; return 1
+  fi
+}
+
+case "${1:-}" in
+  -h|--help|"") usage; exit 0 ;;
+  --prove-red)  prove_red; exit $? ;;
+  --witness)    shift; witness "$@"; exit $? ;;
+esac
+emit "$@"

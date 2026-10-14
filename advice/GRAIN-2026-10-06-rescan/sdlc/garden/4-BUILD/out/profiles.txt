@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+# profile|shell|for whom
+minimal|emacs|a shell that boots, unlocks and joins a network
+desktop|html|the everyday desktop for members and new organizers
+homelab|emacs|a headless chapter server ("pantry box")
+hardened|html|the desktop with fewer parts and more guards
+fullsink|html|everything in this file, including what some will not want

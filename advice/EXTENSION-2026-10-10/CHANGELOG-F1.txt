@@ -1,0 +1,71 @@
+2026-10-10  Mentat (for Corwin; claude-opus-5-5)  <corwin@bru.st>
+
+	Fix lane F1 of the extension edition: folding review pass 2 (P5, P6, C5) into the code.
+
+	* tests/test_mcp_spans.py (_capture): Point the frame at the temp
+	folder before turning usage.capture on, so no test writes into the
+	real ~/.mentcached/stats/fr (P5 O1).
+	(test_capture_never_touches_the_real_frame): New guard.
+	(test_question_log_writes_the_rows_qg1ck_reads)
+	(test_question_log_off_writes_nothing): New.
+	* tests/frame-leak-tests.sh: New.  The guard under a scratch HOME,
+	with the old order planted.
+	* polygram/mcp/spans.py (Frame._row, Frame.write): Fill LABEL,
+	LIKELIHOOD, CONFIDENCE and NOTE.
+	(Frame.question, Frame.second_needed, confidence_value): New.
+	(register): New tool question_log on mentcached (P6 O4, card 14).
+	* bin/qg1ck: Read the bar and CONFIDENCE as a fraction or a percent;
+	a row at exactly 17% passes (P6 O5, card 13).  Say that no preference
+	sets the bar yet.
+	* tests/qg1ck-spec.tcl: Rows at 17%, 18% and --bar 17%.
+	* tests/qg1ck-tests.sh: Plant percent-blind; no tclsh exits 77.
+	* bin/rd1ck: READ only when one line was read back; new answers
+	READER PRESENT, NOT READ and PRESENT, NOT READ; new road kind
+	reader; name one road that serves two stores; never list a fenced
+	folder while reading back (P5 O6/J5).
+	* conventions/ROADS.md: Readers are kind reader; the account memory
+	road no longer names the seat's own folder; the usage frame's road
+	names the MENTCACHED_FRAME environment variable (no usage.store
+	setting exists); the frame's drop line says what a row really holds
+	(P5 O4/J3, C5 O7/J11).
+	* tests/rd1ck-spec.rb: RD6, RD7.  tests/rd1ck-tests.sh: three plants;
+	no ruby exits 77.  tests/fixtures/lane-d/roads/reader-and-shared.md
+	and its root files: New.
+	* polygram/mcp/prefs.py (writer): The room.<tavern> writer rule:
+	the keeper's turn, or a named participant in that room's turn (P5 O5).
+	(set_, unset_, pref_set, pref_unset): Take room.
+	(quote): Take turn; a person sees only their own person rows.
+	(KNOWN): tavern.as says its real fallback; the restart rows point at
+	the README's Words; usage.capture says FRAME.md is beside the README.
+	* tests/prefs-declared-spec.rb: D12.  tests/prefs-declared-tests.sh:
+	two room plants; no ruby exits 77.
+	* polygram/mcp/mentcached.py (seat_mode): Quote prefs.quote() in the
+	status line; take turn (P5 J7, cards 06 and 12).
+	* tests/test_mcp_f1_open.py: New.
+	* tests/f1-python-plants-tests.sh: New.  Plants for the writer, the
+	open quote and the own-rows rule.
+	* bin/gm1gk: Spelling by pyspellchecker, the unknown words by name per
+	file, minus GRAMMARY's words and labels.tsv; else NOT CHECKED.  A LOOK
+	line when a count is not zero; --kit exits 1 after it.  Still never
+	fails (P6 O7/O8/J8).
+	* tests/gm1gk-spec.tcl: New (G5-G7).  tests/gm1gk-tests.sh: G3 by
+	GM1GK_PYTHON; runs the Tcl spec; two more plants.
+	* bin/gd1ck: Exit 77 is LOOK with "NOT CHECKED here" in its detail;
+	new gauge leg grammary (gm1gk --kit on the live GRAMMARY); prove-red
+	checks both (P6 O3/J2).
+	* tests/pr1ef-tests.sh, tests/spans-reset-tests.sh,
+	tests/arc-never-ships-tests.sh, tests/mcp-tests.sh,
+	tests/br1in-tests.sh: A missing interpreter is NOT CHECKED, exit 77.
+	* tests/interp-77-tests.sh: New.  Holds every runner to that rule.
+	* bin/lc1ck: Also read book/, report-only: each stale line is OWED,
+	"re-sign owed, his pen"; --book DIR, --no-book (P6 O10).
+	* tests/lc1ck-spec.rb, tests/lc1ck-tests.sh: The book row and two
+	plants; the NOT CHECKED words.
+	* polygram/mcp/persona.py (ledger): Dedupe proposed edges to distinct
+	(from, to, claim) triples on their true ends; a times column; the
+	read-back counts raw rows, distinct edges, pairs, source lines and
+	the proposing hand (P5 O7/J6, card 19).
+	* tests/persona-ledger-tests.sh, tests/persona-ledger-spec.awk,
+	tests/persona-ledger-SPEC.txt: L9 and plant (e).
+	* advice/EXTENSION-2026-10-10/persona-ledger/LEDGER-2026-10-10-r2.md:
+	New, regenerated; the first ledger is kept.

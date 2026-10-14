@@ -1,0 +1,254 @@
+#!/bin/sh
+# whose - "Who may I copy this from, and under what terms?"
+#
+# Answers it for one file, from three witnesses that already exist on disk,
+# and says out loud when they disagree. No new metadata, no tag to trust, no
+# adoption of C4 required by the reader. The inputs are a licence header, a
+# licence TEXT, and version control. All three are already there. Nothing in
+# this estate compared them until now, which is the whole defect.
+#
+#   CLAIMED   what the file's own first lines assert.      AN ASSERTION.
+#   PRESENT   the nearest licence text, walking UP from
+#             the file, identified BY SHA256 -- not by its
+#             title line, because this estate holds two
+#             different byte-sequences both titled "GNU
+#             GENERAL PUBLIC LICENSE".                     A FACT.
+#   RECORDED  git's author and signature state, and the
+#             nearest AUTHORS file.                        A RECORD.
+#
+# THE PROPERTY THAT MAKES THIS A PROOF AND NOT A POLICY: it is dated by
+# construction. Run over c4/bin today it reports DISAGREE and `COPY? NO`,
+# because a ruling on 2026-08-06 emptied c4/COPYING so that no collaborator
+# would acquire an implicit obligation before release. Run over the same files
+# as of 2026-08-04 -- `git stash`, or a worktree at an older commit -- and it
+# reports AGREE and `COPY? YES, GPL-3.0-or-later`. Same program, same files,
+# different answer, because the answer is COMPUTED FROM THE TREE rather than
+# read off a constant.
+#
+# A licence is a decision with a date. A header is a constant. That is why a
+# fifth tag cannot fix this: a tag is another constant.
+#
+# UNKNOWN is a first-class answer. A pre-release tree should be able to say
+# "no grant here" truthfully rather than be pushed into claiming one.
+#
+# usage: whose [--tsv] [--prove-red] FILE...
+#        whose --hashes              show the pinned licence-text table
+# exit 0 whenever it could measure -- this never gates a build, because a
+# check that can fail a build is a check people learn to route around.
+#
+# Copyright (C) 2026 Corwin Brust.  Co-authored by Mentat (Claude, in Cowork).
+# GPL-3.0-or-later.  Reads only; writes only to stdout.
+#
+# ---------------------------------------------------------------------------------------------
+# TWO DECLARATIONS, because an undeclared check reads as MUST.  (This block sits BELOW the range
+# `-h` prints -- `sed -n '2,40p'` -- on purpose: widening that range would change what the tool
+# does, and this pass is licensed to add comments only.  Named rather than quietly done.)
+#
+#   MUST     the three witnesses exactly as they sit on disk: the first twenty lines of the file,
+#            the sha256 of the nearest licence text found walking UP, git's author and its %G?
+#            signature state, and the nearest AUTHORS file.  Mechanical too: which rung of the
+#            ladder below those readings land on, and that the exit status is always 0.
+#
+#   JOURNEY  THE PINNED TABLE IS A LIST I KEEP.  A licence text whose sha256 is not in it reads
+#            UNRECOGNISED, which the ladder then treats as "no licence text above this file" --
+#            so a perfectly valid, perfectly PRESENT licence this table has never met produces
+#            DISAGREE.  That is a gap in my table, reported as a finding about his file.
+#            `norm()` IS A WORD MAP.  A header stating its licence in wording that case statement
+#            does not carry reads UNKNOWN.  Absence of a match is not absence of a claim.
+#            THE LADDER IS MINE.  That an EMPTY COPYING is a TOMBSTONE meaning "no grant, on
+#            purpose" rather than a missing file; that claimed-with-no-text is DISAGREE while
+#            text-with-no-claim is UNKNOWN; that UNKNOWN is a first-class answer and not a
+#            failure -- each is a reading of what the three witnesses mean TOGETHER.
+#            `COPY?` IS A READING OF THREE FILES.  It is not a licence, not a grant, and not
+#            advice.  DISAGREE means the witnesses do not say the same thing and a human has to
+#            pick; it does not mean the file is mislicensed.
+#            EXIT 0 ALWAYS, on purpose: a check that can fail a build is a check people learn to
+#            route around.  That is a policy about how a gauge earns use, not a measurement.
+
+set -u
+tsv=0 ; red=0 ; showh=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --tsv) tsv=1 ; shift ;;
+    --prove-red) red=1 ; shift ;;
+    --hashes) showh=1 ; shift ;;
+    -h|--help) sed -n '2,40p' "$0" ; exit 0 ;;
+    --) shift ; break ;;
+    -*) echo "whose: unknown option $1" >&2 ; exit 0 ;;
+    *) break ;;
+  esac
+done
+
+# ---- the pinned table: licence identity by BYTES ----------------------------
+# Every entry was produced by sha256sum over a licence text found in this
+# estate. Two GPLv3 texts differ by two bytes and both call themselves "GNU
+# GENERAL PUBLIC LICENSE"; a title-line match would call them the same thing.
+# Add a row by running `whose --hashes` against a new tree and pasting.
+licence_by_hash() {
+  case "$1" in
+    f274c92648b23e85*) echo "GPL-3.0-or-later" ;;
+    3972dc9744f6499f*) echo "GPL-3.0-or-later" ;;
+    0d96a4ff68ad6d4b*) echo "AGPL-3.0-or-later" ;;
+    4ca481b3ef58d385*) echo "AGPL-3.0-or-later" ;;
+    06dcddbb6908a0c6*|65bc33b0759a48b9*) echo "MIT" ;;
+    a2010f343487d3f7*) echo "CC0-1.0" ;;
+    e3b0c44298fc1c14*) echo "TOMBSTONE" ;;
+    *) echo "UNRECOGNISED" ;;
+  esac
+}
+
+if [ "$showh" = 1 ]; then
+  echo "pinned licence texts (identity is the sha256, never the title line):"
+  echo "  f274c92648b23e85  GPL-3.0-or-later    35151 B"
+  echo "  3972dc9744f6499f  GPL-3.0-or-later    35149 B   <- two bytes apart, same title"
+  echo "  0d96a4ff68ad6d4b  AGPL-3.0-or-later   34523 B"
+  echo "  4ca481b3ef58d385  AGPL-3.0-or-later   33941 B"
+  echo "  06dcddbb6908a0c6  MIT                  1056 B"
+  echo "  65bc33b0759a48b9  MIT                  1103 B"
+  echo "  a2010f343487d3f7  CC0-1.0              7048 B"
+  echo "  e3b0c44298fc1c14  TOMBSTONE                0 B   <- the empty COPYING, on purpose"
+  exit 0
+fi
+
+# A bare invocation prints the header rather than a one-line scold. Someone who types the
+# name of a tool is asking what it does; answering with "name at least one FILE" tells them
+# the one thing they already knew and hides --hashes, --tsv and --prove-red. Make it easy to
+# ask for more; never make it necessary to guess what exists.
+[ $# -gt 0 ] || [ "$red" = 1 ] || { sed -n '2,40p' "$0" ; exit 0 ; }
+
+norm() { # map a header's words onto an SPDX-ish id
+  case "$1" in
+    *Affero*|*AFFERO*|*AGPL*) echo "AGPL-3.0-or-later" ;;
+    *GPL-3*|*GPLv3*|*"GNU General Public License"*|*"GNU GENERAL PUBLIC"*) echo "GPL-3.0-or-later" ;;
+    *MIT*) echo "MIT" ;;
+    *CC0*) echo "CC0-1.0" ;;
+    *"CC BY"*) echo "CC-BY-4.0" ;;
+    *) echo "" ;;
+  esac
+}
+
+report() { # report FILE
+  f=$1
+  [ -f "$f" ] || { v=NOTAFILE ; printf 'FILE      %s\n  (not a regular file)\n\n' "$f" ; return ; }
+  d=$(cd "$(dirname "$f")" && pwd)
+
+  # --- CLAIMED -------------------------------------------------------------
+  head20=$(head -20 "$f" 2>/dev/null | tr -d '\r')
+  cl_lic=$(norm "$head20")
+  cl_holder=$(printf '%s\n' "$head20" | grep -iEo 'Copyright \(C\)[^.]*' | head -1 | sed 's/  */ /g')
+  cl_auth=$(printf '%s\n' "$head20" | grep -iEo '(Co-authored|Authored|Written) by[^.]*' | head -1)
+  [ -n "$cl_lic" ] || cl_lic=UNKNOWN
+  [ -n "$cl_holder" ] || cl_holder="(no copyright line)"
+
+  # --- PRESENT: walk UP, not glob one directory ----------------------------
+  pr_lic=UNKNOWN ; pr_file="(none found walking up)" ; pr_hash=
+  p=$d
+  while : ; do
+    for n in COPYING COPYING.txt LICENSE LICENSE.txt LICENCE LICENCE.txt; do
+      if [ -f "$p/$n" ]; then
+        pr_file="$p/$n"
+        pr_hash=$(sha256sum "$pr_file" 2>/dev/null | cut -c1-16)
+        pr_lic=$(licence_by_hash "$pr_hash")
+        break
+      fi
+    done
+    [ "$pr_lic" = UNKNOWN ] || break
+    [ "$p" = "/" ] && break
+    np=$(dirname "$p") ; [ "$np" = "$p" ] && break ; p=$np
+  done
+
+  # --- RECORDED ------------------------------------------------------------
+  rc_auth="(not in git)" ; rc_sig="-"
+  if command -v git >/dev/null 2>&1 && (cd "$d" && git rev-parse --git-dir >/dev/null 2>&1); then
+    rc_auth=$(cd "$d" && git log -1 --follow --format='%an <%ae>' -- "$f" 2>/dev/null)
+    rc_sig=$(cd "$d" && git log -1 --follow --format='%G?' -- "$f" 2>/dev/null)
+    [ -n "$rc_auth" ] || rc_auth="(tracked by no commit)"
+    case "$rc_sig" in G) rc_sig="signed, good" ;; N|"") rc_sig="unsigned" ;; *) rc_sig="sig=$rc_sig" ;; esac
+  fi
+  rc_authors="(none found walking up)"
+  p=$d
+  while : ; do
+    [ -f "$p/AUTHORS" ] && { rc_authors="$p/AUTHORS" ; break ; }
+    [ "$p" = "/" ] && break ; np=$(dirname "$p") ; [ "$np" = "$p" ] && break ; p=$np
+  done
+
+  # --- the verdict ---------------------------------------------------------
+  if [ "$cl_lic" = UNKNOWN ] && [ "$pr_lic" = UNKNOWN ]; then
+    v=UNKNOWN ; copy="UNKNOWN -- nothing here grants anything. Ask the author."
+  elif [ "$pr_lic" = TOMBSTONE ]; then
+    v=DISAGREE
+    copy="NO -- the header says $cl_lic but the nearest COPYING is EMPTY ON PURPOSE."
+  elif [ "$cl_lic" = UNKNOWN ]; then
+    v=UNKNOWN
+    copy="UNKNOWN -- a licence text is present ($pr_lic) but this file does not claim it."
+  elif [ "$pr_lic" = UNKNOWN ]; then
+    v=DISAGREE
+    copy="NO -- the header claims $cl_lic and no licence text exists above this file."
+  elif [ "$cl_lic" = "$pr_lic" ]; then
+    v=AGREE ; copy="YES, $pr_lic"
+  else
+    v=DISAGREE ; copy="NO -- header says $cl_lic, the text above it is $pr_lic."
+  fi
+
+  if [ "$tsv" = 1 ]; then
+    printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$f" "$v" "$cl_lic" "$pr_lic" "${pr_hash:--}" "$rc_auth"
+  else
+    printf 'FILE      %s\n' "$f"
+    printf '  CLAIMED   %-18s %s\n' "$cl_lic" "$cl_holder"
+    [ -n "$cl_auth" ] && printf '            %s\n' "$cl_auth"
+    printf '  PRESENT   %-18s %s\n' "$pr_lic" "$pr_file"
+    [ -n "$pr_hash" ] && printf '            sha256 %s...\n' "$pr_hash"
+    printf '  RECORDED  %-18s %s\n' "$rc_sig" "$rc_auth"
+    printf '            AUTHORS: %s\n' "$rc_authors"
+    printf '  LICENCE   %s\n' "$v"
+    printf '  COPY?     %s\n\n' "$copy"
+  fi
+}
+
+# ---- --prove-red ------------------------------------------------------------
+if [ "$red" = 1 ]; then
+  t=${TMPDIR:-/tmp}/whose-red.$$ ; mkdir -p "$t/deep/deeper" || exit 0
+  fails=0
+  printf '# Copyright (C) 2026 Nobody.\n# GPL-3.0-or-later.\n' > "$t/deep/deeper/claims-gpl.sh"
+  : > "$t/deep/COPYING"                                   # the tombstone shape
+  out=$("$0" "$t/deep/deeper/claims-gpl.sh")
+  case "$out" in *"COPY?     NO"*) echo "prove-red 1/3 RED: header claims GPL over an empty COPYING -> NO" ;;
+    *) echo "prove-red 1/3 FAIL: an empty COPYING did not produce NO" ; fails=$((fails+1)) ;; esac
+  rm -f "$t/deep/COPYING"
+  out=$("$0" "$t/deep/deeper/claims-gpl.sh")
+  case "$out" in *"COPY?     NO"*) echo "prove-red 2/3 RED: header claims GPL with no text above it -> NO" ;;
+    *) echo "prove-red 2/3 FAIL: a missing licence text did not produce NO" ; fails=$((fails+1)) ;; esac
+  printf '#!/bin/sh\necho hi\n' > "$t/deep/bare.sh"
+  out=$("$0" "$t/deep/bare.sh")
+  case "$out" in *"UNKNOWN -- nothing here grants"*) echo "prove-red 3/3 RED: a bare file yields UNKNOWN, not a guess" ;;
+    *) echo "prove-red 3/3 FAIL: a bare file did not yield UNKNOWN" ; fails=$((fails+1)) ;; esac
+  rm -rf "$t"
+  [ "$fails" = 0 ] && echo "prove-red PASS: all three faults were seen." \
+                   || echo "prove-red FAILED: $fails of 3 went unnoticed."
+  exit 0
+fi
+
+[ "$tsv" = 1 ] && printf 'file\tverdict\tclaimed\tpresent\tlicence_sha16\trecorded_author\n'
+n_ag=0 ; n_dis=0 ; n_unk=0 ; n_non=0 ; v=
+for f in "$@"; do
+  report "$f"
+  case "$v" in
+    AGREE)    n_ag=$((n_ag+1)) ;;
+    DISAGREE) n_dis=$((n_dis+1)) ;;
+    UNKNOWN)  n_unk=$((n_unk+1)) ;;
+    *)        n_non=$((n_non+1)) ;;
+  esac
+done
+# A bottom line, and only when there is more than one file to sum. Over a whole directory the
+# per-file reports are the evidence and this is the answer; over one file the report already IS
+# the answer and a tally under it would be ceremony.
+if [ "$tsv" = 0 ] && [ $# -gt 1 ]; then
+  printf -- '-- %s file(s): %s AGREE, %s DISAGREE, %s UNKNOWN' "$#" "$n_ag" "$n_dis" "$n_unk"
+  [ "$n_non" = 0 ] || printf ', %s not a regular file' "$n_non"
+  printf ' --\n'
+  if [ "$n_dis" != 0 ]; then
+    printf '   DISAGREE is the finding. It does not mean the file is mislicensed; it means the\n'
+    printf '   three witnesses do not say the same thing, and a human has to pick.\n'
+  fi
+fi
+exit 0

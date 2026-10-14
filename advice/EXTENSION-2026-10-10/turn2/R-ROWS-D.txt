@@ -1,0 +1,32 @@
+R-ROWS-D.txt -- lane D's rows for polygram/mcp/__main__.py --prove-red (R41, R42), turn 2.
+The conductor folds these in; I did not edit __main__.py.  Each row: the words line first, then the
+code, written to sit inside _prove_red() where want and Path are in scope.  Both rows were run as
+written in a scratch harness against the garden (PASS) and against a planted folder with a hold of
+class MAYBE and a reviewed row whose hash is not hex (both FAIL), as HANDBACK-D.md shows.
+R43 and R44 are unused.
+
+R41  Every hold the garden's family cut reads names a known class, a source and what opens it, so a
+     hold can never be a quiet allow-list by the back door.
+
+        # R41 -- garden family-cut holds are well formed (lane D, turn 2).
+        _root41 = Path(__file__).resolve().parents[2]
+        _h41 = _root41 / "conventions" / "FAMILY-HOLDS.tsv"
+        _rows41 = [l.split("\t") for l in _h41.read_text(encoding="utf-8").splitlines()
+                   if l.strip() and not l.startswith("#")] if _h41.exists() else []
+        want("every garden family-cut hold has four fields and a class of BLIND, LOCAL or NEVER",
+             _h41.exists() and all(len(r) >= 4 and r[1] in ("BLIND", "LOCAL", "NEVER") and r[2] and r[3]
+                                   for r in _rows41), repr(_rows41[:2]))
+
+R42  Every secret-checker hit the garden reviewed as harmless is bound to its path, line and line
+     hash, so a changed line is read again rather than waved through.
+
+        # R42 -- reviewed secret lines are bound (lane D, turn 2).
+        import re as _re42
+        _s42 = Path(__file__).resolve().parents[2] / "conventions" / "SECRET-REVIEWED.tsv"
+        _rows42 = [l.split("\t") for l in _s42.read_text(encoding="utf-8").splitlines()
+                   if l.strip() and not l.startswith("#")] if _s42.exists() else []
+        want("every reviewed secret line is bound to a path, a line number and a 16-hex line hash",
+             all(len(r) >= 5 and r[1].isdigit() and _re42.fullmatch(r"[0-9a-f]{16}", r[2]) for r in _rows42),
+             repr(_rows42[:1]))
+
+Mentat (for Corwin; claude-opus-5-5)

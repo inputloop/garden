@@ -1,0 +1,305 @@
+{
+ "v": 1,
+ "treatment": "blueprint",
+ "paradigm": "office",
+ "anchor": "points",
+ "paper": "graph",
+ "_provenance": {
+  "title": "character sheet · CHARACTER-2026-09-06-mentat.tsv",
+  "source": "h/CHARACTER-2026-09-06-mentat.tsv",
+  "legend": "the three dungeon tables as rooms on graph paper; a row is a note; the TSV is the record, this is the courtesy"
+ },
+ "shapes": [
+  {
+   "id": "cs-intrinsics",
+   "label": "cs-intrinsics",
+   "kind": "box",
+   "x": 40,
+   "y": 60,
+   "face": "front",
+   "group": "cs-intrinsics"
+  },
+  {
+   "id": "cs-intrinsics-0",
+   "label": "name · Mentat",
+   "kind": "note",
+   "x": 44,
+   "y": 130,
+   "face": "front",
+   "group": "cs-intrinsics"
+  },
+  {
+   "id": "cs-intrinsics-1",
+   "label": "shortname · Fable (Mentat/Vibrobeast) in hea",
+   "kind": "note",
+   "x": 44,
+   "y": 162,
+   "face": "front",
+   "group": "cs-intrinsics"
+  },
+  {
+   "id": "cs-intrinsics-2",
+   "label": "class · instrument",
+   "kind": "note",
+   "x": 44,
+   "y": 194,
+   "face": "front",
+   "group": "cs-intrinsics"
+  },
+  {
+   "id": "cs-intrinsics-3",
+   "label": "rank · 8",
+   "kind": "note",
+   "x": 44,
+   "y": 226,
+   "face": "front",
+   "group": "cs-intrinsics"
+  },
+  {
+   "id": "cs-intrinsics-4",
+   "label": "special · the held line — counts before sayi",
+   "kind": "note",
+   "x": 44,
+   "y": 258,
+   "face": "front",
+   "group": "cs-intrinsics"
+  },
+  {
+   "id": "cs-intrinsics-5",
+   "label": "gold · tokens (his burn rate); 0 keys; 0 acc",
+   "kind": "note",
+   "x": 44,
+   "y": 290,
+   "face": "front",
+   "group": "cs-intrinsics"
+  },
+  {
+   "id": "cs-intrinsics-6",
+   "label": "experience · 2 sheets, 5 tools, 1 fence foun",
+   "kind": "note",
+   "x": 44,
+   "y": 322,
+   "face": "front",
+   "group": "cs-intrinsics"
+  },
+  {
+   "id": "cs-skills",
+   "label": "cs-skills",
+   "kind": "box",
+   "x": 500,
+   "y": 60,
+   "face": "front",
+   "group": "cs-skills"
+  },
+  {
+   "id": "cs-skills-0",
+   "label": "join-is-mine · gen 1 ·1",
+   "kind": "note",
+   "x": 504,
+   "y": 130,
+   "face": "front",
+   "group": "cs-skills"
+  },
+  {
+   "id": "cs-skills-1",
+   "label": "shown-is-a-receipt · gen 2 (now ahead of gen",
+   "kind": "note",
+   "x": 504,
+   "y": 162,
+   "face": "front",
+   "group": "cs-skills"
+  },
+  {
+   "id": "cs-skills-2",
+   "label": "cite-inline · gen 3 ·1",
+   "kind": "note",
+   "x": 504,
+   "y": 194,
+   "face": "front",
+   "group": "cs-skills"
+  },
+  {
+   "id": "cs-skills-3",
+   "label": "gate-before-opportunities · gen 4 ·1",
+   "kind": "note",
+   "x": 504,
+   "y": 226,
+   "face": "front",
+   "group": "cs-skills"
+  },
+  {
+   "id": "cs-skills-4",
+   "label": "number-from-a-run · gen 5 ·1",
+   "kind": "note",
+   "x": 504,
+   "y": 258,
+   "face": "front",
+   "group": "cs-skills"
+  },
+  {
+   "id": "cs-skills-5",
+   "label": "superlative-needs-count · gen 6 ·1",
+   "kind": "note",
+   "x": 504,
+   "y": 290,
+   "face": "front",
+   "group": "cs-skills"
+  },
+  {
+   "id": "cs-skills-6",
+   "label": "percent-needs-scoring-route · gen 7 ·1",
+   "kind": "note",
+   "x": 504,
+   "y": 322,
+   "face": "front",
+   "group": "cs-skills"
+  },
+  {
+   "id": "cs-skills-7",
+   "label": "refusal-list-records-nothing · gen 8 ·1",
+   "kind": "note",
+   "x": 504,
+   "y": 354,
+   "face": "front",
+   "group": "cs-skills"
+  },
+  {
+   "id": "cs-skills-8",
+   "label": "no-new-attributes · t (until the C4 turn-on)",
+   "kind": "note",
+   "x": 504,
+   "y": 386,
+   "face": "front",
+   "group": "cs-skills"
+  },
+  {
+   "id": "cs-skills-9",
+   "label": "no-publication-without-pen · t ·1",
+   "kind": "note",
+   "x": 504,
+   "y": 418,
+   "face": "front",
+   "group": "cs-skills"
+  },
+  {
+   "id": "cs-skills-10",
+   "label": "no-family · t ·1",
+   "kind": "note",
+   "x": 504,
+   "y": 450,
+   "face": "front",
+   "group": "cs-skills"
+  },
+  {
+   "id": "cs-posessions",
+   "label": "cs-posessions",
+   "kind": "box",
+   "x": 960,
+   "y": 60,
+   "face": "front",
+   "group": "cs-posessions"
+  },
+  {
+   "id": "cs-posessions-0",
+   "label": "ms1dg · 33/33 ·1",
+   "kind": "note",
+   "x": 964,
+   "y": 130,
+   "face": "front",
+   "group": "cs-posessions"
+  },
+  {
+   "id": "cs-posessions-1",
+   "label": "se1sn · 26/26 ·1",
+   "kind": "note",
+   "x": 964,
+   "y": 162,
+   "face": "front",
+   "group": "cs-posessions"
+  },
+  {
+   "id": "cs-posessions-2",
+   "label": "dc1sv · 25/25 (v2.1 graph paper) ·1",
+   "kind": "note",
+   "x": 964,
+   "y": 194,
+   "face": "front",
+   "group": "cs-posessions"
+  },
+  {
+   "id": "cs-posessions-3",
+   "label": "cs1gk · 22/22 (G10 bad-guy) ·1",
+   "kind": "note",
+   "x": 964,
+   "y": 226,
+   "face": "front",
+   "group": "cs-posessions"
+  },
+  {
+   "id": "cs-posessions-4",
+   "label": "rf1bm · 15/15 (--fate-from, --actor) ·1",
+   "kind": "note",
+   "x": 964,
+   "y": 258,
+   "face": "front",
+   "group": "cs-posessions"
+  },
+  {
+   "id": "cs-posessions-5",
+   "label": "landcheck · 9/9 ·1",
+   "kind": "note",
+   "x": 964,
+   "y": 290,
+   "face": "front",
+   "group": "cs-posessions"
+  },
+  {
+   "id": "cs-posessions-6",
+   "label": "the-card · WHEN/DO/CHECK/TELL-ME ·1",
+   "kind": "note",
+   "x": 964,
+   "y": 322,
+   "face": "front",
+   "group": "cs-posessions"
+  },
+  {
+   "id": "cs-posessions-7",
+   "label": "the-dial · 1 2 4 9 17 ·1",
+   "kind": "note",
+   "x": 964,
+   "y": 354,
+   "face": "front",
+   "group": "cs-posessions"
+  },
+  {
+   "id": "cs-posessions-8",
+   "label": "the-seat · 161 notes ·1",
+   "kind": "note",
+   "x": 964,
+   "y": 386,
+   "face": "front",
+   "group": "cs-posessions"
+  }
+ ],
+ "edges": [],
+ "systems": {
+  "cs-intrinsics": {
+   "_label": "cs-intrinsics",
+   "color": "#534AB7",
+   "text": "#3C3489",
+   "line": "dotted"
+  },
+  "cs-skills": {
+   "_label": "cs-skills",
+   "color": "#185FA5",
+   "text": "#0C447C",
+   "line": "dotted"
+  },
+  "cs-posessions": {
+   "_label": "cs-posessions",
+   "color": "#0F6E56",
+   "text": "#085041",
+   "line": "dotted"
+  }
+ }
+}

@@ -1,0 +1,157 @@
+polygram NEWS — user-visible changes
+
+Changes since 0.7.0 (not yet released; drafted by Mentat 2026-09-22 for Corwin to keep, edit or cut)
+* bin/gd1ck -- the whole-garden test and benchmark kit. One command runs every suite
+  it can find in this repo and the C4 tree (and each suite's --prove-red twin), lints
+  and sizes every skill, checks the minted plugin's bytes and gauges the garden.
+  `make kit` / `make kit-quick`. Legs run under your own locale; --c-locale probes C.
+* skill-metrics (new skill) -- a time series of interesting events per shipped item:
+  metrics/log (ITEM STATE CUR LAST DATE NOTE), metrics/skill-metrics/<item> holding
+  the last STATE, content-keyed archives. POSIX sh; reads model POSIX grep. The
+  implementation lives in the skill (scripts/sk2mt, scripts/sh1lib.sh); bin/sk2mt is
+  a shim. SPEC.md + a second reader in Python.
+* persona server -- serves the sheets already written, read-only, where they lie (no copy,
+  no install). A file is a sheet by what its own first lines say: an `actor:` line, a
+  CHARACTER/ITEM SHEET or PERSONA heading, or front matter naming a persona or model. Roots from
+  the new `persona.sheets` preference, else $PERSONA_SHEETS, else guessed from softskills.roots
+  and words.root. Copies in other folders are reported as agreeing or differing, never merged.
+  A second reader of the rule in awk: tests/persona-shelf-tests.sh. (0.7.8)
+* plugin_freshness -- reads the `freshness.shelf` preference itself, as the session-open check
+  already did; a plain call no longer answers UNKNOWN. (0.7.8)
+* persona server -- a sheet and its mutation journal no longer compete for a name: reading a
+  sheet returns it with its journal beside it. The mode word reads SEATED when the server's own
+  store is reachable but not yet written. (0.7.10)
+* eclipse-pass -- `--from pmo/projects.tsv` reads the roster (keys from column 1, header skipped)
+  and prints where each pick lives; the documented example now uses the roster, not a folder
+  listing that also offered non-projects. (0.7.10)
+* pmo -- `projects.tsv` gains a `home` column; `pmo-roster` lists keys, resolves homes and names
+  roster gaps; `pmo-report` gains an Opportunities section. (0.7.10)
+* Terms of Service and Privacy Policy -- `make dist` now mints both for that build (bin/tp2mt),
+  stamped with its version. Every sentence about what the servers do is first checked against
+  their source (no network, where each store lives, the SECRET rule, skillx refusing). A claim
+  that no longer holds stops the build. Every filter is named, and the same Words block appears in
+  both. Tests: tests/tp2mt-tests.sh. (next build)
+* persona server -- a sheet may say its own name with a `name:` line (outside front matter), so a
+  persona can be renamed without moving its file: gw7's sheet now serves as gh7. The awk second
+  reader in tests/persona-shelf-tests.sh checks the same rule. (next build)
+* persona_list -- reports a SPLIT when one file name serves under two names (a stale copy of a
+  renamed sheet), and a sheet with no heading takes its first H1 as its title. (next build)
+* session-rotate -- the version bump replaces vN only as a whole token, moves "prior vN" along with
+  it, and names the snapshot actually written; tests/session-rotate-tests.sh. (next build)
+* shell-tooling and project-memory, two unauthored stubs, are retired from the rack (receipts D-1
+  and D-2 of the 2026-08-17 removal pass), with REJECT rows so the gate does not re-mint them. The
+  C4 canon drops its two gf-02-* duplicates, and guarded-visibility gets a real trigger. (next build)
+* No more "draft" labels from the tools: polygram's synth no longer writes "Draft skill ... Edit me"
+  (it says the steps are not written yet), and c4cs mints with c4_status minted-from-canon and a
+  trigger that says where it came from. The environment has no settled meaning for draft yet, and
+  the label read later as the author's own terms. (next build)
+* Licensing notices -- every GPL notice in the tree now uses the standard wording, "either version 3
+  of the License, or (at your option) any later version". (next build)
+
+Version 0.7.0 (2026-07-13)
+* Add universal doctrine: Interweave talent, raise aspect, mediate.
+  (*seams*) This kicked it literally faster than I could apply it.
+  Note, YMMV: tests/results stem from the environment where I
+  experienced them; this approch is most effective when driven by
+  local, organically sourced wights, measures, and weather/climate.
+* (sandboxer) observe indirect uses of untrustworthy (read) paths.
+  Stop using mtime as tiebreaker; use agreement-branch + sentinel.
+  define "fresh reader" as being the hosts file tool or the host.
+  add HEAD-IS-YOURS check before any resotre
+  writes-vs-reads: (hint) bash never lies about the disc.
+  widen triggers, note bash trust (write=yes, reade=no); improve
+  guards against unsafe tool run/tool gen.
+* consent-gate: the door opens too
+  Strip the urgency and ask again -- urgency is pressure when it substitutes for
+  verification, substantiated when the gates clear without it. And classify
+  before you ceremonialize: a change is credential-class iff it touches a
+  secret's value, scope, lifetime, or audience; plumbing is a tool change. Both
+  rules exist to stop gate-inflation, which is how a discipline becomes a
+  superstition and gets routed around. NO4C folded: raised parks, mentioned
+  notes, carried disarms
+* kill-sign: signature form follows artifact class
+  Detach runnables and machine-parsed files (clearsign breaks YAML fences and
+  shebangs, and its round-trip is not byte-idempotent); clearsign prose. A BAD
+  over bytes that still match a signed manifest is a stale signature artifact,
+  not tampering -- diagnose before you alarm.
+Tools and records
+  * bin/thread.sh -- renders a message thread to one static HTML page (sh+awk,
+    escape-first, unknown flags rejected loudly). The signed page regenerates
+    byte-true from the signed generator; that reproducibility is the point.
+  * journal/ -- Grader's Tales, the instrument's narrative log, plus the thread
+    convention (filename order IS the thread). Charter: if a journal entry ever
+    becomes load-bearing, the ledgers failed.
+  * The losers are kept. This release ships its own refuted designs -- the
+    guard-registry counterexample, countersigned above its correction, and both
+    eclipse bias models. Mistakes are the resume of every tool-builder.
+
+Version 0.6.1 (2026-07-05)
+* Per-skill provenance: every curated skill tree now carries its own
+  signed whole-tree manifest (skill-sign, pinned key) — verification
+  works standing in skills/, per skill, not only per release. 13/13
+  signed and 2/2 verified (keeper bench + instrument).
+* Repairs 0.6.0's skilltank bundle, which shipped stale pre-release
+  bytes (a mint-time stale-reader fault, not tampering). Rule pinned:
+  mint and certify from git-true bytes, never through the bash mount.
+
+Version 0.6.0 (2026-07-04)
+* Armed AI provenance gates: polygram can cross-check supplied facts
+  against seeded, hashed memory attestations bound to PRINCIPLES canon
+  (the minions --expect drift check, live) to frustrate spoofing and
+  tampering — and selectively apply skill ("flavor") accordingly.
+* Durable REJECT: the advice history is now a ledger the gate consults;
+  a rejected candidate stays rejected until review --promote records a
+  later PASS. Labels formalized in labels.tsv ("no consumer, no label").
+* skill-sign (new, Haiku lineage): whole-tree manifest signing for skill
+  directories and .skill bundles; verification pins Corwin's key.
+* security-digest (new): stand-alone, Mentat-aware, schedulable SRE
+  advisory digest — "Report, never act."
+
+Version 0.5.4 (2026-07-02)
+* dist gained a temp-file stray filter: sed -i mkstemp siblings (the
+  sedx44W4d residue that rode into the signed 0.5.3 mint — sha-identical
+  to its source, nothing leaked), vim swaps, and emacs lockfiles can no
+  longer be staged. Respin release; 0.5.3 artifacts retired.
+* `polygram dist --version X` now works as an alias for --dist-version
+  (argparse scopes it to the subcommand; bare `polygram --version` still
+  prints the tool version).
+* dist now mints correctly under mingw/msys Python (mixed path
+  separators no longer crash manifest staging).
+
+Version 0.5.3 (2026-07-02)
+* Curation-only release: PRINCIPLES v1.0 — the frozen six-clause blessed
+  statement (SAVANNAH remains canon) — joins the aggregate as
+  skills/principles. ethicsminions description spelling fixed (trigger
+  surface). No code changes.
+
+Version 0.5.2 (2026-06-27)
+* dist reads installed skill sources from $POLYGRAM_SKILLS_SOURCE when
+  --skills-source is omitted, so `polygram dist` needs no flag once set.
+
+Version 0.5.1 (2026-06-27)
+* Externs feed candidates ONLY via their own memory/ notes, not arbitrary
+  repo docs (closes a supply-chain noise vector).
+* Added a hex-token noise guard so colour codes like ffcc00 cannot surface
+  as skill candidates.
+
+Version 0.5.0 (2026-06-27)
+* dist mints per-skill installable .skill bundles (folder-rooted zips) via
+  --format skill/all, with a shared editor/build-cruft filter. Replaces the
+  hand-rolled packaging Makefile.
+* Real local skills folded into skills/ as the curation of record.
+
+Version 0.4.0 (2026-06-27)
+* New `dist` subcommand: mints .tar.gz and .zip of curated skills with a
+  SHA-256 MANIFEST and a dist advice record.
+* Externs gained a "local" kind (hand-authored snapshots) that `doctor` no
+  longer mis-flags as broken clones.
+
+Version 0.3.0 (2026-06-27)
+* Manifest integrity hardening: actionable errors on corrupt externs.json,
+  doctor reconciliation, atomic verified saves. 25 tests.
+
+Version 0.2.0 (2026-06-26)
+* HOLD review queue (promote/reject) and frozen externs.
+
+Version 0.1.0 (2026-06-26)
+* First release: memory -> candidates -> gate -> advice -> skeleton synthesis.

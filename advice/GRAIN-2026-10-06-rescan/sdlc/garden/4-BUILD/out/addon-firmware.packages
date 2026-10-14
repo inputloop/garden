@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+# Generated from recipes.org. Edit the recipe, not this file.
+firmware-iwlwifi
+firmware-realtek
+firmware-atheros
+firmware-brcm80211
+firmware-mediatek
+firmware-misc-nonfree
+firmware-intel-graphics
+firmware-amd-graphics
+amd64-microcode
+intel-microcode

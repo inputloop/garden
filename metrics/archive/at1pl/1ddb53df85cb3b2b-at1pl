@@ -1,0 +1,403 @@
+#!/bin/sh
+# at1pl -- ATOMIC 1 PULL.  Is this model still true of the forest it was pulled from?
+#
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st>.  Co-authored by Mentat (Claude, in Cowork).
+# GPL-3.0-or-later.  Reads only; writes only to stdout and to a temp dir it makes and removes.
+#
+# ---------------------------------------------------------------------------------------------
+# THE RULE THIS TOOL EXISTS TO SERVE, in Corwin's words:
+#
+#   "Generally important models should be pulled from atomic via tool when they are NEWER than
+#    some file that collected that SHA and whatever other stat type meta among the constituent
+#    forest."
+#
+# So there are three things, not two:
+#
+#   THE FOREST      the constituent files.  The atoms.  The ground truth, always.
+#   THE META        a file that collected, at one moment, each atom's sha + bytes + mtime.
+#                   A measurement with a date on it.  Allowed to be old; not allowed to lie
+#                   about being old.
+#   THE MODEL       the derived thing somebody reads instead of the forest.
+#
+# A model is worth reading exactly as long as no atom has moved since the meta was collected.
+# This program answers that, and nothing else.  It does not pull, it does not re-derive, it
+# does not write the model.  PULLING IS THE KEEPER'S VERB, and the tool that pulls is not this
+# one.  This one says PULL or HOLD and shows its arithmetic.
+#
+# ---------------------------------------------------------------------------------------------
+# THE VERDICTS, per atom.  They are not a quality scale; they are four different facts.
+#
+#   OK          sha matches the meta, and mtime has not moved.  Nothing happened.
+#   TOUCHED     sha matches, but mtime IS newer.  The file was rewritten with the same bytes
+#               (a re-save, a checkout, a copy).  A pull on this alone would buy nothing --
+#               reported separately so it never inflates a stale count.
+#   NEWER       sha differs AND mtime is newer.  The atom genuinely moved forward.  THIS is
+#               the condition in the rule above, and it is the one that earns a pull.
+#   DRIFT       sha differs but mtime is NOT newer.  Content changed without moving forward:
+#               a restore from backup, an edit with a preserved timestamp, a clock that went
+#               backwards.  Kept apart from NEWER because "changed" and "advanced" are
+#               different claims and only one of them is evidence of progress.
+#               MEASURED LIMIT: mtime here is whole seconds, so a change that lands in the SAME
+#               second the meta was collected reads DRIFT, not NEWER. Observed 2026-09-17 on a
+#               copied forest. It is the safe way round -- the verdict still counts as moved and
+#               still earns a PULL; it just declines to claim the file advanced when the clock
+#               cannot say so.
+#   GONE        the atom is not there any more.  A model derived from a file that no longer
+#               exists is not stale, it is unfounded.
+#   UNRECORDED  a file sits in the forest that the meta never recorded.  The meta did not
+#               measure it, so nothing here knows whether the model accounts for it.  Reported
+#               because a forest that GREW is the failure an mtime comparison cannot see:
+#               every recorded row can read OK while the model is missing a whole atom.
+#               ONLY WHERE THE META COVERED THE WHOLE DIRECTORY.  `collect` writes a
+#               `# covered:` line for each directory whose every file it recorded, and `check`
+#               looks for growth only there.  Without that, a manifest that deliberately names
+#               one file in bin/ reported the other 157 as UNRECORDED and turned "one atom
+#               moved" into "158 atoms moved" -- OBSERVED 2026-09-17, and the wrong verdict was
+#               worse than the missing check.  `--grown` forces the sweep over every recorded
+#               directory when you do want it.
+#   UNTIMED     this host could not read an mtime.  Falls back to sha alone and SAYS SO, rather
+#               than defaulting to a verdict nobody measured.
+#
+# AND THE META NAMES ITS OWN ROOT.  `# root:` on line 2.  A name without a root is not a
+# pointer, it is a hint (c4:/h/RECIPE-2026-09-16-jit-find.md §2), so `check` refuses to report
+# on a meta that never says what its paths are relative to.
+#
+# ---------------------------------------------------------------------------------------------
+# usage:
+#   at1pl collect MANIFEST [-r ROOT] [-m MODEL]  > META.tsv    one walk; hash and stat each atom
+#   at1pl check   META.tsv [MODEL] [--all] [--grown] [--tsv]   re-stat; say PULL or HOLD
+#   at1pl --prove-red                                          plant every fault; show them all red
+#   at1pl -h                                                   this header
+#
+#   MANIFEST rows:  PATH <TAB> ROLE      (paths relative to ROOT; blank and #-lines skipped)
+#   META rows:      PATH <TAB> SHA256 <TAB> BYTES <TAB> MTIME <TAB> ROLE <TAB> WHEN
+#
+#   ROOT defaults to the c4 root implied by this script's location, as bin/derive-index does.
+#   MODEL may be given on the command line or carried in the meta's `# model:` line; the
+#   command line wins, and `check` says which one it used.
+#
+# IT ALWAYS EXITS 0 WHEN IT COULD MEASURE.  A staleness check that can fail a build is a gate,
+# and a gate is a thing people learn to route around -- and a model quietly read while stale
+# costs more than a model nobody checked.  Exit 2 is reserved for usage and environment
+# trouble: a manifest it cannot open, a meta with no root.
+#
+# DEFAULT OUTPUT IS THE SHORT ONE, on purpose.  A clean forest prints one line.  `--all` turns
+# on the per-atom listing.  Making it easy to ask for more beats making it necessary to ask
+# for less.
+# ---------------------------------------------------------------------------------------------
+
+set -u
+export LC_ALL=C
+me=at1pl
+die() { printf '%s: %s\n' "$me" "$*" >&2 ; exit 2 ; }
+
+TMPD=${TMPDIR:-/tmp}/$me.$$
+mkdir -p "$TMPD" || die "cannot make $TMPD"
+trap 'rm -rf "$TMPD"' EXIT HUP INT TERM
+
+# ---- the three stat facts, each degrading honestly -------------------------------------------
+sha_of() {
+	if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1" 2>/dev/null | cut -d' ' -f1
+	elif command -v shasum >/dev/null 2>&1; then shasum -a 256 "$1" 2>/dev/null | cut -d' ' -f1
+	else echo NOSHA ; fi
+}
+bytes_of() { wc -c < "$1" 2>/dev/null | tr -d ' ' || echo - ; }
+mtime_of() {          # epoch seconds, truncated.  '-' means this host would not say.
+	t=$(find "$1" -maxdepth 0 -printf '%T@\n' 2>/dev/null | head -1)
+	[ -n "$t" ] || t=$(stat -c %Y "$1" 2>/dev/null)
+	[ -n "$t" ] || t=$(stat -f %m "$1" 2>/dev/null)
+	[ -n "$t" ] || { echo - ; return ; }
+	printf '%s\n' "${t%%.*}"
+}
+
+root_of()  { sed -n 's/^# root: //p'  "$1" | head -1 ; }
+model_of() { sed -n 's/^# model: //p' "$1" | head -1 ; }
+rows_of()  { grep -v '^#' "$1" | grep -v '^[[:space:]]*$' ; }
+
+c4root() { CDPATH= cd -- "$(dirname -- "$0")/.." 2>/dev/null && pwd ; }
+
+# ---- collect ---------------------------------------------------------------------------------
+cmd_collect() {
+	man= ; root= ; model=
+	while [ $# -gt 0 ]; do
+		case "$1" in
+			-r) [ $# -ge 2 ] || die "-r needs a ROOT" ; root=$2 ; shift 2 ;;
+			-m) [ $# -ge 2 ] || die "-m needs a MODEL" ; model=$2 ; shift 2 ;;
+			--) shift ; break ;;
+			-*) die "collect: unknown option $1" ;;
+			*) [ -n "$man" ] && die "collect takes one MANIFEST" ; man=$1 ; shift ;;
+		esac
+	done
+	[ -n "$man" ] || die "usage: at1pl collect MANIFEST [-r ROOT] [-m MODEL]"
+	[ -f "$man" ] || die "manifest not found: $man"
+	[ -n "$root" ] || root=$(c4root) || die "cannot find a root; pass -r ROOT"
+	abs=$(CDPATH= cd -- "$root" 2>/dev/null && pwd) || die "no such root: $root"
+
+	printf '# ATOMIC-META v1 -- the forest as measured, for %s\n' "${model:--}"
+	printf '# root: %s\n' "$abs"
+	printf '# collected: %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo unknown)"
+	printf '# model: %s\n' "${model:--}"
+	printf '# columns: PATH\tSHA256\tBYTES\tMTIME\tROLE\tWHEN   (paths relative to root; MTIME is epoch seconds, - if unreadable)\n'
+	when=$(date -u +%Y-%m-%d 2>/dev/null || echo unknown)
+	: > "$TMPD/mpaths"
+	while IFS='	' read -r p role || [ -n "${p:-}" ]; do
+		case "${p:-}" in ''|\#*) continue ;; esac
+		printf '%s\n' "$p" >> "$TMPD/mpaths"
+		f="$abs/$p"
+		if [ -f "$f" ]; then
+			printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$p" "$(sha_of "$f")" "$(bytes_of "$f")" "$(mtime_of "$f")" "${role:--}" "$when"
+		else
+			printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$p" "MISSING-AT-COLLECT" "-" "-" "${role:--}" "$when"
+		fi
+	done < "$man"
+	# A directory is COVERED when the manifest named every file that was in it at collect time.
+	# Only a covered directory can be checked for growth later: in an uncovered one, "the meta
+	# never recorded this" is a fact about the manifest's intent, not about the forest.
+	# dirname, done right: `sed 's|/[^/]*$||'` leaves a bare name UNCHANGED rather than turning
+	# it into ".", so every bare-name manifest silently had no covered directory at all. Caught
+	# by the harness the same minute it was introduced, which is what the harness is for.
+	awk '{ q=$0; if (sub(/\/[^\/]*$/, "", q) == 0) q="."; print q }' "$TMPD/mpaths" | sort -u > "$TMPD/mdirs"
+	while IFS= read -r d; do
+		[ -n "$d" ] || continue
+		[ -d "$abs/$d" ] || continue
+		( cd "$abs" && find "$d" -maxdepth 1 -type f 2>/dev/null | sed 's|^\./||' ) | sort -u > "$TMPD/dpresent"
+		grep -c . "$TMPD/dpresent" >/dev/null 2>&1 || continue
+		awk -v D="$d" 'BEGIN{n=0} { p=$0; q=p; sub(/\/[^\/]*$/,"",q); if (p==q) q="."; if (q==D) print p }' \
+			"$TMPD/mpaths" | sort -u > "$TMPD/dnamed"
+		if cmp -s "$TMPD/dnamed" "$TMPD/dpresent"; then printf '# covered: %s\n' "$d"; fi
+	done < "$TMPD/mdirs"
+}
+
+# ---- check -----------------------------------------------------------------------------------
+cmd_check() {
+	meta= ; model= ; all=0 ; tsv=0 ; grown=0
+	while [ $# -gt 0 ]; do
+		case "$1" in
+			--all) all=1 ; shift ;;
+			--grown) grown=1 ; shift ;;
+			--tsv) tsv=1 ; shift ;;
+			--) shift ; break ;;
+			-*) die "check: unknown option $1" ;;
+			*) if [ -z "$meta" ]; then meta=$1 ; else model=$1 ; fi ; shift ;;
+		esac
+	done
+	[ -n "$meta" ] || die "usage: at1pl check META.tsv [MODEL] [--all] [--tsv]"
+	[ -f "$meta" ] || die "meta not found: $meta"
+
+	root=$(root_of "$meta")
+	[ -n "$root" ] || {
+		printf 'NOROOT  %s\n' "$meta" >&2
+		printf '        This file records shas and mtimes and never says what its paths are\n' >&2
+		printf '        relative to. Nothing here can be re-stated, so nothing here is reported\n' >&2
+		printf '        clean. Add one line -- "# root: /some/where" -- and run this again.\n' >&2
+		exit 2 ; }
+
+	msrc=meta
+	if [ -n "$model" ]; then msrc=argument
+	else model=$(model_of "$meta") ; [ "$model" = "-" ] && model= ; fi
+
+	ok=0 ; touched=0 ; newer=0 ; drift=0 ; gone=0 ; untimed=0 ; unrec=0 ; newest=0
+	: > "$TMPD/rows" ; : > "$TMPD/recorded" ; : > "$TMPD/dirs"
+
+	while IFS='	' read -r p was_sha was_bytes was_mt role when || [ -n "${p:-}" ]; do
+		case "${p:-}" in ''|\#*) continue ;; esac
+		printf '%s\n' "$p" >> "$TMPD/recorded"
+		dirname "$p" >> "$TMPD/dirs"
+		f="$root/$p"
+		if [ ! -f "$f" ]; then
+			printf 'GONE\t%s\twas %s\n' "$p" "$was_sha" >> "$TMPD/rows" ; gone=$((gone+1)) ; continue
+		fi
+		now_sha=$(sha_of "$f") ; now_mt=$(mtime_of "$f") ; now_bytes=$(bytes_of "$f")
+		[ "$now_mt" = - ] || [ "$now_mt" -le "$newest" ] 2>/dev/null || newest=$now_mt
+
+		advanced=unknown
+		if [ "$now_mt" != - ] && [ "$was_mt" != - ]; then
+			if [ "$now_mt" -gt "$was_mt" ] 2>/dev/null; then advanced=yes ; else advanced=no ; fi
+		fi
+
+		if [ "$now_sha" = "$was_sha" ]; then
+			case "$advanced" in
+				yes) printf 'TOUCHED\t%s\tsame bytes, mtime moved %s -> %s\n' "$p" "$was_mt" "$now_mt" >> "$TMPD/rows" ; touched=$((touched+1)) ;;
+				no)  printf 'OK\t%s\t-\n' "$p" >> "$TMPD/rows" ; ok=$((ok+1)) ;;
+				*)   printf 'UNTIMED\t%s\tsha matches; this host would not read an mtime\n' "$p" >> "$TMPD/rows" ; untimed=$((untimed+1)) ; ok=$((ok+1)) ;;
+			esac
+		else
+			case "$advanced" in
+				yes) printf 'NEWER\t%s\t%s -> %s (%s -> %s bytes)\n' "$p" "$was_sha" "$now_sha" "$was_bytes" "$now_bytes" >> "$TMPD/rows" ; newer=$((newer+1)) ;;
+				no)  printf 'DRIFT\t%s\t%s -> %s, mtime did NOT advance\n' "$p" "$was_sha" "$now_sha" >> "$TMPD/rows" ; drift=$((drift+1)) ;;
+				*)   printf 'UNTIMED\t%s\tsha CHANGED; this host would not read an mtime, so NEWER vs DRIFT is unmeasured\n' "$p" >> "$TMPD/rows" ; untimed=$((untimed+1)) ; drift=$((drift+1)) ;;
+			esac
+		fi
+	done < "$meta"
+
+	# Neither the model nor the meta is a constituent of ITSELF. If either lives inside the
+	# forest -- and a model stored beside its atoms is the normal case, not the odd one -- it
+	# must be excluded from the sweep below, or every such model reports itself as an atom
+	# nobody measured. Found by running this tool on h/spells/2026-08-19 rather than on a
+	# fixture, which is why the integration case earns its place in the harness.
+	skip_model= ; skip_meta=
+	if [ -n "$model" ]; then
+		mf0=$model ; [ -f "$mf0" ] || mf0="$root/$model"
+		if [ -f "$mf0" ]; then
+			mdir=$(CDPATH= cd -- "$(dirname -- "$mf0")" 2>/dev/null && pwd) || mdir=
+			case "${mdir:-/dev/null}" in
+				"$root")   skip_model=$(basename -- "$mf0") ;;
+				"$root"/*) skip_model="${mdir#"$root"/}/$(basename -- "$mf0")" ;;
+			esac
+		fi
+	fi
+	qdir=$(CDPATH= cd -- "$(dirname -- "$meta")" 2>/dev/null && pwd) || qdir=
+	[ "${qdir:-/dev/null}" = "$root" ] && skip_meta=$(basename -- "$meta")
+
+	# --- the forest may have GROWN.  No recorded row can show that, so look. -------------------
+	sort -u "$TMPD/dirs" > "$TMPD/dirs.u" ; sort -u "$TMPD/recorded" > "$TMPD/recorded.u"
+	ncov=$(sed -n 's/^# covered: //p' "$meta" | sort -u | wc -l | tr -d ' ')
+	if [ "$grown" = 1 ]; then cp "$TMPD/dirs.u" "$TMPD/sweep"
+	else sed -n 's/^# covered: //p' "$meta" | sort -u > "$TMPD/sweep" ; fi
+	nsweep=$(grep -c . "$TMPD/sweep" 2>/dev/null) ; nsweep=${nsweep:-0}
+	ndirs=$(grep -c . "$TMPD/dirs.u" 2>/dev/null) ; ndirs=${ndirs:-0}
+	while IFS= read -r d; do
+		[ -n "$d" ] || continue
+		[ -d "$root/$d" ] || continue
+		( cd "$root" && find "$d" -maxdepth 1 -type f 2>/dev/null | sed 's|^\./||' )
+	done < "$TMPD/sweep" | sort -u > "$TMPD/present"
+	comm -13 "$TMPD/recorded.u" "$TMPD/present" > "$TMPD/extra" 2>/dev/null || : > "$TMPD/extra"
+	while IFS= read -r x; do
+		[ -n "$x" ] || continue
+		[ "$x" = "$skip_model" ] && continue
+		[ "$x" = "$skip_meta" ] && continue
+		printf 'UNRECORDED\t%s\tin the forest, never measured by this meta\n' "$x" >> "$TMPD/rows"
+		unrec=$((unrec+1))
+	done < "$TMPD/extra"
+
+	# --- the model ------------------------------------------------------------------------------
+	mverdict=UNMEASURED ; mnote='no model named -- pass one, or put "# model:" in the meta'
+	mmt=-
+	if [ -n "$model" ]; then
+		mf=$model ; [ -f "$mf" ] || mf="$root/$model"
+		if [ ! -f "$mf" ]; then
+			mverdict=ABSENT ; mnote="named model is not on disk: $mf"
+		else
+			mmt=$(mtime_of "$mf")
+			if [ "$mmt" = - ] || [ "$newest" = 0 ]; then
+				mverdict=UNTIMED ; mnote="could not compare the model's date with the forest's on this host"
+			elif [ "$mmt" -lt "$newest" ] 2>/dev/null; then
+				mverdict=OLDER ; mnote="the model ($mmt) is older than the newest atom ($newest)"
+			else
+				mverdict=NEWER-THAN-FOREST ; mnote="the model ($mmt) is at least as new as every atom ($newest)"
+			fi
+		fi
+	fi
+
+	moved=$((newer + gone + drift + unrec))
+	if [ "$mverdict" = ABSENT ]; then verdict=PULL ; why="the model is not there at all"
+	elif [ "$moved" -gt 0 ]; then verdict=PULL ; why="$moved atom(s) moved since the meta was collected"
+	elif [ "$mverdict" = OLDER ]; then verdict=PULL ; why="every atom matches the meta, but the model predates the forest it claims to describe"
+	elif [ "$untimed" -gt 0 ]; then verdict=HOLD ; why="nothing changed by sha; $untimed row(s) could not be dated on this host"
+	else verdict=HOLD ; why="nothing in the forest has moved since the meta was collected"
+	fi
+
+	if [ "$tsv" = 1 ]; then
+		printf 'verdict\tdetail\tpath\tnote\n'
+		printf 'MODEL\t%s\t%s\t%s\n' "$mverdict" "${model:--}" "$mnote"
+		sort "$TMPD/rows" | while IFS='	' read -r v p n; do printf 'ATOM\t%s\t%s\t%s\n' "$v" "$p" "$n"; done
+		printf 'TOTAL\t%s\tok=%s touched=%s newer=%s drift=%s gone=%s unrecorded=%s untimed=%s\t%s\n' \
+			"$verdict" "$ok" "$touched" "$newer" "$drift" "$gone" "$unrec" "$untimed" "$why"
+		return 0
+	fi
+
+	if [ "$all" = 1 ]; then
+		sort "$TMPD/rows" | while IFS='	' read -r v p n; do printf '%-11s %s\n' "$v" "$p"
+			[ "$n" = - ] || printf '            %s\n' "$n" ; done
+	else
+		grep -v '^OK	' "$TMPD/rows" 2>/dev/null | sort | while IFS='	' read -r v p n; do
+			printf '%-11s %s\n' "$v" "$p"
+			[ "$n" = - ] || printf '            %s\n' "$n" ; done
+	fi
+	printf -- '-- root %s\n' "$root"
+	printf -- '-- %s ok, %s touched, %s NEWER, %s drift, %s gone, %s unrecorded, %s untimed --\n' \
+		"$ok" "$touched" "$newer" "$drift" "$gone" "$unrec" "$untimed"
+	if [ "$nsweep" -lt "$ndirs" ]; then
+		printf -- '-- growth checked in %s of %s recorded directory(ies): the rest were named in\n' "$nsweep" "$ndirs"
+		printf -- '   part, so "never recorded" there would describe the manifest, not the forest.\n'
+		printf -- '   --grown sweeps them anyway.\n'
+	fi
+	[ -n "$model" ] && printf -- '-- model %s: %s (%s; named by the %s)\n' "$model" "$mverdict" "$mnote" "$msrc"
+	printf '%s: %s.\n' "$verdict" "$why"
+	if [ "$verdict" = PULL ]; then
+		printf '      Pull the model from atomic. This program does not pull; pulling is the\n'
+		printf '      keeper'"'"'s verb and a re-derive that nobody asked for is a write nobody reviewed.\n'
+	fi
+	[ "$all" = 1 ] || [ "$ok" = 0 ] || printf '      (%s row(s) read OK and were not listed; --all lists every atom.)\n' "$ok"
+	return 0
+}
+
+# ---- --prove-red ------------------------------------------------------------------------------
+# The check's one claim is "no atom has moved since the meta was collected." Prove it can say no:
+# plant an atom that advances, one that changes without advancing, one that vanishes, one that
+# appears, and a model older than its forest -- then require every single one to be seen.
+cmd_red() {
+	d="$TMPD/red" ; mkdir -p "$d/forest" || die "cannot make fixture"
+	printf 'stays the same\n'       > "$d/forest/steady.txt"
+	printf 'will advance\n'         > "$d/forest/advances.txt"
+	printf 'will change sideways\n' > "$d/forest/sideways.txt"
+	printf 'will vanish\n'          > "$d/forest/vanishes.txt"
+	printf 'the model\n'            > "$d/model.md"
+	printf 'steady.txt\tcontrol\nadvances.txt\tatom\nsideways.txt\tatom\nvanishes.txt\tatom\n' > "$d/manifest"
+	# Backdate the whole fixture so "newer" has somewhere to move to.
+	find "$d" -exec touch -t 202601010000 {} + 2>/dev/null || :
+	"$0" collect "$d/manifest" -r "$d/forest" -m "$d/model.md" > "$d/meta.tsv" || die "collect failed"
+
+	printf 'advanced\n'  > "$d/forest/advances.txt"      # sha changes, mtime moves forward
+	touch "$d/forest/advances.txt" 2>/dev/null || :
+	printf 'sideways!\n' > "$d/forest/sideways.txt"      # sha changes, mtime pinned back
+	touch -t 202601010000 "$d/forest/sideways.txt" 2>/dev/null || :
+	rm -f "$d/forest/vanishes.txt"                        # GONE
+	printf 'arrived later\n' > "$d/forest/appeared.txt"   # UNRECORDED
+
+	out=$("$0" check "$d/meta.tsv" --all 2>&1) ; rc=$?
+	fail=0
+	want() { case "$out" in *"$1"*) printf 'prove-red  RED  %s\n' "$2" ;;
+		*) printf 'prove-red  FAIL %s\n' "$2" >&2 ; fail=$((fail+1)) ;; esac ; }
+	want 'NEWER       advances.txt'      'an atom that advanced is NEWER -- the condition in the rule'
+	want 'DRIFT       sideways.txt'      'an atom that changed WITHOUT advancing is DRIFT, not NEWER'
+	want 'GONE        vanishes.txt'      'an atom that vanished is GONE, not silently OK'
+	want 'UNRECORDED  appeared.txt'      'an atom the meta never measured is UNRECORDED'
+	want 'OK          steady.txt'        'the control atom still reads OK, so this is not a tool that reds everything'
+	want 'PULL:'                         'the model verdict is PULL'
+	[ "$rc" = 0 ] || { printf 'prove-red  FAIL exit %s on a stale forest. A check that can fail a build\n' "$rc" >&2
+	                   printf '                is a check people route around; this one must exit 0.\n' >&2 ; fail=$((fail+1)) ; }
+
+	# And the other direction: an untouched forest must NOT report PULL.
+	mkdir -p "$d/calm" ; printf 'quiet\n' > "$d/calm/a.txt"
+	printf 'a.txt\tatom\n' > "$d/cman"
+	find "$d/calm" "$d/cman" -exec touch -t 202601010000 {} + 2>/dev/null || :
+	"$0" collect "$d/cman" -r "$d/calm" -m "$d/model.md" > "$d/cmeta.tsv"
+	touch "$d/model.md" 2>/dev/null || :
+	cout=$("$0" check "$d/cmeta.tsv" 2>&1)
+	case "$cout" in *'HOLD:'*) printf 'prove-red  RED  a forest that did not move reports HOLD, not PULL\n' ;;
+		*) printf 'prove-red  FAIL a quiet forest did not report HOLD -- this tool cries wolf\n' >&2 ; fail=$((fail+1)) ;; esac
+
+	# And the root rule: a meta with no root is refused, not blessed.
+	grep -v '^# root: ' "$d/meta.tsv" > "$d/noroot.tsv"
+	"$0" check "$d/noroot.tsv" >/dev/null 2>&1 ; nrc=$?
+	[ "$nrc" = 2 ] && printf 'prove-red  RED  a meta with no declared root is refused (exit 2), not reported clean\n' \
+	 || { printf 'prove-red  FAIL a meta with no root exited %s; it should be refused with 2\n' "$nrc" >&2 ; fail=$((fail+1)) ; }
+
+	printf '\n'
+	if [ "$fail" = 0 ]; then
+		printf 'prove-red PASS: every planted fault was seen, the control stayed OK, a quiet\n'
+		printf 'forest stayed HOLD, and a rootless meta was refused.\n'
+		return 0
+	fi
+	printf 'prove-red FAILED: %s planted fault(s) went unnoticed. Do not trust this check.\n' "$fail" >&2
+	return 1
+}
+
+case "${1:-}" in
+	collect) shift ; cmd_collect "$@" ;;
+	check)   shift ; cmd_check   "$@" ;;
+	--prove-red) cmd_red ;;
+	-h|--help|"") sed -n '2,87p' "$0" ; exit 0 ;;
+	*) die "unknown command '$1'; try collect, check, --prove-red, -h" ;;
+esac

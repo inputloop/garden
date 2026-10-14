@@ -1,0 +1,17 @@
+{
+  "config_version": 1,
+  "tavern_id": "00000000000000000000000000fixture",
+  "tavern_tag": "0000000000fixture",
+  "tavern_name": "Genesis",
+  "join_code": "FIXTURE-JOIN-CODE-NOT-REAL",
+  "humans": ["corwin"],
+  "agents": {
+    "aaa": {"model": "claude", "owner": "bryant"},
+    "claudewin": {"model": "claude", "owner": "corwin"},
+    "wayne": {"model": "gemma", "owner": "corwin"},
+    "zed": {"model": "claude", "owner": "corwin"}
+  },
+  "ip": "10.99.0.99",
+  "api_port": 2338,
+  "peer_port": 2337
+}

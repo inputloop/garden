@@ -1,0 +1,7 @@
+495ed560ebef3ee91ac365735c8529dcdf2c1b828af4fa07d01568d064bd572a  ./.arc/2026-09/SKILL-2026-09-23_pre-header-pass.md.asc
+b7a41669d109fe38bab695931703d7455c68bda96d09fddc8ae440a17d3fef25  ./.arc/2026-09/signature-2026-09-23_pre-header-pass.asc
+b67e15a6de16960af14aada54585f96c1f3dc9af3a3459e35a23a72510f89712  ./.arc/2026-09/skill-manifest-2026-09-23_pre-header-pass
+2dc78438aa547a34f21f6e48d0305f81dd0b8c0b8970090a72b81f6c61032ce5  ./SKILL.md
+280ee767526bf45012cc813aa4ae00b548cedbb28ad844316f853c39757a0d94  ./references/CONSENT-RECORD-TEMPLATE.md
+18977aa20d879e856911abde7ccafb6a03fed15bfde9444822091b01b132277e  ./references/VERIFY-CONSENT.md
+21cb446b9530d7d1f506a3ce483a4d1bff7a0094f2a406a99988ec3ae0305e51  ./scripts/verify_consent.sh

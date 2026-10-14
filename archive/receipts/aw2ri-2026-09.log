@@ -1,0 +1,5 @@
+2026-09-23T08:46:16Z	Mentat	KEEP Inbox/mcp-probe-2026-09-23/mcp-probe.out.txt -> /sessions/rcw-01ghfehnix5frjceefsxy5nb/mnt/AS4CE0001/archive/2026-09/mcp-probe.out-2026-09-23_Archived-by-Mentat.txt sha16=eb8b0239617f6d0f sig=none
+2026-09-23T08:46:16Z	Mentat	RETIRE Inbox/mcp-probe-2026-09-23/mcp-probe.out.txt removed after archive
+2026-09-23T08:46:16Z	Mentat	KEEP Inbox/mcp-probe-2026-09-23/mcp-probe2.out.txt -> /sessions/rcw-01ghfehnix5frjceefsxy5nb/mnt/AS4CE0001/archive/2026-09/mcp-probe2.out-2026-09-23_Archived-by-Mentat.txt sha16=aea4a9588717ad67 sig=none
+2026-09-23T08:46:16Z	Mentat	RETIRE Inbox/mcp-probe-2026-09-23/mcp-probe2.out.txt removed after archive
+2026-09-23T08:46:42Z	Mentat	NOTE the two KEEP lines above name this VM's mount (/sessions/.../mnt/AS4CE0001/archive); on avalon that root is /f/claude/AS4CE/AS4CE0001/archive. aw2ri now writes archived paths relative to ARCHIVE_ROOT, from this line on

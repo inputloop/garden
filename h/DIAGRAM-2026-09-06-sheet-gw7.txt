@@ -1,0 +1,35 @@
+# character sheet · PERSONA-gw7.tsv
+
+## context: cs-intrinsics
+- cs-intrinsics (store/tool/skill)
+- name · gw7.bru.st (file or open question)
+- shortname · gw7, the bakery (file or open question)
+- class · build host (jammy-family transport h (file or open question)
+- race · x86_64 · Ubuntu 22.04.5 LTS · kernel  (file or open question)
+- rank · one of three transport hosts (gw14, g (file or open question)
+- special · the stamp: a dump named by the bin (file or open question)
+- experience · first celebrated capability lan (file or open question)
+- gold · 55,011,524 bytes (the loaf) + the rin (file or open question)
+- actor · host (system actor; bad-guy roll tak (file or open question)
+
+## context: cs-skills
+- cs-skills (store/tool/skill)
+- compile against own libs · ./configure --wit (file or open question)
+- wrap a staged tree · dpkg-deb --build --root (file or open question)
+- stamp · ./src/emacs --fingerprint → emacs-<f (file or open question)
+- refuse a foreign dump · REACH-NORUN: desired (file or open question)
+- warn up front · deb-src commented + mis-temp (file or open question)
+- name the reach that would be right · added b (file or open question)
+
+## context: cs-posessions
+- cs-posessions (store/tool/skill)
+- he2ma · the channel resolver; also how a com (file or open question)
+- the two run-cards · RUNCARD-unpack.org · RUN (file or open question)
+- the severed recipe bundle · /c4/emacs-recipe (file or open question)
+- the workshop · /root/emacs-build/emacs-31.1/ (file or open question)
+- the staged install · /c4/emacs-build/stage/  (file or open question)
+- the loaf · /c4/emacs-build/emacs-31.1-c4buil (file or open question)
+- the cache · /c4/emacs-cache/ — the loaf, ser (file or open question)
+- garb (toolchain) · build-essential · libncur (file or open question)
+
+## relationships

@@ -1,0 +1,8 @@
+polygram — authors and maintainers
+
+Corwin <mplscorwin@gmail.com>   maintainer, design, curation
+Mentat (Claude, in Cowork)      co-author of code and documentation
+
+polygram is developed with Anthropic's Claude in Cowork mode. Authorship of
+upstream "externs" cloned into the workspace remains with their respective
+upstreams and is not claimed here.

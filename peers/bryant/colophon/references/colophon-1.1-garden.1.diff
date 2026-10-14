@@ -1,0 +1,512 @@
+--- colophon.py (1.1, Bryant Frankford)
++++ colophon.py (1.1-garden.1)
+@@ -1,32 +1,46 @@
+ #!/usr/bin/env python3
+ # SPDX-FileCopyrightText: 2026 Bryant Frankford <nathanielfrankford@gmail.com> and Contributors
+-# SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later
++# SPDX-FileCopyrightText: 2026 Corwin Brust <corwin@bru.st> and Contributors
++# SPDX-License-Identifier: GPL-3.0-or-later
++# Bryant's colophon 1.1 is GPL-3.0-or-later OR LGPL-3.0-or-later. This edition is co-made, so by
++# colophon's own rule it carries the terms both makers offer: GPL-3.0-or-later. The LGPL option
++# returns to the whole file when Corwin offers it for his changes (one line in the parties file).
+ """colophon.py: stamp and check the garden's license terms, and name every maker (power-glove's Tag).
+ 
+-The terms are the keeper's word of 2026-10-05: code GPL-3.0-or-later OR
+-LGPL-3.0-or-later; prose and art CC-BY-SA-4.0; copyright "Bryant Frankford
+-<nathanielfrankford@gmail.com> and Contributors". Every maker found on evidence
++Garden edition (1.1-garden.1, Corwin Brust's garden, for Bryant): Bryant's 1.1 with the attribution
++ladder (attribute <- credit <- acknowledge <- thank) and no one's terms in the code. The keeper and
++every party, with the terms each offers, come from .colophon-parties.json (or --parties FILE); with
++none, colophon says NOT CHECKED. Evidence of ideas and lineage CREDITS a party (the credits must
++name them); evidence of their words in the work ATTRIBUTES them (the copyright must name them):
++a notice, a byline, a made-or-derived statement, git history, a parcel copy, or (with --sources)
++more than 15 lines first seen in that party's own sources. A check whose second reader could not
++run exits 2 unless --one-reader says the keeper accepts one. Nothing is fetched without --fetch.
++
++Bryant's 1.1 docstring, as he wrote it: "The terms are the keeper's word of 2026-10-05: code
++GPL-3.0-or-later OR LGPL-3.0-or-later; prose and art CC-BY-SA-4.0; copyright "Bryant Frankford
++<nathanielfrankford@gmail.com> and Contributors"." Every maker found on evidence
+ (a notice, a byline, a lineage line, git history, a parcel) is named, and work
+ two makers share carries only the terms both offer. Someone else's notice is
+ never replaced, secrets are never stamped, and a check that could not run says
+ NOT CHECKED, never a silent pass. Stdlib only.
+ 
+ usage:
+-  colophon.py who   ROOT [--parcels DIR]... [--parties FILE] [--no-git] [--json]
++  colophon.py who   ROOT [--parcels DIR]... [--parties FILE] [--sources KEY=DIR[@DATE]]... [--no-git] [--json]
+   colophon.py plan  ROOT [--joint "NAME <EMAIL>"]... [--toml-only] [--art-is-ours] [--parcels DIR]...
+-                         [--parties FILE] [--no-git]
+-  colophon.py apply ROOT [the plan flags] [--year YYYY]
+-  colophon.py check ROOT [--parcels DIR]... [--parties FILE] [--no-git]
+-  colophon.py texts DEST [ID ...]
++                         [--parties FILE] [--sources KEY=DIR[@DATE]]... [--no-git]
++  colophon.py apply ROOT [the plan flags] [--year YYYY] [--fetch]
++  colophon.py check ROOT [--parcels DIR]... [--parties FILE] [--sources KEY=DIR[@DATE]]... [--no-git]
++                         [--one-reader]
++  colophon.py texts DEST [ID ...] [--fetch]
+   colophon.py --selftest [--prove-red]
+ exit: 0 clean; 1 gaps, holds, asks or refusals; 2 could not check.
+ """
+ import difflib, fnmatch, hashlib, json, os, re, shutil, subprocess, sys, tempfile, time, urllib.request
+ 
+-VERSION = "1.1"
+-HOLDER = "Bryant Frankford <nathanielfrankford@gmail.com> and Contributors"
+-CODE = "GPL-3.0-or-later OR LGPL-3.0-or-later"
+-PROSE = "CC-BY-SA-4.0"
++VERSION = "1.1-garden.1"
++HOLDER = CODE = PROSE = None   # the keeper's, read from the parties file (use_keeper); never written here
++FETCH = False                  # license texts are fetched only with --fetch
++LADDER_LINES = 15              # rung 1, his number: more than 15 lines from one party's sources
+ TEXTS = {  # steward copies, pinned 2026-10-05 (a fetched text must match its pin)
+     "GPL-3.0-or-later": ("https://www.gnu.org/licenses/gpl-3.0.txt",
+                          "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"),
+@@ -77,24 +91,21 @@
+ TAG = "SPDX-" "License-Identifier:"  # split so readers of this file do not take it for its own tag
+ CTAG = "SPDX-" "FileCopyrightText:"
+ FTAG = "SPDX-" "FileContributor:"
+-KEEPER = "bryant"
+-# Who may hold a share of the work and the terms each has offered, in their own word (dated). A
+-# .colophon-parties.json at the root, or --parties FILE, adds or overrides entries on the keeper's word.
+-PARTIES = {
+-    "bryant": {"line": HOLDER, "names": ["Bryant Frankford", "Bryant"], "emails": ["nathanielfrankford@gmail.com"],
+-               "agents": ["Alfred", "bryant-claude"],
+-               "terms": {"code": ["GPL-3.0-or-later", "LGPL-3.0-or-later"], "prose": ["CC-BY-SA-4.0"],
+-                         "art": ["CC-BY-SA-4.0"]},
+-               "said": "the keeper's word, 2026-10-05"},
+-    "corwin": {"line": "Corwin Brust <corwin@bru.st>", "names": ["Corwin Brust", "Corwin"],
+-               "emails": ["corwin@bru.st"], "agents": ["Claudewin", "corwin-claude"],
+-               "terms": {"code": ["GPL-3.0-or-later"], "prose": ["CC-BY-SA-4.0"]},
+-               "said": "his parcel of 2026-10-04; the LGPL offer is Bryant's alone"},
+-}
++KEEPER = None
++# Who may hold a share of the work and the terms each has offered, in their own word (dated). Garden
++# edition: no one is written here. A .colophon-parties.json at the root, or --parties FILE, names the
++# parties, and "_keeper" (or a party's "keeper": true) says whose garden it is. See
++# references/parties.example.json for the shape.
++PARTIES = {}
+ # The keeper's answers of 2026-10-05: work derived from someone's, or built on their ideas or disciplines, names
+ # them as a co-owner, and its license narrows to what every owner offers. ("credit" would name a contributor.)
+ POLICY = dict.fromkeys(("notice", "byline", "made", "derived", "lineage", "idea", "joint", "git", "parcel",
+                         "similar"), "owner")
++# Garden edition: the attribution ladder. Copyright covers words and code, not ideas: evidence that a
++# party's ideas, disciplines or lineage shaped the work CREDITS them (rung 2, named in the credits);
++# evidence that their words are in it ATTRIBUTES them (rung 1, named in its copyright). A parties file
++# may set "_policy" to change a kind, on the keeper's word.
++POLICY.update({"idea": "credit", "lineage": "credit", "lines": "owner", "quote": "credit", "credited": "credit"})
+ NOT_MAKERS = re.compile(r"(?i)^(claude|anthropic|copilot|chatgpt|openai|gemini|github|dependabot|renovate|mentat"
+                         r"|polygram)\b|\[bot\]|noreply@anthropic\.com")
+ NAME = r"[A-Z][A-Za-z.\-]+(?: [A-Z][A-Za-z.\-]+)?"
+@@ -294,7 +305,17 @@
+         if m:
+             out += [(w, "lineage", no, s[:90]) for w in POSSESSIVE.findall(m.group("rest"))]
+     flush()
+-    return out
++    # Garden edition: a Credits, Acknowledgements or Thanks section is where the ladder's lower
++    # rungs are written, so what it says of someone is credit, never a claim that they made the file.
++    inside, credits_at = False, set()
++    for no, raw in enumerate(rows, 1):
++        h = re.match(r"^\s*(#{1,6}|\*{1,6})\s+(.*)$", raw)
++        if h:
++            inside = re.search(r"(?i)\b(credits?|acknowledge?ments?|thanks)\b", h.group(2)) is not None
++            continue
++        if inside:
++            credits_at.add(no)
++    return [(w, "credited" if no in credits_at and how != "notice" else how, no, snip) for w, how, no, snip in out]
+ 
+ 
+ def header_holders(text, lines=40):
+@@ -419,6 +440,50 @@
+     return ctx
+ 
+ 
++CREDIT_FILES = re.compile(r"^(README|CREDITS|AUTHORS|ACKNOWLEDGE?MENTS|THANKS|NOTICE|FROM)", re.I)
++
++
++def add_sources(ctx, root, specs):
++    """--sources KEY=DIR[@DATE]: the lines of the work first seen in each party's own sources (at1ld,
++    beside this script). More than 15 in a file attributes that party (rung 1); 4 to 15 credits them."""
++    ctx["lines"], ctx["lines_note"] = {}, "sources: none given (rung 1 read from statements only)"
++    if not specs:
++        return
++    sys.path.insert(0, HERE)
++    import at1ld
++    corpora, keys = [], []
++    for spec in specs:
++        key, _, where = spec.partition("=")
++        if key not in PARTIES or not where:
++            raise ValueError("%r: KEY must be a party in the parties file, then =DIR[@DATE]" % spec)
++        party = PARTIES[key]
++        who = party["names"][0] + (" <%s>" % party["emails"][0] if party.get("emails") else "")
++        corpora.append(at1ld.load_corpus(who + "=" + where))
++        keys.append(key)
++    counts, contested = at1ld.count_work(root, corpora)
++    agg = {}
++    for (i, rel), n in counts.items():   # several sources for one party add up
++        agg[(keys[i], rel)] = agg.get((keys[i], rel), 0) + n
++    for (key, rel), n in sorted(agg.items()):
++        ctx["lines"].setdefault(rel, []).append((key, n))
++    ctx["contested"] = contested
++    ctx["lines_note"] = "sources: %s (first seen decides; same-day lines count for no one)" % ", ".join(keys)
++    if KEEPER not in keys:
++        ctx["lines_note"] += "; the keeper's own sources not given, so a line both hold counts for the other"
++
++
++def credits_text(root):
++    out = []
++    for p, rel in walk(root):
++        if "/" not in rel and CREDIT_FILES.match(os.path.basename(rel)):
++            out.append(read_text(p)[0] or "")
++    return "\n".join(out)
++
++
++def credited(text, key):
++    return any(re.search(r"\b" + re.escape(n) + r"\b", text) for n in PARTIES[key]["names"] if len(n) > 2)
++
++
+ def attribution(rel, text, raw, kind, ctx):
+     """Who made this file, on what evidence: owners (the keeper first), evidence, makers nobody has named."""
+     rp = lambda p: os.path.relpath(p, ctx["root"]).replace(os.sep, "/")
+@@ -429,7 +494,9 @@
+     found = []
+     sd = skill_dir_of(rel, ctx["skill_dirs"])
+     if sd is not None and os.path.basename(rel) != "SKILL.md":
+-        found += ctx["skill_ev"].get(sd, [])
++        # Garden edition: a copyright notice speaks for its own file. What a SKILL.md says of the
++        # whole skill (derived from, a byline, a lineage) still reaches every file of it.
++        found += [e for e in ctx["skill_ev"].get(sd, []) if e[1] != "notice"]
+     if text is not None:
+         found += [(w, how, "%s:%d" % (rel, no), snip) for w, how, no, snip in scan(text, kind)]
+         mine = text.splitlines()
+@@ -440,7 +507,13 @@
+                 found.append(("@" + party, "similar", rp(src), "an edited copy"))
+     for (name, email), ys in sorted(ctx["git"].get(rel, {}).items()):
+         found.append(("%s <%s>" % (name, email), "git", ",".join(sorted(ys)), "commits"))
++    for key, n in ctx.get("lines", {}).get(rel, []):   # garden edition: the ladder's rung 1, by count
++        if n > LADDER_LINES:
++            found.append(("@" + key, "lines", "%d lines" % n, "first seen in their own sources"))
++        elif n >= 4:
++            found.append(("@" + key, "quote", "%d lines" % n, "first seen in their own sources"))
+     evidence, unknown, years, noticed, notices = [], [], {}, set(), 0
++    credit = []
+     for who, how, where, snip in found:
+         key = who[1:] if who.startswith("@") else resolve(who)
+         if how == "notice":
+@@ -457,13 +530,16 @@
+             years.setdefault(key, set()).update(where.split(","))
+         if POLICY.get(how, "owner") == "owner":
+             evidence.append((key, how, where, snip))
++        elif key != KEEPER:
++            credit.append((key, how, where, snip))
+     foreign = notices > 0 and KEEPER not in noticed
+     owners = []
+     for k in ([] if foreign else [KEEPER]) + [e[0] for e in evidence]:
+         if k not in owners:
+             owners.append(k)
++    credit = [c for c in credit if c[0] not in owners]
+     return {"owners": owners, "evidence": evidence, "unknown": unknown, "foreign": foreign, "sole": False,
+-            "years": years}
++            "years": years, "credit": credit}
+ 
+ 
+ def offer(owners, kind):
+@@ -534,7 +610,14 @@
+             raise ValueError("no such file: " + path)
+         return None
+     data = json.load(open(p, encoding="utf-8"))
++    global KEEPER
++    if isinstance(data.get("_policy"), dict):
++        POLICY.update({k: v for k, v in data["_policy"].items() if v in ("owner", "credit")})
++    if isinstance(data.get("_keeper"), str):
++        KEEPER = data["_keeper"]
+     for k, v in data.items():
++        if k.startswith("_"):
++            continue
+         if not isinstance(v, dict) or not v.get("names"):
+             raise ValueError("party %r needs a list of names" % k)
+         v.setdefault("emails", [])
+@@ -543,9 +626,25 @@
+         v.setdefault("line", v["names"][0] + (" <%s>" % v["emails"][0] if v["emails"] else ""))
+         v.setdefault("said", "the parties file")
+         PARTIES[k] = v
++        if v.get("keeper") is True:
++            KEEPER = k
+     return p
+ 
+ 
++def use_keeper():
++    """Set HOLDER, CODE and PROSE from the keeper's own entry; (ok, why)."""
++    global HOLDER, CODE, PROSE
++    if not KEEPER or KEEPER not in PARTIES:
++        return False, ("no keeper: name one in .colophon-parties.json (\"_keeper\": KEY); colophon carries "
++                       "no one's terms of its own")
++    t = PARTIES[KEEPER].get("terms", {})
++    if not t.get("code") or not t.get("prose"):
++        return False, "the keeper %r has not declared terms for both code and prose" % KEEPER
++    HOLDER = PARTIES[KEEPER]["line"]
++    CODE, PROSE = " OR ".join(t["code"]), " OR ".join(t["prose"])
++    return True, ""
++
++
+ def classify(root, toml_only=False, art_is_ours=False, ctx=None):
+     ctx = ctx if ctx is not None else context(root)
+     plan, by_hand, std = [], declared_by_hand(root), {CODE, PROSE}
+@@ -734,6 +833,9 @@
+         b = open(local, "rb").read()
+         if sha(b) == pin:
+             return b, "skill copy"
++    if not FETCH:
++        say("  NOT CHECKED " + ident + ": no pinned copy beside the skill, and --fetch was not given")
++        return None, None
+     try:
+         req = urllib.request.Request(url, headers={"User-Agent": "colophon/" + VERSION})
+         b = urllib.request.urlopen(req, timeout=30).read()
+@@ -776,6 +878,10 @@
+         makers = [PARTIES[k]["names"][0] for k in at["owners"]]
+         say("  %-8s %s%s%s%s" % (act, rel, ("  [" + ident + "]") if ident else "", ("  " + note) if note else "",
+                                 ("  makers: " + ", ".join(makers)) if at["owners"] != [KEEPER] and makers else ""))
++        for k in sorted({c[0] for c in at.get("credit", [])}):
++            c = next(x for x in at["credit"] if x[0] == k)
++            say("  CREDIT   %s  %s (%s at %s): name them in the credits, not in the copyright" % (
++                rel, PARTIES[k]["names"][0], c[1], c[2]))
+     have = set(os.listdir(os.path.join(root, "LICENSES"))) if os.path.isdir(os.path.join(root, "LICENSES")) else set()
+     need = sorted(i for i in used_ids(plan) if i + ".txt" not in have)
+     say("plan: %d file(s): %s; license texts to add: %s" % (len(plan), counts(plan), ", ".join(need) or "none"))
+@@ -862,12 +968,13 @@
+     return None
+ 
+ 
+-def cmd_check(root, ctx=None):
++def cmd_check(root, ctx=None, one_reader=False):
+     if not os.path.isdir(root):
+         say("NOT CHECKED: cannot read " + root)
+         return 2
+     ctx = ctx if ctx is not None else context(root)
+     bad, globs, used = 0, toml_paths(root), set()
++    creds, uncredited = credits_text(root), {}
+     for p, rel in walk(root):
+         if SECRET_RE.search(rel) and not rel.endswith(".example"):
+             say("  REFUSED  " + rel + "  (secret-shaped: it must not ship)")
+@@ -919,6 +1026,9 @@
+                 if k != KEEPER and alt not in PARTIES[k].get("terms", {}).get(kind, []):
+                     say("  TERMS    %s  offers %s, which %s has not offered" % (rel, alt, PARTIES[k]["names"][0]))
+                     bad += 1
++        for k, how, where, snip in at.get("credit", []):
++            if not credited(creds, k):
++                uncredited.setdefault(k, []).append("%s (%s at %s)" % (rel, how, where))
+     lic = os.path.join(root, "LICENSES")
+     for i in sorted(used):
+         f = os.path.join(lic, i + ".txt")
+@@ -928,6 +1038,11 @@
+         elif i in TEXTS and sha(open(f, "rb").read()) != TEXTS[i][1]:
+             say("  DIFFERS  LICENSES/" + i + ".txt is not the pinned steward copy; compare by hand")
+             bad += 1
++    for k, where in sorted(uncredited.items()):
++        say("  UNCREDITED %s shaped %d file(s) (first: %s), and the credits (README, CREDITS, AUTHORS, "
++            "ACKNOWLEDGEMENTS, THANKS, NOTICE or FROM at the top) do not name them" % (
++                PARTIES[k]["names"][0], len(where), where[0]))
++        bad += 1
+     second, detail = second_reader(root)
+     if second == "fail" and bad == 0:
+         say("  DISAGREE colophon reads clean, reuse lint does not: a finding either way")
+@@ -936,17 +1051,26 @@
+         bad += 1
+     if second == "pass" and bad:
+         say("  DISAGREE reuse lint passes what colophon flagged: read both")
+-    say("check: %s; second reader (reuse lint): %s" % ("clean" if bad == 0 else "%d finding(s)" % bad, second))
+-    return 0 if bad == 0 else 1
++    say("check: %s; second reader (reuse lint): %s; %s" % ("clean" if bad == 0 else "%d finding(s)" % bad, second,
++                                                             ctx.get("lines_note", "sources: none given")))
++    if bad:
++        return 1
++    if second not in ("pass", "fail") and not one_reader:
++        say("check: NOT CHECKED as a whole: one reader read it clean and the second could not run; "
++            "--one-reader says the keeper accepts one")
++        return 2
++    return 0
+ 
+ 
+ def cmd_who(root, ctx, as_json=False):
+     """Every maker of every file, on evidence; the files only the keeper made are counted, not listed."""
+-    rows, tally, gaps = [], {}, 0
++    rows, tally, gaps, credits = [], {}, 0, {}
+     for p, rel in walk(root):
+         kind = kind_of(rel)[0]
+         text, raw = read_text(p)
+         at = attribution(rel, text, raw, kind, ctx)
++        for k, how, where, snip in at.get("credit", []):
++            credits.setdefault(PARTIES[k]["names"][0], []).append({"file": rel, "how": how, "where": where})
+         for k in at["owners"]:
+             tally[k] = tally.get(k, 0) + 1
+         notes = []
+@@ -976,8 +1100,9 @@
+     parcels = [[PARTIES[k]["names"][0], os.path.relpath(d, ctx["root"]).replace(os.sep, "/")] for k, d in ctx["parcel_dirs"]]
+     if as_json:
+         print(json.dumps({"root": root, "files": rows, "files_by_maker": summary, "git": ctx["git_note"],
+-                          "parcels": parcels, "policy": "the keeper's word of 2026-10-05: derived work and ideas "
+-                          "make co-owners; co-made work carries the terms every maker offers"}, indent=1))
++                          "parcels": parcels, "policy": "the attribution ladder: words and code in the work make "
++                          "co-owners (rung 1); ideas, disciplines and lineage are credited (rung 2); co-made work "
++                          "carries the terms every maker offers", "credit": credits}, indent=1))
+         return 1 if gaps else 0
+     keeper = PARTIES[KEEPER]["names"][0]
+     for r in rows:
+@@ -993,6 +1118,9 @@
+                 say("           %s, %s%s" % (e["how"], e["where"], ('  "' + e["text"] + '"') if e["text"] else ""))
+         for nt in r["notes"]:
+             say("  NOTE     %s  %s" % (r["file"], nt))
++    for name, items in sorted(credits.items()):
++        say("  CREDIT   %s shaped %d file(s): %s" % (name, len(items), ", ".join(
++            sorted({i["file"].split("/")[1] if i["file"].startswith("skills/") else i["file"] for i in items}))[:300]))
+     say("who: %s; %s; parcels: %s" % (", ".join("%s %d file(s)" % kv for kv in summary.items()), ctx["git_note"],
+                                       ", ".join("%s (%s)" % (d, k) for k, d in parcels) or "none"))
+     return 1 if gaps else 0
+@@ -1016,6 +1144,17 @@
+ 
+ # ---------------------------------------------------------------- self-test
+ def selftest(prove_red=False):
++    # Garden edition: the parties are read from references/parties.example.json (beside this skill),
++    # the declaration a keeper copies; the code carries none. Without it the selftest is NOT CHECKED.
++    ex = os.path.join(HERE, "..", "references", "parties.example.json")
++    if not os.path.exists(ex):
++        say("NOT CHECKED: selftest needs references/parties.example.json beside this skill")
++        return 2
++    load_parties(None, ex)
++    ok_k, why = use_keeper()
++    if not ok_k:
++        say("NOT CHECKED: " + why)
++        return 2
+     year, n = "2026", [0]
+     t = tempfile.mkdtemp(prefix="colophon-")
+ 
+@@ -1067,7 +1206,7 @@
+     quiet(lambda: cmd_apply(t, [], False, False, year))
+     ok(before == {r: rd(r) for _, r in walk(t) if not r.endswith(".png")}, "apply twice changes nothing")
+     texts = all(os.path.exists(os.path.join(HERE, "LICENSES", i + ".txt")) for i in TEXTS)
+-    rc = quiet(lambda: cmd_check(t))
++    rc = quiet(lambda: cmd_check(t, one_reader=True))
+     ok(rc == 1, "check flags the secret, the undeclared foreign file and the unowned art")
+     os.remove(os.path.join(t, "WIRE-SECRETS.md"))
+     os.remove(os.path.join(t, "logo.png"))
+@@ -1080,8 +1219,11 @@
+     block = open(os.path.join(t, "REUSE.toml")).read().split("# colophon: end")[0]
+     ok("vendor/legacy.js" not in block, "a hand-written declaration is respected, never re-declared")
+     if texts:
+-        rc = quiet(lambda: cmd_check(t))
++        rc = quiet(lambda: cmd_check(t, one_reader=True))
+         ok(rc == 0, "check reads the tree clean once each file's terms are written down")
++        if not shutil.which("reuse"):
++            ok(quiet(lambda: cmd_check(t)) == 2,
++               "garden: one reader alone is NOT CHECKED unless --one-reader says the keeper accepts it")
+     else:
+         say("NOT CHECKED the clean pass: this skill's LICENSES/ texts are absent (card-only install)")
+     reds = []
+@@ -1091,7 +1233,7 @@
+             shutil.rmtree(snap)
+             shutil.copytree(t, snap)
+             breaker(snap)
+-            rc = quiet(lambda: cmd_check(snap))
++            rc = quiet(lambda: cmd_check(snap, one_reader=True))
+             reds.append((name, rc == 1))
+             shutil.rmtree(snap, ignore_errors=True)
+         red("a license text removed", lambda s: os.remove(os.path.join(s, "LICENSES", "CC-BY-SA-4.0.txt")))
+@@ -1173,11 +1315,16 @@
+            "makers: a derived skill names its source's maker, on every file of the skill")
+         ok(plan["skills/sig/scripts/sig.sh"][1] == "GPL-3.0-or-later" and plan["skills/sig/SKILL.md"][1] == PROSE,
+            "makers: co-made code carries only the terms every maker offers")
+-        ok("robin" in own("skills/dis/SKILL.md") and "robin" in own("skills/pact/SKILL.md"),
+-           "makers: a discipline and a joint protocol make co-owners")
++        cred = lambda r: [c[0] for c in plan[r][2].get("credit", [])]
++        # Garden edition, the ladder: a joint protocol is co-made; a discipline is credited, not owned
++        # (Bryant's 1.1 asserted both make co-owners; copyright covers the words, not the idea).
++        ok("robin" in own("skills/pact/SKILL.md") and "robin" not in own("skills/dis/SKILL.md")
++           and "robin" in cred("skills/dis/SKILL.md"),
++           "ladder: a joint protocol makes co-owners; a discipline is credited, not owned")
+         ok("robin" in own("notes/by.md"), "makers: a byline names its principal")
+-        ok("robin" in own("notes/canon.md") and "robin" in own("notes/lab.md"),
+-           "makers: a co-signed canon, and a design taken from someone's lab, make co-owners")
++        ok("robin" in own("notes/canon.md") and "robin" not in own("notes/lab.md")
++           and "robin" in cred("notes/lab.md"),
++           "ladder: a co-signed canon makes co-owners; a design taken from someone's lab is credited")
+         ok(own("notes/quoted.md") == own("notes/mention.md") == own("notes/agent.md") == ["bryant"],
+            "makers: a quote, a mention or an agent's byline makes no one a maker")
+         ok(plan["notes/stranger.md"][0] == "ASK", "makers: a maker nobody has named is asked about, never guessed")
+@@ -1192,6 +1339,8 @@
+         else:
+             say("NOT CHECKED makers from git history (git is not installed)")
+         os.remove(os.path.join(t, "notes/stranger.md"))
++        # Garden edition: rung 2 is met in the credits, so the tree names the one it credits.
++        put("README.md", "# Fixture\n\nCredits: the audit discipline and the router design are " + R + "'s.\n")
+         quiet(lambda: cmd_apply(t, [], False, False, "2026", context(t)))
+         rd = lambda r: open(os.path.join(t, r), encoding="utf-8").read()
+         ok(R + " Quill <robin@example.org>" in rd("skills/sig/scripts/sig.sh") and
+@@ -1201,7 +1350,7 @@
+         ok(rd("copy/tool.py") == "print('a tool of theirs')\n", "makers: their file keeps its bytes")
+         ok('"2026 ' + R + ' Quill <robin@example.org>"' in rd("REUSE.toml"), "makers: REUSE.toml names the co-owner")
+         if texts:
+-            rc = quiet(lambda: cmd_check(t, context(t)))
++            rc = quiet(lambda: cmd_check(t, context(t), one_reader=True))
+             ok(rc == 0, "makers: check reads the attributed tree clean")
+         if prove_red and texts:
+             def red(name, breaker):
+@@ -1245,12 +1394,15 @@
+         return selftest("--prove-red" in argv)
+     cmd, rest = argv[0], argv[1:]
+     joint, flags, pos, year, parcels, parties = [], set(), [], time.strftime("%Y", time.gmtime()), [], None
++    sources = []
+     i = 0
+     while i < len(rest):
+         a = rest[i]
+-        if a in ("--joint", "--year", "--parcels", "--parties") and i + 1 < len(rest):
++        if a in ("--joint", "--year", "--parcels", "--parties", "--sources") and i + 1 < len(rest):
+             v = rest[i + 1]
+-            if a == "--joint":
++            if a == "--sources":
++                sources.append(v)
++            elif a == "--joint":
+                 joint.append(v)
+             elif a == "--year":
+                 year = v
+@@ -1270,6 +1422,8 @@
+         print(__doc__)
+         return 2
+     root = pos[0]
++    global FETCH
++    FETCH = "--fetch" in flags
+     if cmd == "texts":
+         return 0 if write_texts(root, pos[1:] or list(TEXTS)) else 2
+     if cmd not in ("who", "plan", "apply", "check"):
+@@ -1279,11 +1433,24 @@
+         say("NOT CHECKED: cannot read " + root)
+         return 2
+     try:
+-        load_parties(root, parties)
++        found = load_parties(root, parties)
+     except (OSError, ValueError) as e:
+         say("NOT CHECKED: parties file: " + str(e))
+         return 2
++    if not found:
++        say("NOT CHECKED: no .colophon-parties.json in %s and no --parties FILE: colophon carries no one's "
++            "terms of its own (see references/parties.example.json)" % root)
++        return 2
++    ok, why = use_keeper()
++    if not ok:
++        say("NOT CHECKED: " + why)
++        return 2
+     ctx = context(root, parcels, "--no-git" not in flags)
++    try:
++        add_sources(ctx, root, sources)
++    except (OSError, ValueError, SystemExit) as e:
++        say("NOT CHECKED: sources: " + str(e))
++        return 2
+     if cmd == "who":
+         return cmd_who(root, ctx, "--json" in flags)
+     if cmd == "plan":
+@@ -1291,7 +1458,7 @@
+         return 0
+     if cmd == "apply":
+         return cmd_apply(root, joint, "--toml-only" in flags, "--art-is-ours" in flags, year, ctx)
+-    return cmd_check(root, ctx)
++    return cmd_check(root, ctx, one_reader="--one-reader" in flags)
+ 
+ 
+ if __name__ == "__main__":

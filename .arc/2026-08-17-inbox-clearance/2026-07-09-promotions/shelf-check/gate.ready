@@ -1,0 +1,46 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+# .gate — access sign-post for this directory tree.
+# Convention: nearest .gate walking up from a path governs it.
+# policy is one of: read-write | read-only | write-only | none
+# Sign-post, not cathedral: this file states consent; guards check against it.
+policy: read-write
+reason: pub/ — the hub's public shelf; cleared for the open internet by
+  construction (no secrets, no third parties, nothing embargoed). Signed
+  artifacts verify against corwin.asc (ECE7...F007). The rest of the hub is
+  NOT public; a peek elsewhere earns the finger-wag.
+since: 2026-07-02
+
+# --- shelf vouch map (vouch-everything rule: every inhabitant named) ------
+# SIGN = must verify (clearsign or FILE.asc). NOSIG = intentionally unsigned
+# by policy (README Peekables). FURNITURE = unsigned by nature (keys).
+# Unlisted defaults to SIGN -- fail-closed. Keep this map current; sign.sh
+# check-shelf reads it.
+SIGN: ALPHA-0.1.2-1_Contrast.md
+SIGN: BUILD-CONTRAST.md
+SIGN: CEREMONIES.md
+SIGN: MODEL-right-to-execute.md
+SIGN: PRINCIPLES.md
+SIGN: README.md
+SIGN: corwin-pub.zip
+SIGN: corwin.txt
+SIGN: hello-principles.md
+NOSIG: hello-world.md
+SIGN: sign.sh
+SIGN: .gate
+
+-----BEGIN PGP SIGNATURE-----
+
+iQGzBAEBCgAdFiEE7Od89BfHbBrPznwrW2E1URWA8AcFAmpQb5sACgkQW2E1URWA
+8Ad5BwwAiD7OZ6BiWedvwx5m3bSJ7W/OdrJXA5YxTCf6kVNy7W+BEPy0IFVSLV3H
+XeD8TBa5z1TyBhP9z3oG+ZJAqwLZx7o83hDVH3b4fP9Sm1ImWpZl+BxR08QnL0Up
+Y3IyO5DNkXSMzx2d6e8I0paagsYmndnmrb/fsiprlxZVIzCS2qLwiD6hp9o0y3gU
+VTYRwFhcKSILnu1IkjrSKATXeq4jWTza8Lj/zaOWj9tuSuq7PnehOwJT4Wm19Xb1
+bIHpZb/dScoAa2+/dnMlitjEqn61KuZGosybYn32K174o+MmB03JZ4L1s7pzyJO1
+yksXbZbO+rSfw8J4z+Q4XGlzvYwD5Bbx9zTc5qc5kobqzXFl5GnfWlywoxIl5tvC
+TV8r/At+1aEFSKOtggsGWPubPt6PdjKwFw5/t0JfFgYvXuEU2zLXsUJrtQFSRzrs
+qJnI/hi5ZZMED3t5C4fofJiyD30TFxMl/hP004O5jd7z+IqZFDOHrgT8VegF1WS4
+wTmOm9hq
+=Blk1
+-----END PGP SIGNATURE-----

@@ -1,0 +1,60 @@
+#!/bin/sh
+# mb1ck -- MCPB 1 CHECK: a second, independent reader of the desktop extension's manifest.
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.  GPL-3.0-or-later.
+# Written by Mentat (for Corwin; claude-opus-5-5), 2026-10-11.
+#
+# polygram/mcpb.py checks its own manifest in Python.  This checks the same rules in sh + awk,
+# reading the bytes that ship, so the two can disagree out loud.  It relies on one thing about
+# the shape: the manifest is written by json.dumps(indent=2), so a top-level key sits at two
+# spaces and a settings field at four.
+#
+#   sh bin/mb1ck dist/vibrobeast.mcpb      check the archive (needs unzip)
+#   sh bin/mb1ck path/to/manifest.json     check a manifest alone (no archive checks)
+#
+# Exit 0 = clean; 1 = a problem, each said on its own line; 2 = could not read.
+me=mb1ck
+f=${1:?usage: sh bin/mb1ck FILE.mcpb|manifest.json}
+[ -f "$f" ] || { echo "$me: no such file: $f" >&2; exit 2; }
+tmp=${TMPDIR:-/tmp}/mb1ck.$$
+trap 'rm -f "$tmp".m "$tmp".l' EXIT INT TERM
+case $f in
+  *.mcpb|*.zip)
+    command -v unzip >/dev/null 2>&1 || { echo "$me: needs unzip to read $f" >&2; exit 2; }
+    unzip -p "$f" manifest.json > "$tmp.m" 2>/dev/null || { echo "$me: no manifest.json in $f"; exit 1; }
+    unzip -Z1 "$f" > "$tmp.l" ;;
+  *) cp "$f" "$tmp.m"; : > "$tmp.l" ;;
+esac
+
+awk -v listing="$tmp.l" -v me="$me" '
+BEGIN { while ((getline n < listing) > 0) { have[n] = 1; nhave++ } }
+# which top-level block are we in
+/^  "[a-z_]+": / { top = $0; sub(/^  "/, "", top); sub(/".*/, "", top) }
+top == "user_config" && /^    "[A-Za-z0-9_]+": \{/ {
+  k = $0; sub(/^    "/, "", k); sub(/".*/, "", k); declared[k] = 1 }
+top == "server" {
+  s = $0
+  while (match(s, /\$\{user_config\.[A-Za-z0-9_]+\}/)) {
+    u = substr(s, RSTART + 14, RLENGTH - 15); used[u] = 1; s = substr(s, RSTART + RLENGTH) }
+  if ($0 ~ /"PYTHONPATH":/) bad("env names PYTHONPATH, which Claude Desktop refuses")
+  if ($0 ~ /^ *"\/[sS]",?$/) bad("cmd is started with /s, which cuts a quoted folder at its first space")
+  if ($0 ~ /"entry_point":/) { e = $0; sub(/.*"entry_point": "/, "", e); sub(/".*/, "", e); entry = e }
+  if (index($0, "${__dirname}") && nhave) {
+    a = $0; sub(/.*\$\{__dirname\}[\/\\]+/, "", a); sub(/".*/, "", a); gsub(/\\\\/, "/", a)
+    if (!(a in have)) bad("${__dirname}/" a " is not in the archive")
+  }
+}
+top == "tools" && /^      "name": / {
+  t = $0; sub(/.*"name": "/, "", t); sub(/".*/, "", t)
+  if (t in tool) bad("tool " t " is listed twice"); tool[t] = 1 }
+/^  "manifest_version": / { mv = 1 }
+function bad(why) { print "  PROBLEM  " why; nbad++ }
+END {
+  if (!mv) bad("no manifest_version")
+  for (u in used) if (!(u in declared)) bad("${user_config." u "} is used but no settings field " u " is declared")
+  for (d in declared) if (!(d in used)) bad("settings field " d " is declared but nothing reads it")
+  if (nhave && !(entry in have)) bad("entry_point " entry " is not in the archive")
+  n = 0; for (d in declared) n++
+  m = 0; for (t in tool) m++
+  printf "%s: %d settings fields, %d tools, %s\n", me, n, m, (nbad ? nbad " problem(s)" : "OK")
+  exit (nbad ? 1 : 0)
+}' "$tmp.m"

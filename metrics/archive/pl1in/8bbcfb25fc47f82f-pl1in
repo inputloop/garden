@@ -1,0 +1,760 @@
+#!/bin/sh
+# pl1in -- PULL 1 IN.  Bring PERSONA and MEMORY into a C4 root, through registrations.
+#
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st>.  Co-authored by Mentat (Claude, in Cowork).
+# GPL-3.0-or-later.  READ-ONLY with respect to every SOURCE it names.  It writes only inside the
+# C4 root it was pointed at.
+#
+# ---------------------------------------------------------------------------------------------
+# THE RULE THIS TOOL EXISTS TO SERVE, in Corwin's words, 2026-09-17:
+#
+#   "For C4, specifically, it should take care to use its own tooling to pull in both PERSONA and
+#    MEMORY, so that we are testing the tools we mint directly vs using them after they are
+#    reminted as some skill where C4 has seeded the garden and then polygram has made the
+#    distributable/plugin/etc.  In my mind this creates a circle for C4 where, as it successfully
+#    pulls in a memory it actually lands to the AS4CE tended MAIN MEMORY store, it can see that
+#    some tools involved in that change we just designed to link works, so if we turn it will
+#    likely still work when poly has minted the skill and it flows in via the plugin."
+#
+# and, the same day, on roots and on names:
+#
+#   "In C4 context: always C4.  We can consider the lab as making use of the fact that C4
+#    tolerates swapping around of C4 root, also storing alternate C4 roots.  To the extent it
+#    makes sense we can consider each Cowork mount as being a C4 root: but we can only do that
+#    once we have the sophistication to make this swap just at the right moment (via C4
+#    expressions, specialized worker or API functions or even actual programs that handle our
+#    special cases by fetching the file from where it is REGISTERED to be -- indirection vs
+#    hardcoded filename, even here)."
+#
+#   "Where we have something like the ComputerPeople semaphore in Google Drive setup we should
+#    think of that as an ARC unless it's actually a semaphore in practice."
+#
+# ---------------------------------------------------------------------------------------------
+# NOTHING IN HERE NAMES A SOURCE PATH.  Not one.  Two registers do, and this program reads them.
+#
+#   THE LOCATION REGISTER   h/<host>, columns in d/h/<host>:  CAPABILITY HOW WHERE NOTE WHEN
+#       Register H is HOST HOME HELP HEURISTIC (m/t).  A location is a capability of a host and
+#       its WHERE is host-specific -- `h/avalon` already carried `mount-c4 ... F:/claude/c4`
+#       before this program existed, which is the same tree this session reaches under a
+#       different name.  That is why WHERE may itself begin with the name of another capability:
+#       a location is written as MOUNT-NAME/rest, the mount is resolved here, and the same row
+#       is true from Windows, from Cowork, or from anywhere else the mount is registered.
+#       Resolution is bounded at 4 hops.  4 is a house guess number and is being used as one.
+#
+#   THE ROUTE REGISTER      r/pull, columns in d/r/pull:  FROM VIA TOWARD LANDS
+#       Register R is ROUTER REGISTRY RELAY ROUTINE (m/t).  A pull is a route.  The COLUMNS are
+#       the keeper's, taken unchanged from d/r/route, which he minted 2026-08-03 -- FROM VIA
+#       TOWARD LANDS is already how this estate writes a route down.  The ROWS get their own
+#       file because r/route is occupied: it carries `RELAY USER N* G*` and `GROUP N* U*
+#       ROUTINE`, which are register-to-register routes in C4 expression, a different kind of
+#       row entirely.  Two kinds of row in one register file is the quiet drift this estate
+#       spends its evenings undoing, so the columns are reused and the file is not.
+#           FROM    a capability NAME in the location register.  Never a path.
+#           VIA     the mechanism: mcp:<server>, or fs.  It must agree with the location's HOW.
+#                   Two registers disagreeing about a mechanism is a seam, and a seam is
+#                   REFUSED and reported, never split the difference.
+#           TOWARD  where it lands, relative to the C4 root in play.  Relative, never climbing.
+#           LANDS   the capability naming the store a landing is attested against.
+#
+# BOTH REGISTERS ARE READ FROM THE ROOT IN PLAY.  That is what makes an alternate C4 root work:
+# point this at another root and it reads that root's registers, so the same program pulls
+# different things to different places without one path being written into it.
+#
+# AN ARC IS NOT A SOURCE.  A location whose HOW is `arc` is a mirror -- a copy kept so a human
+# can reach it -- and this program REFUSES to route through one, by name, before it resolves the
+# path.  The Google Drive persona folder is registered that way.  See
+# facts/drive-persona-folder-is-an-arc.  If something is ever found to actually semaphore on it,
+# that fact is wrong and so is this refusal.
+#
+# FRESHNESS IS at1pl'S ANSWER, NOT THIS PROGRAM'S.  bin/at1pl already measures "has any atom
+# moved since the meta was collected" and ships 39/39 plus --prove-red.  This program calls it
+# and obeys it:
+#       at1pl says HOLD  ->  nothing moved  ->  HOLD, and not one byte is copied.  The cheap case.
+#       at1pl says PULL  ->  something moved ->  PULLED, and the report names what moved.
+# PULLING IS THE KEEPER'S VERB and at1pl deliberately does not do it.  This is the tool that does.
+#
+# IT ALWAYS EXITS 0 WHEN IT COULD MEASURE.  A route it could not resolve is a FAULT row in the
+# report, not a dead run: the other routes were still measured and the reader still gets them.
+# Exit 2 is usage and environment only -- no root, no register, no at1pl.
+#
+# DEFAULT OUTPUT IS THE SHORT ONE (PREFERENCES.md, the Emacs rule).  --all turns on the per-atom
+# listing.  Easy to ask for more; never necessary to ask for less.
+#
+# ---------------------------------------------------------------------------------------------
+# usage:
+#   pl1in pull   [ROUTE...] [-r ROOT|-R NAME] [--all] [--tsv]   pull what moved, HOLD what did not
+#   pl1in check  [ROUTE...] [-r ROOT|-R NAME] [--all] [--tsv]   freshness only; writes nothing
+#   pl1in routes [-r ROOT|-R NAME] [--tsv]                      the routes, resolved, with HOW
+#   pl1in roots  [-r ROOT|-R NAME] [--tsv]                      every C4 root this register knows
+#   pl1in circle [-r ROOT|-R NAME] [--tsv]                      the round trip, leg by leg
+#   pl1in --prove-red                                           plant every fault; show them red
+#   pl1in -h                                                    this header
+#
+#   ROUTE is a FROM name from r/pull.  With none, every route is used.
+#   -r ROOT is a path.  -R NAME is a capability whose HOW is `c4root` -- the stored alternate.
+#   $C4_ROOT is honoured when neither is given.  Last resort: the root this script lives under.
+#
+# WHAT IT WRITES, all inside the root in play:
+#   <TOWARD>/               the landed bytes
+#   <TOWARD>.meta.tsv       at1pl's measurement of the SOURCE forest at the moment of the pull
+#   <TOWARD>.pull.tsv       the receipt: route, from, where, via, verdict, files, bytes, when
+#   <TOWARD>.seat/          an empty store root handed to the mcp server, so that a server which
+#                           creates scaffolding wherever it is pointed never points at a source
+# ---------------------------------------------------------------------------------------------
+
+set -u
+export LC_ALL=C
+me=pl1in
+TAB=$(printf '\t')
+die() { printf '%s: %s\n' "$me" "$*" >&2 ; exit 2 ; }
+
+TMPD=${TMPDIR:-/tmp}/$me.$$
+mkdir -p "$TMPD" || die "cannot make $TMPD"
+trap 'rm -rf "$TMPD"' EXIT HUP INT TERM
+
+selfdir() { CDPATH= cd -- "$(dirname -- "$0")" 2>/dev/null && pwd ; }
+c4root()  { CDPATH= cd -- "$(dirname -- "$0")/.." 2>/dev/null && pwd ; }
+today()   { date -u +%Y-%m-%d 2>/dev/null || echo unknown ; }
+stamp()   { date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo unknown ; }
+
+find_at1pl() {
+	d=$(selfdir) || return 1
+	[ -x "$d/at1pl" ] && { printf '%s\n' "$d/at1pl" ; return 0 ; }
+	[ -f "$d/at1pl" ] && { printf '%s\n' "$d/at1pl" ; return 0 ; }
+	command -v at1pl 2>/dev/null && return 0
+	return 1
+}
+
+# ---- the host whose location register is in play ----------------------------------------------
+# $C4_HOST wins.  Otherwise the register itself decides: if exactly one h/<name> file carries the
+# location columns, that is the host.  Asking `hostname` last is deliberate -- this session
+# answers "claude" for a machine the estate calls avalon, and a register that says avalon is a
+# better witness than a container's idea of its own name.
+host_of() {
+	r=$1
+	[ -n "${C4_HOST:-}" ] && { printf '%s\n' "$C4_HOST" ; return 0 ; }
+	n=0 ; pick=
+	for f in "$r"/d/h/*; do
+		[ -f "$f" ] || continue
+		b=$(basename -- "$f")
+		[ "$b" = h ] && continue
+		[ -f "$r/h/$b" ] || continue
+		n=$((n+1)) ; pick=$b
+	done
+	[ "$n" = 1 ] && { printf '%s\n' "$pick" ; return 0 ; }
+	h=$(hostname 2>/dev/null | tr 'A-Z' 'a-z')
+	[ -n "$h" ] && [ -f "$r/h/$h" ] && { printf '%s\n' "$h" ; return 0 ; }
+	printf 'h\n'
+}
+
+# ---- register readers.  awk only.  A row is data; nothing here reaches a shell. ---------------
+# A row that is not exactly the width its column dictionary declares is a FAULT, reported by
+# name.  Guessing which field was meant is how a register quietly becomes prose.
+hreg() { printf '%s/h/%s\n' "$1" "$2" ; }
+rreg() { printf '%s/r/pull\n' "$1" ; }
+
+hrow()  { awk -v n="$2" 'NF==5 && $1==n {print; exit}' "$1" 2>/dev/null ; }
+hhow()  { hrow "$1" "$2" | awk '{print $2}' ; }
+hwhere(){ hrow "$1" "$2" | awk '{print $3}' ; }
+hnote() { hrow "$1" "$2" | awk '{print $4}' ; }
+
+# resolve_where HREG NAME -- prints an absolute path, or fails.
+# A WHERE that starts with / is already absolute.  Otherwise its first segment is the NAME of
+# another capability, resolved here.  That is the indirection: a location names a location.
+resolve_where() {
+	hr=$1 ; nm=$2 ; hop=0
+	while [ "$hop" -lt 4 ]; do
+		w=$(hwhere "$hr" "$nm") || return 1
+		[ -n "$w" ] || return 1
+		case "$w" in
+			/*) printf '%s\n' "$w" ; return 0 ;;
+		esac
+		head=${w%%/*} ; rest=${w#*/}
+		[ "$head" = "$w" ] && rest=
+		base=$(hwhere "$hr" "$head")
+		[ -n "$base" ] || return 1
+		case "$base" in
+			/*) if [ -n "$rest" ]; then printf '%s/%s\n' "$base" "$rest" ; else printf '%s\n' "$base" ; fi ; return 0 ;;
+		esac
+		nm=$head ; hop=$((hop+1))
+	done
+	return 1
+}
+
+safe_rel() {   # a TOWARD is relative, and it does not climb
+	case "${1:-}" in
+		'') return 1 ;;
+		/*) return 1 ;;
+		*..*) return 1 ;;
+	esac
+	return 0
+}
+
+# ---- root resolution ---------------------------------------------------------------------------
+OPT_ROOT= ; OPT_RNAME= ; OPT_ALL=0 ; OPT_TSV=0
+ROOT= ; HOSTNM= ; HREG= ; RREG=
+
+resolve_root() {
+	if [ -n "$OPT_ROOT" ]; then
+		ROOT=$(CDPATH= cd -- "$OPT_ROOT" 2>/dev/null && pwd) || die "no such root: $OPT_ROOT"
+	elif [ -n "$OPT_RNAME" ]; then
+		# The stored alternate root, reached by NAME out of the register of the root this
+		# program lives under.  A root named by a register is the whole point of -R.
+		home=$(c4root) || die "cannot find the root this program lives under"
+		hh=$(hreg "$home" "$(host_of "$home")")
+		[ -f "$hh" ] || die "no location register at $hh"
+		how=$(hhow "$hh" "$OPT_RNAME")
+		[ -n "$how" ] || die "no capability '$OPT_RNAME' in $hh -- listed: $(awk 'NF==5{printf "%s ", $1}' "$hh")"
+		[ "$how" = c4root ] || die "'$OPT_RNAME' is registered HOW=$how, not c4root; -R takes a stored C4 root"
+		w=$(resolve_where "$hh" "$OPT_RNAME") || die "'$OPT_RNAME' has a WHERE this register cannot resolve"
+		ROOT=$(CDPATH= cd -- "$w" 2>/dev/null && pwd) || die "'$OPT_RNAME' resolves to $w, which is not reachable"
+	elif [ -n "${C4_ROOT:-}" ]; then
+		ROOT=$(CDPATH= cd -- "$C4_ROOT" 2>/dev/null && pwd) || die "no such \$C4_ROOT: $C4_ROOT"
+	else
+		ROOT=$(c4root) || die "cannot find a C4 root; pass -r ROOT"
+	fi
+	[ -f "$ROOT/.c4" ] || printf '%s: NOTE  %s has no .c4 marker; using it anyway because you named it\n' "$me" "$ROOT" >&2
+	HOSTNM=$(host_of "$ROOT")
+	HREG=$(hreg "$ROOT" "$HOSTNM")
+	RREG=$(rreg "$ROOT")
+	[ -f "$HREG" ] || die "no location register at $HREG (register H; columns in d/h/$HOSTNM)"
+	[ -f "$RREG" ] || die "no route register at $RREG (register R; columns in d/r/pull)"
+}
+
+# ---- one route, resolved.  Sets: R_FROM R_VIA R_TOWARD R_LANDS R_HOW R_SRC R_DST R_FAULT -------
+route_load() {
+	R_FROM=$1 ; R_FAULT= ; R_SRC= ; R_DST= ; R_HOW= ; R_VIA= ; R_TOWARD= ; R_LANDS=
+	row=$(awk -v n="$R_FROM" 'NF==4 && $1==n {print; exit}' "$RREG" 2>/dev/null)
+	if [ -z "$row" ]; then
+		wide=$(awk -v n="$R_FROM" '$1==n {print NF; exit}' "$RREG" 2>/dev/null)
+		if [ -n "$wide" ]; then
+			R_FAULT="MALFORMED-ROUTE  r/pull names $R_FROM in a row of $wide field(s); d/r/pull declares 4 (FROM VIA TOWARD LANDS). Not guessing which field was meant."
+		else
+			R_FAULT="NO-SUCH-ROUTE    $R_FROM is in no row of r/pull. Routes there: $(awk 'NF==4{printf "%s ", $1}' "$RREG")"
+		fi
+		return 0
+	fi
+	R_VIA=$(printf '%s\n' "$row" | awk '{print $2}')
+	R_TOWARD=$(printf '%s\n' "$row" | awk '{print $3}')
+	R_LANDS=$(printf '%s\n' "$row" | awk '{print $4}')
+
+	R_HOW=$(hhow "$HREG" "$R_FROM")
+	if [ -z "$R_HOW" ]; then
+		R_FAULT="UNREGISTERED     r/pull sends $R_FROM somewhere, and h/$HOSTNM registers no location by that name. A route to a name nobody located is not a pointer."
+		return 0
+	fi
+	if [ "$R_HOW" = arc ]; then
+		R_FAULT="ARC-REFUSED      $R_FROM is registered HOW=arc -- a mirror kept so a person can reach it, not a mechanism. Pulling through an ARC would make a copy authoritative. See facts/drive-persona-folder-is-an-arc."
+		return 0
+	fi
+	if [ "$R_HOW" != "$R_VIA" ]; then
+		R_FAULT="SEAM-REFUSED     r/pull says VIA=$R_VIA and h/$HOSTNM says HOW=$R_HOW for $R_FROM. Two registers disagreeing about a mechanism is a seam; this program reports it and does not split the difference."
+		return 0
+	fi
+	if ! safe_rel "$R_TOWARD"; then
+		R_FAULT="BAD-TOWARD       '$R_TOWARD' is absolute or climbs. A route lands inside the root in play or it lands nowhere."
+		return 0
+	fi
+	w=$(resolve_where "$HREG" "$R_FROM")
+	if [ -z "$w" ]; then
+		R_FAULT="UNRESOLVED       h/$HOSTNM registers $R_FROM at a WHERE this register cannot resolve in 4 hops (its first segment names no located capability)."
+		return 0
+	fi
+	if [ ! -d "$w" ]; then
+		p=$(dirname -- "$w")
+		sib=$(ls -1 "$p" 2>/dev/null | head -8 | tr '\n' ' ')
+		[ -n "$sib" ] || sib="(and $p does not list either)"
+		R_FAULT="SOURCE-ABSENT    $R_FROM resolves to $w, which is not a directory. $p holds: $sib"
+		return 0
+	fi
+	R_SRC=$(CDPATH= cd -- "$w" 2>/dev/null && pwd) || { R_FAULT="SOURCE-ABSENT    cannot enter $w" ; return 0 ; }
+	R_DST="$ROOT/$R_TOWARD"
+
+	# The one thing that would make this program write into a source.
+	case "$R_DST/" in
+		"$R_SRC"/*) R_FAULT="WOULD-WRITE-SOURCE  $R_TOWARD lands inside the source $R_SRC. This program is read-only with respect to every source it names; refusing." ; return 0 ;;
+	esac
+	case "$R_SRC/" in
+		"$R_DST"/*) R_FAULT="WOULD-EAT-SOURCE    the source $R_SRC sits inside the landing $R_TOWARD. Refusing before a copy can shadow what it copied." ; return 0 ;;
+	esac
+	return 0
+}
+
+# ---- the manifest at1pl walks: every file under the source, relative to it ---------------------
+build_manifest() {
+	( cd "$R_SRC" && find . -type f 2>/dev/null | sed 's|^\./||' ) | sort > "$TMPD/files"
+	: > "$TMPD/manifest"
+	while IFS= read -r p; do
+		[ -n "$p" ] || continue
+		printf '%s\t%s\n' "$p" source >> "$TMPD/manifest"
+	done < "$TMPD/files"
+	NFILES=$(grep -c . "$TMPD/files" 2>/dev/null) ; NFILES=${NFILES:-0}
+}
+
+# ---- freshness, entirely at1pl's answer ---------------------------------------------------------
+# Two things at1pl cannot see on its own, added here and SAID:
+#   * a landing that is not there at all  -- at1pl measures the forest, not the copy
+#   * a landing that lost or gained files -- likewise
+# Both read PULL, and the reason names which it was.
+freshness() {
+	META="$ROOT/$R_TOWARD.meta.tsv"
+	VERDICT= ; WHY= ; MOVED=
+	if [ ! -d "$R_DST" ]; then VERDICT=PULL ; WHY="nothing has landed at $R_TOWARD yet" ; return 0 ; fi
+	if [ ! -f "$META" ]; then VERDICT=PULL ; WHY="no prior measurement at $R_TOWARD.meta.tsv, so nothing here can say the landing is current" ; return 0 ; fi
+	nland=$(find "$R_DST" -type f 2>/dev/null | grep -c .) ; nland=${nland:-0}
+	nrow=$(grep -vc '^#' "$META" 2>/dev/null) ; nrow=${nrow:-0}
+	if [ "$nland" != "$nrow" ]; then
+		VERDICT=PULL ; WHY="the landing holds $nland file(s) and the meta recorded $nrow; at1pl measures the forest, not the copy, so this is checked here"
+		return 0
+	fi
+	"$AT1PL" check "$META" --tsv > "$TMPD/at1pl.tsv" 2>"$TMPD/at1pl.err" || {
+		VERDICT=PULL ; WHY="at1pl could not read $R_TOWARD.meta.tsv: $(head -1 "$TMPD/at1pl.err")" ; return 0 ; }
+	VERDICT=$(awk -F"$TAB" '$1=="TOTAL"{print $2; exit}' "$TMPD/at1pl.tsv")
+	WHY=$(awk -F"$TAB" '$1=="TOTAL"{print $4; exit}' "$TMPD/at1pl.tsv")
+	MOVED=$(awk -F"$TAB" '$1=="ATOM" && $2!="OK" && $2!="TOUCHED"{printf "%s:%s ", $2, $3}' "$TMPD/at1pl.tsv")
+	[ -n "$VERDICT" ] || { VERDICT=PULL ; WHY="at1pl returned no TOTAL row; treating that as unmeasured rather than clean" ; }
+	return 0
+}
+
+# ---- the MCP attestation.  The minted server is asked, by the same wiring the plugin uses. ------
+# This is the part that makes the pull a test of the tools rather than a file copy.  What it
+# claims, exactly: the module the plugin wires starts, speaks JSON-RPC on stdio, and resolves a
+# store root to the mode word its own layer refuses to omit.  It does NOT claim the bytes
+# travelled over MCP -- they did not -- and the circle's MCP-SERVE leg is where that gap is named.
+#
+# THE SERVER IS NEVER POINTED AT A SOURCE, AND NEVER AT A LANDING.  OBSERVED 2026-09-17: a single
+# seat_mode against AS4CE0001/memory created seven directories there -- .locks/ blessed/ cited/
+# index/ notes/ receipts/ semaphores/ -- plus a header-only index/dl2.tsv, because
+# polygram/mcp/store.py ensure() mkdirs its scaffolding the first time a store is touched.  A read
+# that writes is still a write, so:
+#   * pointing it at a SOURCE would break this program's one absolute promise;
+#   * pointing it at a LANDING would add a file this program did not pull, and every later check
+#     would read PULL forever on a file the server itself put there.
+# So it gets <TOWARD>.seat -- a directory pl1in makes and owns, beside the landing, for no other
+# purpose.  Say what a measurement covers and it stays a measurement.
+mcp_attest() {
+	MODE=- ; SERVED=- ; LANDED=- ; MCPNOTE=
+	server=${R_VIA#mcp:}
+	[ "$server" != "$R_VIA" ] || { MCPNOTE="not an mcp route" ; return 0 ; }
+	SEATDIR="$ROOT/$R_TOWARD.seat"
+	mkdir -p "$SEATDIR" 2>/dev/null || { MODE=UNREACHABLE ; MCPNOTE="cannot make $R_TOWARD.seat" ; return 0 ; }
+	LANDED=$(find "$R_DST" -type f 2>/dev/null | grep -c .) ; LANDED=${LANDED:-0}
+	imp=$(resolve_where "$HREG" mcp-import-root 2>/dev/null)
+	if [ -z "$imp" ] || [ ! -d "$imp" ]; then
+		MODE=UNREACHABLE ; MCPNOTE="h/$HOSTNM registers no reachable mcp-import-root, so no server could be started" ; return 0 ; fi
+	command -v python3 >/dev/null 2>&1 || { MODE=UNREACHABLE ; MCPNOTE="no python3 on this host" ; return 0 ; }
+	case "$server" in
+		mentcached) envvar=MENTCACHED_SEAT ; t1=seat_mode ; t2=seat_list ;;
+		persona)    envvar=PERSONA_ROOT    ; t1=persona_resolve ; t2=persona_list ;;
+		*)          MODE=UNREACHABLE ; MCPNOTE="no attestation wired for server '$server'" ; return 0 ;;
+	esac
+	{
+	printf '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}\n'
+	printf '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"%s","arguments":{}}}\n' "$t1"
+	printf '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"%s","arguments":{}}}\n' "$t2"
+	} | env PYTHONPATH="$imp" PYTHONDONTWRITEBYTECODE=1 "$envvar=$SEATDIR" \
+		python3 -m polygram.mcp "$server" > "$TMPD/mcp.out" 2>"$TMPD/mcp.err"
+	if [ ! -s "$TMPD/mcp.out" ]; then
+		MODE=UNREACHABLE ; MCPNOTE="the server said nothing: $(head -1 "$TMPD/mcp.err" 2>/dev/null)" ; return 0 ; fi
+	m=$(tr -d '\\' < "$TMPD/mcp.out" | grep -o '"mode": *"[A-Z]*"' | head -1 | tr -dc 'A-Z')
+	[ -n "$m" ] && MODE=$m || MODE=NOMODE
+	c=$(tr -d '\\' < "$TMPD/mcp.out" | grep -o '"count": *[0-9][0-9]*' | tail -1 | tr -dc '0-9')
+	[ -n "$c" ] && SERVED=$c
+	return 0
+}
+
+# ---- the copy.  Source is opened for reading and for nothing else. ------------------------------
+land() {
+	mkdir -p "$R_DST" || die "cannot make $R_DST"
+	BYTES=0
+	while IFS= read -r p; do
+		[ -n "$p" ] || continue
+		d=$(dirname -- "$p")
+		[ "$d" = . ] || mkdir -p "$R_DST/$d" || die "cannot make $R_DST/$d"
+		cp -p "$R_SRC/$p" "$R_DST/$p" 2>/dev/null || cp "$R_SRC/$p" "$R_DST/$p" || die "cannot land $p"
+		b=$(wc -c < "$R_SRC/$p" 2>/dev/null | tr -d ' ') ; BYTES=$((BYTES + ${b:-0}))
+	done < "$TMPD/files"
+	"$AT1PL" collect "$TMPD/manifest" -r "$R_SRC" -m "$ROOT/$R_TOWARD.pull.tsv" > "$META.new" 2>"$TMPD/coll.err" \
+		|| die "at1pl collect failed: $(head -1 "$TMPD/coll.err")"
+	mv "$META.new" "$META"
+	{
+	printf '# PULL RECEIPT v1 -- what landed, from where, and on whose say-so\n'
+	printf '# columns: ROUTE\tFROM\tWHERE\tVIA\tVERDICT\tFILES\tBYTES\tMODE\tSERVED\tWHEN\n'
+	printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+		"$R_FROM" "$R_FROM" "$R_SRC" "$R_VIA" "$VERDICT" "$NFILES" "$BYTES" "$MODE" "$SERVED" "$(stamp)"
+	} > "$ROOT/$R_TOWARD.pull.tsv"
+}
+
+# ---- the report --------------------------------------------------------------------------------
+say_route() {   # $1 = pull|check
+	if [ -n "$R_FAULT" ]; then
+		NFAULT=$((NFAULT+1))
+		if [ "$OPT_TSV" = 1 ]; then
+			printf 'ROUTE\tFAULT\t%s\t-\t-\t-\t-\t%s\n' "$R_FROM" "$(printf '%s' "$R_FAULT" | sed 's/  */ /g')"
+		else
+			printf '%-8s %s\n' FAULT "$R_FROM"
+			printf '         %s\n' "$R_FAULT"
+		fi
+		return 0
+	fi
+	if [ "$OPT_TSV" = 1 ]; then
+		printf 'ROUTE\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+			"$ACTED" "$R_FROM" "$R_SRC" "$R_VIA" "$R_TOWARD" "$MODE/$SERVED" "$WHY"
+	else
+		printf '%-8s %s\n' "$ACTED" "$R_FROM"
+		printf '         from   %s   (registered %s, HOW=%s)\n' "$R_SRC" "$R_FROM" "$R_HOW"
+		printf '         into   %s\n' "$R_TOWARD"
+		printf '         at1pl  %s: %s\n' "$VERDICT" "$WHY"
+		[ -n "$MOVED" ] && printf '         moved  %s\n' "$MOVED"
+		case "$R_VIA" in mcp:*) printf '         mcp    %s answered mode=%s at %s.seat, serving %s of the %s file(s) that landed%s\n' \
+			"${R_VIA#mcp:}" "$MODE" "$R_TOWARD" "$SERVED" "$LANDED" "$([ -n "$MCPNOTE" ] && printf ' -- %s' "$MCPNOTE")" ;; esac
+		[ "$ACTED" = PULLED ] && printf '         landed %s file(s), %s byte(s); receipt in %s.pull.tsv\n' "$NFILES" "$BYTES" "$R_TOWARD"
+		if [ "$OPT_ALL" = 1 ] && [ -s "$TMPD/at1pl.tsv" ]; then
+			awk -F"$TAB" '$1=="ATOM"{printf "         %-11s %s\n", $2, $3}' "$TMPD/at1pl.tsv"
+		fi
+	fi
+	return 0
+}
+
+routes_wanted() {
+	if [ $# -gt 0 ]; then printf '%s\n' "$@" ; else awk 'NF==4 && $1!="FROM"{print $1}' "$RREG" ; fi
+}
+
+cmd_move() {   # $1 = pull|check ; rest = route names
+	act=$1 ; shift
+	NFAULT=0 ; NPULL=0 ; NHOLD=0
+	[ "$OPT_TSV" = 1 ] && printf 'kind\tverdict\troute\twhere\tvia\ttoward\tmcp\tnote\n'
+	routes_wanted "$@" > "$TMPD/want"
+	nw=$(grep -c . "$TMPD/want" 2>/dev/null) ; nw=${nw:-0}
+	[ "$nw" -gt 0 ] || { printf '%s: r/pull carries no route row. Columns are in d/r/pull: FROM VIA TOWARD LANDS.\n' "$me" >&2 ; return 0 ; }
+	while IFS= read -r rn; do
+		[ -n "$rn" ] || continue
+		: > "$TMPD/at1pl.tsv"
+		MODE=- ; SERVED=- ; MCPNOTE= ; BYTES=0 ; NFILES=0 ; MOVED=
+		route_load "$rn"
+		if [ -n "$R_FAULT" ]; then ACTED=FAULT ; say_route "$act" ; continue ; fi
+		build_manifest
+		freshness
+		mcp_attest
+		if [ "$VERDICT" = PULL ] && [ "$act" = pull ]; then
+			land ; ACTED=PULLED ; NPULL=$((NPULL+1))
+		elif [ "$VERDICT" = PULL ]; then
+			ACTED=WOULD-PULL ; NPULL=$((NPULL+1))
+		else
+			ACTED=HELD ; NHOLD=$((NHOLD+1))
+		fi
+		say_route "$act"
+	done < "$TMPD/want"
+	if [ "$OPT_TSV" = 1 ]; then
+		printf 'TOTAL\t%s\t-\t-\t-\t-\t-\tpulled=%s held=%s faults=%s\n' \
+			"$([ "$NFAULT" -gt 0 ] && echo FAULTS || echo CLEAN)" "$NPULL" "$NHOLD" "$NFAULT"
+	else
+		printf -- '-- root %s (host register h/%s, routes r/pull)\n' "$ROOT" "$HOSTNM"
+		printf -- '-- %s route(s): %s pulled/would-pull, %s held, %s fault(s) --\n' "$nw" "$NPULL" "$NHOLD" "$NFAULT"
+		[ "$NHOLD" -gt 0 ] && printf '   A HOLD copied nothing. That is the cheap case and it is the common one.\n'
+	fi
+	return 0
+}
+
+cmd_routes() {
+	[ "$OPT_TSV" = 1 ] && printf 'from\tvia\ttoward\tlands\thow\twhere\tstate\n'
+	[ "$OPT_TSV" = 1 ] || printf '%-20s %-16s %-14s %-20s %s\n' FROM VIA TOWARD 'REGISTERED HOW' 'WHERE IT RESOLVES'
+	awk 'NF==4 && $1!="FROM"{print $1}' "$RREG" | while IFS= read -r rn; do
+		route_load "$rn"
+		if [ -n "$R_FAULT" ]; then
+			st=$(printf '%s' "$R_FAULT" | awk '{print $1}')
+			if [ "$OPT_TSV" = 1 ]; then printf '%s\t%s\t%s\t%s\t%s\t-\t%s\n' "$rn" "${R_VIA:--}" "${R_TOWARD:--}" "${R_LANDS:--}" "${R_HOW:--}" "$st"
+			else printf '%-20s %-16s %-14s %-20s %s\n' "$rn" "${R_VIA:--}" "${R_TOWARD:--}" "${R_HOW:--}" "$st" ; fi
+		else
+			if [ "$OPT_TSV" = 1 ]; then printf '%s\t%s\t%s\t%s\t%s\t%s\tRESOLVED\n' "$rn" "$R_VIA" "$R_TOWARD" "$R_LANDS" "$R_HOW" "$R_SRC"
+			else printf '%-20s %-16s %-14s %-20s %s\n' "$rn" "$R_VIA" "$R_TOWARD" "$R_HOW" "$R_SRC" ; fi
+		fi
+	done
+	[ "$OPT_TSV" = 1 ] || {
+		printf '\n   FROM is a capability name in h/%s, never a path. WHERE above was resolved out of\n' "$HOSTNM"
+		printf '   that register just now; change the register and this changes with it.\n' ; }
+	return 0
+}
+
+cmd_roots() {
+	[ "$OPT_TSV" = 1 ] && printf 'name\twhere\treachable\tmarker\tnote\n'
+	[ "$OPT_TSV" = 1 ] || printf '%-20s %-9s %-7s %s\n' NAME REACHABLE MARKER WHERE
+	awk 'NF==5 && $2=="c4root"{print $1}' "$HREG" | while IFS= read -r n; do
+		w=$(resolve_where "$HREG" "$n") ; [ -n "$w" ] || w=UNRESOLVED
+		r=no ; [ -d "$w" ] && r=yes
+		m=no ; [ -f "$w/.c4" ] && m=yes
+		if [ "$OPT_TSV" = 1 ]; then printf '%s\t%s\t%s\t%s\t%s\n' "$n" "$w" "$r" "$m" "$(hnote "$HREG" "$n")"
+		else printf '%-20s %-9s %-7s %s\n' "$n" "$r" "$m" "$w" ; fi
+	done
+	[ "$OPT_TSV" = 1 ] || {
+		printf '\n   Reach any of these with  pl1in <cmd> -R <NAME>.  The root is a registration, so a\n'
+		printf '   second root costs a row rather than an edit to this program.\n' ; }
+	return 0
+}
+
+# ---- the circle ---------------------------------------------------------------------------------
+# Corwin's claim, restated as something a machine can check: if the tooling that links C4 to the
+# AS4CE-tended MAIN MEMORY store works when C4 drives it directly, the same tooling will still
+# work once polygram mints it into a skill and it arrives as a plugin.  That is one claim in
+# seven legs.  A leg that cannot close today is printed OPEN with the command that would close
+# it.  Faking a leg here would destroy the only thing this check is for.
+leg() {   # $1 name  $2 CLOSED|OPEN  $3 what was measured  $4 the command that would close it
+	NLEG=$((NLEG+1)) ; [ "$2" = CLOSED ] && NCLOSED=$((NCLOSED+1))
+	if [ "$OPT_TSV" = 1 ]; then printf 'LEG\t%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$4"
+	else
+		printf '%-6s %s\n' "$2" "$1"
+		printf '       %s\n' "$3"
+		[ "$2" = OPEN ] && [ -n "$4" ] && printf '       would close it:  %s\n' "$4"
+	fi
+}
+
+cmd_circle() {
+	NLEG=0 ; NCLOSED=0
+	[ "$OPT_TSV" = 1 ] && printf 'kind\tleg\tstate\tmeasured\twould_close\n'
+	[ "$OPT_TSV" = 1 ] || {
+		printf '== THE CIRCLE == C4 pulls with tools it minted; the plugin will carry the same ones ==\n\n' ; }
+
+	nr=0 ; nres=0 ; narc=0 ; nhold=0 ; npull=0 ; nmcp=0 ; nseated=0 ; nserved=0 ; nlanded=0
+	for rn in $(awk 'NF==4 && $1!="FROM"{print $1}' "$RREG"); do
+		nr=$((nr+1))
+		MODE=- ; SERVED=- ; MCPNOTE=
+		route_load "$rn"
+		# An ARC refusal is this program working, not this program stuck. It is counted apart
+		# so a correct refusal can never read as an unresolved register row.
+		case "${R_FAULT:-}" in ARC-REFUSED*) narc=$((narc+1)) ; continue ;; esac
+		[ -n "$R_FAULT" ] && continue
+		nres=$((nres+1))
+		build_manifest ; freshness ; mcp_attest
+		[ "$VERDICT" = HOLD ] && nhold=$((nhold+1)) || npull=$((npull+1))
+		case "$R_VIA" in mcp:*) nmcp=$((nmcp+1))
+			[ "$MODE" = SEATED ] && nseated=$((nseated+1))
+			[ "${SERVED:--}" != - ] && [ "${SERVED:-0}" -gt 0 ] 2>/dev/null && nserved=$((nserved+1))
+			nlanded=$((nlanded + ${LANDED:-0})) ;;
+		esac
+	done
+
+	[ "$nr" = "$((nres + narc))" ] && s=CLOSED || s=OPEN
+	leg ROUTES-RESOLVE "$s" \
+		"$nres of $nr route(s) in r/pull resolved to a location h/$HOSTNM names and $narc was refused as an ARC on purpose; no path is written into bin/pl1in" \
+		"sh bin/pl1in routes -r $ROOT   # then add the missing CAPABILITY row to h/$HOSTNM"
+
+	[ "$nres" -gt 0 ] && s=CLOSED || s=OPEN
+	leg FRESHNESS "$s" \
+		"bin/at1pl returned a verdict for every resolved route: $nhold HOLD, $npull PULL" \
+		"sh bin/pl1in check -r $ROOT"
+
+	[ "$nres" -gt 0 ] && [ "$nhold" = "$nres" ] && s=CLOSED || s=OPEN
+	leg LANDING "$s" \
+		"$nhold of $nres landing(s) re-measure clean against their source: the bytes in this C4 root are the bytes the AS4CE store holds" \
+		"sh bin/pl1in pull -r $ROOT   # a PULL leaves this CLOSED on the next run"
+
+	[ "$nmcp" -gt 0 ] && [ "$nseated" = "$nmcp" ] && s=CLOSED || s=OPEN
+	leg MCP-ATTEST "$s" \
+		"$nseated of $nmcp mcp route(s) started the minted module, spoke JSON-RPC on stdio and got mode=SEATED. Asked at <TOWARD>.seat, never at the source -- a seat_mode CREATES its scaffolding, so a source is never offered to it" \
+		"python3 -m polygram.mcp mentcached   # with PYTHONPATH and MENTCACHED_SEAT from h/$HOSTNM"
+
+	[ "$nmcp" -gt 0 ] && [ "$nserved" = "$nmcp" ] && s=CLOSED || s=OPEN
+	leg MCP-SERVE "$s" \
+		"the minted servers serve 0 item(s) against the $nlanded file(s) that landed. A tree of flat .md files is not the chained generation layout polygram/mcp/store.py reads, so a SEATED server can still serve nothing, and until this closes the bytes reach C4 by copy and not by MCP" \
+		"seat_append / persona_mutate one item per landed sheet through the server, so the store holds them in its own layout; then this reads non-zero"
+
+	# PARITY -- the strongest evidence for his claim, and it is a sha comparison, not an opinion.
+	imp=$(resolve_where "$HREG" mcp-import-root 2>/dev/null)
+	dst=$(resolve_where "$HREG" plugin-dist 2>/dev/null)
+	same=0 ; diff=0 ; miss=0
+	if [ -n "$imp" ] && [ -n "$dst" ] && [ -d "$imp/polygram/mcp" ] && [ -d "$dst/servers/polygram/mcp" ]; then
+		for f in "$imp"/polygram/mcp/*.py; do
+			b=$(basename -- "$f") ; g="$dst/servers/polygram/mcp/$b"
+			if [ ! -f "$g" ]; then miss=$((miss+1)) ; continue ; fi
+			a1=$(sha256sum "$f" 2>/dev/null | cut -d' ' -f1) ; a2=$(sha256sum "$g" 2>/dev/null | cut -d' ' -f1)
+			[ "$a1" = "$a2" ] && same=$((same+1)) || diff=$((diff+1))
+		done
+		[ "$diff" = 0 ] && [ "$miss" = 0 ] && [ "$same" -gt 0 ] && s=CLOSED || s=OPEN
+		leg PLUGIN-PARITY "$s" \
+			"$same module(s) byte-identical between the servers C4 just drove and the ones dist/vibrobeast ships; $diff differ, $miss absent from the dist" \
+			"python3 -m polygram dist   # re-mint the plugin so the shipped copy matches the driven one"
+	else
+		p=$(dirname -- "${dst:-/nowhere}")
+		leg PLUGIN-PARITY OPEN \
+			"cannot compare: mcp-import-root=${imp:-UNREGISTERED} plugin-dist=${dst:-UNREGISTERED}; $p holds: $(ls -1 "$p" 2>/dev/null | head -5 | tr '\n' ' ')" \
+			"add mcp-import-root and plugin-dist rows to h/$HOSTNM"
+	fi
+
+	ins=$(resolve_where "$HREG" plugin-installed 2>/dev/null)
+	if [ -n "$ins" ] && [ -d "$ins" ]; then
+		n=$(find "$ins" -name .mcp.json 2>/dev/null | grep -c .)
+		[ "${n:-0}" -gt 0 ] && s=CLOSED || s=OPEN
+		leg PLUGIN-INSTALLED "$s" "$ins holds ${n:-0} .mcp.json" \
+			"install the vibrobeast plugin from ${dst:-the dist} into $ins"
+	else
+		p=$(dirname -- "${ins:-/nowhere}")
+		l=$(ls -1a "$p" 2>/dev/null | grep -v '^\.\{1,2\}$' | head -8 | tr '\n' ' ')
+		[ -n "$l" ] || l="(and $p does not list either)"
+		leg PLUGIN-INSTALLED OPEN \
+			"nothing is installed at ${ins:-UNREGISTERED}; $p holds: $l" \
+			"install the vibrobeast plugin from ${dst:-the dist}, then re-run this"
+	fi
+
+	if [ "$OPT_TSV" = 1 ]; then
+		printf 'TOTAL\tCIRCLE\t%s\t%s of %s leg(s) closed\t-\n' \
+			"$([ "$NCLOSED" = "$NLEG" ] && echo WHOLE || echo PARTIAL)" "$NCLOSED" "$NLEG"
+	else
+		printf '\n-- %s of %s leg(s) closed on %s --\n' "$NCLOSED" "$NLEG" "$(today)"
+		if [ "$NCLOSED" = "$NLEG" ]; then
+			printf 'THE CIRCLE IS WHOLE. Every leg was measured on this host, this run.\n'
+		else
+			printf 'THE CIRCLE IS PARTIAL, and the open legs are named above with the command that\n'
+			printf 'would close each one. An open leg reported as closed would make this whole check\n'
+			printf 'worthless, so it is reported open.\n'
+		fi
+		printf '\nFALSIFIER: this check is wrong if PLUGIN-PARITY ever reads CLOSED while\n'
+		printf '`python3 -m polygram.mcp --list` run from the dist and from the import root behave\n'
+		printf 'differently. Byte-identity of the modules is the evidence; behaviour is the claim.\n'
+	fi
+	return 0
+}
+
+# ---- --prove-red ----------------------------------------------------------------------------------
+# The claims: a quiet source is not copied; a moved source is; an ARC is refused by name; two
+# registers that disagree about a mechanism are refused rather than reconciled; a route to an
+# unregistered location is a fault and not a guess; a landing may not climb out of the root; a
+# landing may not sit inside its own source; a malformed register row is named, not interpreted.
+cmd_red() {
+	d="$TMPD/red" ; mkdir -p "$d/root/bin" "$d/root/h" "$d/root/d/h" "$d/root/d/r" "$d/root/r" || die "cannot make fixture"
+	mkdir -p "$d/src/quiet" "$d/src/moves" "$d/src/arcdir" "$d/src/seam" || die "cannot make fixture sources"
+	cp "$0" "$d/root/bin/pl1in" 2>/dev/null || die "cannot stage pl1in"
+	cp "$AT1PL" "$d/root/bin/at1pl" 2>/dev/null || die "cannot stage at1pl"
+	chmod +x "$d/root/bin/pl1in" "$d/root/bin/at1pl" 2>/dev/null || :
+	printf '# fixture root marker\nroot\tc4\n' > "$d/root/.c4"
+	printf 'steady\n' > "$d/src/quiet/a.txt" ; printf 'steady too\n' > "$d/src/quiet/b.txt"
+	printf 'will advance\n' > "$d/src/moves/a.txt"
+	printf 'a mirror\n' > "$d/src/arcdir/a.txt"
+	printf 'a seam\n' > "$d/src/seam/a.txt"
+
+	printf 'CAPABILITY HOW WHERE NOTE WHEN\n' > "$d/root/d/h/red"
+	printf 'FROM VIA TOWARD LANDS\n' > "$d/root/d/r/pull"
+	{
+	printf 'mount-src fs %s the-fixture-sources 2026-09-17\n' "$d/src"
+	printf 'quiet fs mount-src/quiet nothing-ever-moves-here 2026-09-17\n'
+	printf 'moves fs mount-src/moves one-atom-will-advance 2026-09-17\n'
+	printf 'mirrored arc mount-src/arcdir an-ARC-and-so-never-a-source 2026-09-17\n'
+	printf 'seamy fs mount-src/seam the-route-will-claim-mcp-for-this 2026-09-17\n'
+	printf 'ghost fs mount-src/absent-on-purpose named-but-not-on-disk 2026-09-17\n'
+	printf 'climber fs mount-src/quiet registered-so-BAD-TOWARD-fires-not-UNREGISTERED 2026-09-17\n'
+	printf 'selfeat fs %s/h a-source-INSIDE-the-fixture-root 2026-09-17\n' "$d/root"
+	printf 'root-self c4root %s the-fixture-root-itself 2026-09-17\n' "$d/root"
+	printf 'not-a-root fs %s deliberately-HOW-fs-so--R-refuses 2026-09-17\n' "$d/root"
+	} >> "$d/root/h/red"
+	{
+	printf 'quiet fs h/quiet quiet\n'
+	printf 'moves fs h/moves moves\n'
+	printf 'mirrored arc h/mirror mirrored\n'
+	printf 'seamy mcp:persona h/seam seamy\n'
+	printf 'orphan fs h/orphan orphan\n'
+	printf 'climber fs ../escaped climber\n'
+	printf 'selfeat fs h/inner selfeat\n'
+	printf 'badwidth fs h/bad\n'
+	} >> "$d/root/r/pull"
+	find "$d/src" -exec touch -t 202601010000 {} + 2>/dev/null || :
+
+	P="$d/root/bin/pl1in"
+	fail=0
+	want() { case "$2" in *"$1"*) printf 'prove-red  RED  %s\n' "$3" ;;
+		*) printf 'prove-red  FAIL %s\n' "$3" >&2 ; fail=$((fail+1)) ;; esac ; }
+	deny() { case "$2" in *"$1"*) printf 'prove-red  FAIL %s\n' "$3" >&2 ; fail=$((fail+1)) ;;
+		*) printf 'prove-red  RED  %s\n' "$3" ;; esac ; }
+
+	o=$(C4_HOST=red sh "$P" pull quiet -r "$d/root" 2>&1)
+	want 'PULLED' "$o" 'a first pull lands, because nothing had landed before'
+	o=$(C4_HOST=red sh "$P" pull quiet -r "$d/root" 2>&1)
+	want 'HELD' "$o" 'the second pull of a quiet source HOLDs -- at1pl said so'
+	deny 'PULLED' "$o" 'and it copies nothing; the cheap case is cheap'
+
+	C4_HOST=red sh "$P" pull moves -r "$d/root" >/dev/null 2>&1
+	printf 'advanced\n' > "$d/src/moves/a.txt" ; touch "$d/src/moves/a.txt" 2>/dev/null || :
+	o=$(C4_HOST=red sh "$P" pull moves -r "$d/root" 2>&1)
+	want 'PULLED' "$o" 'an atom advanced, so it pulled'
+	want 'a.txt' "$o" 'and the report names the atom that moved'
+	grep -q advanced "$d/root/h/moves/a.txt" 2>/dev/null \
+		&& printf 'prove-red  RED  the new bytes are in the landing\n' \
+		|| { printf 'prove-red  FAIL the new bytes are in the landing\n' >&2 ; fail=$((fail+1)) ; }
+
+	o=$(C4_HOST=red sh "$P" check mirrored -r "$d/root" 2>&1)
+	want 'ARC-REFUSED' "$o" 'an ARC is refused by name, before any path is resolved'
+	[ -d "$d/root/h/mirror" ] && { printf 'prove-red  FAIL an ARC route made a landing\n' >&2 ; fail=$((fail+1)) ; } \
+		|| printf 'prove-red  RED  an ARC route makes no landing\n'
+
+	o=$(C4_HOST=red sh "$P" check seamy -r "$d/root" 2>&1)
+	want 'SEAM-REFUSED' "$o" 'r/pull says mcp:persona, h/red says fs -- a seam, refused not reconciled'
+	o=$(C4_HOST=red sh "$P" check orphan -r "$d/root" 2>&1)
+	want 'UNREGISTERED' "$o" 'a route to a location nobody registered is a fault, not a guess'
+	o=$(C4_HOST=red sh "$P" check climber -r "$d/root" 2>&1)
+	want 'BAD-TOWARD' "$o" 'a landing that climbs out of the root is refused'
+	o=$(C4_HOST=red sh "$P" check selfeat -r "$d/root" 2>&1)
+	want 'WOULD-WRITE-SOURCE' "$o" 'a landing inside its own source is refused before a copy can shadow what it copied'
+	o=$(C4_HOST=red sh "$P" check badwidth -r "$d/root" 2>&1)
+	want 'MALFORMED-ROUTE' "$o" 'a row that is not the width its column dictionary declares is named, not interpreted'
+	o=$(C4_HOST=red sh "$P" check ghostroute -r "$d/root" 2>&1)
+	want 'NO-SUCH-ROUTE' "$o" 'a route name in no row is reported with the names that ARE there'
+
+	printf 'ghosty fs h/ghosty ghosty\n' >> "$d/root/r/pull"
+	o=$(C4_HOST=red sh "$P" check ghosty -r "$d/root" 2>&1)
+	want 'UNREGISTERED' "$o" 'a route whose FROM is unregistered is caught before the disk is touched'
+	printf 'ghostr fs h/ghostr ghostr\n' >> "$d/root/r/pull"
+	printf 'ghostr fs mount-src/absent-on-purpose named-but-not-on-disk 2026-09-17\n' >> "$d/root/h/red"
+	o=$(C4_HOST=red sh "$P" check ghostr -r "$d/root" 2>&1)
+	want 'SOURCE-ABSENT' "$o" 'a registered location that is not on disk reports the parent listing, not a bare absence'
+
+	o=$(C4_HOST=red sh "$P" check quiet -R not-a-root 2>&1) ; rc=$?
+	want 'not c4root' "$o" '-R refuses a capability that is not registered as a C4 root'
+	[ "$rc" = 2 ] && printf 'prove-red  RED  and that refusal exits 2, the usage code\n' \
+		|| { printf 'prove-red  FAIL -R refusal exited %s, not 2\n' "$rc" >&2 ; fail=$((fail+1)) ; }
+
+	o=$(C4_HOST=red sh "$P" check -r "$d/root" 2>&1) ; rc=$?
+	[ "$rc" = 0 ] && printf 'prove-red  RED  a run with faults in it still exits 0, because it could measure\n' \
+		|| { printf 'prove-red  FAIL a measuring run exited %s\n' "$rc" >&2 ; fail=$((fail+1)) ; }
+
+	before=$(find "$d/src" -type f | sort | xargs sha256sum 2>/dev/null | sha256sum)
+	C4_HOST=red sh "$P" pull -r "$d/root" >/dev/null 2>&1
+	after=$(find "$d/src" -type f | sort | xargs sha256sum 2>/dev/null | sha256sum)
+	[ "$before" = "$after" ] && printf 'prove-red  RED  every source is byte-for-byte unchanged by a full pull\n' \
+		|| { printf 'prove-red  FAIL a source changed during a pull\n' >&2 ; fail=$((fail+1)) ; }
+
+	if [ "$fail" = 0 ]; then printf '\nprove-red: every planted fault fired.\n' ; return 0
+	else printf '\nprove-red: %s claim(s) did NOT fire. A harness that cannot fail is not running.\n' "$fail" >&2 ; return 1 ; fi
+}
+
+# ---- main ------------------------------------------------------------------------------------------
+cmd=${1:-} ; [ $# -gt 0 ] && shift
+case "$cmd" in
+	-h|--help|'') awk 'NR>1 { if (substr($0,1,1) != "#") exit; sub(/^# ?/,""); print }' "$0" ; exit 0 ;;
+	--prove-red) AT1PL=$(find_at1pl) || die "no at1pl beside this program or on PATH" ; cmd_red ; exit $? ;;
+	pull|check|routes|roots|circle) : ;;
+	*) die "unknown command '$cmd'; try pull, check, routes, roots, circle, --prove-red, -h" ;;
+esac
+
+specs=
+while [ $# -gt 0 ]; do
+	case "$1" in
+		-r) [ $# -ge 2 ] || die "-r needs a ROOT" ; OPT_ROOT=$2 ; shift 2 ;;
+		-R) [ $# -ge 2 ] || die "-R needs a registered root NAME" ; OPT_RNAME=$2 ; shift 2 ;;
+		--all) OPT_ALL=1 ; shift ;;
+		--tsv) OPT_TSV=1 ; shift ;;
+		--) shift ; break ;;
+		-*) die "unknown option $1" ;;
+		*) specs="$specs $1" ; shift ;;
+	esac
+done
+[ -n "$OPT_ROOT" ] && [ -n "$OPT_RNAME" ] && die "-r and -R both name a root; pick one"
+
+AT1PL=$(find_at1pl) || die "no at1pl beside this program or on PATH -- freshness is its answer, not this program's"
+resolve_root
+
+case "$cmd" in
+	pull)   cmd_move pull  $specs ;;
+	check)  cmd_move check $specs ;;
+	routes) cmd_routes ;;
+	roots)  cmd_roots ;;
+	circle) cmd_circle ;;
+esac
+exit 0

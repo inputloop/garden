@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+#+property: header-args :tangle no :padline no :mkdirp yes
+#+begin_src text :tangle ../escape.txt
+a
+#+end_src

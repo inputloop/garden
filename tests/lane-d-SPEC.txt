@@ -1,0 +1,36 @@
+# lane-d-SPEC.txt -- the SPEC lines for lane D's four tools, written before their tests and code
+# (2026-10-10). One line per promise; each test file names the line it checks by its id.
+#
+# st1dt (the seating detector)
+ST1  st1dt finds the nearest .gate walking up from the folder, up to the mount root, and names it.
+ST2  st1dt never names, lists or opens anything on the never-list (.house/ .keys/ *.secret *.key Z/ a/ p/ SAVANNAH .patternwalk/ chat bodies); it gives a count only.
+ST3  st1dt writes nothing: the folder's bytes and listing are the same after a run.
+ST4  st1dt proposes exactly one grain (none, light or full) and asks exactly one question.
+ST5  st1dt honours a remembered "no" (skill.seatkeeper.<hash>=no): it says so and asks nothing.
+ST6  st1dt ends with a words read-back of what the model was shown.
+#
+# ROADS.md and rd1ck (the roads checker)
+RD1  rd1ck prints READ, NOT REACHED or FENCED for every road; it never prints "absent".
+RD2  a road under a fenced path prints FENCED and is never read (not opened, not listed).
+RD3  a NOT REACHED row names the seat that looked, the parent folder it listed and the request it tried, or "none open".
+RD4  with road 1 blank, road 2 answers READ (the fall-through is walked, not assumed).
+RD5  the Markdown table is the source; rd1ck reads ROADS.md, never a TSV.
+#
+# qg1ck (the question gauge)
+QG1  qg1ck fails (exit 1) on any two-question frame whose skip-confidence is above 0.17; 0.17 passes.
+QG2  qg1ck counts GRAMMARY words that appear in a logged question with no gloss on the same line.
+QG3  qg1ck counts pref mirror rows; it never changes the frame.
+#
+# br1in (the Bryant drop intake)
+BR1  br1in never writes into a drop: an output folder inside any drop is refused (exit 3), and the drop's bytes are unchanged after a run.
+BR2  one flipped byte in a summed file makes the verdict FAIL (exit 1).
+BR3  each skill is NEW, UNCHANGED or CHANGED against its newest prior copy, and a skill of the prior drop missing now is DROPPED.
+BR4  each skill line carries its name, version, sha256, status and a one-line change summary (description and headings).
+BR5  each skill is mapped to our counterpart (counterparts table first, then by name) or says "none".
+BR6  modes of work are printed as extracted, not judged.
+BR7  br1in never reads under a fenced path (c4/Z, c4/a, c4/p, .keys, .house, SAVANNAH, .patternwalk).
+BR8  on the real drops it rediscovers S1's facts (08-04 = 09-17 SKILL.md bytes but primer; r2 changes only token-optimizer; r3 changes only colophon and signet).
+#
+# Authored by Mentat (for Corwin; claude-opus-5-5).
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+# SPDX-License-Identifier: CC-BY-SA-4.0

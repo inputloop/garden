@@ -1,0 +1,89 @@
+#!/bin/sh
+# ss1ls -- SOFT SKILLS 1 LIST.  The dynaloader's second reader: list the soft skills under one or
+# more SOFT-SKILLS roots, or print one SKILL.md -- from the shell, with awk, sharing no code with
+# polygram/mcp/softskills.py (the MCP tools soft_skills_list / soft_skill_read).
+#
+# THE NAME, declared as my reading (a guess, marked): SS soft skills · 1 run-level 1 (reads only)
+# · LS list.
+#
+# usage: sh bin/ss1ls [--tsv] [ROOT...]        list: name, then description (from SKILL.md frontmatter)
+#        sh bin/ss1ls --cat NAME [ROOT...]      print NAME/SKILL.md from the first root that has it
+#        sh bin/ss1ls --prove-red
+#   ROOT defaults: $SOFT_SKILLS (os.pathsep-separated), else ./SOFT-SKILLS, else ~/.mentcached/SOFT-SKILLS
+#   --tsv          one line per skill: name<TAB>root<TAB>description
+# Exit: 0 · 1 nothing found / NAME absent · 2 usage.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st> -- GPLv3-or-later. Authored by Mentat (for Corwin).
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+# This file is part of polygram.  polygram is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later version.  It is
+# distributed WITHOUT ANY WARRANTY; see <https://www.gnu.org/licenses/>.
+set -u
+LC_ALL=C; export LC_ALL
+me=${0##*/}
+TSV=0 CAT= PROVE=0
+while [ $# -gt 0 ]; do
+  case $1 in
+    --tsv) TSV=1 ;; --prove-red) PROVE=1 ;;
+    --cat) [ $# -ge 2 ] || { echo "$me: --cat needs a NAME" >&2; exit 2; }; CAT=$2; shift ;;
+    -h|--help) sed -n '/^# usage:/,/^# Exit/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -*) echo "$me: unknown option: $1" >&2; exit 2 ;;
+    *) break ;;
+  esac
+  shift
+done
+
+# desc FILE -> the frontmatter description on one line (folded >- and | blocks joined), else empty
+desc() {
+  awk 'NR==1 && $0!="---" {exit} NR>1 && $0=="---" {exit}
+       NR>1 && /^[A-Za-z_][A-Za-z0-9_-]*:/ { inkey=($0 ~ /^description:/); if (inkey) { v=$0; sub(/^description:[ \t]*/, "", v); if (v==">"||v==">-"||v=="|"||v=="|-") v=""; out=v }; next }
+       inkey && /^[ \t]/ { s=$0; sub(/^[ \t]+/, "", s); out = (out=="" ? s : out " " s) }
+       END { gsub(/[ \t]+/, " ", out); print out }' "$1"
+}
+
+roots() {
+  if [ $# -gt 0 ]; then printf '%s\n' "$@"
+  elif [ -n "${SOFT_SKILLS:-}" ]; then printf '%s\n' "$SOFT_SKILLS" | tr ':;' '\n\n' | grep -v '^$'
+  elif [ -d ./SOFT-SKILLS ]; then echo ./SOFT-SKILLS
+  else echo "$HOME/.mentcached/SOFT-SKILLS"; fi
+}
+
+run() {   # ROOT... -> listing (or --cat) on stdout; returns 1 when nothing found
+  found=0
+  for r in $(roots "$@" | tr '\n' ' '); do
+    [ -d "$r" ] || continue
+    for d in "$r"/*/; do
+      [ -f "$d/SKILL.md" ] || continue
+      n=$(basename "$d")
+      if [ -n "$CAT" ]; then
+        [ "$n" = "$CAT" ] || continue
+        cat "$d/SKILL.md"; return 0
+      fi
+      found=$((found+1))
+      if [ $TSV -eq 1 ]; then printf '%s\t%s\t%s\n' "$n" "$r" "$(desc "$d/SKILL.md")"
+      else printf '%-24s %s\n' "$n" "$(desc "$d/SKILL.md" | cut -c1-100)"; fi
+    done
+  done
+  if [ -n "$CAT" ]; then echo "$me: no soft skill $CAT under: $(roots "$@" | tr '\n' ' ')" >&2; return 1; fi
+  [ "$found" -gt 0 ] || { echo "$me: no soft skills under: $(roots "$@" | tr '\n' ' ')" >&2; return 1; }
+}
+
+if [ $PROVE -eq 1 ]; then
+  t=$(mktemp -d 2>/dev/null) || { t=${TMPDIR:-/tmp}/ss1ls.$$; mkdir -p "$t"; }
+  trap 'rm -rf "$t"' EXIT INT TERM
+  mkdir -p "$t/S/one" "$t/S/two" "$t/S/notaskill"
+  printf -- '---\nname: one\ndescription: >-\n  first line\n  second line\n---\nbody one\n' > "$t/S/one/SKILL.md"
+  printf -- '---\nname: two\ndescription: plain\n---\nbody two\n' > "$t/S/two/SKILL.md"
+  red=0
+  out=$(TSV=1 CAT= run "$t/S") || { echo "FAIL: listing failed"; exit 1; }
+  printf '%s\n' "$out" | grep -q "^one	$t/S	first line second line$" && red=$((red+1)) || echo "FAIL: folded description not joined: $out"
+  printf '%s\n' "$out" | grep -q '^two	.*	plain$' && red=$((red+1)) || echo "FAIL: plain description"
+  [ "$(printf '%s\n' "$out" | wc -l)" = 2 ] && red=$((red+1)) || echo "FAIL: a folder without SKILL.md was listed"
+  CAT=two run "$t/S" | grep -q '^body two$' && red=$((red+1)) || echo "FAIL: --cat"
+  CAT=nope run "$t/S" >/dev/null 2>&1 && { echo "FAIL: absent name did not fail"; exit 1; } || red=$((red+1))
+  [ $red -eq 5 ] && { echo "PASS: ss1ls lists folded and plain descriptions, skips non-skills, cats one, fails on absence"; exit 0; }
+  echo "FAIL: ss1ls prove-red $red/5"; exit 1
+fi
+run "$@"

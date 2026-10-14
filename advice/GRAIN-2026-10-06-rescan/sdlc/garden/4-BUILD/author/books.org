@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+#+title: Books on the author's edition: one row per title and per right
+
+No book text, audio or cover is in this prototype. This is the gate that decides, later, what may
+be put on a stick. A publisher holds a print licence for a set number of copies and a set time; it
+does not hold the rights. The author holds every other right unless he sold it (audio is often
+sold). So the check is made for each title and each right: has the author sold it?
+
+A row may say =yes= under include only when:
+- the right is =text=, =audio= or =other=;
+- "sold by author" is =no= (not =yes=, not =unknown=);
+- someone is named under "checked by" and a date (YYYY-MM-DD) is filled in.
+
+=bin/lr1bk= prints the rows that may go on a stick and refuses the file otherwise. The list of
+titles is collected by Jon; whether each right is sold is the author's and his counsel's to say.
+Nobody here guesses it. The rows below are placeholders, all =no=.
+
+| slug      | title                       | right | sold by author | checked by | date | include |
+|-----------+-----------------------------+-------+----------------+------------+------+---------|
+| example-1 | (placeholder, not a real title) | text  | unknown        |            |      | no      |
+| example-1 | (placeholder, not a real title) | audio | unknown        |            |      | no      |

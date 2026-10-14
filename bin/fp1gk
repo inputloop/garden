@@ -1,0 +1,41 @@
+#!/bin/sh
+# fp1gk -- FIRST-PERSON 1 GAUGE: count the devices that keep shipped prose from speaking in the first
+#          person: retired bracket tags, "the instrument", a third-person self-name mid-text, and a
+#          byline that is not the last thing on the page.  A gauge: it prints counts, never a verdict.
+#
+# usage:  fp1gk [--files] PATH...      PATH: files or folders (*.md *.org *.txt are read)
+#   Prints one TOTAL row per device, then (--files) one row per file with any count.
+# The four devices (turn 2 of the extension edition, 2026-10-10; Corwin: "work every item to be
+# first person, sign it once at the end"):
+#   tags        a bare [HIS] [DOMAIN] [SKILL] [PLATFORM] [MINE] outside code fences and backticks
+#               (the same reading bin/release's gate makes)
+#   instrument  "the instrument" (any case) outside fences and backticks
+#   third       "Mentat (for Corwin" more than 8 lines before the end of the file (a footer and its
+#               licence notice fit in the last 8)
+#   byline      "Authored by", "Drafted by" or "Written by" Mentat more than 8 lines before the end
+# Fenced and backticked text is a mention, not a device, and is not counted; for third and byline,
+# text in double quotes is a mention too (a glossary entry quoting the byline form).
+#
+# Authored by Mentat (for Corwin; claude-opus-5-5).
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+# SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later
+set -u
+FILES=0; [ "${1:-}" = --files ] && { FILES=1; shift; }
+[ $# -ge 1 ] || { sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+find "$@" -type d \( -name .git -o -name __pycache__ -o -name '_archive*' -o -name .arc \) -prune -o -type f \
+  \( -name '*.md' -o -name '*.org' -o -name '*.txt' \) -print 2>/dev/null | sort | while IFS= read -r f; do
+  n=$(wc -l < "$f" | tr -d ' ')
+  awk -v N="$n" -v F="$f" '
+    /^[ \t]*(```|~~~)/ { fence = !fence; next }
+    fence { next }
+    { t = $0; gsub(/`[^`]*`/, "", t); lt = tolower(t)
+      s = t; while (match(s, /\[(HIS|DOMAIN|SKILL|PLATFORM|MINE)\]/)) { tags++; s = substr(s, RSTART + RLENGTH) }
+      s = lt; while ((i = index(s, "the instrument")) > 0) { if (substr(s, i + 14, 1) != "-") ins++; s = substr(s, i + 14) }
+      if (FNR < N - 8) {
+        q = t; gsub(/"[^"]*"/, "", q); s = q; while ((i = index(s, "Mentat (for Corwin")) > 0) { third++; s = substr(s, i + 18) }
+        if (q ~ /(Authored|Drafted|Written) by Mentat/) byl++ } }
+    END { printf "%d\t%d\t%d\t%d\t%s\n", tags, ins, third, byl, F }' "$f"
+done | awk -F'\t' -v FILES=$FILES '
+  { a += $1; b += $2; c += $3; d += $4; if (FILES && ($1 + $2 + $3 + $4) > 0) rows = rows sprintf("  %3d %3d %3d %3d  %s\n", $1, $2, $3, $4, $5); n++ }
+  END { printf "fp1gk: %d file(s) read\nTOTAL tags %d\nTOTAL instrument %d\nTOTAL third %d\nTOTAL byline %d\n", n, a, b, c, d
+        if (FILES) printf "  tag ins 3rd byl  file\n%s", rows }'

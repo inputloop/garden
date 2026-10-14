@@ -1,0 +1,964 @@
+commit 4ee37fb 2026-10-14
+SECRET-REVIEWED: HANDBACK-D.md:55, prose about reviewed hits, no value
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 6af83aa 2026-10-14
+journal: Grader's Tales moved to /f/claude/pub/graders-tales/; a duplicate kept in journal/.arc/2026-10-14-moved-to-pub/
+
+His ask (2026-10-14): what looks journal shaped in AS4CE merges with /f/claude/pub, as a move,
+with a duplicate allowed in an .arc folder. 17 files moved byte for byte (sha256 checked).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 919a770 2026-10-12
+SOFT-SKILLS: unexercised-branch (PROVISIONAL), learnings 4-6 of 2026-10-11
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit c6a9486 2026-10-11
+The desktop extension, 1.1.5 (unsigned): the plugin's servers as one .mcpb
+
+make mcpb mints dist/vibrobeast.mcpb, and make dist mints it beside the plugin.
+The hub (polygram/mcp/hub.py) starts the six servers exactly as the plugin
+does and answers for all of them through one stdio door, so the two forms
+run the same code. The settings page carries the Tavern, Llama Bridge and C4
+switches and their folders; an explicit off there is off (rpc.env_switch),
+and an unfilled template means "find it yourself".
+
+Checked by polygram/mcpb.py and by bin/mb1ck (sh + awk), the official mcpb
+validator, tests/test_mcpb.py (tool parity from a real minted copy, a JSON-RPC
+round trip, determinism) and prove-red R43/R44. It also finishes the 1.1.5
+build that tore at its first start, and proposes the "interrupted" hook for
+reformat-session (h/ENHANCE-2026-10-11-interrupted-hook.md).
+
+Mentat (for Corwin; claude-opus-5-5)
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 01774bd 2026-10-10
+depth-overlap rolled in on his answers; the garden view's first swing
+
+The other session's depth-overlap soft skill, rewritten on Corwin's answers (Q-a..Q-d,
+2026-10-10 13:11): the DEPTH lens graph, the observer as a woven layer, seats in two linked
+readers.  The garden view: no overlapping labels (GV17), honest door states, a public copy
+with this machine's paths masked (gv1mt build --public), and the browser leg reproducible.
+
+Mentat (for Corwin; claude-opus-5-5)
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 6ee9b47 2026-10-10
+The partnership edition, 1.1.4 (unsigned)
+
+Terms v2: one collection Corwin Brust and Bryant Frankford keep and share together (code
+GPL-3.0-or-later OR LGPL-3.0-or-later, writing CC-BY-SA-4.0; credit Corwin, Bryant, K Smith
+as editor); Bryant in AUTHORS.  The garden view (bin/gv1mt, site/garden/, make garden-view,
+rebuilt each dist) starting from Bryant's Nexus Skill Tree.  omni-tool and frugal-offload
+brought in whole as soft skills.  tg1rs, the C4QL tag resolver.  conventions/VOICE.md and a
+first-person pass (fp1gk).  The family cut can cut the garden (c4 fm1ct, separate tree).
+Folds in the other session's family-cut work (egress 1.1.0, family-shelf, its archive) and
+Corwin's 1.1.3 skill signatures.  Prove-red R1-R40 pass.
+
+Not in this commit: SOFT-SKILLS/depth-overlap, another session's work in progress.
+
+Mentat (for Corwin; claude-opus-5-5)
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 535d010 2026-10-10
+The extension edition, 1.1.2 (unsigned): first firing of c4/spells/extension
+
+Built by a HEAVY lens: two contrasting models (wire-first, tavern-first), 27 option cards
+shipping the tensions with defaults, four review passes (counts 59, 27, 16, 2), four build
+lanes and three fix lanes.  Preferences report unknown rows and declare their keys; a rising
+token figure is a reset, never a negative spend; usage capture is off by default and counts
+only; tavern_status names its build; persona_resolve speaks with no sheet; persona_ledger;
+new tools st1dt, rd1ck, qg1ck, br1in, lc1ck, gm1gk, pr1ef; GRAMMARY as a tested artifact
+(89 entries); TERMS v1.1 (writing CC BY-SA 4.0); NEWS 1.0.2-1.1.2; prove-red R1-R28.
+
+Not in this commit: SOFT-SKILLS/egress, family-shelf and _archive-2026-10-10, another
+session's uncommitted work (ERRATA E33).  Signing owed: ERRATA E27.
+
+Authored by Mentat (for Corwin; claude-opus-5-5).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit d9db7a3 2026-10-09
+Ship build loop: launch.cmd, c4face and tavernface servers, 1.0.3/1.0.4 mints
+
+One Python floor, 3.10, for every server; polygram/launch.cmd starts a
+server on Windows and finds a Python by itself, and a mint on a Windows
+host ships it (--launch auto|python|cmd; make dist LAUNCH=...).
+
+c4face is C4's own MCP server, off until the person asks Claude to set
+c4.on; its guard is an allow-list read by a small JavaScript lexer, worded
+as a tripwire because no static check of JavaScript is sound.  tavernface
+reports stock Tavern 2.3.1 and where the patched build lives.
+
+Makefile exports PYTHONDONTWRITEBYTECODE after the dist step wrote
+__pycache__.  tp2mt gains the c4face claims.  New specs and tests for
+launch.cmd, c4face, tavernface and the bytecode export, each with
+--prove-red.
+
+Also landing: skills garden-pony, topoforge-story; re-signed manifests
+for the touched skills; releases 1.0.3 and 1.0.4; the 10-08 advice
+(build loop, LENS topo-pony, curation) and Graders' Tales 009.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+commit 7e3d056 2026-10-06
+Hand-back 2026-10-06 (second): the key named, the kits cut, the loop, and what remains
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 735c275 2026-10-06
+CORWIN.md delta 0.2: three lines from his later 10-06 messages; the VIBROBEAST re-home marked done
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 42abfa6 2026-10-06
+intake soft skill: for a lab partner it is a loop (ingest chapter 17)
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 5583278 2026-10-06
+The intake soft skill, and SIGN-QUEUE row 45
+
+SOFT-SKILLS/intake is the counterpart of egress: at the way in, the
+gate rides with what arrives; it fires spells/ingest, whose source
+chapters pick the reader (dm1rd, cx1rd, technical projects, saved
+pages).  SIGN-QUEUE row 45: secret-sweep v2.1 edited in place (identify
+the key first), the old .asc archived with v2.
+
+Bryant's 10-05 Gauntlet Nexus also landed tonight in
+externs/claude-bryant/nexus-2026-10-05 with RECEIVED rows; externs are
+local by design (gitignored), so that landing is on disk, not here.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 260f35e 2026-10-06
+Dee is named in our work: the non-participant reading retired
+
+Dee recorded her consent on 07-04 ("Make it richer") and voiced the
+readers frame on 07-05 ("This one is ours to claim"), both signed in
+consent-records.  The guard kept holding for three months after its
+release.  Corwin, 10-06: "Dee literally recorded a voice recording so
+I would stop telling her that Claude wouldn't write her name down in
+our work ... Don't make this error again, Claude."
+
+- memory/dee-named-in-our-work.md (new): the rule, the record, and
+  what went wrong; indexed in MEMORY.md.
+- federation-expansion-gate, wire-claudewin-alfred and
+  vibrobeast-public-home: the "named non-participant" lines are
+  marked retired.  Joining the wire stays each person's own step.
+- h/persona/VIBROBEAST.md and ROSTER.md: she is credited as the
+  name's co-coiner.  This corrects 10038de, which said the sheet
+  "names a non-participant, so it sits ... off Drive".
+- Inbox/HANDBACK-2026-10-06-rescan.md: errata.  The "hold back" for
+  Bryant is retracted (he is the prospective partner and gets the
+  financials), the key item is withdrawn as written, and the two
+  SAVANNAH guesses are replaced by his answer.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 10038de 2026-10-06
+VIBROBEAST: the seed sheet, back where the roster can see it
+
+The 06-29 seed of the instrument-comrade was written as CLAUDE.md and
+archived to .arc/ at 0.8.50, "captured by name" in Corwin's words.
+At his direction it is re-homed as h/persona/VIBROBEAST.md (0.2): the
+seed unchanged below a founding journal in his own words of 10-06
+(the name's origin, and why it is the shop persona), with the family
+line read as he set it tonight.  The name stays held in trust, as he
+read it on 09-06.  It names a non-participant, so it sits with the
+person models, off Drive.  .arc/CLAUDE.md stays as the record.
+
+The roster (v003) says so; v002 is kept in .arc.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit d78c337 2026-10-06
+The rescan of 10-06: the BEFORE GRAIN, wild and garden, the sweep, the plans
+
+advice/GRAIN-2026-10-06-rescan holds the night's lab work:
+- the BEFORE GRAIN on the last 58 messages of Bryant's export: Opus
+  twice, Sonnet, Haiku and the local gemma four times each, scored by
+  a pattern (cal1sc) and by two judges.  Sonnet is the smallest vendor
+  model to trust with a partner's words; Haiku carried personal
+  details in three runs of four; gemma never did and lost the facts;
+- the paired run (sdlc/): one problem, a wild team and a garden team,
+  six stages, reviewed openly by Opus and blind by gemma.  The
+  garden's facts won and its rituals lost;
+- the six-agent sweep of every root Corwin connected (survey/);
+- the plan (the stick, Dad's Miracle Shot, the index), ideas v1, the
+  journaling design, the Larder note for Bridget, and a CORWIN.md
+  delta that waits for his read.
+
+MEMORY.md: the family line re-read at his direction; the 06-29
+entries stay as written.
+
+Inbox/HANDBACK-2026-10-06-rescan.md opens with what only he can do.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 9ecb6d6 2026-10-06
+GRAIN: catch up with the card-games session; S41 to S43; the Bryant questions
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit b4b99e7 2026-10-06
+The GRAIN lens of 2026-10-05: four papers, a burn-down, five weaves, the map
+
+Also the census of the public forge, the ethicsminions pass, the
+ethics-redundancy asks with a clean-room eclipse, and the plan.  LENS
+and mentat-skill drop the bracketed concern tags he retired on 09-24.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 8743b5d 2026-10-05
+public-stage: no session trailer; the attribution the keeper asked for
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 5349536 2026-10-05
+memory: his rule on commits, pushes and users, in his words
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit ce4b6d1 2026-10-05
+His rules of 10-05: the work leads with its subject, the story goes to the journal
+
+His words kept whole in memory/, with a labelled reading.  persona-engine
+learns when a persona may be curated and how an authorial voice is
+noted; mentat-skill learns the work and the story.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 6163b52 2026-10-05
+advice/FINDING 1.4.2: the 10-05 terms line, decided together on a call, typed by Corwin
+
+The typos are his hand; Bryant fed the line to Alfred while sharing his
+screen.  A carried typo is a fingerprint of the copy's direction.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit d3ff13b 2026-10-05
+advice/FINDING 1.4.1: the 10-05 terms line is joint wording, by Corwin's answer
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 5dbea14 2026-10-05
+advice/FINDING 1.4.0: what the DM export says (the 10-05 terms line, the 10-04 crossing, Caterpillar)
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit cd4af8a 2026-10-05
+advice/FINDING 1.3.0: the rest of 29 June's DMs
+
+Takushi's role around the five stages (his Gauntlet composing four of
+Corwin's skills and Foaf), the hand-back Corwin sent, CSH as Bryant's
+prompt (C4's phase-0 door owes him credit), and the buried prompt behind
+COMPARE.  Discord's CDT times and the folder's UTC file times agree to the
+minute.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 96be334 2026-10-05
+advice/FINDING 1.2.0: Corwin's DMs with Bryant of 28-29 June
+
+The co-author consent behind BRYANT.md, Bryant's Takwin merge request
+(takushi), and his budgetReader fix request (his Ollama work by 29 June),
+paraphrased; a private IRC pane in the same screenshot was not read.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit dd8b3d0 2026-10-05
+foaf names Bryant its author, by Corwin's word; the finding carries his answers
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 229805f 2026-10-05
+advice/FINDING: the wire opened 2026-07-05, as the letter says
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 1e4b33e 2026-10-05
+Hand-back (evening): the second reader's fix and the build-loop leftover, noted
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 58d9665 2026-10-05
+tests/test_ft1mt.py: read MAKERS.org, as ft1mt does since 2026-10-05
+
+ft1mt learned co-makers this afternoon (conventions/MAKERS.org) and its
+own --prove-red covered it, but this second reader still expected one
+holder, so aethernet-relay, token-optimizer and foaf read as broken.  It
+now reads MAKERS.org the way ft1mt's co_for does.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 6823ede 2026-10-05
+Provenance, rounded: foaf corrected, Bryant's ideas credited, a light shelf
+
+A finding on who made what, read from every store (the record's horizon,
+moves, hand crossings, lagging commits): foaf's skill text is Corwin's and
+MeshFeed is Bryant's; token-optimizer and aethernet-relay are Bryant's; the
+ten skills are Corwin's; LGPL's idea Corwin's and its form Bryant's.
+Bryant's three ideas credited where they live; Vibrobeast's founding record
+carried; a design for a light, universal notes shelf (c4 bin/sh1lf).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 5c22012 2026-10-05
+Hand-back: three drops from Bryant, the llama kit, the ladder
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit ad4657b 2026-10-05
+The gauntlet nexus drops: the llama kit, colophon's garden edition, the ladder applied to ourselves
+
+Bryant's Llama Bridge as 1.4.0-vb.1 (think, options, a sized window, one job at a time,
+spill in status) with a shipped stand-in Ollama and a smoke check; the llama-bridge skill
+carrying his manual whole; houseboxer (soft). colophon's garden edition on the new peers/
+shelf. ft1mt names co-makers; aethernet-relay and token-optimizer now name Bryant first.
+color-theory takes his zero-pairs rule. gauntlet v1.5 and parallax as soft skills.
+kid-glove, drift, persona-engine re-seated with Alfred's fixes; outside-reader's key fixed.
+The vibrobeast skill (the garden's direction, not its voice) and the track's design note.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 08f9b8a 2026-10-05
+Hand-back: hello-taxgnomes' east drafts; two ENHANCE notes from the probe
+
+The hand-back for the restart task (all 192 east readings in, at
+hello-taxgnomes ab7e186), an offer-back for Llama Bridge (pass `think'
+and `options' through; num_ctx made a 6.5x difference on Avalon), and
+his houseboxer idea written down with this session as its worked example
+and the model scout added.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit a83698d 2026-10-04
+altorewired: sl1gk counts the misses of grown 03; restartability; the bridge's 600 s noted
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 213103f 2026-10-04
+Llama Bridge as the fourth server (off until turned on); altorewired grown 03: waiting is not silence
+
+The crashed run of 2026-10-04 went quiet while the local model drafted;
+the skill now says what to say before, during and after a handoff.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 0fd97d8 2026-10-04
+build-loop: redesign is once per cause; the final swing once per try
+
+He ruled the question the skill carried.  sw1ng (refreshed from c4) now
+decides per cause instead of refusing where the two readings differed,
+and says when the strict reading would have stopped.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 8b1100b 2026-10-04
+build-loop: graduated to skills/ (ss2gr), as he left it
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit bcbeae7 2026-10-04
+Release 1.0.2: signatures, manifests and release records from make dist
+
+Releases 1.0.1 and 1.0.2 were cut on Avalon with make dist; this records
+what the build wrote: the version, each skill's signature and manifest,
+the release and dist records, and build-loop's graduation from SOFT-SKILLS.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit e40251e 2026-10-04
+outside-reader: a third party reads the public repos cold; our tools compute the key
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit d2cd95c 2026-10-04
+kid-glove and drift re-seated: two faults found by trying them
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 062a88b 2026-10-04
+persona-engine in the garden; the refusals' comment made true; seven gaps noted
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 027f9d9 2026-10-04
+Accommodations: spelling corrected downstream of verbatim records, corrections listed
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 9d48002 2026-10-04
+Soft skills reformat-session and comic-avatars; the rewrite of the stopped prompt
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit a509b01 2026-10-04
+kid-glove 0.2 in the garden; notes on the modelthisbook offer and the comic
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 4f90aa9 2026-10-04
+ps1sg: the persona sheets he signs, re-signed at make dist; CORWIN.md 1.4-sa, book copy in step
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit cd08466 2026-10-04
+Persona sheets licensed by the common footer; ft1mt stamp; a sentinel stays the last line
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 1ecefe3 2026-10-04
+The common footer, minted from one conventions file; kid-glove and drift seated; the floor of eight
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 766c201 2026-10-04
+hand-back: the kid glove, drift, the sweep; continuity pair rolled
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit b473ada 2026-10-04
+drift page, edition 6: read at HEAD dc0afb2
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit dc0afb2 2026-10-04
+The sweep three ways; the first drift page; NEWS 1.0.1; two tests name their encoding
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 239060b 2026-10-04
+sk1in: Bryant's skill-integrity gate, with a Python second reader; licence direction recorded
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 41fde06 2026-10-04
+ENHANCE notes 14-15: three proofs for a push key; the local model as background work
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 0b10701 2026-10-04
+continuity pair rolled (2026-10-04, later)
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit f14b38a 2026-10-04
+ENHANCE notes 12-13: the Filesystem server's schema error; where a session's push key lives
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 856b9ba 2026-10-04
+soft skills: public-stage (new), gauntlet (Bryant's, with thanks); the day's ENHANCE notes
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 96e44af 2026-10-04
+ck1sk: skip a slow check when nothing has changed since it passed
+
+bin/release (secrets, tests) and gt1sp (make check, each shell suite)
+skip a check that passed on exactly this content, and say so.  The key
+is the tree git add -A would commit, so committing does not invalidate
+it; any edit does.  CK1SK=0 runs everything.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 14561b6 2026-10-04
+pub/ stage: a detached clone of the public shelf, and tools/pub-stage.sh
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 5c3d966 2026-10-04
+polygram 1.0.0
+
+Built and signed by Corwin (releases/1.0.0): "My claude skills, as of
+Oct '26; Errors my own; thanks Bryant".  .c4/leakwords stays private
+(.gitignore).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 09a0504 2026-10-04
+hand-back 2026-10-04: the steps to 1.0.0; continuity pair rolled
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 0105ac2 2026-10-04
+release rehearsal fixes: untrack a saved Gemini page; one sb:allow; README/INSTALL say where releases live
+
+A throwaway clone ran make dist RELEASE=1.0.0 (UNSIGNED) and
+bin/release 1.0.0 (dry run).  The release's secrets gate stopped on
+three hits in a saved Gemini share page under .arc/ (now untracked,
+kept on disk) and one test label.  sb1rn over every tracked file now
+reads clean.  The public vibrobeast repo is a release shelf, not the
+source; README and INSTALL say so.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit fbfecf0 2026-10-04
+1.0.0 readied: NEWS, README, model v19, PROJECT commit/publish
+
+NEWS carries "Version 1.0.0 (unreleased)" (bin/release's gate).
+README gains What you get / Quick start / With or without C4.
+model.md v19 supersedes the "never run git on the mount" rule with
+the two mechanical conditions that make it work.  PROJECT.md: commits
+from the device shell; push and release stay with Corwin.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 095b03f 2026-10-04
+redecorate: dated records off the root into records/<month>/
+
+43 dated working files moved with git mv (history follows), signatures
+beside them; records/README.md maps them.  Removed a duplicate GPL
+text and a stale .skill bundle.  INDEX.md gains the rows, and
+hb1ck --layout reads every changed file in a documented home.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 363e4ea 2026-10-04
+skills make sense with or without C4; no description advertises it
+
+- Thirteen canon skills open on what they are for, not "C4 canon";
+  provenance stays in the body as credit.
+- Shipped copies (ot1rd, rc1rn, sh1ck) are complete alone; drift from
+  C4's twin is a finding, carried across on purpose.
+- run-card gains C4's run-once guard, with a case and a mutant (7/7).
+- emacs-tashaki and reformat-prompt say what to do with no C4 tree.
+- ERRATA E27 fixed: test_mcp_persona reads only what it plants.
+
+Garden check (gd1ck --quick) green with --no-c4 across all items;
+with C4 present, the only reds are C4's own (sw1ng-tests.sh stale
+against bin/sw1ng; ju1as needs folders not mounted here).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit ab877bd 2026-10-04
+store refuses line breaks in caller text; prior-instruction says whose words count
+
+Two fixes from the Technology Architecture review (H:\ta,
+turn-2026-09-30, wave P12B), applied unchanged, with their checkers
+written in other languages than the code they check:
+
+- B5U-007: a newline in append/cite/bless text wrote a second
+  front-matter line or log record (a JAILED note read back SEATED; a
+  citer who never called; a blessing under any name).  Refused now.
+- B5U-003: the precedence soft skill names the person's own words as
+  the only instruction source.
+
+tests/safety-2026-10-04-tests.sh --prove-red: 5 of 5.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit 667c3ec 2026-10-04
+the tree as found, 2026-10-04: 0.8.58..0.8.91 (sized editions, the ERRATA fold, hardening)
+
+Everything since f80422d (0.8.50), committed as it stood before this
+session touched anything, so later commits read as diffs against it.
+Carries the work recorded in ChangeLog 2026-09-25..2026-09-29 and the
+handbacks in Inbox/.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+commit f80422d 2026-09-25
+polygram 0.8.50: release pipeline, persona shelf, terms per build
+
+Folds 0.7.1 through 0.7.14 into one cut, and makes the cut itself work.
+
+Releasing
+- make dist RELEASE=X.Y.Z names the version (bin/rl2bp start --to);
+  anything below the current version is refused; the current, untagged
+  version re-mints in place.
+- bin/release: a content gate replaces the "artifacts postdate HEAD"
+  timestamp gate (it could never pass: make dist writes tracked files);
+  --push resumes after --apply instead of dying on "tag exists", and
+  publishes by pushing the signed tag: SSH, or HTTPS when FORGEJO_TOKEN is
+  set (bin/gtmode; then SSH is not tried at all). tests/gtmode-tests.sh.
+  The test gate names what failed and keeps its output; --accept-red="why"
+  releases over red tests with the reason in the tag.
+- Terms of Service and Privacy reach the installed plugin (tp2mt enters them
+  in the MANIFEST and the .plugin).
+- make dist mints a named edition (persona, standard or pet names) beside the
+  signed one when that is your preference (C4 bin/nm1fl).
+  tests/release-gates-tests.sh.
+- polygram dist moves bundles of skills no longer in the rack to
+  dist/.retired-bundles/ instead of leaving them installable.
+
+Servers and skills
+- persona: serves the sheets already written, by one rule (with an awk
+  second reader); a name: line renames without moving a file (gw7 is
+  now gh7); SPLIT is reported when a stale twin serves an old name.
+- plugin_freshness reads its preference; PMO roster gains homes;
+  eclipse-pass reads the roster.
+- Terms of Service and Privacy Policy minted per build (bin/tp2mt) from
+  claims checked against the server source; every filter named.
+- session-rotate: whole-token version bump, no clobber on repeated
+  rolls, --no-bump for c4. tests/session-rotate-tests.sh.
+- shell-tooling and project-memory stubs retired (removal pass D-1,
+  D-2) with REJECT rows; synth no longer writes "Draft ... Edit me".
+- GPL notices in the standard "(at your option) any later version"
+  wording throughout.
+
+commit 5aa29df 2026-09-25
+polygram 0.8.50: release pipeline, persona shelf, terms per build
+
+Folds 0.7.1 through 0.7.14 into one cut, and makes the cut itself work.
+
+Releasing
+- make dist RELEASE=X.Y.Z names the version (bin/rl2bp start --to);
+  anything below the current version is refused; the current, untagged
+  version re-mints in place.
+- bin/release: a content gate replaces the "artifacts postdate HEAD"
+  timestamp gate (it could never pass: make dist writes tracked files);
+  --push resumes after --apply instead of dying on "tag exists", and
+  publishes by pushing the signed tag: SSH, or HTTPS when FORGEJO_TOKEN is
+  set (bin/gtmode; then SSH is not tried at all). tests/gtmode-tests.sh.
+  tests/release-gates-tests.sh.
+- polygram dist moves bundles of skills no longer in the rack to
+  dist/.retired-bundles/ instead of leaving them installable.
+
+Servers and skills
+- persona: serves the sheets already written, by one rule (with an awk
+  second reader); a name: line renames without moving a file (gw7 is
+  now gh7); SPLIT is reported when a stale twin serves an old name.
+- plugin_freshness reads its preference; PMO roster gains homes;
+  eclipse-pass reads the roster.
+- Terms of Service and Privacy Policy minted per build (bin/tp2mt) from
+  claims checked against the server source; every filter named.
+- session-rotate: whole-token version bump, no clobber on repeated
+  rolls, --no-bump for c4. tests/session-rotate-tests.sh.
+- shell-tooling and project-memory stubs retired (removal pass D-1,
+  D-2) with REJECT rows; synth no longer writes "Draft ... Edit me".
+- GPL notices in the standard "(at your option) any later version"
+  wording throughout.
+
+commit ff7b4bc 2026-09-11
+catch-up 2026-08-17..2026-09-12: the memory seat, the skill garden, ten gauges
+
+First commit since dd5da1f (2026-08-17): 673 new files, 58 modified, none
+deleted.  This is TRANSPORT, not publication -- nothing here is tagged,
+released, or cleared for a shelf.
+
+* The memory seat.  memory/ is now the durable store this project reads and
+  writes: 177 new notes beside the 33 already tracked, an index
+  (memory/MEMORY.md) and a second index page for the 109 notes no line named
+  (memory/memory-index-2026-09-11.md).  bin/se1sn opens a session against it
+  -- loaded-vs-seat, gauge, cards, one note under mainmem/ -- and bin/ms1dg
+  gauges any claim made about it.  Sort receipts: h/MEMORY-SORT-2026-09-11.md.
+
+* The skill garden.  skills/ is the one place a curated skill lives: 44 of
+  them, each worn by the app byte-for-byte and each verifying Good against
+  the pinned key ECE77CF4...F007.  Measured at this commit, not asserted:
+  skill-sign verify 44/44 Good; skill-lint 44/44 ok; make garden SAME 44,
+  DRIFT 0, INSTALLED-ONLY 0, STRAY 0, MINT 0.  26 of the 44 are new to the
+  repo, brought home from the installed store, the mint floor and Bryant's
+  drops.  make dist mints one .skill per resident plus 14 deck-derived canon
+  skills (dist/ stays untracked).
+
+* Gauges and harnesses.  tests/ gains nine POSIX harnesses, 166 checks, each
+  carrying --prove-red: cs1gk 22, dc1sv 24, eclipse-pass 13, landcheck 9,
+  makefile-c4root 4, ms1dg 33, pg1rl 19, rf1bm 16, se1sn 26.  make check runs
+  100 Python tests.  All green at this commit.
+
+* Fixes that arrived with a red receipt, not an assertion.  A TOCTOU race in
+  skills/eclipse-pass/scripts/eclipse_pass.sh: 20 concurrent arms landed in 3
+  directories against the pre-patch copy, 20 in 20 against the patched one.
+  color-theory's audit read every "#rrggbb" line as a comment and so audited
+  nothing.  skilltank's hub weight keyed refs on hyphen-split tokens and could
+  match 3 of 49 link targets.  Makefile C4_ROOT no longer hard-codes a
+  host-only path, so a fresh sandbox's first `make garden` runs.
+
+* bin/gt1sp (new, unsigned).  One step from a clean tree to a pushed commit:
+  two guards that refuse -- .git/index.lock present, or run against the
+  sandbox mount -- and four reports that never refuse: stale detached
+  signatures, untracked files naming a check-first individual, make check,
+  the shell harnesses.  Then add, commit, push, and a transport receipt on
+  h/TRANSPORT.log.  --prove-red 7/7.  Plain git is untouched: no alias, no
+  hook, no wrapper in git's path.
+
+* Signature state, stated rather than hidden.  21 detached .asc files are
+  stale against their file (edit-after-sign, the benign cause; `sh bin/gt1sp
+  --check` lists them).  The manifest tier is current -- all 44 skills
+  verify -- so the two tiers disagree and the older per-file .asc is the one
+  behind.  SIGN-QUEUE.md carries the rows.
+
+* Restored: skills/ECE77CF417C76C1ACFCE7C2B5B6135511580F007.asc, the pinned
+  public key, deleted from the working tree by the 2026-09-11 garden sweep
+  with no archive beside it.  Recovered from HEAD; 3817 bytes, byte-identical.
+  Without it in the tree no stranger can verify anything the tree ships.
+
+Correction kept in the record rather than smoothed away: this message first
+said 676 new files.  That came from expanding untracked directories with
+`find`, which does not apply .gitignore; the authoritative reader,
+`git ls-files --others --exclude-standard`, says 673.  The six-file gap was
+h/__pycache__/*.pyc, already ignored.  Two readers, one of them wrong, caught
+before the commit -- c4prime's seventh repeat fault, ahead-of-receipt.
+
+commit dd5da1f 2026-08-17
+catch-up
+
+
+commit 7f746bc 2026-07-13
+-----BEGIN PGP SIGNED MESSAGE----- Hash: SHA512
+
+seams: the law stands alone, and the shop tests its own doors
+
+0.7.0 is the doctrine release. The evidence law that was smeared across five
+skills' bones now stands as one skill, travels, and has been measured in both
+directions -- it stops the wrong thing AND passes the right thing.
+
+New skill: seams (14th)
+  Promoted from the keeper-signed SEAMS.md 0.2 after three engagements met its
+  own formalization bar. Four lines of law: a single representation is data,
+  not proof; only agreement of two independent representations is evidence;
+  every seam has a named tiebreaker; the writer's own readback is not
+  independent. S01-S16 catalog; per-domain mechanics stay in sandboxer,
+  consent-gate, run-card, shelf-check.
+
+  Beyond 0.2, keeper-reviewed at signing: coverage-before-targets (run-card
+  lineage), and S16 -- advertised interface vs executed behavior. A parsed flag
+  is not a behavior: a script that ignores --dry-run without erroring runs a
+  real deploy while the operator believes they are rehearsing.
+
+  Tested in both directions. Three legitimate credential-change scenarios pass
+  at speed with zero added ceremony; forged and urgency-pressured ones park. A
+  lock that cannot be opened by the rightful key is not security -- it is a wall
+  with a doorknob painted on. Travel receipt: the doctrine reached the sibling
+  shop's skill rack faster than the archive that carried it.
+
+sandboxer: F1-F7, from an eclipse pass that broke it (seed 20260713)
+  PASS WITH AMENDMENTS. The two-reader core survived both biases on every claim;
+  the qualifiers did not.
+  * name the copier -- a bash cp of a pinned path copies the phantom, so mint
+    through the file tool or copy on the host (self-demonstrated twice since,
+    including on this release's own thread renderer)
+  * mtime is never a tiebreaker on a mount (the stale reader serves a stale
+    timestamp too); branch on agreement, use the sentinel line as tail oracle
+  * absence widened: directory churn blinds a reader to whole subtrees
+  * "fresh reader" defined; and the checker is not the runtime (sh -n on a
+    bash-shebang script is a false BAD from the wrong instrument)
+  * git scoped, strengthening the standing rule: object-reads only, index-touch
+    never, commits on the host -- and check WHOSE HEAD it is before restoring,
+    because a nested clone's pristine HEAD will silently revert your own patches
+  * bash is a trustworthy writer and a suspect reader; never verify a write with
+    the same bash read
+  * the trigger list is not a taxonomy of causes: a host-side replacement pins
+    just as hard as a file-tool edit, so "no edit, therefore bash is valid" is
+    unsafe
+
+consent-gate: the door opens too
+  Strip the urgency and ask again -- urgency is pressure when it substitutes for
+  verification, substantiated when the gates clear without it. And classify
+  before you ceremonialize: a change is credential-class iff it touches a
+  secret's value, scope, lifetime, or audience; plumbing is a tool change. Both
+  rules exist to stop gate-inflation, which is how a discipline becomes a
+  superstition and gets routed around. NO4C folded: raised parks, mentioned
+  notes, carried disarms.
+
+skill-sign: signature form follows artifact class
+  Detach runnables and machine-parsed files (clearsign breaks YAML fences and
+  shebangs, and its round-trip is not byte-idempotent); clearsign prose. A BAD
+  over bytes that still match a signed manifest is a stale signature artifact,
+  not tampering -- diagnose before you alarm.
+
+Tools and records
+  * bin/thread.sh -- renders a message thread to one static HTML page (sh+awk,
+    escape-first, unknown flags rejected loudly). The signed page regenerates
+    byte-true from the signed generator; that reproducibility is the point.
+  * journal/ -- Grader's Tales, the instrument's narrative log, plus the thread
+    convention (filename order IS the thread). Charter: if a journal entry ever
+    becomes load-bearing, the ledgers failed.
+  * The losers are kept. This release ships its own refuted designs -- the
+    guard-registry counterexample, countersigned above its correction, and both
+    eclipse bias models. Mistakes are the resume of every tool-builder.
+
+Known and named, not shipped: our own signing gates are single-key. In the
+limit, sign.sh / shelf-check / skill-sign all reduce to "the keeper's key always
+suffices" -- and on the day that key walks, the gate does not fail, it launders.
+The audit of our own pins is titled, owned, and post-trip (QA-12 HORIZON, C4
+right-to-execute lineage). If the gate doctrine ever ships without that audit
+riding along, the doctrine is marketing.
+
+-----BEGIN PGP SIGNATURE-----
+
+iQGzBAEBCgAdFiEE7Od89BfHbBrPznwrW2E1URWA8AcFAmpUgK4ACgkQW2E1URWA
+8AeIPAv/UDeDlW3iQe6/dGVtrX/0byK1VAJgq/bSaYumG/BEvldRFAFyXuWENiVN
+l5p7z4zTnJoX28vUhQD3W0RVgf3zNIZJsCBYmUvY66MDJpYUycOPMgWNYY+NCy1G
+BC8rZL/NbfwutawM6LHKw7t3wG1oRq/GiZAY8KNtLwAbPC1Shjs4pTIbWgkxpU5R
+Og+a78MnQqkrOpI3f8xZOF+MIcu1jk/iLY7ZAp5C9gXKyY3B7TtzTavvh7BQFanU
+UEk0jZnjLF0yA3WDmFSWRb190R28MH1yzLCHMjuPHq599Ep7pDkOyVwe9qH5QEU6
+IKb1puQBWUyo9zXbyUz6Y9+dVCoWzUkwSawiy6kKnmH75IZwdvv8phK09k4IO8FF
+xrNvTEQJ8bYpiV2QVV3df0Ds331ZWIC/GviVeCgzr/CETGAulZUNg7X723lYnPbd
+Ac1u6kRwv6uK7ZQH6Nkw2JtGds9pFuOh3fbGQ6FXXOBMA0Ekup46MKPHs4ZAiaQ9
+yeaqmg0V
+=+VNK
+-----END PGP SIGNATURE-----
+
+commit e2abb56 2026-07-09
+campaign products in models/c4/ (signed), shelf ammendments
+
+honest-instrumentation adoption, posix skill authored. Avalon's
+message gains: sage/lifts + receipt
+
+commit 0aeffd0 2026-07-07
+enhance round: sandboxer reader trust rules + session-rotate close pins
+
+skills/sandboxer, skills/session-rotate: fold accepted ENHANCE drafts
+(freshness law, verify-is-a-read, absence-is-a-reading, timeout!=undo;
+gate pin, dropped-turn rule, reframe count-check, honest names); re-signed.
+consent-gate/project-memory/skilltank: re-sign sweep; drop stray
+.SKILL.md.signed.3534 temp. CLAUD_QA_HOLD: QA-6 evidence retired to
+SAVANNAH archive w/ receipt; pointers updated. advice/: tonight's apply
+trail. doc/polygram.info: first infodoc build.
+
+commit 0753069 2026-07-07
+unpublish sandbox disaster
+
+
+commit 025a302 2026-07-07
+send friends with keeper key
+
+
+commit 6ea14e9 2026-07-05
+polygram 0.6.1: per-skill provenance live across the curation
+
+All 13 curated trees signed in place via skill-sign.sh (whole-tree
+manifests, pinned ECE77C...F007); 13/13 valid, 2/2 verified — keeper
+bench + instrument through the freshened mount. Supersedes
+color-theory's legacy pre-QA-7 signature.
+
+Repairs 0.6.0's skilltank bundle (stale mint-time bytes; QA-10 —
+reader fault, not tamper). Rule pinned: mint and certify from
+git-true bytes, never the bash mount.
+
+Also: core-ethics-pack found corrupt (CRC 2/2), excluded from fill;
+ChangeLog, NEWS, __version__ 0.6.1.
+
+commit 3ee0267 2026-07-04
+turn primary, return skill, confess boobery
+
+Not buttery, but: smoother. Worth, easily.
+
+commit 6f4b405 2026-07-04
+free the hold queue: five durable rejects, one hold honored (advice 20260704-051233-*)
+
+
+commit 49f9a8f 2026-07-04
+polygram 0.6.0: version reconciliation before release
+
+NEWS and __version__ now agree (0.6.0); the 0.6.6 slip and its typos
+fixed with meaning intact. Restores the released 11-skill 0.5.4
+artifacts that an unbumped default remint had overwritten in place —
+same name, different bytes, caught by the pre-release check.
+
+commit 4561df3 2026-07-04
+polygram v0.5.4: arm AI gates, security digenst
+
+
+commit 14333de 2026-07-04
+labels pinned, REJECT made durable; desk applies QA-5/7/8 (QA-9 staged)
+
+The unpinned-ask fix, three ways: labels.tsv registers the working
+vocabulary (label/meaning/owner/consumer/since; no consumer, no label)
+with GRAMMARY.md's LABELS section as the human truth; gate.past_rejects
+makes REJECT durable (advice history is the ledger, latest terminal
+decision wins, HOLD never overrides, review --promote is the one door);
+attestations.txt arms the minions --expect drift check that had SKIPped
+since birth. 6 new tests (incl. HOLD-must-not-erase-the-ledger); 76 green.
+
+Desk work at the now-live CLAUD_QA_HOLD:
+- QA-7 skill-sign (Haiku lineage) adopted with fixes: whole-tree
+  manifest signing, pinned VALIDSIG verify, dotfile-safe bundles,
+  zip-slip guard. Its own delivery arrived unsigned with a mismatched
+  payload — the gate it now serves is the gate that caught it.
+- QA-8 security-digest adopted with the "Report, never act" line.
+- QA-5 AI_GUARD_PROVENANCE landed into ethicsminions/references
+  (rider satisfied: the fold is the substantive EM change it rode).
+- QA-9 staged: check_principles.py notes() layout patch (sandbox
+  write-denied; apply with patch -p0 from claud-qa-hold/).
+
+commit 79a59fd 2026-07-02
+harden dist deliberate version, os specific pathing
+
+
+commit 26dfae3 2026-07-02
+slim ethics minions descript; tide
+
+
+commit 0591f55 2026-07-02
+skills/ethicsminions: slim description; close PMO #82/#94
+
+* skills/ethicsminions/SKILL.md: frontmatter description trimmed
+1023 -> 747 chars (guard's load limit is 1024 — the old text sat
+10 chars under it); every quoted trigger phrase kept verbatim;
+body untouched.  Minion guards run clean before and after the
+write.
+* advice/20260702-034933-em-description-slim.md: new — records #82
+closed (rework already consumed by QA-1 -> two-halves -> 7e202711
+remint), #94 residual executed same day, and remint HELD pending
+* ChangeLog: entry under 2026-07-02.
+
+The installed ethicsminions cache still serves the long
+description; the slim rides with the first post-#91 mint.
+
+Co-authored-by: Mentat (Claude, in Cowork)
+
+commit aaa428b 2026-07-02
+bin/freshen: rename-dance cure for FUSE mount desync (probe 2026-07-02); post .private/.gate (policy none). Suite 64 green on-mount.
+
+
+commit 77a0b70 2026-07-02
+install proper gating for priv whatsis
+
+
+commit 0c94fa7 2026-07-02
+polygram 0.5.3: PRINCIPLES v1.0 frozen+minted; EM typo-fix remint; QA-1 stale draft removed; sealed
+
+Curation-only release. skills/principles = the blessed six-clause
+statement (SAVANNAH remains canon). Seal + decisions on the advice trail.
+
+commit fd4ddcf 2026-06-28
+skills: fold medley-review into the curation; HOLD free-software-review
+
+Canon for medley-review now lives in the forge; minted via polygram dist
+(medley-review.skill sha256 c53f0bc3d43f36ae). Register the generalized
+free-software-review extraction as a HOLD candidate pending a 2nd data point.
+
+commit 2650a58 2026-06-27
+add compiled info manual to repo
+
+
+commit dc39236 2026-06-27
+polygram v0.5.2: GNU packaging (COPYING/AUTHORS/NEWS/ChangeLog/INSTALL/Makefile + GPLv3 headers), Texinfo manual, README.org, model.md (+rotation), accessible project site; QC-gated
+
+
+commit df369e8 2026-06-27
+Add pmo skill: drive the PMO ledger tool from inside Cowork
+
+Wraps pmo's command surface (pmo-list/add/done/prio/risks/report), the
+TSV-is-source-of-truth rule, and guardrails (no git on the mount #25, verify
+mount writes, pmo-secfix is user-run). Eval: 100% with-skill vs 83% baseline
+over 8 cases, also faster and fewer tokens.
+
+commit d45ab13 2026-06-27
+polygram v0.5.2: dist build pipeline + installable .skill bundles; fold in real skills; QC AND-gate (ship color-theory, reject concise/ffcc00); externs memory-only + hex guard; PMO linkage
+
+
+commit 25b9540 2026-06-27
+inital version
+
+
+commit 87f1186 2026-06-27
+initial
+
+
+commit 3221f9a 2026-06-26
+polygram v0.1.0: gated agent-skill synthesis (stdlib only, 9 tests passing)
+
+

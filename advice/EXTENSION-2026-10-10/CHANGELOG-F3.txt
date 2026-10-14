@@ -1,0 +1,64 @@
+2026-10-10  Claude (Cowork, fix lane F3 of the extension edition: review pass 3)  for Corwin  <corwin@bru.st>
+
+	Folds review pass 3: C5b (the outside reader) J1-J5 and O8, P6b (Merlin by the Corwin model)
+	J2-J4 and ideas 1-3, C6 (the peer agent in Bryant's modes) O6-O8, O12-O14, section d, ideas 2,
+	3, 4, 6, 7 and 8 (the header half).
+	* bin/tp2mt (claims): Three new checked claims: the usage record (the frame) is kept in
+	~/.mentcached/stats/fr with its column names in stats/d/fr, MENTCACHED_FRAME moves it; it is
+	off by default (usage.capture "off" in prefs.py); while off every writer says so and writes
+	nothing.  (PRIVACY.md template): a "usage record (the frame)" row in the stores table (two
+	counts and a date; while on, also the preference mirror and logged questions), and how to stop
+	and remove it under "Your choices".  (TERMS-OF-SERVICE.md template): the Licenses bullet for
+	writing says Creative Commons Attribution-ShareAlike 4.0 (CC BY-SA 4.0); the TA model and
+	essays already published keep the licence the TERMS block names.
+	* tests/tp2mt-tests.sh: Four rows: the frame in PRIVACY.md, the BY-SA bullet, a moved frame
+	breaks its claim, usage.capture defaulting on breaks its claim.
+	* bin/lc1ck: the writing-licence fault (no ShareAlike, not beside the TA model) also matches the
+	licence's spelled-out name, with or without "International".
+	* tests/lc1ck-spec.rb: Three rows: the spelled-out form in a ToS bullet is a FAULT at its line,
+	the short form with spaces in a privacy text likewise, the ShareAlike name passes.
+	* GRAMMARY.md: Entries for buoyancy, steward (nongnu-steward) and altorewired; header count 89
+	(53 added to the seed's 36) with its parts adding up; one sentence saying what "(in the
+	author's tree, not shipped)" means, and that marker after every source-tree path the mint does
+	not hold (86 of 93); "optimisations" spelled "optimizations".
+	* tests/grammary-paths-spec.awk, tests/grammary-paths-tests.sh: New.  Every source-tree path
+	GRAMMARY names is in the mint or marked; no marker on a shipped path; the header says what the
+	marker means.
+	* polygram/plugin.py (_README): "Words this README uses" now comes before the server table
+	(under its own "The servers" heading), so "see Words, above" is true; "the project's own words
+	in it are explained in GRAMMARY.md" replaces "every word".  (_README_BROAD): placed above
+	Install ("read before you install") and says what to do after installing.  (readme_text): new
+	`broad` argument.  (mint_plugin): passes the broad names in instead of appending.
+	* tests/test_plugin.py, tests/test_plugin_broad.py: the order (words before the table, the
+	broad section before Install) and the softened sentence.
+	* polygram/mcp/prefs.py (KNOWN usage.capture): the text says the start and prompt rows hold two
+	counts and a date, and that while on the frame also mirrors preferences and logged questions.
+	* polygram/mcp/spans.py (Frame.question): a bare number above 1 as a confidence is refused:
+	"write 17% or 0.17".  (Frame.second_needed): refused, while capture is on, for a question id
+	never logged.  (Frame.logged): New.
+	* tests/test_mcp_spans.py: Two tests for those refusals.
+	* SOFT-SKILLS/question-economy/SKILL.md: New soft skill: one question, read the answer, then
+	decide; two together only at 17% or less; question_log with the likelihood and confidence pair
+	when usage.capture is on; no shop words in questions.  Corwin's rulings of 2026-10-09.
+	* tests/test_mcp_softskills.py (QuestionEconomy): New.  The loader finds it and its text says
+	the rule.
+	* conventions/FOOTERS.org: rows for question-economy and (by `ft1mt seed`) family-shelf.
+	* polygram/hooks.md: the delivered row says "not yet a hook: proposed"; the intro says so.
+	* tests/hooks-tests.sh: every row counted; a row with no place and no "proposed" words is a
+	fault; a count line; a second prove-red plant.
+	* bin/br1in (modes): a quote opens and closes beside a non-letter (apostrophes in words never
+	pair); "the run" matches as words; the title heading is not read as a mode; the description's
+	trigger sentence ends at ". " not at the dot in index.php.
+	* tests/br1in-modes-spec.rb, tests/br1in-modes-tests.sh: New.  Four fixtures shaped like C6's
+	cases (parallax, aetherflow-runner, connector-forge, aethernet-relay); four prove-red plants.
+	* advice/EXTENSION-2026-10-10/br1in/*.run-r2.{md,tsv,ACK.txt}: New.  Re-runs on the 10-05,
+	10-05-r2 and 10-05-r3 drops beside the old reports.
+	* UPGRADES.md: scope widened to his software that reads ours; U2 (signet reads a skill as
+	skill-sign does, says "hash only" for an unsigned one) and U3 (Alfred's map knows which names
+	are ours, and the vibrobeast: prefix).
+	* advice/EXTENSION-2026-10-10/NOTE-kid-glove-condition.md: New.
+	* advice/EXTENSION-2026-10-10/R-ROWS-F3.txt: New.  R27, R28.
+
+Authored by Mentat (for Corwin; claude-opus-5-5).
+Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+SPDX-License-Identifier: CC-BY-SA-4.0

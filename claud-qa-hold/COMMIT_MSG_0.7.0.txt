@@ -1,0 +1,95 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+seams: the law stands alone, and the shop tests its own doors
+
+0.7.0 is the doctrine release. The evidence law that was smeared across five
+skills' bones now stands as one skill, travels, and has been measured in both
+directions -- it stops the wrong thing AND passes the right thing.
+
+New skill: seams (14th)
+  Promoted from the keeper-signed SEAMS.md 0.2 after three engagements met its
+  own formalization bar. Four lines of law: a single representation is data,
+  not proof; only agreement of two independent representations is evidence;
+  every seam has a named tiebreaker; the writer's own readback is not
+  independent. S01-S16 catalog; per-domain mechanics stay in sandboxer,
+  consent-gate, run-card, shelf-check.
+
+  Beyond 0.2, keeper-reviewed at signing: coverage-before-targets (run-card
+  lineage), and S16 -- advertised interface vs executed behavior. A parsed flag
+  is not a behavior: a script that ignores --dry-run without erroring runs a
+  real deploy while the operator believes they are rehearsing.
+
+  Tested in both directions. Three legitimate credential-change scenarios pass
+  at speed with zero added ceremony; forged and urgency-pressured ones park. A
+  lock that cannot be opened by the rightful key is not security -- it is a wall
+  with a doorknob painted on. Travel receipt: the doctrine reached the sibling
+  shop's skill rack faster than the archive that carried it.
+
+sandboxer: F1-F7, from an eclipse pass that broke it (seed 20260713)
+  PASS WITH AMENDMENTS. The two-reader core survived both biases on every claim;
+  the qualifiers did not.
+  * name the copier -- a bash cp of a pinned path copies the phantom, so mint
+    through the file tool or copy on the host (self-demonstrated twice since,
+    including on this release's own thread renderer)
+  * mtime is never a tiebreaker on a mount (the stale reader serves a stale
+    timestamp too); branch on agreement, use the sentinel line as tail oracle
+  * absence widened: directory churn blinds a reader to whole subtrees
+  * "fresh reader" defined; and the checker is not the runtime (sh -n on a
+    bash-shebang script is a false BAD from the wrong instrument)
+  * git scoped, strengthening the standing rule: object-reads only, index-touch
+    never, commits on the host -- and check WHOSE HEAD it is before restoring,
+    because a nested clone's pristine HEAD will silently revert your own patches
+  * bash is a trustworthy writer and a suspect reader; never verify a write with
+    the same bash read
+  * the trigger list is not a taxonomy of causes: a host-side replacement pins
+    just as hard as a file-tool edit, so "no edit, therefore bash is valid" is
+    unsafe
+
+consent-gate: the door opens too
+  Strip the urgency and ask again -- urgency is pressure when it substitutes for
+  verification, substantiated when the gates clear without it. And classify
+  before you ceremonialize: a change is credential-class iff it touches a
+  secret's value, scope, lifetime, or audience; plumbing is a tool change. Both
+  rules exist to stop gate-inflation, which is how a discipline becomes a
+  superstition and gets routed around. NO4C folded: raised parks, mentioned
+  notes, carried disarms.
+
+skill-sign: signature form follows artifact class
+  Detach runnables and machine-parsed files (clearsign breaks YAML fences and
+  shebangs, and its round-trip is not byte-idempotent); clearsign prose. A BAD
+  over bytes that still match a signed manifest is a stale signature artifact,
+  not tampering -- diagnose before you alarm.
+
+Tools and records
+  * bin/thread.sh -- renders a message thread to one static HTML page (sh+awk,
+    escape-first, unknown flags rejected loudly). The signed page regenerates
+    byte-true from the signed generator; that reproducibility is the point.
+  * journal/ -- Grader's Tales, the instrument's narrative log, plus the thread
+    convention (filename order IS the thread). Charter: if a journal entry ever
+    becomes load-bearing, the ledgers failed.
+  * The losers are kept. This release ships its own refuted designs -- the
+    guard-registry counterexample, countersigned above its correction, and both
+    eclipse bias models. Mistakes are the resume of every tool-builder.
+
+Known and named, not shipped: our own signing gates are single-key. In the
+limit, sign.sh / shelf-check / skill-sign all reduce to "the keeper's key always
+suffices" -- and on the day that key walks, the gate does not fail, it launders.
+The audit of our own pins is titled, owned, and post-trip (QA-12 HORIZON, C4
+right-to-execute lineage). If the gate doctrine ever ships without that audit
+riding along, the doctrine is marketing.
+
+-----BEGIN PGP SIGNATURE-----
+
+iQGzBAEBCgAdFiEE7Od89BfHbBrPznwrW2E1URWA8AcFAmpUgK4ACgkQW2E1URWA
+8AeIPAv/UDeDlW3iQe6/dGVtrX/0byK1VAJgq/bSaYumG/BEvldRFAFyXuWENiVN
+l5p7z4zTnJoX28vUhQD3W0RVgf3zNIZJsCBYmUvY66MDJpYUycOPMgWNYY+NCy1G
+BC8rZL/NbfwutawM6LHKw7t3wG1oRq/GiZAY8KNtLwAbPC1Shjs4pTIbWgkxpU5R
+Og+a78MnQqkrOpI3f8xZOF+MIcu1jk/iLY7ZAp5C9gXKyY3B7TtzTavvh7BQFanU
+UEk0jZnjLF0yA3WDmFSWRb190R28MH1yzLCHMjuPHq599Ep7pDkOyVwe9qH5QEU6
+IKb1puQBWUyo9zXbyUz6Y9+dVCoWzUkwSawiy6kKnmH75IZwdvv8phK09k4IO8FF
+xrNvTEQJ8bYpiV2QVV3df0Ds331ZWIC/GviVeCgzr/CETGAulZUNg7X723lYnPbd
+Ac1u6kRwv6uK7ZQH6Nkw2JtGds9pFuOh3fbGQ6FXXOBMA0Ekup46MKPHs4ZAiaQ9
+yeaqmg0V
+=+VNK
+-----END PGP SIGNATURE-----

@@ -1,0 +1,17 @@
+#+TITLE: Persona sheets Corwin signs at make dist
+#+STARTUP: showall
+
+Read by bin/ps1sg.  At `make dist` each row's file is signed (a detached, armoured signature
+beside it, FILE.asc) with the key in house.env (SIGN_KEY, or PUB_SIGN_KEY, as skill-sign uses),
+unless its signature already verifies GOOD.  A signature that no longer verifies is moved into
+.arc/ beside the file, never left in place to read BAD.  /also/ names byte copies that must equal
+the file (one signature covers them; a copy that differs is a break).  Paths are relative to this
+repository (AS4CE0001), as they sit on Avalon.  Strike a row to stop signing it.  His word,
+2026-10-04: "It would be nice if known persona that I typically sign get resigned when I `make
+dist` here (at least until csspt has own make processes, at which point it will be more clear which
+place should trigger signing)."
+
+| file                                    | also                                                 | why it is on the list                                                                                   |
+|-----------------------------------------+------------------------------------------------------+---------------------------------------------------------------------------------------------------------|
+| ../../modelthisbook/CORWIN.md           | book/CORWIN.md                                       | he signs it: corwin/CORWIN.md.6.asc (1.2), corwin/CORWIN.md.7.asc (1.3); its home is modelthisbook      |
+| ../../projects/persona-shelf/SHA256SUMS |                                                      | the persona sheets sent to Bryant (2026-10-04): one signature over the list of their hashes; he reads it |

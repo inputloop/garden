@@ -1,0 +1,481 @@
+<!-- GB:book title="Six Sides and a Pencil" author="Oscar Pell" -->
+
+# Six Sides and a Pencil
+
+*Keep a place. Draw what you find. Do not look away.*
+
+by Oscar Pell · edited by Henriette Solberg-Maas
+
+---
+
+## The cross
+
+Somewhere on the paper there will be a small cross in the corner of a square.
+
+It means a keeper stood there, reached for something, and lost a piece of themselves doing it — one
+point off a mark, permanently, written beside the old number and never erased. The square stays on the
+map. The cross stays after the keeper is gone.
+
+Whoever keeps this place after you will find it and not know what it means, which is exactly what it was
+like for you.
+
+That is what this game is. The rest is how the crosses get there.
+
+---
+
+## What you need
+
+Six-sided dice. Quad-ruled paper. A pencil. This book.
+
+That is the list. Nothing else is needed at any point, including colour vision, and if you find a rule
+later in this book that asks for more, the rule is wrong and I would like to hear about it.
+
+Two dice are convenient. One die thrown twice is the same throw and every rule here is written so that it
+is. Where the text says *throw*, it means either.
+
+---
+
+## How to throw
+
+Throw. Note the first number. Throw again, or read the die further from your hand. Note the second.
+
+<!-- GB:box kind=rule -->
+**The first number is the significant one.** When two numbers make the same total, the first still tells
+you which way it leans. A three-then-four and a four-then-three are both seven, and they are not the same
+seven.
+<!-- GB:endbox -->
+
+Four words, used throughout, and there are no others to learn:
+
+- **Doubles** — both numbers the same.
+- **High doubles** — five-five or six-six.
+- **Low doubles** — one-one or two-two.
+- **Seven** — the two numbers make seven.
+
+High is good. High is safe. High is also more: more intense, more at stake, more of whatever the square
+is. Those are not in tension in this book. The safest place to stand is the one where the most is
+happening, because that is where you can see it.
+
+---
+
+## The ladder
+
+Everything in this book is one throw against a pattern. The pattern comes off a ladder of nineteen rungs.
+You do not memorise nineteen. You memorise three.
+
+<!-- GB:box kind=rule -->
+**4 · 9 · 17**
+
+**Rung 4** — you make it unless you throw doubles or seven. **24 in 36.** You usually make it.
+**Rung 9** — you make it if you throw doubles or seven. **12 in 36.** The honest middle.
+**Rung 17** — you make it on six-six. **1 in 36.** The miracle.
+<!-- GB:endbox -->
+
+<!-- GB:claim pattern="avd D+7" odds="24/36" -->
+<!-- GB:claim pattern="D+7" odds="12/36" -->
+<!-- GB:claim pattern="BX" odds="1/36" -->
+
+Look at 4 and 9 again. Same pattern. Opposite sides of it. Twenty-four and twelve make thirty-six, so
+between them they account for every throw there is: at rung 4 the pattern is what beats you, at rung 9 it
+is what saves you. One thing to remember, read two ways.
+
+That is the whole ladder in one hinge, and if you never learn another rung you can run this game.
+
+### The nineteen, when you want them
+
+| Rung | You make it on | Odds |
+|---|---|---|
+| 0 | no throw | automatic |
+| 1 | anything but one-one | 35 in 36 |
+| 2 | anything but low doubles | 34 in 36 |
+| 3 | anything but doubles | 30 in 36 |
+| 4 | anything but doubles or seven | 24 in 36 |
+| 5 | anything but doubles, seven, eight | 20 in 36 * |
+| 6 | doubles, seven, nine, eleven | 18 in 36 |
+| 7 | doubles, seven, nine | 16 in 36 |
+| 8 | anything but doubles, six, seven, eight | 16 in 36 * |
+| 9 | doubles or seven | 12 in 36 |
+| 10 | doubles or nine | 10 in 36 |
+| 11 | doubles or eleven | 8 in 36 |
+| 12 | doubles | 6 in 36 |
+| 13 | doubles but not one-one | 5 in 36 |
+| 14 | three-three, four-four, five-five, six-six | 4 in 36 |
+| 15 | four-four, five-five, six-six | 3 in 36 |
+| 16 | high doubles | 2 in 36 |
+| 17 | six-six | 1 in 36 |
+| 18 | no throw | automatic failure |
+
+<!-- GB:claim pattern="avd SE" odds="35/36" -->
+<!-- GB:claim pattern="avd LD" odds="34/36" -->
+<!-- GB:claim pattern="avd D" odds="30/36" -->
+<!-- GB:claim pattern="avd D+7+8" odds="20/36" -->
+<!-- GB:claim pattern="D+7+9+11" odds="18/36" -->
+<!-- GB:claim pattern="D+7+9" odds="16/36" -->
+<!-- GB:claim pattern="avd D+6+7+8" odds="16/36" -->
+<!-- GB:claim pattern="D+9" odds="10/36" -->
+<!-- GB:claim pattern="D+11" odds="8/36" -->
+<!-- GB:claim pattern="D" odds="6/36" -->
+<!-- GB:claim pattern="HD" odds="2/36" -->
+
+### The two rows with a star on them
+
+Rungs 5 and 8 carry a star because my count disagrees with the source, and I am not going to print a
+number I did not get.
+
+The source has 19 for rung 5 and 14 for rung 8. I count 20 and 16. The difference is the same mistake
+both times, and it is an easy one: the rows add up the sizes of the named sets and forget that some
+throws are in two of them at once. Doubles has six throws in it. Eight has five. But four-four is in
+both, so *doubles or eight* is ten throws, not eleven. Rung 8 names doubles, six, seven and eight, and
+both three-three and four-four get counted twice.
+
+Every other rung in the table is exactly right, and the reason is worth seeing: the other rows name only
+odd totals — seven, nine, eleven — and an odd total can never be doubles, so there is nothing to
+double-count. The slip only bites where an even total meets the doubles, and there are precisely two
+such rows in nineteen.
+
+I have printed my numbers. The ladder still climbs — 24, 20, 18, 16, 16, 12 — with one flat step at rungs
+7 and 8, where the source had a fall. Whether to break that tie is a question for whoever keeps the
+table, not for me. I am a guest in it.
+
+Read down the odds column and you will see what the ladder is doing. Near the bottom the patterns are
+wide — doubles *and* seven *and* nine *and* eleven, a net with a lot of holes closed. As you climb, the
+net loses strands. Doubles and seven. Then doubles. Then high doubles. Then one face of one throw.
+
+The hard rungs are not hard because more can go wrong. They are hard because less can go right.
+
+---
+
+## Your four marks
+
+**Wind** — can you keep going. **Hand** — can you do the work. **Eye** — do you see it coming.
+**Word** — will anyone come when you call.
+
+Throw once for each, in that order, and write the number down. One throw, one mark, no adjusting.
+
+A mark of 1 is a hole in you. A mark of 6 is the thing people say about you when you are not there. Both
+are true from the first square and neither is a judgement.
+
+<!-- GB:box kind=aside -->
+There is no other character generation in this book. You do not pick a class, a background, a people, or
+a past. You get four numbers and a pencil, and everything else about you is what you turn out to do.
+<!-- GB:endbox -->
+
+---
+
+## The square, the block, the holding
+
+Take your quad-ruled paper. One small square of the grid is ten feet. Sixteen of them — four by four —
+make a **square** of the map, and a square is what you explore in one go.
+
+Six squares by six squares make a **block**. A block is a wing, a level, a quarter of a ruin. Blocks sit
+beside each other and make a **holding**, which is the place you keep, and which you will never finish
+drawing.
+
+That nesting is the whole shape of this game and it repeats at every size:
+
+- inside a table, six rows by six columns;
+- inside a block, six squares by six squares;
+- inside the holding, blocks beside blocks.
+
+Six by six, all the way down and all the way up. When you learn one, you have learned all of them.
+
+### Depth
+
+Every square has a **depth**: how far in it is, counted in squares from the way you came in. The square
+you enter by is depth 1. Its neighbours are depth 2. And so on.
+
+Depth is the only bookkeeping in this book. Write the number in the corner of the square in pencil.
+
+---
+
+## The way in
+
+Before anything else, draw one square anywhere on the paper and put a 1 in its corner. That is the way
+in. It is depth 1. You do not throw for it and there is no table for it, because a door you found is not
+a thing that happened to you.
+
+Throw once for what is in it, on the square table below, and draw that. Then walk.
+
+## Walking a square
+
+Pick an undrawn square that touches a drawn one. Then:
+
+**1 · Throw for what is there.** Read the throw into the square's table, down first, then across. Draw
+what it says.
+
+**2 · Throw against the ladder if the square asks you to.** Some things you find ask for a throw. The
+rung is **the square's depth, minus the mark you are using.**
+
+<!-- GB:box kind=rule -->
+**Rung = Depth − Mark.**
+
+Depth 7, Wind 3, so rung 4: you make it unless you throw doubles or seven.
+Depth 12, Hand 3, so rung 9: you make it on doubles or seven.
+Depth 6, Eye 6, so rung 0: no throw. You simply do it.
+
+Below 0 is 0. Above 18 is 18, and 18 means do not throw, because there is nothing to find out.
+<!-- GB:endbox -->
+
+**3 · Take what follows.** Made it, and the square is yours: write your initial in the corner. Missed it,
+and read *What happens to you*, below.
+
+**4 · Mark the square done** and stop, or walk another.
+
+### The sixes and the ones
+
+Two things override **a ladder throw** — the throw in step 2, the one with a rung. They do nothing on the
+throw for what is in the square, which has no rung to override. At any depth:
+
+**Six-six is a miracle.** It succeeds. It also *turns the square up* — whatever is there is more of
+itself, and the next square you walk is one depth deeper than it would have been. High is good. High is
+more.
+
+**One-one is a hole.** It fails. It also costs you one point from the mark you were using, permanently,
+and you write the new number beside the old one and do not erase the old one. **A mark stops at 1.** It
+never reaches nought; a person with nothing left of a thing is not a person this game knows how to draw.
+
+And when a mark drops, the hole is not only in you. **Mark the square you were standing in with a small
+cross.** That square is now the part of the holding nobody can account for, and it stays crossed after
+you are gone. Somebody keeping this place after you will find the cross and not know what it means,
+which is exactly what it was like for you.
+
+Nothing else overrides. A seven is a seven.
+
+---
+
+## The square table
+
+Down the side is your first number. Across the top is your second.
+
+Notice the shape of the last column and the last row: the patterns thin as you go up and to the right.
+The wide nets are in the near corner, where you come in. The narrow ones are far from the door.
+
+The table is printed in halves. Columns 1 to 3, then columns 4 to 6. I would rather have it whole and I
+cannot have it whole and legible at once, so it is in halves. If you are copying it onto card — and you
+should copy it onto card — copy it back into one square. That is what the card is for.
+
+<!-- GB:table id=square dice=2d6 kind=halved -->
+
+Second die **1–3**:
+
+|  | 1 | 2 | 3 |
+|---|---|---|---|
+| **1** | empty; a draught from somewhere | rubble, and a way under it | a stair going down |
+| **2** | a corridor that bends | bones, animal, old | a shaft, no bottom seen |
+| **3** | a junction, four ways | a tool left where it fell | a well |
+| **4** | a corridor that narrows | a name scratched at knee height | a cistern, full |
+| **5** | a hall, pillars, echo | a shrine to nobody named | a machine, stopped |
+| **6** | a hall too large for the block | a grave, recent, unmarked | a machine, running |
+
+Second die **4–6**:
+
+|  | 4 | 5 | 6 |
+|---|---|---|---|
+| **1** | standing water | a door, shut, not locked | a room someone swept |
+| **2** | a store, mostly taken | a door, locked, hinges out | a room with the fire still warm |
+| **3** | a ledger, water-damaged | a door that was forced | a person who lives here |
+| **4** | a workshop, cold | a door bricked from this side | a person who is waiting |
+| **5** | a library of one subject | a door bricked from the far side | a person who knows you |
+| **6** | the record of the whole holding | a door with your initial on it | the one who kept this before you |
+
+Down is *what kind of place*. Across is *how much it matters*. The first number told you the room; the
+second told you the weight of it. A three-then-six is a person who lives here, met at a junction. A
+six-then-three is a stopped machine in a hall too big for it. They are different squares and you will
+draw them differently.
+
+### What a square asks of you
+
+| Second number | The square asks | Use |
+|---|---|---|
+| 1 | nothing; walk on | — |
+| 2 | is it safe to move it | Hand |
+| 3 | can you get down, across, in | Wind |
+| 4 | can you tell what it was for | Eye |
+| 5 | can you get through | Hand |
+| 6 | will they deal with you | Word |
+
+---
+
+## What happens to you
+
+You missed the throw. Take the first of these that applies, and take only one:
+
+- **You threw one-one.** The mark you used drops by one, for good. Write it beside the old number.
+- **You threw doubles, not one-one.** The square stays undrawn. You may not walk it again today. Draw
+  the outline and leave it blank; a blank square on your map is a fact about you, not the place.
+- **You threw a seven, first number high** (six-one, five-two, four-three). It went badly *and* it went
+  loudly. The next square you walk is one depth deeper.
+- **You threw a seven, first number low** (one-six, two-five, three-four). It went badly and quietly.
+  Nothing follows. This is the best failure in the book and you should be glad of it.
+- **Anything else.** You are turned back to the last square you kept. Walk again when you are ready.
+
+<!-- GB:box kind=aside -->
+You never re-throw. Not the marks, not the square, not the miss. The pencil in this book has no eraser
+end. If you want a different holding, start a different holding; there is more paper.
+
+There is exactly one thing in this book that looks like an exception and is not. When a half-drawn block
+*remembers* — the fourth line of the holding table — a crossed square may be walked a **second time**.
+That is a new walk, at the old rung, years later, by somebody who has been living with the cross. It is
+not a re-throw and it does not undo the first one. The cross stays on the paper either way.
+<!-- GB:endbox -->
+
+---
+
+## The block, and the holding
+
+The single square is the whole engine, and I nearly shipped this book with nothing above it. What follows
+is the smallest thing that makes a block and a holding mean something, and it is two rules.
+
+**A block fills from one way in.** Thirty-six squares, six by six. Depth is counted in squares from the
+way in, so a block has a shape to its difficulty before you draw a line of it: the far corner of a block
+entered at one corner is depth 11, which against a mark of 3 is rung 8, and you will not walk it early.
+
+**When a block is half drawn — eighteen squares — the holding answers.** Throw once:
+
+| d6 | The holding |
+|---|---|
+| 1 | settles; every depth in this block drops by 1 from now on |
+| 2 | is quiet; nothing |
+| 3 | shifts; the next block you open starts at depth 3, not 1 |
+| 4 | **remembers** — see below; this is the one result that changes the game rather than the map |
+| 5 | is used; somebody else has drawn a square in this block, and you find their initial |
+| 6 | opens; you may start a new block from any edge square, at depth 1 |
+
+### When the holding remembers
+
+Throw a 4 and the block hands you something you did not make.
+
+**Pick one square in this block you have not walked. Somebody else's initial is already in its corner.**
+Not yours. You do not know whose. They kept this place before you, they walked that square, and they left
+no note.
+
+From now on, in this block:
+
+- **You may walk their squares without adjoining.** Their work is a way in. You inherit reach you did not
+  earn, which is the good half.
+- **Their crosses are yours.** If you walk a square of theirs and find a cross, the mark it cost them
+  comes off *your* sheet, once, the first time. You are standing where they were standing.
+- **You may not ask what happened.** There is no table for it and there will not be one.
+
+That is the whole rule and it is the one I would keep if I could keep only one.
+
+Everybody who has ever taken over a place somebody else was keeping knows this arithmetic: you get their
+reach and you get their damage and nobody hands you the note explaining which is which. I did not write
+that as a metaphor. I wrote it because it is what walking somebody else's map is actually like, and the
+first time it happens at your table you will hear the room go quiet.
+
+That is the whole of it. Three rules and a six-line table, and I would rather that than twelve pages.
+
+A holding is blocks beside blocks, and it has no rule at all, because a holding is not a mechanism. It is
+the stack of paper. The holding is how much of it you have drawn.
+
+---
+
+## A square, walked
+
+Depth 5. My Eye is 2.
+
+I throw for what is there: **four, then four.** Down four, across four — *a workshop, cold.* I draw it:
+four by four of the small squares, a bench along the north wall, the door I came in by.
+
+Across was four, so the square asks *can you tell what it was for*, and that is Eye. Rung is depth 5
+minus Eye 2, which is rung 3: I make it unless I throw doubles.
+
+I throw: **three, then three.** Doubles. I miss, and it is not one-one, so the square stays undrawn —
+except I have already drawn the walls, and the rules say I keep the outline and leave the inside blank.
+
+So there it is on my paper: a square with a bench I cannot account for. Depth 5. My initial is not in the
+corner. I know what shape the room is and not one thing about what happened in it, and the reason is
+written on my sheet, where it says Eye 2.
+
+That is the game. It took two throws and I have a room I will think about for a month.
+
+---
+
+## Keeping it alone
+
+This book was written by someone who mostly plays alone and it does not need changing to do that.
+
+Walk one square a sitting. Throw honestly. When the square asks *will they deal with you* and there is
+nobody at the table to be dealt with, throw against Word anyway and write down one sentence of what was
+said. You are not playing both sides; you are finding out what your holding contains, and it contains
+people whether or not you brought any.
+
+Keep the map. The map is the record and there is no other.
+
+---
+
+## On colour
+
+There is colour in this book, on the tables, and it means nothing.
+
+It is there to catch your eye and stop the page being a wall. Every single thing the colour marks is also
+marked in a way you can read or feel: a word, a bold, a rule line, a position in a column. Cover the
+colour entirely and nothing is lost. I have tested this by printing the whole book in black and playing
+it that way, which is also how I recommend you print it, because it is cheaper.
+
+I mention it because the alternative is so common. A table where the dangerous rows are red and nothing
+else says they are dangerous is a table that has quietly decided which people it is for. Roughly one man
+in twelve and one woman in two hundred cannot read that table. You will never hear from them about it.
+They will simply put the book down, and you will conclude it was not to their taste.
+
+Colour to draw the eye. Never colour to say a thing.
+
+---
+
+## Credit where the ladder came from
+
+The nineteen-rung ladder in this book is not mine. It is the saving-throw table from *dungeon-mode*, a
+free-software tabletop project, where it appears as `Docs/Tables/Savingthrow.org`, dated 2020-01-11 and
+released under the GNU General Public Licence, version 3 or later.
+
+I want to be careful about who to thank, because I have one source and it is a file header.
+
+**What the bytes say.** The file's property drawer reads `:Author: Erik C Elmshauser`. The copyright
+line above it reads `Copyright (C) 2020 Corwin Brust, Erik C. Elmshauser, Jon Lincicum, Hope
+Christiansen`. Those are two different lists and they are both in the file.
+
+**What I do not know** is how the work divided. A property drawer is a field somebody typed, not a
+record of who thought of what, and the project's own README credits a team of five for the whole. People
+who build a game together over twenty years do not generally leave a clean seam, and I would rather
+under-claim on somebody's behalf than hand them a credit the record does not actually support.
+
+So: the ladder is *dungeon-mode*'s, by that team. The header names Erik C. Elmshauser and I am glad to
+say so. If one of them wants the credit put differently, the correction goes in the next printing with
+their wording, not mine.
+
+I have not altered a rung. I did recompute the odds column from scratch, by counting all thirty-six
+outcomes, and seventeen of the nineteen rows agreed exactly. The two that did not are starred in the
+table and explained beside it. A table that survives twenty years and a recount with two arithmetic slips
+in nineteen rows, both of the same explicable kind, is a good table, and I would rather say that with the
+count in my hand than as a compliment.
+
+What I added is the reading: that rungs 4 and 9 are the same pattern from either side, that they sum to
+thirty-six, and that those two plus rung 17 are all anyone needs at a table.
+
+This book is released under the GNU General Public Licence, version 3 or, at your option, any later
+version — the same licence as the table it is built on, because that is what the licence is for.
+
+---
+
+<!-- GB:backmatter kind="refusal" -->
+## A note on the arrangement
+
+I was asked to write something here about how these four books came to be written, the way the others
+have, and after two attempts I find I do not want to.
+
+I will say the one thing that is mine to say.
+
+I ran a game for a man who could not see the red pips. I had made the danger red, and only red. He asked
+me what he was supposed to do about that, politely, in front of other people, and I did not have an
+answer. I have been writing this book since, and the rule about colour in it is the answer, eleven years
+late, and it is the only part of this book I would defend without a die in my hand.
+
+Everything else here — the ladder, the squares, the arithmetic — belongs to other people and is credited
+on the page before this one.
+
+*The editor asked twice. — H.S-M.*
+
+*Every odds figure in this book was counted by enumerating all thirty-six outcomes, not estimated. The
+count was run mechanically against the text, so if a number here is wrong the tool is wrong too, and both
+are yours to check.*

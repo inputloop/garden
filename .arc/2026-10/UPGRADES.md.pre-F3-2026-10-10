@@ -1,0 +1,38 @@
+# UPGRADES — a suggestion book for Bryant's software in this garden
+
+*What this is: changes we would like in software Bryant Frankford wrote and we carry byte for byte (Llama
+Bridge, Tavern, his soft skills). We never make these changes ourselves in his files: his bytes are pinned
+by hash (`tests/test_mcp_llamabridge.py`, `test_vendored_bytes`; `polygram/mcp/NOTICE-llama_bridge`,
+`NOTICE-tavern`). Each entry is a suggestion; only Bryant moves it on.*
+
+**The four states.** PROPOSED: we wrote it down and sent or offered it. ACCEPTED: Bryant said yes. DECLINED:
+Bryant said no (kept, with his reason if he gave one). SHIPPED: a build of his carries it, and our pinned
+copy has been moved to that build. Only Bryant presses ACCEPTED or DECLINED; SHIPPED is written when his
+build arrives and the pin moves.
+
+| # | software | state | since | what |
+|---|---|---|---|---|
+| U1 | Llama Bridge 1.4.0-vb.1 | PROPOSED | 2026-10-10 | Queue fields and start/finish stamps (below) |
+
+## U1. Llama Bridge: say where a job sits in the queue when it is handed over
+
+- **What we would like.** `delegate_async` answers today with "Started background job X" only. We would like
+  it to also say how many jobs are ahead of it (`queued_behind`, the same count `jobs_ahead()` already makes
+  for `delegate_result`), and for `delegate_result` on a finished job to give the start and finish times
+  (`started_ts`, `finished_ts`) beside `created_ts`.
+- **Why.** The bridge already runs one job at a time and `delegate_result` already names the jobs ahead
+  (`llama_bridge.py`, `jobs_ahead()` near line 861, the queued message near line 1426). Several sessions
+  share one GPU; a caller that knows it is third in line can wait the right time before its first poll
+  instead of guessing. The stamps let a caller tell queue time from run time.
+- **Where it came from.** The extension spell, card 16 (llama serialisation), and the builder's review
+  (C2 O11, O12, J4), 2026-10-10. Model W (wire-first) asked for the fields; the review found the
+  behaviour mostly shipped already, so only the two reporting fields remain.
+- **What it would cost on our side.** A new pinned build (vb.2 or his own 1.4.1), a new hash in
+  `NOTICE-llama_bridge`, and the diff kept in `skills/llama-bridge/references/`. Nothing in our code changes
+  until his build does.
+- **State.** PROPOSED, 2026-10-10. Not sent yet: it goes with the next drop to him.
+
+---
+Authored by Mentat (for Corwin; claude-opus-5-5).
+Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+SPDX-License-Identifier: CC-BY-SA-4.0

@@ -1,0 +1,52 @@
+# R-ROWS from fix lane F3 (pass 3, 2026-10-10), for the conductor to fold into
+# polygram/mcp/__main__.py's --prove-red, inside the same `with tempfile... as td` scope where
+# `want` and `td` exist. Words line first, then the code. Both rows were run in a scratch harness
+# against this tree: PASS as written; both FAIL with their plants (R27: the "bare number above 1"
+# refusal cut out of Frame.question; R28: `self.logged(qid)` made `True` in Frame.second_needed).
+#
+# R27  a bare number above 1 is refused as a confidence, and the refusal says "write 17% or 0.17"
+#      (P6b J3, idea 2; card 13).
+# R28  second_needed for a question id that was never logged is refused while capture is on; one that
+#      was logged is written (P6b J4, idea 3).
+
+        # R27 -- "17" is a slip for 17%: refused at write, with the form to use (fix lane F3, pass 3).
+        from polygram.mcp import spans as _sp27
+        from polygram.mcp.rpc import ToolError as _TE27
+        try:
+            _sp27.Frame("r27").question("q17", "two", "go on?", "medium", "17")
+            _m27 = ""
+        except _TE27 as e:
+            _m27 = str(e)
+        want("a bare number above 1 is refused as a confidence, saying how to write it",
+             "write 17% or 0.17" in _m27, f"got {_m27!r}")
+
+        # R28 -- an answer names a question that was logged (fix lane F3, pass 3).
+        import os as _os28
+        from pathlib import Path as _P28
+        from polygram.mcp import spans as _sp28
+        from polygram.mcp.rpc import ToolError as _TE28
+        _fr28 = _P28(td) / "r28-fr"
+        _fr28.write_text("\t".join(["2026-10-10T00:00:00Z", "gauge", "", "", "q1", "", "r28", "question",
+                                    "one", "", "", "go on?"]) + "\n", encoding="utf-8")
+        _old28 = _os28.environ.get("MENTCACHED_FRAME"); _os28.environ["MENTCACHED_FRAME"] = str(_fr28)
+        _cap28 = _sp28.Frame.capture_on; _sp28.Frame.capture_on = staticmethod(lambda: True)
+        try:
+            try:
+                _sp28.Frame("r28").second_needed("never", "yes"); _m28 = ""
+            except _TE28 as e:
+                _m28 = str(e)
+            _ok28 = _sp28.Frame("r28").second_needed("q1", "no")
+            want("second_needed for an id never logged is refused; a logged one is written",
+                 "never logged" in _m28 and "written" in _ok28
+                 and _fr28.read_text(encoding="utf-8").count("second_needed") == 1,
+                 f"never={_m28!r} logged={_ok28!r}")
+        finally:
+            _sp28.Frame.capture_on = _cap28
+            if _old28 is None:
+                _os28.environ.pop("MENTCACHED_FRAME", None)
+            else:
+                _os28.environ["MENTCACHED_FRAME"] = _old28
+
+# Authored by Mentat (for Corwin; claude-opus-5-5).
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+# SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later

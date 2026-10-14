@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="polygram — gated agent-skill synthesis: memory tags become curated, gated, installable Claude agent skills.">
+<title>polygram — gated agent-skill synthesis</title>
+<style>
+  :root{
+    --bg:#0f1117; --panel:#171a23; --ink:#eef1f7; --muted:#b9c0cf;
+    --line:#2a2f3d; --accent:#ffcf4d; --accent-ink:#1a1400;
+    --pass:#7ee2a8; --hold:#ffcf4d; --reject:#ff8f8f; --link:#9cc2ff;
+    --radius:14px; --maxw:54rem;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f6f7fb; --panel:#ffffff; --ink:#15181f; --muted:#475067;
+      --line:#dde1ea; --accent:#7a5400; --accent-ink:#fff; --link:#1c4fb3;
+      --pass:#0c6e39; --hold:#6f5000; --reject:#9b1c1c; }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.65 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  a{color:var(--link)}
+  a:focus,button:focus,summary:focus,input:focus,
+  a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible{
+    outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+  .skip{position:absolute;left:-999px;top:0;background:var(--accent);
+    color:var(--accent-ink);padding:.6rem 1rem;z-index:10;border-radius:0 0 8px 0}
+  .skip:focus{left:0}
+  header.hero{padding:clamp(2rem,6vw,5rem) 1.25rem 2rem;border-bottom:1px solid var(--line)}
+  .wrap{max-width:var(--maxw);margin-inline:auto}
+  .badge{display:inline-block;font-size:.8rem;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--accent-ink);background:var(--accent);
+    padding:.2rem .6rem;border-radius:999px;font-weight:700}
+  h1{font-size:clamp(2rem,7vw,3.4rem);margin:.6rem 0 .2rem;line-height:1.1}
+  .tag{color:var(--muted);font-size:1.15rem;margin:0 0 1rem}
+  blockquote{margin:1.2rem 0;padding:.4rem 0 .4rem 1rem;border-left:3px solid var(--accent);
+    color:var(--muted);font-style:italic}
+  main{padding:1.25rem}
+  section{max-width:var(--maxw);margin:2.5rem auto;scroll-margin-top:1rem}
+  h2{font-size:1.6rem;border-bottom:1px solid var(--line);padding-bottom:.3rem}
+  h3{font-size:1.15rem;margin-bottom:.3rem}
+  .grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:1rem 1.1rem}
+  .flow{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;
+    list-style:none;padding:0;margin:1rem 0}
+  .flow li{background:var(--panel);border:1px solid var(--line);border-radius:999px;
+    padding:.4rem .8rem;font-size:.95rem}
+  .flow li + li::before{content:"\2192";color:var(--muted);margin-right:.5rem;
+    align-self:center}
+  table{width:100%;border-collapse:collapse;margin:.6rem 0}
+  th,td{text-align:left;padding:.5rem .6rem;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600}
+  code,kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em}
+  pre{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:1rem;overflow:auto}
+  .verdict{font-weight:700}
+  .v-pass{color:var(--pass)} .v-hold{color:var(--hold)} .v-reject{color:var(--reject)}
+  .demo{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:1rem 1.1rem}
+  .demo label{display:flex;gap:.6rem;align-items:flex-start;margin:.5rem 0;padding:.35rem 0}
+  .demo input{margin-top:.3rem;width:1.1rem;height:1.1rem}
+  .result{margin-top:1rem;padding:.8rem 1rem;border-radius:10px;border:1px solid var(--line);
+    background:var(--bg);font-size:1.05rem}
+  footer{border-top:1px solid var(--line);color:var(--muted);padding:2rem 1.25rem;font-size:.9rem}
+  .muted{color:var(--muted)}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="hero">
+  <div class="wrap">
+    <span class="badge">polygram · v0.5.2</span>
+    <h1>Gated agent-skill synthesis</h1>
+    <p class="tag">Memory tags become curated, gated, installable Claude agent skills — with a paper trail behind every decision.</p>
+    <blockquote>It is by will alone I set my mind in motion.</blockquote>
+  </div>
+</header>
+
+<main id="main">
+  <section id="what" aria-labelledby="what-h">
+    <h2 id="what-h">What it is</h2>
+    <p>polygram is a small, standard-library-only packaging and orchestration
+    layer. Notes you keep <em>the Mentat way</em> accumulate tags; polygram reads
+    those tags, scores each candidate at an explainable <strong>gate</strong>,
+    synthesizes skill skeletons only for the ones that pass, and mints
+    installable bundles. Nothing auto-promotes, and every verdict is written to
+    disk as <em>advice</em>.</p>
+    <div class="grid">
+      <div class="card"><h3>Memory-driven</h3><p class="muted">The labels that matter to your work decide what becomes a skill.</p></div>
+      <div class="card"><h3>Gated</h3><p class="muted">Cheap, deterministic signals; explainable PASS / HOLD / REJECT.</p></div>
+      <div class="card"><h3>Auditable</h3><p class="muted">A dated advice file behind every gate, mint, and override.</p></div>
+    </div>
+  </section>
+
+  <section id="pipeline" aria-labelledby="pipe-h">
+    <h2 id="pipe-h">The pipeline</h2>
+    <ul class="flow">
+      <li>memory notes</li>
+      <li>candidates</li>
+      <li>gate</li>
+      <li>advice</li>
+      <li>synthesis</li>
+      <li>dist</li>
+    </ul>
+    <p>A note earns a candidate through <strong>tags</strong>: an Org-style
+    heading tag (<code>:SKILL:</code>) or an inline hashtag
+    (<code>#shell-tooling</code>). A candidate surfaces once its tag appears in
+    enough notes, or when you flag it explicitly.</p>
+  </section>
+
+  <section id="gate" aria-labelledby="gate-h">
+    <h2 id="gate-h">The gate</h2>
+    <table>
+      <caption class="muted" style="text-align:left">How a candidate is scored.</caption>
+      <thead><tr><th scope="col">Signal</th><th scope="col">Effect</th></tr></thead>
+      <tbody>
+        <tr><td>Corroborated by two or more notes</td><td>+2</td></tr>
+        <tr><td>Explicitly flagged by the operator</td><td>surfaces only (no score)</td></tr>
+        <tr><td>Well-formed label</td><td>+1</td></tr>
+        <tr><td>Overly generic label (<code>misc</code>, …)</td><td>−2</td></tr>
+      </tbody>
+    </table>
+    <p><span class="verdict v-pass">PASS</span> (≥3) synthesizes ·
+       <span class="verdict v-hold">HOLD</span> (≥1) waits for review ·
+       <span class="verdict v-reject">REJECT</span> is logged and dropped.</p>
+
+    <div class="demo" role="group" aria-labelledby="demo-h">
+      <h3 id="demo-h">Try the gate</h3>
+      <p class="muted" id="demo-help">Tick the signals for a candidate; the verdict updates live.</p>
+      <label><input type="checkbox" id="s-corr" aria-describedby="demo-help"> Corroborated by ≥2 notes <span class="muted">(+2)</span></label>
+      <label><input type="checkbox" id="s-label" checked> Well-formed label <span class="muted">(+1)</span></label>
+      <label><input type="checkbox" id="s-generic"> Overly generic label <span class="muted">(−2)</span></label>
+      <p class="result" id="demo-out" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section id="dist" aria-labelledby="dist-h">
+    <h2 id="dist-h">Minting — the build pipeline</h2>
+    <p><code>polygram dist</code> packages curated skills: aggregate
+    <code>.tar.gz</code> / <code>.zip</code> with a SHA-256 manifest, and
+    per-skill installable <strong><code>.skill</code></strong> bundles — a
+    folder-rooted zip the desktop app installs directly.</p>
+    <pre><code>export POLYGRAM_SKILLS_SOURCE=~/.claude/skills
+./bin/polygram dist --format all</code></pre>
+    <p>Editor and build cruft (<code>__pycache__</code>, <code>*.pyc</code>,
+    <code>*~</code>, <code>*.tmp</code>, Emacs <code>#autosave#</code>,
+    <code>.git</code>) is excluded from every bundle; the workspace copy wins a
+    name collision. This supersedes a hand-rolled packaging Makefile.</p>
+  </section>
+
+  <section id="externs" aria-labelledby="ext-h">
+    <h2 id="ext-h">Externs, kept honest</h2>
+    <p>Externs are upstream skill sources you clone in. An extern feeds
+    candidates <strong>only through its own <code>memory/</code> notes</strong> —
+    never arbitrary documents in the cloned repo. <em>Freezing</em> pins an
+    extern at a revision so it can't silently churn your skills.</p>
+    <p class="muted">This rule exists because a colour token,
+    <code>#ffcc00</code>, once leaked out of an upstream's diagrams and nearly
+    became a "skill." The quality gate caught it; the policy makes sure it can't
+    happen again.</p>
+  </section>
+
+  <section id="qc" aria-labelledby="qc-h">
+    <h2 id="qc-h">Quality control</h2>
+    <p>Synthesized skeletons are drafts. polygram passes them through a
+    sub-agent quality-control gate: a skill-builder reviewer and an SRE reviewer
+    judge each one independently, and a skill ships only when both agree it is
+    skill-shaped and sound.</p>
+    <div class="grid">
+      <div class="card"><h3 class="v-pass">color-theory · shipped</h3><p class="muted">Became a real WCAG contrast tool.</p></div>
+      <div class="card"><h3 class="v-reject">concise · rejected</h3><p class="muted">A preference, not a procedure — stays in memory.</p></div>
+      <div class="card"><h3 class="v-reject">ffcc00 · rejected</h3><p class="muted">Upstream diagram noise, not a skill.</p></div>
+    </div>
+  </section>
+
+  <section id="start" aria-labelledby="start-h">
+    <h2 id="start-h">Get started</h2>
+    <pre><code>./bin/polygram init      # create a workspace
+./bin/polygram scan      # see candidates from memory
+./bin/polygram synth     # gate + synthesize the PASSes
+./bin/polygram dist      # mint installable .skill bundles</code></pre>
+    <p>Full manual: <code>make info &amp;&amp; info -f doc/polygram.info</code>.
+    Read <code>model.md</code> to resume project context quickly.</p>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>polygram v0.5.2 — code under
+    <abbr title="GNU General Public License v3 or later">GPL-3.0-or-later</abbr>;
+    this page and the docs under
+    <abbr title="Creative Commons Attribution 4.0">CC-BY-4.0</abbr>.
+    Copyright © 2026 Corwin, with Mentat (Cowork).</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var corr=document.getElementById("s-corr"),
+      label=document.getElementById("s-label"),
+      generic=document.getElementById("s-generic"),
+      out=document.getElementById("demo-out");
+  function render(){
+    var score=0;
+    if(corr.checked) score+=2;
+    if(label.checked) score+=1;
+    if(generic.checked) score-=2;
+    var verdict, cls;
+    if(score>=3){verdict="PASS — synthesize";cls="v-pass";}
+    else if(score>=1){verdict="HOLD — review";cls="v-hold";}
+    else {verdict="REJECT — drop";cls="v-reject";}
+    out.innerHTML="Score "+score+" → <span class=\"verdict "+cls+"\">"+verdict+"</span>";
+  }
+  [corr,label,generic].forEach(function(el){el.addEventListener("change",render);});
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+---
+kind: dist
+name: polygram-curation
+version: 0.7.5
+skills: 61
+recorded: 2026-09-24T11:55:20
+---
+
+# Dist mint: polygram-curation-0.7.5
+
+## Skills packaged (61)
+
+- aethernet-relay  (workspace)
+- altorewired  (workspace)
+- boundscheck  (workspace)
+- candor-gate  (workspace)
+- color-theory  (workspace)
+- consent-gate  (workspace)
+- containment-during-exec  (installed)
+- countable-gauge  (workspace)
+- drawer-vs-door  (workspace)
+- eclipse-pass  (workspace)
+- emacs-tashaki  (workspace)
+- ethicsminions  (workspace)
+- fantasy-operational-boundary  (installed)
+- foaf  (workspace)
+- fortress-palace  (workspace)
+- gf-02-containment-during-exec  (installed)
+- gf-02-layered-assurance  (installed)
+- guarded-visibility  (installed)
+- hand-test  (workspace)
+- hooks-to-knowledge  (installed)
+- inculcat-boxer  (workspace)
+- instrument-panel  (workspace)
+- layered-assurance  (installed)
+- lens  (workspace)
+- magic-words-persona  (installed)
+- md-org-canonicity  (installed)
+- medley-review  (workspace)
+- mentat-skill  (workspace)
+- pencil-your-own  (workspace)
+- pmo  (workspace)
+- pocket-mentat  (workspace)
+- posix  (workspace)
+- posix-gotchas  (workspace)
+- principles  (workspace)
+- project-memory  (workspace)
+- prove-a-promise  (installed)
+- reformat-prompt  (workspace)
+- release-runbook  (workspace)
+- rewire-order  (installed)
+- rolls  (workspace)
+- run-card  (workspace)
+- sandboxer  (workspace)
+- savane-forensics  (workspace)
+- seams  (workspace)
+- seatkeeper  (workspace)
+- security-digest  (workspace)
+- session-rotate  (workspace)
+- shelf-check  (workspace)
+- shell-tooling  (workspace)
+- signing-model  (installed)
+- skill-metrics  (workspace)
+- skill-sign  (workspace)
+- skilltank  (workspace)
+- token-optimizer  (workspace)
+- tool-lifecycle  (installed)
+- two-columns  (workspace)
+- values-baseline  (installed)
+- verify-say  (workspace)
+- wire-connect  (workspace)
+- wire-ledger  (workspace)
+- writing-forms  (workspace)
+
+## Artifacts
+
+- polygram-curation-0.7.5.tar.gz  sha256=997bb8d1320648fa
+- polygram-curation-0.7.5.zip  sha256=0087a28d7dbb0622
+- aethernet-relay.skill  sha256=2989e29401ec12ae
+- altorewired.skill  sha256=c5402be05ae7e9a1
+- boundscheck.skill  sha256=e2fa3652c5aceb53
+- candor-gate.skill  sha256=f6961a9ac2f989ab
+- color-theory.skill  sha256=e5074b7a5e1bdc2a
+- consent-gate.skill  sha256=fb11ff1fbedaabe0
+- containment-during-exec.skill  sha256=083485de00a10432
+- countable-gauge.skill  sha256=c93c766915e19f04
+- drawer-vs-door.skill  sha256=d02a12973242525d
+- eclipse-pass.skill  sha256=6f9eaf77b22ec601
+- emacs-tashaki.skill  sha256=6561347a984a6d2d
+- ethicsminions.skill  sha256=e5e5778172eed0a1
+- fantasy-operational-boundary.skill  sha256=8ee20c36aea5ec72
+- foaf.skill  sha256=4307a1ff3192e638
+- fortress-palace.skill  sha256=42d7904dd65cf37f
+- gf-02-containment-during-exec.skill  sha256=aa78c8f8076289a1
+- gf-02-layered-assurance.skill  sha256=89bb33204f1f069e
+- guarded-visibility.skill  sha256=02bc36a5e1812702
+- hand-test.skill  sha256=1fa3545ee35e759e
+- hooks-to-knowledge.skill  sha256=87ca62e65f31372f
+- inculcat-boxer.skill  sha256=577b09c2e00ad56f
+- instrument-panel.skill  sha256=de0fe4f923696961
+- layered-assurance.skill  sha256=cf4039957428662d
+- lens.skill  sha256=1d4689f796bf70a4
+- magic-words-persona.skill  sha256=93fd416e145d1e8d
+- md-org-canonicity.skill  sha256=c2122fa92e113480
+- medley-review.skill  sha256=3d344052c9083cce
+- mentat-skill.skill  sha256=b98cdc76a44a7613
+- pencil-your-own.skill  sha256=d7d121ef199fa546
+- pmo.skill  sha256=5891e5af892f8b69
+- pocket-mentat.skill  sha256=0cdf767d39f7971c
+- posix.skill  sha256=7bde23da33c5087d
+- posix-gotchas.skill  sha256=a793979b2db9868d
+- principles.skill  sha256=9eeb06ddee4a7a97
+- project-memory.skill  sha256=9e1c6ea677c10753
+- prove-a-promise.skill  sha256=4cc35c3d7c011262
+- reformat-prompt.skill  sha256=49a7a7dc19ef965b
+- release-runbook.skill  sha256=372e5183c3603ca9
+- rewire-order.skill  sha256=cc9f2fcb2e72ad55
+- rolls.skill  sha256=ca595504ee59c745
+- run-card.skill  sha256=32b6c103eb3a4a93
+- sandboxer.skill  sha256=e729992a39450fb5
+- savane-forensics.skill  sha256=2ce97ca4c2c029f6
+- seams.skill  sha256=cd5c836589b7cd96
+- seatkeeper.skill  sha256=fdfa6a62902c92ec
+- security-digest.skill  sha256=ed4a63ef85a47639
+- session-rotate.skill  sha256=6c3993b19ca001fd
+- shelf-check.skill  sha256=522a1dd02fd3b8ea
+- shell-tooling.skill  sha256=ad93fb07270fc6c7
+- signing-model.skill  sha256=aeebf2297ab03952
+- skill-metrics.skill  sha256=2cb2e1004c211b02
+- skill-sign.skill  sha256=b1c5e4fe1e0bd49d
+- skilltank.skill  sha256=2bdec7410bb22afb
+- token-optimizer.skill  sha256=d9f8434d80ac1e23
+- tool-lifecycle.skill  sha256=dc17ab15c19e083f
+- two-columns.skill  sha256=a1cf0a17ea5cad15
+- values-baseline.skill  sha256=1d50fc9495dceb66
+- verify-say.skill  sha256=ea3cd8ebccb8bf94
+- wire-connect.skill  sha256=27b184f16f72c747
+- wire-ledger.skill  sha256=f325705df6bff4af
+- writing-forms.skill  sha256=2963796db2dfccbf

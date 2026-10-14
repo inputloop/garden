@@ -1,0 +1,82 @@
+---
+kind: dist
+name: vibrobeast
+version: 1.0.4
+skills: 66
+recorded: 2026-10-08T17:03:03+00:00
+---
+
+# Dist mint: vibrobeast-1.0.4
+
+## Skills packaged (66)
+
+- aethernet-relay  (workspace)
+- altorewired  (workspace)
+- boundscheck  (workspace)
+- build-loop  (workspace)
+- candor-gate  (workspace)
+- color-theory  (workspace)
+- consent-gate  (workspace)
+- containment-during-exec  (workspace)
+- countable-gauge  (workspace)
+- drawer-vs-door  (workspace)
+- drift  (workspace)
+- eclipse-pass  (workspace)
+- emacs-tashaki  (workspace)
+- ethicsminions  (workspace)
+- fantasy-operational-boundary  (workspace)
+- foaf  (workspace)
+- fortress-palace  (workspace)
+- garden-pony  (workspace)
+- garden-usage  (workspace)
+- guarded-visibility  (workspace)
+- hand-test  (workspace)
+- hooks-to-knowledge  (workspace)
+- inculcat-boxer  (workspace)
+- instrument-panel  (workspace)
+- kid-glove  (workspace)
+- layered-assurance  (workspace)
+- lens  (workspace)
+- llama-bridge  (workspace)
+- magic-words-persona  (workspace)
+- md-org-canonicity  (workspace)
+- medley-review  (workspace)
+- mentat-skill  (workspace)
+- pencil-your-own  (workspace)
+- persona-engine  (workspace)
+- pmo  (workspace)
+- pocket-mentat  (workspace)
+- posix  (workspace)
+- posix-gotchas  (workspace)
+- principles  (workspace)
+- prove-a-promise  (workspace)
+- reformat-prompt  (workspace)
+- release-runbook  (workspace)
+- rewire-order  (workspace)
+- rolls  (workspace)
+- run-card  (workspace)
+- sandboxer  (workspace)
+- savane-forensics  (workspace)
+- seams  (workspace)
+- seatkeeper  (workspace)
+- security-digest  (workspace)
+- session-rotate  (workspace)
+- shelf-check  (workspace)
+- signing-model  (workspace)
+- skill-metrics  (workspace)
+- skill-sign  (workspace)
+- skilltank  (workspace)
+- token-optimizer  (workspace)
+- tool-lifecycle  (workspace)
+- topoforge-story  (workspace)
+- two-columns  (workspace)
+- values-baseline  (workspace)
+- verify-say  (workspace)
+- vibrobeast  (workspace)
+- wire-connect  (workspace)
+- wire-ledger  (workspace)
+- writing-forms  (workspace)
+
+## Artifacts
+
+- vibrobeast.plugin  sha256=34b2b3bd90596caf

@@ -1,0 +1,34 @@
+2026-10-10  Mentat (for Corwin; claude-opus-5-5)  <corwin@bru.st>
+
+	Lane B of the extension edition: the Tavern face, the plain voice
+	and the persona ledger (DESIGN-extension-edition.md, tasks B1-B3).
+
+	* polygram/mcp/tavernface.py (agent_and_source, _owner_agent)
+	(_cfg, build_of, ROADS_STOCK, ROADS_GP): New.
+	(agent_name): tavern.as, when the person never set it, falls back
+	to the first agent in config.json under this machine's first
+	person whose model is claude, then claude (SPEC F6).
+	(status): Name the build (stock 2.3.1, gp.1, or what VERSION
+	says), the Tavern by its own name before its address, and the
+	roads that need gp.1; never print the join code, Tavern id, ip or
+	token (SPEC F5).
+	* tests/tavernface-SPEC.txt: Rows F5, F6; prove-red plants (d), (e).
+	* tests/tavernface-tests.sh: F5, F6 and their plants; 9/9.
+	* tests/fixtures/lane-b/: New; an invented Tavern config.json.
+	* polygram/mcp/persona.py (default_voice, TONE_ORIGIN): New.
+	persona_resolve, when no sheet resolves, returns default_voice:
+	one plain line at the origin of the tone dial, numbers only when
+	tone.show is not words (card 11).
+	(ledger, persona_ledger): New read-only tool and CLI face
+	(python3 -m polygram.mcp persona --ledger [--proposed FILE]):
+	LEDGER.md from each sheet's own "Whose inverse I carry" section,
+	twins that DIVERGED with both sha256s, faults, person models
+	counted not named, proposed edges apart, and a words read-back
+	of what the model was shown (card 19).
+	(main): Accept --ledger.
+	* tests/test_mcp_persona.py (APersonaLessActorStillSpeaks): New.
+	* tests/persona-ledger-SPEC.txt: New; rows L1-L8 and R.
+	* tests/persona-ledger-tests.sh, tests/persona-ledger-spec.awk:
+	New; the awk reading of the SPEC, 9/9, four plants go red.
+	* advice/EXTENSION-2026-10-10/persona-ledger/: New; the first
+	ledger (LEDGER-2026-10-10.md) and its proposed-edge pointers.

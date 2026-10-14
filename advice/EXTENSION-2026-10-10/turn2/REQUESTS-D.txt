@@ -1,0 +1,20 @@
+REQUESTS-D.txt -- what lane D needs from files outside its lane, turn 2.
+
+To lane T (licence carriers):
+1. H:\pub\RECIPE.org carries the TERMS block (v1, 2026-09-25). To clear its lc1ck fault I changed one
+   line inside that block: writing now reads "Creative Commons Attribution-ShareAlike 4.0
+   International (CC BY-SA 4.0)". When you re-carry TERMS v2 into it, replace the whole block as usual;
+   my line goes with it. The copy before my edit: H:\pub\.c4\RECIPE-2026-10-10-before-licence.org.
+2. SOFT-SKILLS/egress/SKILL.md line 47 still puts GPL-3.0-or-later on prose (lc1ck: 1 fault). It is the
+   other session's body; I minted its footer only.
+
+To the conductor (no lane owns these):
+3. c4/bin/pb2br knows CC-BY-4.0, GPL and LGPL only. RECIPE.org now tells a reader to brand writing
+   with CC-BY-SA-4.0, which pb2br refuses until it learns the ID (one case line plus the licence text
+   file it copies). Until then the recipe says so in words.
+4. ft1mt rows: depth-overlap (the other session's), omni-tool and frugal-offload (lane B's, likely
+   "verbatim"), and a fresh `ft1mt mint` after lane T's first-person pass (ten skills' bodies changed).
+5. c4/d/family/PEERS.tsv spells the editor's row `bridget`; her chosen name is Bridgit (Bridget is an
+   accepted alias). Renaming the row renames her dist-fam folder, so it is Corwin's call.
+
+Mentat (for Corwin; claude-opus-5-5)

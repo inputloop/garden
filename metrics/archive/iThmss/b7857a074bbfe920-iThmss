@@ -1,0 +1,90 @@
+#!/bin/sh
+# iThmss -- compose a named h/C4/<NAME>/ collection of separately-readable files into one
+#           h/c4-<NAME> output: topmatter once, then one nested section per file, sorted.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st>
+#
+# This file is not part of GNU Emacs.
+# This program is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with this program.
+# If not, see <https://www.gnu.org/licenses/>.
+#
+# ---------------------------------------------------------------------------------------------
+#
+# WHY THIS EXISTS. Corwin, 2026-08-08: asked for stub USAGE blocks kept separately readable in
+# h/C4/local-tool-usage, "rolling ... back up into h/c4-local-tool-usage" -- topmatter composed
+# once, each file's bottom matter nested as its own section. C4S0 names WHICH collection, so the
+# same tool composes any future h/C4/<name>/ set, not just this first one.
+#
+# THE NAME follows the house pattern of a bare, slightly-obscured mnemonic (c4prime, do0r, w0sh):
+# iT -- the standing term for this seat -- HoMeS the Sections. Kept honest: no canonical
+# expansion was given, only the behavior; this is my own reading, on the record rather than
+# silently assumed. Cheap to re-name if the keeper has a better one.
+#
+# THE PRECEDENT this borrows on purpose: bin/c4item already solved "compose from parts, prove
+# nothing was eaten" with head.md/foot.md bracketing numbered card dirs. iThmss is the same shape
+# one level up -- head.md/foot.md bracketing whole FILES instead of field dirs -- so a reader who
+# already knows c4item already knows most of this.
+#
+# ---------------------------------------------------------------------------------------------
+# TWO DECLARATIONS, because an undeclared check reads as MUST:
+#
+#   MUST     every file in the named collection (bar head.md, foot.md, dotfiles) appears in the
+#            output, byte-for-byte, under a section header naming it. Composition only -- this
+#            tool holds no opinion on what the files say.
+#   JOURNEY  the section-header shape (`## NAME`), the sort order (LC_ALL=C glob order, plain
+#            byte order), and treating head.md/foot.md as the topmatter/closing slots rather than
+#            some other marker name. Mine; cheap to re-rule.
+#
+# WRITE SAFETY. Composes into "$OUT.new" and renames into place only on success, so a failure
+# mid-compose (an unreadable source file, a full disk) leaves the previous good $OUT untouched
+# instead of a truncated one. No /tmp dependency -- c4prime already measured that a Cowork
+# sandbox's /tmp is not reliably writable; staying inside h/ sidesteps the question entirely.
+#
+# usage: C4S0=NAME sh bin/iThmss
+#        reads h/C4/$C4S0/{head.md,*,foot.md}, writes h/c4-$C4S0
+
+set -eu
+export LC_ALL=C
+
+R=$(cd "$(dirname "$0")/.." && pwd)
+cd "$R"
+
+: "${C4S0:?iThmss: C4S0 must name a collection (e.g. C4S0=local-tool-usage) -- which h/C4/<NAME>/ to compose}"
+
+case "$C4S0" in
+*/*|.*) printf 'iThmss: C4S0 must be one bare word, got %s\n' "$C4S0" >&2; exit 2 ;;
+esac
+
+SRC="h/C4/$C4S0"
+OUT="h/c4-$C4S0"
+
+[ -d "$SRC" ] || { printf 'iThmss: no collection at %s\n' "$SRC" >&2; exit 2; }
+
+trap 'rm -f "$OUT.new"' EXIT INT TERM
+
+n=0
+{
+	[ -f "$SRC/head.md" ] && cat "$SRC/head.md"
+	for f in "$SRC"/*; do
+		[ -f "$f" ] || continue
+		b=$(basename "$f")
+		case "$b" in head.md|foot.md|.*) continue ;; esac
+		n=$((n + 1))
+		printf '\n## %s\n\n' "$b"
+		cat "$f"
+	done
+	[ -f "$SRC/foot.md" ] && { printf '\n'; cat "$SRC/foot.md"; }
+} > "$OUT.new"
+
+mv "$OUT.new" "$OUT"
+
+s=s; [ "$n" -eq 1 ] && s=''
+printf 'iThmss: composed %s (%d section%s) from %s -> %s\n' "$C4S0" "$n" "$s" "$SRC" "$OUT" >&2

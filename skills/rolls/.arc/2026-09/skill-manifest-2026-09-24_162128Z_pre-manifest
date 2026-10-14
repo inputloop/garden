@@ -1,0 +1,4 @@
+81aa82ec4c6a12eb625107a609e4b1579c67d8b0e5f71ab32ee4e3d22b64effa  ./.arc/2026-09/signature-2026-09-23_pre-header-pass.asc
+3d76d0edfcfb1f5e51c406fd75f9c01174c8fd233258e8f5ee05e8a3af0b9c60  ./.arc/2026-09/skill-manifest-2026-09-23_pre-header-pass
+7e1a1255be501e29ff8894f0244e88c365c077fa342faab5e2b05b9632448cb4  ./SKILL.md
+eeaa3bebb8501facc0816718bbbc1163dfd51e1ac5ffa2195bfcbc8dd51497a2  ./scripts/check_vocab_sync.py

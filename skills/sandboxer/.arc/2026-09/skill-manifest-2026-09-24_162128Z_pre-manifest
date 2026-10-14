@@ -1,0 +1,14 @@
+df75d29e17bd6b4000320ac7766aafb5ff073d6dc543869a6bf294595ff85834  ./.arc/2026-09/SKILL-2026-09-11_Archived-by-rcw-01dwoah4hj9uxpj4dacwrb2p.md
+8c8182ec1c1c20c443a84324eb526a54a4b27028d4024754400acceed465e65c  ./.arc/2026-09/SKILL-2026-09-11_Archived-by-rcw-01dwoah4hj9uxpj4dacwrb2p.md.asc
+efb8054502f05923339e761138aa3134b40ba5fa9cd1af0c1cf33044a46628b2  ./.arc/2026-09/SKILL-2026-09-11_Archived-by-rcw-01g98gsym4p1s3y94e1g4tcd.md
+8c8182ec1c1c20c443a84324eb526a54a4b27028d4024754400acceed465e65c  ./.arc/2026-09/SKILL-2026-09-11_Archived-by-rcw-01g98gsym4p1s3y94e1g4tcd.md.asc
+ade15e5936a3b4ebc2267943ae04e081098ff38706a2249ee36f10e457e04f84  ./.arc/2026-09/SKILL-2026-09-23_pre-header-pass.md.asc
+4b8cd58d606e2c359bced892233895cfb6b953dff8b0eb7b9b6cc8fc8b1287d0  ./.arc/2026-09/signature-2026-09-23_pre-header-pass.asc
+a71c581dfa71d7427c712360b999299570a0eaa9e107842b687c6b7adfd738de  ./.arc/2026-09/skill-manifest-2026-09-23_pre-header-pass
+965c2da923e541cddeecc96e736445daafbaf533b4ba20e99b59318c3f19b7f8  ./.arc/receipts/aw2ri-2026-09.log
+f8b2ef468c2f0d5bcf26f756ee8dac47b4d08330edcd7f4936d7fd152a487232  ./SKILL.md
+3d294c97b4f307409e608fd14d3f214310e08f249bd67fc8ed02f08df31f0888  ./scripts/safe_write.py
+1367532bce54bcc0aa42405785c67da108c00403d70a3d4de5c77a7552617602  ./scripts/sig-fresh.sh
+4e0c5ce479a10449665aa6d3a55625a5753dd0ea137939efabea8674a167f7fd  ./scripts/sig-fresh.sh.asc
+a7434515e69aeb1cba8e5dfb8d006c4c3e6ad3f1aa1b61f602f1a21344a41bce  ./scripts/validators.py
+68f7a63e08a9a053cff7d3b61253c22f372dbf44286f5982995e2f0e59824574  ./scripts/verify.py

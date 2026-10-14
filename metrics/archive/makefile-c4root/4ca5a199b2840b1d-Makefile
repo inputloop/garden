@@ -1,0 +1,74 @@
+# polygram -- GNU-style convenience Makefile.
+# Copyright (C) 2026 Corwin.  Licensed GPL-3.0-or-later (see COPYING).
+.POSIX:
+PYTHON  = python3
+MAKEINFO = makeinfo
+INSTALL_INFO = install-info
+
+.PHONY: all check test doctor info dist skills garden kit kit-quick metrics clean help
+
+# The skill garden (Corwin, 2026-09-11: "skills where they belong in the garden ... calling make
+# dist will DTRT meaning mint each .skill file we curate"). skills/ is the garden: one directory
+# per curated skill, and `make dist` mints every one of them. Deck-derived canon skills live in
+# C4_ROOT/dist/skills (c4cs make-skills) and are minted by reference, not copied.
+#
+# C4_ROOT auto-detects (2026-09-12, closing a recurring sandbox first-run miss): it prefers his
+# real host path when present, and falls back to a mounted sandbox copy otherwise, so a fresh
+# session's first `make garden` no longer dies on a hard-coded host-only path. Either an
+# environment variable or a command-line override still wins over both, e.g.
+#   make C4_ROOT=$$HOME/mnt/c4 garden          # explicit override, as before
+#   C4_ROOT=/some/other/tree make garden       # environment override (new: was `=`, now `?=`)
+# See tests/makefile-c4root-tests.sh for the three cases this covers.
+C4_ROOT  ?= $(if $(wildcard /f/claude/c4/.),/f/claude/c4,$(HOME)/mnt/c4)
+CANON     = $(C4_ROOT)/dist/skills
+SG1CK     = $(C4_ROOT)/bin/sg1ck
+LIVE      = $(C4_ROOT)/../.claude/skills
+INSTALLED = $(if $(wildcard $(LIVE)/.),$(LIVE),$(lastword $(sort $(wildcard h/INSTALLED-*.tsv))))
+
+help:
+	@echo "targets: check  doctor  info  dist  garden  kit  kit-quick  metrics  skills  clean"
+
+all: check info
+
+check test:
+	$(PYTHON) -m unittest discover -s tests -v
+
+doctor:
+	$(PYTHON) -m polygram doctor
+
+# Build the Texinfo manual to Info (requires GNU Texinfo / makeinfo).
+info: doc/polygram.info
+doc/polygram.info: doc/polygram.texi
+	$(MAKEINFO) --no-split -o $@ $<
+
+# Mint distributable archives + installable .skill bundles into dist/: every skill in skills/
+# (the garden) plus every canon skill under $(CANON), one .skill each, plus the aggregates.
+dist:
+	$(PYTHON) -m polygram dist --format all --all-installed --skills-source $(CANON)
+
+# Where does every skill live, and is the worn copy the curated copy? A gauge (exit 1 = look).
+# The worn side is the app's installed store when it is reachable (bin/skill's LIVE dir), else the
+# newest h/INSTALLED-*.tsv written by `sg1ck --list-installed DIR` from a session that can see it.
+garden:
+	sh $(SG1CK) --garden skills --c4 $(C4_ROOT) --installed $(INSTALLED)
+
+# The whole-garden test + benchmark kit (2026-09-22): every suite in this repo and the C4 tree, each
+# skill's lint and size, the plugin's bytes, the garden gauge -- one verdict, results recorded to
+# metrics/ (interesting-only). `kit-quick` skips the two slow legs. See bin/gd1ck --help.
+kit:
+	sh bin/gd1ck --record --c4 $(C4_ROOT)
+
+kit-quick:
+	sh bin/gd1ck --record --quick --c4 $(C4_ROOT)
+
+# The metrics store read back: latest row per item, columns aligned. `sh bin/sk2mt say` for words.
+metrics:
+	sh bin/sk2mt table
+
+skills:
+	$(PYTHON) -m polygram synth
+
+clean:
+	rm -rf dist doc/polygram.info
+	find . -name __pycache__ -type d -prune -exec rm -rf {} +
+	find . -name '*.pyc' -delete

@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+# Binary package names in Debian 13.7 (trixie), component non-free-firmware, amd64 plus architecture-independent. One per line.
+# Source: non-free-firmware/binary-amd64/Packages.xz and non-free-firmware/binary-all/Packages.xz from deb.debian.org, each sha256 matched the signed InRelease of 2026-09-12 (see PROVENANCE.txt).
+amd64-microcode
+atmel-firmware
+bluez-firmware
+dahdi-firmware-nonfree
+firmware-amd-graphics
+firmware-ast
+firmware-atheros
+firmware-bnx2
+firmware-bnx2x
+firmware-brcm80211
+firmware-cavium
+firmware-cirrus
+firmware-intel-graphics
+firmware-intel-misc
+firmware-intel-sound
+firmware-ipw2x00
+firmware-ivtv
+firmware-iwlwifi
+firmware-libertas
+firmware-linux
+firmware-linux-nonfree
+firmware-marvell-prestera
+firmware-mediatek
+firmware-misc-nonfree
+firmware-myricom
+firmware-netronome
+firmware-netxen
+firmware-nvidia-graphics
+firmware-nvidia-gsp
+firmware-nvidia-tesla-535-gsp
+firmware-qcom-media
+firmware-qcom-soc
+firmware-qlogic
+firmware-realtek
+firmware-samsung
+firmware-siano
+firmware-sof-signed
+firmware-ti-connectivity
+firmware-zd1211
+intel-microcode
+live-task-non-free-firmware-pc
+live-task-non-free-firmware-server
+midisport-firmware
+raspi-firmware

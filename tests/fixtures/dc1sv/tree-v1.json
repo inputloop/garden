@@ -1,0 +1,354 @@
+{
+ "v": 1,
+ "treatment": "blueprint",
+ "paradigm": "office",
+ "anchor": "points",
+ "_provenance": {
+  "title": "ENHANCE tree 2026-09-05 — the queue reclassed by route, after Floor R of the skills-focus model",
+  "source": "h/ENHANCE-2026-09-04-queue.md (Q1–Q13) × h/MODEL-2026-09-05-skills-focus.md §Floor R (18 rows) × SEATDIFF-2026-09-04b.md cards",
+  "transcribed_by": "Fable (Mentat/Vibrobeast), 2026-09-05 evening",
+  "rules": "status is a word on every leaf; UNSET is shown and counted (1: Q10 — absent from Floor R, my omission); tier letter = Floor 1's lowest-tier-that-carries-the-check; counts in the md come from awk over this file, not from memory",
+  "supersedes": "widget enhance_queue_2026_09_04 (flat, 13 rows); the 09-04 queue file is untouched and remains the citations source",
+  "layout_fix": "v2: columns re-spaced from measured widths after v1 render showed forge rect at x=-2 and an 88px overlap with DISCUSS (read off the SVG source, not eyeballed)"
+ },
+ "shapes": [
+  {
+   "id": "root",
+   "label": "ENHANCE TREE 2026-09-05 · most users · most composability · no risk I cannot explain",
+   "kind": "box",
+   "x": 650,
+   "y": 20,
+   "face": "front"
+  },
+  {
+   "id": "q9",
+   "label": "Q9 LEAVE-AS-MEMORY · done · Mentat holds",
+   "kind": "note",
+   "x": 1345,
+   "y": 36,
+   "face": "front"
+  },
+  {
+   "id": "forge_h",
+   "label": "RESURRECTED → skill-creator (reauthor via forge)",
+   "kind": "box",
+   "x": 30,
+   "y": 130,
+   "face": "front",
+   "group": "forge"
+  },
+  {
+   "id": "forge_0",
+   "label": "Q1 seatkeeper move 1 · FIRST · S",
+   "kind": "note",
+   "x": 36,
+   "y": 205,
+   "face": "front",
+   "group": "forge"
+  },
+  {
+   "id": "forge_1",
+   "label": "Q2 rolls kind + card generator · T+S",
+   "kind": "note",
+   "x": 36,
+   "y": 239,
+   "face": "front",
+   "group": "forge"
+  },
+  {
+   "id": "forge_2",
+   "label": "Q3 skilltank: name mapped skill · T",
+   "kind": "note",
+   "x": 36,
+   "y": 273,
+   "face": "front",
+   "group": "forge"
+  },
+  {
+   "id": "forge_3",
+   "label": "Q4+Q5+Q6 sandboxer·posix·verify-say · P",
+   "kind": "note",
+   "x": 36,
+   "y": 307,
+   "face": "front",
+   "group": "forge"
+  },
+  {
+   "id": "forge_4",
+   "label": "Q11 mentat 1–8 ⇄ palace #1 · merge · S",
+   "kind": "note",
+   "x": 36,
+   "y": 341,
+   "face": "front",
+   "group": "forge"
+  },
+  {
+   "id": "forge_5",
+   "label": "Q12 lens.py reader-sha check · T",
+   "kind": "note",
+   "x": 36,
+   "y": 375,
+   "face": "front",
+   "group": "forge"
+  },
+  {
+   "id": "forge_6",
+   "label": "Q13 balanced-pair linter (ex-HOLD) · T",
+   "kind": "note",
+   "x": 36,
+   "y": 409,
+   "face": "front",
+   "group": "forge"
+  },
+  {
+   "id": "forge_7",
+   "label": "pocket-mentat · P|S|signed · palace",
+   "kind": "note",
+   "x": 36,
+   "y": 443,
+   "face": "front",
+   "group": "forge"
+  },
+  {
+   "id": "forge_8",
+   "label": "fortress-palace · 2nd use met · P",
+   "kind": "note",
+   "x": 36,
+   "y": 477,
+   "face": "front",
+   "group": "forge"
+  },
+  {
+   "id": "forge_9",
+   "label": "countable-gauge·seams†·prove-1-move · P+T",
+   "kind": "note",
+   "x": 36,
+   "y": 511,
+   "face": "front",
+   "group": "forge"
+  },
+  {
+   "id": "discuss_h",
+   "label": "DISCUSS → keeper (ceremony / gate choice)",
+   "kind": "box",
+   "x": 450,
+   "y": 130,
+   "face": "front",
+   "group": "discuss"
+  },
+  {
+   "id": "discuss_0",
+   "label": "COPYING thread: ccspt gap = C4 tombstone",
+   "kind": "note",
+   "x": 456,
+   "y": 205,
+   "face": "front",
+   "group": "discuss"
+  },
+  {
+   "id": "discuss_1",
+   "label": "Q166 four buildables: pick a gate or retire",
+   "kind": "note",
+   "x": 456,
+   "y": 239,
+   "face": "front",
+   "group": "discuss"
+  },
+  {
+   "id": "discuss_2",
+   "label": "Q10 c4prime 7th fault · UNSET in Floor R",
+   "kind": "note",
+   "x": 456,
+   "y": 273,
+   "face": "front",
+   "group": "discuss"
+  },
+  {
+   "id": "hold_h",
+   "label": "HOLD · reading room (gate 2 unmet)",
+   "kind": "box",
+   "x": 825,
+   "y": 130,
+   "face": "front",
+   "group": "hold"
+  },
+  {
+   "id": "hold_0",
+   "label": "Q8 seatexp · run once · T",
+   "kind": "note",
+   "x": 831,
+   "y": 205,
+   "face": "front",
+   "group": "hold"
+  },
+  {
+   "id": "hold_1",
+   "label": "agents-rules-for-life as-model · own LENS",
+   "kind": "note",
+   "x": 831,
+   "y": 239,
+   "face": "front",
+   "group": "hold"
+  },
+  {
+   "id": "tabled_h",
+   "label": "TABLED · risk not yet explainable",
+   "kind": "box",
+   "x": 1190,
+   "y": 130,
+   "face": "front",
+   "group": "tabled"
+  },
+  {
+   "id": "tabled_0",
+   "label": "Q7 boundscheck · Claude-only transcript",
+   "kind": "note",
+   "x": 1196,
+   "y": 205,
+   "face": "front",
+   "group": "tabled"
+  },
+  {
+   "id": "tabled_1",
+   "label": "A14 isolation·SAVANNAH·seams · his answer",
+   "kind": "note",
+   "x": 1196,
+   "y": 239,
+   "face": "front",
+   "group": "tabled"
+  },
+  {
+   "id": "hands_h",
+   "label": "KEEPER HANDS · not composability",
+   "kind": "box",
+   "x": 1555,
+   "y": 130,
+   "face": "front",
+   "group": "hands"
+  },
+  {
+   "id": "hands_0",
+   "label": "pencil-your-own · minted, awaits bless",
+   "kind": "note",
+   "x": 1561,
+   "y": 205,
+   "face": "front",
+   "group": "hands"
+  },
+  {
+   "id": "hands_1",
+   "label": "CARD 1 seat index lines (locked)",
+   "kind": "note",
+   "x": 1561,
+   "y": 239,
+   "face": "front",
+   "group": "hands"
+  },
+  {
+   "id": "hands_2",
+   "label": "CARD 2 rm .probe-renamed · __pycache__",
+   "kind": "note",
+   "x": 1561,
+   "y": 273,
+   "face": "front",
+   "group": "hands"
+  },
+  {
+   "id": "hands_3",
+   "label": "CARD 3 gw7 persona pull",
+   "kind": "note",
+   "x": 1561,
+   "y": 307,
+   "face": "front",
+   "group": "hands"
+  },
+  {
+   "id": "hands_4",
+   "label": "CARD 5 clearsign shelf piece + SIGN: line",
+   "kind": "note",
+   "x": 1561,
+   "y": 341,
+   "face": "front",
+   "group": "hands"
+  },
+  {
+   "id": "legend",
+   "label": "tier: P paste-in · S skill · T tool · L ledger — lowest tier that still carries the check",
+   "kind": "note",
+   "x": 30,
+   "y": 600,
+   "face": "front"
+  }
+ ],
+ "edges": [
+  {
+   "from": "root",
+   "to": "q9",
+   "nib": {
+    "b": "circle"
+   }
+  },
+  {
+   "from": "root",
+   "to": "forge_h",
+   "fromCP": "s",
+   "toCP": "n",
+   "nib": {
+    "b": "arrow"
+   }
+  },
+  {
+   "from": "root",
+   "to": "discuss_h",
+   "fromCP": "s",
+   "toCP": "n",
+   "nib": {
+    "b": "arrow"
+   }
+  },
+  {
+   "from": "root",
+   "to": "hold_h",
+   "fromCP": "s",
+   "toCP": "n",
+   "nib": {
+    "b": "arrow"
+   }
+  },
+  {
+   "from": "root",
+   "to": "tabled_h",
+   "fromCP": "s",
+   "toCP": "n",
+   "nib": {
+    "b": "arrow"
+   }
+  },
+  {
+   "from": "root",
+   "to": "hands_h",
+   "fromCP": "s",
+   "toCP": "n",
+   "nib": {
+    "b": "arrow"
+   }
+  }
+ ],
+ "systems": {
+  "forge": {
+   "_label": "RESURRECTED (12 of 18 Floor-R rows incl. 2 discuss)"
+  },
+  "discuss": {
+   "_label": "DISCUSS"
+  },
+  "hold": {
+   "_label": "HOLD"
+  },
+  "tabled": {
+   "_label": "TABLED"
+  },
+  "hands": {
+   "_label": "KEEPER HANDS"
+  }
+ }
+}

@@ -1,0 +1,160 @@
+#!/bin/sh
+# st1dt -- SEATING 1 DETECT: look at one folder, say in words whether it is seated, propose one
+# grain, and ask once. It never writes (SPEC ST1-ST6 in tests/lane-d-SPEC.txt; cards 21, 22).
+#
+#   seated     a .gate governs the folder (the nearest one walking up, stopping at the mount root),
+#              or the folder carries .polygram
+#   grains     none (already seated) | light (a .gate sign-post only) | full (a .gate, an INDEX.md
+#              and a seat entry); exactly one is proposed, with its reason and its falsifier
+#   a "no"     a yes or no goes through the seatkeeper skill and pref_set, never through st1dt. A
+#              remembered no is the preference skill.seatkeeper.<hash> = "no: <path>" (<hash> = the
+#              first 12 hex of sha256 over the path, backslashes made "/", one trailing "/" dropped;
+#              skills/seatkeeper/SKILL.md). When one is in force, st1dt says so and asks nothing.
+#   kept out of view   the never-list is counted, never named, listed or opened: .house/, .keys/,
+#              *.secret, *.key, the fenced Z/ a/ p/, SAVANNAH, .patternwalk/ (shell recordings,
+#              out of seating scope by Corwin's ruling of 2026-10-10 03:45), chat bodies (chat/,
+#              chats/, *.jsonl) and invoices (*invoice*). Invoice names, and only those, are shown
+#              with --names, on ask.
+# It looks at the folder's own entries (one level), the .gate files walking up, and the marker
+# names; it opens no file but the .gate sign-posts' policy line and the preferences file.
+#
+# Usage: st1dt [--root DIR] [--prefs FILE] [--as PATH] [--names] [--trace] FOLDER
+#   --root   the mount root (default: $HOME/mnt); the .gate walk stops there
+#   --prefs  the preferences file (default: $MENTCACHED_PREFS, else ~/.mentcached/prefs.tsv)
+#   --as     the path the person knows the folder by (for the hash; default: its path from the
+#            mount root, e.g. "wheels", so the hash is the same in every session)
+#   --trace  print every path st1dt touches to stderr, as "touch: PATH" (the tests read it)
+# Exit: 0; 2 usage.
+#
+# Authored by Mentat (for Corwin; claude-opus-5-5).
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+# SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later
+set -u
+LC_ALL=C; export LC_ALL
+ROOT=$HOME/mnt; PREFS=${MENTCACHED_PREFS:-$HOME/.mentcached/prefs.tsv}; AS=; NAMES=; TRACE=; F=
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --root) ROOT=$2; shift 2 ;;
+    --prefs) PREFS=$2; shift 2 ;;
+    --as) AS=$2; shift 2 ;;
+    --names) NAMES=1; shift ;;
+    --trace) TRACE=1; shift ;;
+    -h|--help) sed -n '2,32p' "$0"; exit 0 ;;
+    --*) echo "st1dt: unknown option $1" >&2; exit 2 ;;
+    *) F=$1; shift ;;
+  esac
+done
+[ -n "$F" ] || { echo "st1dt: name one folder" >&2; exit 2; }
+touch_() { [ -n "$TRACE" ] && printf 'touch: %s\n' "$1" >&2; return 0; }
+never_path() {  # 0 when the path is on, or under, the never-list
+  case "/$1/" in
+    */.house/*|*/.keys/*|*/Z/*|*/a/*|*/p/*|*/SAVANNAH/*|*/.patternwalk/*|*/chat/*|*/chats/*) return 0 ;; #guard:never-path
+  esac
+  case "$1" in *.secret|*.key|*.jsonl) return 0 ;; esac
+  return 1
+}
+class_of() {  # an entry name -> never | invoice | open
+  case "$1" in
+    .house|.keys|Z|a|p|SAVANNAH|.patternwalk|chat|chats|*.secret|*.key|*.jsonl) echo never ;; #guard:never-name
+    *[Ii]nvoice*|*INVOICE*) echo invoice ;;
+    *) echo open ;;
+  esac
+}
+ROOT=$(cd "$ROOT" 2>/dev/null && pwd -P) || { echo "st1dt: no mount root" >&2; exit 2; }
+if never_path "$F"; then
+  printf 'st1dt: %s is on the never-list, so it is not looked at, listed or seated.\n' "$F"
+  printf '\nWhat the model was shown: this one line and the folder'"'"'s path; nothing inside it.\n'
+  exit 0
+fi
+[ -d "$F" ] || { echo "st1dt: no such folder: $F" >&2; exit 2; }
+F=$(cd "$F" && pwd -P)
+case "$F" in "$ROOT"|"$ROOT"/*) rel=${F#"$ROOT"}; rel=${rel#/}; [ -n "$rel" ] || rel=. ;; *) rel=$F ;; esac
+[ -n "$AS" ] || AS=$rel
+key_path=$(printf '%s' "$AS" | tr '\\' '/' | sed 's#/$##')
+hash=$(printf '%s' "$key_path" | sha256sum | cut -c1-12)
+
+# 1. the nearest .gate, walking up to the mount root
+gate=; p=$F
+while :; do
+  touch_ "$p/.gate"
+  if [ -f "$p/.gate" ]; then gate=$p/.gate; break; fi
+  [ "$p" = "$ROOT" ] || [ "$p" = / ] && break
+  case "$p" in "$ROOT"/*) ;; *) break ;; esac
+  p=$(dirname "$p")
+done
+policy=
+[ -n "$gate" ] && policy=$(awk '/^policy:/{sub(/^policy:[ \t]*/,""); print; exit}' "$gate")
+
+# 2. the folder's own entries, one level; the never-list is counted, never named
+n_open=0; n_never=0; n_inv=0; markers=; inv_names=
+for e in "$F"/* "$F"/.[!.]* "$F"/..?*; do
+  b=${e##*/}
+  case "$b" in '*'|'.[!.]*'|'..?*') continue ;; esac   # a glob that matched nothing
+  c=$(class_of "$b")
+  case "$c" in   # the never-list is counted by name from the listing, never stat'ed or opened
+    never) n_never=$((n_never+1)); continue ;;
+    invoice) n_inv=$((n_inv+1)); inv_names="$inv_names${inv_names:+, }$b"; continue ;;
+  esac
+  touch_ "$e"
+  [ -e "$e" ] || [ -L "$e" ] || continue
+  n_open=$((n_open+1))
+  case "$b" in .polygram|.seed|RECIPE.org|.git|model.md|INDEX.md|*.pmo|PMO) markers="$markers${markers:+, }$b" ;; esac
+done
+kept=$((n_never + n_inv))
+
+# 3. a remembered no
+declined=; ddate=
+if [ -f "$PREFS" ]; then
+  touch_ "$PREFS"
+  row=$(awk -F'\t' -v k="skill.seatkeeper.$hash" '$2==k {r=$0} END{print r}' "$PREFS")
+  if [ -n "$row" ]; then
+    v=$(printf '%s' "$row" | cut -f3); ddate=$(printf '%s' "$row" | cut -f1)
+    case "$v" in no:*) declined=${v#no: } ;; esac
+  fi
+fi
+
+# 4. say it in words
+printf 'st1dt: the folder %s\n' "$rel"
+if [ -n "$gate" ]; then
+  gr=${gate%/.gate}; gr=${gr#"$ROOT"}; gr=${gr#/}; [ -n "$gr" ] || gr="the mount root"
+  printf -- '- A .gate governs it: the nearest one is in %s (policy: %s).\n' "$gr" "${policy:-not stated}"
+else
+  printf -- '- No .gate governs it, walking up to the mount root.\n'
+fi
+printf -- '- It holds %s entr%s I may look at' "$n_open" "$( [ "$n_open" -eq 1 ] && echo y || echo ies)"
+[ -n "$markers" ] && printf ', with these markers: %s' "$markers"
+printf '.\n'
+if [ "$kept" -gt 0 ]; then
+  printf -- '- %s kept out of view (secret-class: counted, never named or opened).\n' "$kept"
+  [ -n "$NAMES" ] && [ "$n_inv" -gt 0 ] && printf -- '  On ask, the invoice names: %s. The rest stay unnamed.\n' "$inv_names"
+fi
+seated=
+{ [ -n "$gate" ] || case ",$markers," in *,.polygram,*) true ;; *) false ;; esac; } && seated=1
+
+if [ -n "$declined" ]; then
+  printf -- '- You said no to seating %s on %s; I am not asking again. (Take it back with pref_unset skill.seatkeeper.%s.)\n' "$declined" "${ddate:-a date not recorded}" "$hash"
+  ask=
+elif [ -n "$seated" ]; then
+  printf -- '- Proposed grain: none. It is already seated. Falsifier: a file here that the governing .gate does not cover by its policy.\n'
+  ask=
+else
+  case ",$markers," in
+    *,.git,*|*,model.md,*|*,RECIPE.org,*|*,INDEX.md,*)
+      grain=full; why="it carries project markers ($markers), so people work in it and its notes need a home" ;;
+    *) grain=light; why="it has no project markers, so a sign-post saying who may write is enough" ;;
+  esac
+  printf -- '- Proposed grain: %s, because %s. Falsifier: %s.\n' "$grain" "$why" \
+    "$( [ "$grain" = full ] && echo 'a month on, the folder has no new notes and no one has opened its INDEX.md' || echo 'someone working here asks where its notes go')"
+  ask=1
+fi
+if [ -n "$ask" ]; then
+  printf '\nQuestion: shall I seat %s with the %s grain?\n' "$rel" "$grain"
+  printf '  (a) yes: the seatkeeper skill writes it, on your word\n'
+  printf '  (b) no: kept as the preference skill.seatkeeper.%s = "no: %s", so I do not ask again\n' "$hash" "$key_path"
+  printf '  (c) not now\n'
+  printf '  If unanswered: nothing is written, and I may ask again next session.\n'
+fi
+printf '\nWhat the model was shown: the folder'"'"'s path, the count of its entries (%s), the marker names, ' "$n_open"
+printf 'the path and policy line of the governing .gate, and whether a "no" is on record. '
+printf 'No file'"'"'s contents. %s secret-class entr%s as a count only.\n' "$kept" "$( [ "$kept" -eq 1 ] && echo y || echo ies)"
+exit 0

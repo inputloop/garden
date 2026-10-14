@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+# cs1gk -- CHARACTER SHEET 1 GAUGE KEEP. Measures a persona / character sheet against the shop's own
+#          rules for one, so a sheet written in a hurry cannot drift from the program quietly:
+#            gw7's shape   (c4/h/MODEL-gw7.md s4-6, c4/h/PERSONA-gw7.md as the reference instance):
+#                          fleshing · garb ("what I wear") · the bench (tools & accessories WITH usage) ·
+#                          what I hold (responsibility / possession, a table) · a journal in the persona's
+#                          own voice · a GROW receipt + LENS reflection; tonal growth only with BOTH
+#                          evidence AND the journal story.
+#            the METHOD    (c4/h/METHOD-lens-and-granule-ring.md): a sheet NAMES the LENS guards it elects
+#                          (hold-four-views · break-your-own-claim · ground-in-durables · compost-a-loss ·
+#                          drift-fund).
+#            dungeon       (modelthisbook/news/METHOD-dungeon-modeling.md; dungeon-mode's Character
+#                          Sample Detail Sheet): a TSV sidecar with cs-intrinsics (incl. gold + special),
+#                          cs-skills, cs-posessions; DOUBLE-ENTRY = every row names its source counterpart.
+#            NEWS          any sheet that leans on a roll / LENS / seed / fate carries the mark:
+#                          "for fiction or analysis -- no ship dates or licensing or publication dates
+#                          specifically defined".
+#            corpus        the sheet is registered in PERSONA-CORPUS.md (voice nodes with sources).
+#            duplicates    --twin DIR: the same-named sheet elsewhere is SAME / DIVERGED / ABSENT (mtime
+#                          is never a tiebreaker; both shas are printed).
+#          It MEASURES (words: OK · WARN · FAULT · NOTVISIBLE) and never edits a sheet. --diagram emits a
+#          canonical diagram document (bin/dc1sv renders it) of the sheet's TSV as a graph-paper table.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st>
+# This program is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.  See <https://www.gnu.org/licenses/>.
+#
+# THE NAME (the AS4CE pattern, run-level in the slot): C CHARACTER · S SHEET · 1 reads one sheet, writes one
+#   report or one document · G GAUGE · K KEEP (the rules live here; the keep is where the sheet is held).
+#
+# usage: cs1gk SHEET.md [--twin DIR] [--corpus FILE] [--tsv]      gauge (exit 0 no FAULT · 1 FAULT · 2 usage)
+#        cs1gk --diagram SHEET.tsv > DOC.json                        the sheet's inventory as a diagram doc
+#        cs1gk --prove-red                                           a sheet without Fleshing must FAULT
+# Authored by Fable (Mentat/Vibrobeast) 2026-09-06, after writing two sheets that missed three of gw7's
+# six sections and none of the dungeon inventory -- the keeper caught it; this is the check.
+import sys, os, re, json, hashlib
+
+REQ = [("fleshing", r"^#+\s*.*fleshing"), ("garb", r"^#+\s*.*(garb|what i wear)"),
+       ("bench/tools", r"^#+\s*.*(bench|tools?\b|accessor)"), ("what-i-hold", r"^#+\s*.*(what i hold|possess|responsib)"),
+       ("journal-own-voice", r"^#+\s*.*journal"), ("grow+lens", r"^#+\s*.*(grow receipt|lens reflection|grow)")]
+GUARDS = ["hold-four-views", "break-your-own-claim", "ground-in-durables", "compost-a-loss", "drift-fund"]
+MARK = "for fiction or analysis"
+
+def sha(p):
+    return hashlib.sha256(open(p, "rb").read()).hexdigest()[:12]
+
+def section_bodies(text):
+    """list of (heading, body) for markdown headings"""
+    out = []; cur = None; buf = []
+    for line in text.split("\n"):
+        if re.match(r"^#+\s", line):
+            if cur is not None: out.append((cur, "\n".join(buf)))
+            cur = line; buf = []
+        else: buf.append(line)
+    if cur is not None: out.append((cur, "\n".join(buf)))
+    return out
+
+def gauge(path, twin=None, corpus=None, tsv_out=False):
+    rows = []
+    def say(state, g, text): rows.append((state, g, text))
+    text = open(path, encoding="utf-8").read(); low = text.lower()
+    secs = section_bodies(text)
+    # G1 required sections
+    for name, pat in REQ:
+        hit = [(h, b) for h, b in secs if re.search(pat, h.lower())]
+        if not hit: say("FAULT", "G1", "missing section: %s (gw7 s4-6)" % name); continue
+        h, b = hit[0]
+        if name == "bench/tools" and not re.search(r"\|.*(use|usage|how i use).*\|", b.lower()): say("WARN", "G1", "tools table has no usage column (gw7: tools & accessories, each with usage)")
+        elif name == "what-i-hold" and "|" not in b: say("WARN", "G1", "'what I hold' is not a table (gw7: possession as documented)")
+        elif name == "journal-own-voice" and not re.search(r"\bI\b", b): say("WARN", "G1", "journal section has no first person -- pointers, not a voice")
+        else: say("OK", "G1", "section present: %s" % name)
+    # G2 LENS guards elected
+    named = [g for g in GUARDS if g in low]
+    say("OK" if named else "WARN", "G2", "LENS guards elected: %s" % (", ".join(named) if named else "none named (METHOD: a sheet elects its guards)"))
+    # G3 tonal growth needs evidence AND story
+    def prose(p):   # growth claims live in prose: drop code spans and table rows before matching
+        p = re.sub(r"`[^`]*`", "", p); return "\n".join(l for l in p.split("\n") if not l.lstrip().startswith("|"))
+    growth = [p for p in re.split(r"\n\s*\n", text) if re.search(r"\breorder|\brefine|\bmutation|\bgrowth|\bwiden", prose(p).lower())]
+    bad = [p for p in growth if not ("evidence" in p.lower() and ("story" in p.lower() or "journal" in p.lower()))]
+    if growth: say("OK" if not bad else "WARN", "G3", "%d growth paragraph(s); %d lack evidence+story (gw7 s6)" % (len(growth), len(bad)))
+    else: say("OK", "G3", "no tonal-growth claims")
+    # G4 NEWS mark when NEWS methods are leaned on
+    leans = bool(re.search(r"\broll\b|\blens\b|\bseed\b|\bfate\b|\bdice\b", low))
+    if leans: say("OK" if MARK in low else "WARN", "G4", "leans on roll/LENS/seed/fate -> NEWS mark %s" % ("present" if MARK in low else "MISSING ('for fiction or analysis -- no ship dates ...')"))
+    else: say("OK", "G4", "no NEWS-method reliance; no mark needed")
+    # G5 dungeon TSV sidecar
+    tsv = re.sub(r"\.md$", ".tsv", path)
+    if os.path.exists(tsv):
+        t = [l.split("\t") for l in open(tsv, encoding="utf-8").read().split("\n") if l and not l.startswith("#")]
+        hdr = t[0] if t else []; body = t[1:]
+        tables = {r[0] for r in body if len(r) > 1}
+        need = {"cs-intrinsics", "cs-skills", "cs-posessions"}
+        keys = {r[1] for r in body if r[0] == "cs-intrinsics" and len(r) > 1}
+        src_i = hdr.index("source") if "source" in hdr else -1
+        nosrc = [r for r in body if src_i < 0 or len(r) <= src_i or not r[src_i].strip()]
+        miss = need - tables
+        say("OK" if not miss else "FAULT", "G5", "TSV sidecar: tables %s%s" % (", ".join(sorted(tables)), ("; MISSING " + ", ".join(sorted(miss))) if miss else ""))
+        say("OK" if {"gold", "special"} <= keys else "WARN", "G5", "cs-intrinsics carries gold + special: %s (dungeon: economy and specialness are the two columns)" % ("yes" if {"gold","special"} <= keys else "no"))
+        say("OK" if not nosrc else "WARN", "G5", "double-entry: %d of %d rows name a source" % (len(body) - len(nosrc), len(body)))
+    else: say("WARN", "G5", "no TSV sidecar (%s) -- dungeon modelling wants the inventory as TSV" % os.path.basename(tsv))
+    # G6 corpus registration
+    base = os.path.basename(path)
+    cpath = corpus or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(path))), "PERSONA-CORPUS.md")
+    if os.path.exists(cpath): say("OK" if base in open(cpath, encoding="utf-8").read() else "WARN", "G6", "corpus %s %s this sheet" % (os.path.basename(cpath), "names" if base in open(cpath, encoding="utf-8").read() else "does not name"))
+    else: say("NOTVISIBLE", "G6", "no PERSONA-CORPUS.md at %s" % cpath)
+    # G7 attributes declared
+    nums = re.findall(r"\((\d)\)", text); n = len(set(nums))
+    rp = "radiation-proof" in low
+    say("OK", "G7", "numbered attributes seen: %d%s" % (n, " -- sheet declares RADIATION-PROOF (no new ones without a LENS)" if rp else ""))
+    # G8 duplicates
+    if twin:
+        tp = os.path.join(twin, base)
+        if os.path.exists(tp):
+            a, b = sha(path), sha(tp)
+            say("OK" if a == b else "WARN", "G8", "twin %s: %s (%s vs %s)%s" % (tp, "SAME" if a == b else "DIVERGED", a, b, "" if a == b else " -- mtime is never the tiebreaker; the keeper picks; note the divergence in place"))
+        else: say("WARN", "G8", "twin ABSENT: %s" % tp)
+    # G9 break-character watch
+    say("OK" if re.search(r"break[- ]character", low) else "WARN", "G9", "break-character watch %s" % ("present" if re.search(r"break[- ]character", low) else "absent (gw7 s5)"))
+    # G10 the bad-guy stage (HIS rule 2026-09-06): a SYSTEM actor (software, host, place -- more IRL than
+    # not) always carries a bad-guy perspective informed by ITS OWN roll (never re-rolled) and one more
+    # lens stage inverting that shape. The sheet declares its kind: `actor: system|fiction` in the header.
+    m = re.search(r"^\s*actor\s*:\s*(system|software|host|place|fiction|game|fantasy)\b", low, re.M)
+    if not m: say("WARN", "G10", "actor kind undeclared -- add `actor: system` or `actor: fiction` to the header (rule 2026-09-06: system actors take the bad-guy roll)")
+    elif m.group(1) in ("system", "software", "host", "place"):
+        has_bg = re.search(r"^#+\s*.*bad[- ]guy", text, re.M | re.I); has_inv = re.search(r"^#+\s*.*inver(t|sion)", text, re.M | re.I)
+        say("OK" if has_bg else "FAULT", "G10", "system actor: bad-guy perspective %s" % ("present" if has_bg else "MISSING (the fate roll informs a voicier perspective; keep the voice)"))
+        say("OK" if has_inv else "FAULT", "G10", "system actor: inversion lens stage %s" % ("present" if has_inv else "MISSING (one more lens stage inverts the bad-guy shape)"))
+        if has_bg and not re.search(r"re-?roll", low): say("WARN", "G10", "bad-guy section does not say which roll it reused (say 'not re-rolled' and name the roll file)")
+    else: say("OK", "G10", "fiction actor (%s): bad-guy stage optional" % m.group(1))
+    faults = sum(1 for s, _, _ in rows if s == "FAULT")
+    if tsv_out:
+        for s, g, t in rows: print("%s\t%s\t%s" % (g, s, t))
+    else:
+        print("# cs1gk -- %s -- sha %s" % (path, sha(path)))
+        for s, g, t in rows: print("%-10s %-4s %s" % ("[ %s ]" % s, g, t))
+        print("cs1gk: OK %d · WARN %d · FAULT %d · NOTVISIBLE %d" % tuple(sum(1 for s, _, _ in rows if s == k) for k in ("OK", "WARN", "FAULT", "NOTVISIBLE")))
+    return 1 if faults else 0
+
+def diagram(tsv):
+    """the inventory as a canonical diagram document: three dotted frames (the three tables), one note per row"""
+    rows = [l.split("\t") for l in open(tsv, encoding="utf-8").read().split("\n") if l and not l.startswith("#")]
+    hdr, body = rows[0], rows[1:]
+    ki = {k: i for i, k in enumerate(hdr)}
+    tables = ["cs-intrinsics", "cs-skills", "cs-posessions"]
+    S = []; y0 = 60
+    for ti, tname in enumerate(tables):
+        x = 40 + ti * 460
+        S.append({"id": tname, "label": tname, "kind": "box", "x": x, "y": y0, "face": "front", "group": tname})
+        for ri, r in enumerate([r for r in body if r[0] == tname]):
+            lab = "%s · %s%s" % (r[ki["key"]], r[ki["value"]] if len(r) > ki["value"] else "", (" ·" + r[ki["count"]]) if len(r) > ki["count"] and r[ki["count"]].strip() else "")
+            S.append({"id": "%s-%d" % (tname, ri), "label": lab[:44], "kind": "note", "x": x + 4, "y": y0 + 70 + ri * 32, "face": "front", "group": tname})
+    doc = {"v": 1, "treatment": "blueprint", "paradigm": "office", "anchor": "points", "paper": "graph",
+           "_provenance": {"title": "character sheet · %s" % os.path.basename(tsv), "source": tsv,
+                           "legend": "the three dungeon tables as rooms on graph paper; a row is a note; the TSV is the record, this is the courtesy"},
+           "shapes": S, "edges": [],
+           "systems": {t: {"_label": t, "color": c, "text": tx, "line": "dotted"} for t, c, tx in
+                       [("cs-intrinsics", "#534AB7", "#3C3489"), ("cs-skills", "#185FA5", "#0C447C"), ("cs-posessions", "#0F6E56", "#085041")]}}
+    print(json.dumps(doc, indent=1, ensure_ascii=False))
+
+def main(argv):
+    if not argv or argv[0] in ("-h", "--help"): sys.stderr.write("usage: cs1gk SHEET.md [--twin DIR] [--corpus FILE] [--tsv] | --diagram SHEET.tsv | --prove-red\n"); sys.exit(2)
+    if argv[0] == "--prove-red":
+        import tempfile
+        d = tempfile.mkdtemp(); p = os.path.join(d, "X.md")
+        open(p, "w").write("# sheet\n## Garb\nx\n## The bench\n| a | how I use it |\n|---|---|\n## What I hold\n| a |\n## Journal\nI did.\n## GROW receipt\nx\n")
+        import io, contextlib
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf): rc = gauge(p)
+        print("PASS: cs1gk FAULTs a sheet with no Fleshing (exit 1)" if rc == 1 else "FAIL: no FAULT for a missing Fleshing"); sys.exit(0 if rc == 1 else 1)
+    if argv[0] == "--diagram":
+        diagram(argv[1]); return
+    path = argv[0]; twin = None; corpus = None; tsv_out = False; i = 1
+    while i < len(argv):
+        if argv[i] == "--twin": twin = argv[i+1]; i += 2
+        elif argv[i] == "--corpus": corpus = argv[i+1]; i += 2
+        elif argv[i] == "--tsv": tsv_out = True; i += 1
+        else: sys.stderr.write("cs1gk: unknown arg %s\n" % argv[i]); sys.exit(2)
+    if not os.path.exists(path): sys.stderr.write("cs1gk: no such sheet %s\n" % path); sys.exit(2)
+    sys.exit(gauge(path, twin, corpus, tsv_out))
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

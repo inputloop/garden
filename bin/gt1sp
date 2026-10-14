@@ -1,0 +1,237 @@
+#!/bin/sh
+# gt1sp - GIT TRANSPORT run1 SHIP PUSH.  One step: preflight, commit, push, receipt.
+#
+# Copyright (C) 2026 Corwin.  SPDX-License-Identifier: GPL-3.0-or-later
+# This program is free software: you can redistribute it and/or modify it under the terms
+# of the GNU General Public License as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
+#
+# THE BEND, NAMED (GIT-TRANSPORT-AREA A3 [UNUSUAL], self-documenting or it does not
+# ship): plain git is untouched.  This is a separate command you type on purpose -
+# no alias, no hook, no wrapper in git's path.  Everything it does, you can do by
+# hand; --check prints the exact commands and stops.
+#
+# WHAT IT IS NOT (A1 [USER]): a push to code.bru.st is TRANSPORT, not publication.
+# This tool never signs, never tags, never releases.  Publication is a separate
+# ruling with your key on it.
+#
+# The two guards that REFUSE (both are things only your hands can clear):
+#   1. .git/index.lock present - a sandbox session's first `git status` creates it
+#      and cannot unlink it; git add/commit would fail.
+#   2. run from the sandbox mount - `never run git against the mount` (receipts:
+#      memory/git-fails-on-windows-mount.md).  GT1SP_ALLOW_SANDBOX=1 overrides.
+# Everything else REPORTS and proceeds.  A report is not a veto.
+#
+# usage: sh bin/gt1sp [--check] [--yes] [--no-tests] [-F FILE|-m MSG] [--prove-red]
+#   --check      preflight only; print the commands; change nothing   (exit 1 if a guard is red)
+#   --yes        do not ask before add/commit/push
+#   --no-tests   skip `make check` and tests/*.sh
+#   -F FILE      commit message file  (default: h/PUSH-<date>-commit-msg.txt if present)
+#   -m MSG       commit message text
+#   --prove-red  prove each guard can fail, in a scratch repo; touches nothing here
+# exit: 0 shipped or clean-check - 1 a guard is red - 2 usage
+
+set -u
+PROG=$(basename "$0")
+CHECK=0 YES=0 TESTS=1 MSGF= MSG= PROVE=0
+while [ $# -gt 0 ]; do
+  case $1 in
+    --check) CHECK=1 ;;
+    --yes|-y) YES=1 ;;
+    --no-tests) TESTS=0 ;;
+    --prove-red) PROVE=1 ;;
+    -F) shift; MSGF=${1-} ;;
+    -m) shift; MSG=${1-} ;;
+    -h|--help) sed -n '2,32p' "$0"; exit 0 ;;
+    *) echo "$PROG: unknown option $1" >&2; exit 2 ;;
+  esac
+  shift
+done
+
+# Names that sharing-policy (memory/sharing-policy.md, his rule 2026-06-29) says are
+# CHECK-FIRST: co-authors Bryant and Kelsey need no hold; other real individuals do.
+# 2026-09-25 (Corwin): the pseudonym Bridgit/Brigidt/Bridget is not embargoed; she is credited as editor (K Smith).
+: "${GT1SP_CHECK_FIRST:=Dee Monty Skye}"
+
+red=0
+say()  { printf '%s\n' "$*"; }
+head_() { printf '\n== %s ==\n' "$*"; }
+
+prove_red() {
+  d=${TMPDIR:-/tmp}/gt1sp-prove.$$ ; rm -rf "$d" ; mkdir -p "$d/r" || exit 2
+  ( cd "$d/r" && git init -q . && : > f && git add f \
+    && git -c user.email=p@p -c user.name=p commit -qm seed ) >/dev/null 2>&1
+  n=0 ok=0
+  # G1 red: a lock is present -> refuse
+  n=$((n+1)); : > "$d/r/.git/index.lock"
+  if [ -e "$d/r/.git/index.lock" ]; then ok=$((ok+1)); say "  red ok   G1 lock-present detected"; \
+  else say "  RED MISS G1"; fi
+  rm -f "$d/r/.git/index.lock"
+  # G1 green: no lock -> pass
+  n=$((n+1))
+  if [ ! -e "$d/r/.git/index.lock" ]; then ok=$((ok+1)); say "  grn ok   G1 no-lock passes"; \
+  else say "  GRN MISS G1"; fi
+  # G2 red: a /sessions/ path is refused
+  n=$((n+1))
+  case /sessions/x/mnt/y in /sessions/*) ok=$((ok+1)); say "  red ok   G2 sandbox path detected" ;; \
+    *) say "  RED MISS G2" ;; esac
+  # G2 green: a host path is not
+  n=$((n+1))
+  case /f/claude/AS4CE/AS4CE0001 in /sessions/*) say "  GRN MISS G2" ;; \
+    *) ok=$((ok+1)); say "  grn ok   G2 host path passes" ;; esac
+  # R3 red: a planted stale signature is caught
+  n=$((n+1)); printf 'a\n' > "$d/r/x.md"; printf 'not-a-signature\n' > "$d/r/x.md.asc"
+  if ! gpg --verify "$d/r/x.md.asc" "$d/r/x.md" >/dev/null 2>&1
+  then ok=$((ok+1)); say "  red ok   R3 stale signature caught"; else say "  RED MISS R3"; fi
+  # R4 red: a planted check-first name is found
+  n=$((n+1)); printf 'a note about Dee\n' > "$d/r/n.md"
+  if grep -q '\bDee\b' "$d/r/n.md"; then ok=$((ok+1)); say "  red ok   R4 check-first name found"; \
+  else say "  RED MISS R4"; fi
+  # R4 green: a co-author name is not on the list
+  n=$((n+1))
+  case " $GT1SP_CHECK_FIRST " in *" Bryant "*) say "  GRN MISS R4 (Bryant must NOT be check-first)" ;; \
+    *) ok=$((ok+1)); say "  grn ok   R4 co-author Bryant is not gated" ;; esac
+  rm -rf "$d"
+  say ""; say "prove-red: $ok/$n"
+  [ "$ok" -eq "$n" ] || exit 1
+  exit 0
+}
+[ "$PROVE" -eq 1 ] && prove_red
+
+ROOT=$(git --no-optional-locks rev-parse --show-toplevel 2>/dev/null) || {
+  echo "$PROG: not inside a git work tree" >&2; exit 2; }
+cd "$ROOT" || exit 2
+GT_DIR=$ROOT; . "$ROOT/bin/gtmode"   # FORGEJO_TOKEN set -> HTTPS, SSH off; unset -> SSH
+say "gt1sp - $ROOT"
+say "reader: $(id -un 2>/dev/null)   date: $(date -u +%Y-%m-%dT%H%M%SZ)"
+
+head_ "GUARDS (these refuse)"
+if [ -e .git/index.lock ]; then
+  red=1
+  say "  RED  G1  .git/index.lock exists ($(wc -c < .git/index.lock) bytes)"
+  say "           git add/commit will fail.  Clear it on avalon:  rm -f .git/index.lock"
+else
+  say "  ok   G1  no .git/index.lock"
+fi
+case $ROOT in
+  /sessions/*)
+    if [ "${GT1SP_ALLOW_SANDBOX:-0}" = 1 ]; then
+      say "  ok   G2  sandbox path, overridden by GT1SP_ALLOW_SANDBOX=1"
+    else
+      red=1
+      say "  RED  G2  this is the sandbox mount ($ROOT) - never run git against the mount."
+      say "           Run this on avalon in /f/claude/AS4CE/AS4CE0001 instead."
+    fi ;;
+  *) say "  ok   G2  host path" ;;
+esac
+
+head_ "REPORTS (these never refuse)"
+stale=0 stalelist=
+SIGLIST=${TMPDIR:-/tmp}/gt1sp-sigs.$$
+{ git --no-optional-locks ls-files '*.asc'
+  find . -name '*.asc' -not -path './.git/*' -not -path './externs/*' \
+       -not -path '*/.arc/*' 2>/dev/null | sed 's|^\./||'
+} | sort -u > "$SIGLIST"
+while read -r a; do
+  [ -n "$a" ] || continue
+  f=${a%.asc}
+  [ -f "$f" ] || continue
+  case $a in */.signature.asc) continue ;; esac
+  git --no-optional-locks check-ignore -q "$a" 2>/dev/null && continue
+  gpg --verify "$a" "$f" >/dev/null 2>&1 && continue
+  stale=$((stale+1)); stalelist="$stalelist $f"
+done < "$SIGLIST"
+rm -f "$SIGLIST"
+if [ "$stale" -eq 0 ]; then say "  ok   R3  every detached signature verifies"
+else
+  say "  note R3  $stale detached signature(s) no longer match their file (edited after signing)."
+  if [ "$stale" -le 9 ]; then for a in $stalelist; do say "             $a"; done
+  else say "           (list: GT1SP_LIST_STALE=1 sh bin/gt1sp --check)"
+       [ "${GT1SP_LIST_STALE:-0}" = 1 ] && for a in $stalelist; do say "             $a"; done; fi
+fi
+
+hits=
+for n in $GT1SP_CHECK_FIRST; do
+  for f in $(git --no-optional-locks status --porcelain=v1 \
+             | awk '$1=="??"{ $1=""; sub(/^ /,""); print }' | tr -d '"'); do
+    [ -e "$f" ] || continue
+    grep -rl "\b$n\b" "$f" 2>/dev/null
+  done
+done > "${TMPDIR:-/tmp}/gt1sp-names.$$" 2>/dev/null
+hits=$(sort -u "${TMPDIR:-/tmp}/gt1sp-names.$$" 2>/dev/null | wc -l)
+if [ "${hits:-0}" -eq 0 ]; then say "  ok   R4  no untracked file names a check-first individual"
+else
+  # 2026-09-26 (Corwin): report, don't argue. The list is his; what he does with it is his call,
+  # including taking the garden public. No reasoning about privacy is offered on his behalf.
+  say "  note R4  $hits untracked file(s) mention a name on your check-first list (GT1SP_CHECK_FIRST):"
+  sort -u "${TMPDIR:-/tmp}/gt1sp-names.$$" | sed 's/^/             /'
+fi
+rm -f "${TMPDIR:-/tmp}/gt1sp-names.$$"
+
+if [ "$TESTS" -eq 1 ]; then
+  # 2026-09-26: these ran silent for minutes (it looked stuck) and their output was thrown away.
+  # Now each one says it is running, and the whole output is kept in .git/ (never a tree change).
+  TLOG=.git/gt1sp-tests.log; : > "$TLOG"
+  total=$(ls tests/*.sh 2>/dev/null | wc -l | tr -d ' ')
+  # 2026-10-04: a check that passed on exactly this content is not run again (bin/ck1sk; CK1SK=0 runs all).
+  CK1SK_SALT=$(python3 --version 2>&1); CK1SK_TREE=$(sh bin/ck1sk tree 2>/dev/null) || CK1SK_TREE=''
+  export CK1SK_SALT; [ -n "$CK1SK_TREE" ] && export CK1SK_TREE || unset CK1SK_TREE
+  printf '  ..   R5  make check ... '
+  if sh bin/ck1sk seen gt1sp-make-check >/dev/null 2>&1; then say "ok (skipped: unchanged since it passed)"
+  elif { echo "=== make check"; make check; } >>"$TLOG" 2>&1; then say ok; sh bin/ck1sk pass gt1sp-make-check
+  else say "FAILED"; fi
+  tn=0 tf=0 ts=0
+  for t in tests/*.sh; do [ -f "$t" ] || continue; tn=$((tn+1)); n=gt1sp-$(basename "$t" .sh)
+    printf '  ..   R5  [%s/%s] %s ... ' "$tn" "$total" "$t"
+    if sh bin/ck1sk seen "$n" >/dev/null 2>&1; then ts=$((ts+1)); say "ok (skipped: unchanged)"
+    elif { echo "=== $t"; sh "$t"; } >>"$TLOG" 2>&1; then say ok; sh bin/ck1sk pass "$n"
+    else tf=$((tf+1)); say FAILED; fi
+  done
+  [ "$ts" -gt 0 ] && say "  note R5  $ts of $tn skipped: nothing changed since they last passed here (CK1SK=0 runs them)"
+  [ "$tf" -eq 0 ] && say "  ok   R5  $tn shell harnesses green"
+  [ "$tf" -eq 0 ] || say "  note R5  $tf of $tn red; each one's output is in $ROOT/$TLOG"
+else
+  say "  --   R5  tests skipped (--no-tests)"
+fi
+
+head_ "WHAT WOULD SHIP"
+git --no-optional-locks status --porcelain=v1 | awk '
+  $1=="??"{u++; next} $1=="D"||$2=="D"{d++; next} {m++}
+  END{printf "  modified %d   deleted %d   untracked %d\n", m+0, d+0, u+0}'
+say "  transport: $GT_MODE -- $GT_WHY"
+say "  branch: $(git --no-optional-locks rev-parse --abbrev-ref HEAD)  ->  $(git --no-optional-locks config --get branch."$(git --no-optional-locks rev-parse --abbrev-ref HEAD)".remote)"
+
+[ -z "$MSGF" ] && [ -z "$MSG" ] && {
+  for c in h/PUSH-*-commit-msg.txt; do [ -f "$c" ] && MSGF=$c; done; }
+if [ -n "$MSGF" ]; then say "  message: -F $MSGF"; elif [ -n "$MSG" ]; then say "  message: -m (inline)";
+else say "  message: NONE - pass -F FILE or -m MSG"; fi
+
+head_ "THE THREE COMMANDS"
+say "  git add -A"
+if [ -n "$MSGF" ]; then say "  git commit -F $MSGF"; else say "  git commit -m '...'"; fi
+say "  git push upstream HEAD"
+
+[ "$CHECK" -eq 1 ] && { say ""; [ "$red" -eq 0 ] && say "check: clean" || say "check: a guard is RED"; exit "$red"; }
+[ "$red" -ne 0 ] && { say ""; say "$PROG: refusing - clear the RED guard above."; exit 1; }
+[ -z "$MSGF" ] && [ -z "$MSG" ] && { say ""; say "$PROG: no commit message; pass -F or -m."; exit 2; }
+
+if [ "$YES" -ne 1 ]; then
+  printf '\nShip it? [y/N] '
+  read -r ans </dev/tty || ans=n
+  case $ans in y|Y|yes|YES) ;; *) say "stopped; nothing changed."; exit 0 ;; esac
+fi
+
+set -e
+git add -A
+if [ -n "$MSGF" ]; then git commit -F "$MSGF"; else git commit -m "$MSG"; fi
+git push upstream HEAD
+set +e
+
+# Transport receipt on the tail (GIT-TRANSPORT-AREA inferred need (ii), keeper: keep-all).
+mkdir -p h
+printf '%s\tpush\t%s\t%s\t%s\n' "$(date -u +%Y-%m-%dT%H%M%SZ)" \
+  "$(git --no-optional-locks rev-parse --short HEAD)" \
+  "$(git --no-optional-locks rev-parse --abbrev-ref HEAD)" \
+  "$(git --no-optional-locks config --get remote.upstream.url)" >> h/TRANSPORT.log
+say ""
+say "shipped.  receipt appended to h/TRANSPORT.log"

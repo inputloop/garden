@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+# id|edition|profiles|needs|label|plain words|command
+try|base|*|-|Look around first|Nothing you do here is kept when you turn the computer off.|larder-close
+private|base|*|cryptsetup|Make my private space|You choose a PIN. Your files stay on this stick, locked.|larder-setup persistence
+chapter|base|*|wireguard-tools|Join my group|Connect to your group's server, using the file a facilitator gave you.|larder-setup chapter
+library|base|desktop hardened fullsink|kiwix|Open the library|Read books and guides without the internet.|kiwix-desktop
+write|base|desktop hardened fullsink|libreoffice-writer|Write a document|Open a word processor.|lowriter
+help|base|*|-|Ask for help|Someone you trust can see your screen, only while you allow it. You can stop at any time.|larder-assist
+read|author|desktop fullsink|foliate|Read a book|Open the book reader.|foliate
+listen|author|desktop fullsink|mpv|Listen to a book|Play an audiobook from this stick.|mpv --force-window=yes /usr/share/larder/author/audio
+fanwork|author|desktop fullsink|mousepad|Write a fan work|Start a new story in this world.|mousepad
+stamp|author|desktop fullsink|-|Mark my story by permission|Adds the notice's mark to a finished story. It refuses until the author has signed the notice.|lr1st
+notice|author|desktop fullsink|-|Read the permission notice|What you may and may not do with these stories.|larder-notice

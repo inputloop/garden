@@ -1,0 +1,623 @@
+{
+ "v": 1,
+ "treatment": "blueprint",
+ "paradigm": "office",
+ "anchor": "points",
+ "_provenance": {
+  "title": "Memory · skills · shop — actors, relationships, events across five intersecting contexts (2026-09-05)",
+  "source": "this session's probes (bin/ms1dg first run), code.claude.com/docs/en/memory, the skills rack, c4",
+  "transcribed_by": "Fable (Mentat/Vibrobeast) 2026-09-05 late evening",
+  "legend": "actor = a hand that acts · box = a store, tool, or skill · node = an event · note = a file or an open question · edge label = the relationship; dotted open-headed edge = a boundary or a question, not a flow. A shape inside two dotted frames belongs to both contexts.",
+  "colors": "lines at the 600 stop (min 6.20:1 on white), labels at 800 (min 9.40:1); dark: 200/100 (min 7.75:1 on #1C1C1C) — audited with skills/color-theory/tool.py (hex without # — its audit skips #-lines, filed)",
+  "guesses": {
+   "amd→storeA": "[~40%] Cowork honors autoMemoryDirectory",
+   "install→seatkeeper": "the live rack is read-only to the instrument; only the keeper's install changes it"
+  },
+  "layout": "v3: positions iterated against `dc1sv --lint` (39 → 21 → 3 → 0 faults); labels drawn after shapes on an opaque backing; edges cut to the load-bearing 25",
+  "ceremony": "the dial reads on the shop's ladder 1 2 4 9 17 = the size of the ring the ceremony must convince (1 self · 2 pair · 4 GRAIN · 9 GREAT · 17 GRAND); memory/ sits at 2 (words) or 4 (manifest) by the keeper's 2026-09-05 ruling ('not going to clearsign individual memory files'); pub/ is a 17. ms1dg --ceremony N runs the same gauge at any stop."
+ },
+ "shapes": [
+  {
+   "id": "filetool",
+   "label": "file tool",
+   "kind": "actor",
+   "x": 60,
+   "y": 120,
+   "face": "front",
+   "group": "harness"
+  },
+  {
+   "id": "bash",
+   "label": "bash (sandbox)",
+   "kind": "actor",
+   "x": 60,
+   "y": 300,
+   "face": "front",
+   "group": "harness"
+  },
+  {
+   "id": "storeA",
+   "label": "store A · auto-memory (harness-owned)",
+   "kind": "box",
+   "x": 240,
+   "y": 120,
+   "face": "front",
+   "group": "harness"
+  },
+  {
+   "id": "transcript",
+   "label": "transcript .jsonl (mounted) · Q7 reader",
+   "kind": "note",
+   "x": 590,
+   "y": 300,
+   "face": "front",
+   "group": "harness"
+  },
+  {
+   "id": "sstart",
+   "label": "session start: index ≤200 lines / 25KB",
+   "kind": "node",
+   "x": 640,
+   "y": 120,
+   "face": "front",
+   "group": "harness"
+  },
+  {
+   "id": "compact",
+   "label": "compaction",
+   "kind": "node",
+   "x": 900,
+   "y": 120,
+   "face": "front",
+   "group": "harness"
+  },
+  {
+   "id": "sandboxer",
+   "label": "sandboxer (skill)",
+   "kind": "box",
+   "x": 940,
+   "y": 240,
+   "face": "front",
+   "groups": [
+    "harness",
+    "rack"
+   ]
+  },
+  {
+   "id": "mentat",
+   "label": "Mentat",
+   "kind": "actor",
+   "x": 440,
+   "y": 400,
+   "face": "front",
+   "groups": [
+    "harness",
+    "seat"
+   ]
+  },
+  {
+   "id": "seatB",
+   "label": "seat B · memory/ · 154 notes · ceremony 2/4",
+   "kind": "box",
+   "x": 560,
+   "y": 560,
+   "face": "front",
+   "group": "seat"
+  },
+  {
+   "id": "indexB",
+   "label": "MEMORY.md (seat index, locked from sandbox)",
+   "kind": "box",
+   "x": 560,
+   "y": 760,
+   "face": "front",
+   "group": "seat"
+  },
+  {
+   "id": "astage",
+   "label": "mainmem/astage (A staged by file tool)",
+   "kind": "note",
+   "x": 560,
+   "y": 660,
+   "face": "front",
+   "group": "seat"
+  },
+  {
+   "id": "ms1dg",
+   "label": "ms1dg (gauge)",
+   "kind": "box",
+   "x": 930,
+   "y": 660,
+   "face": "front",
+   "group": "seat"
+  },
+  {
+   "id": "bank",
+   "label": "C4 bank · palace",
+   "kind": "box",
+   "x": 1180,
+   "y": 660,
+   "face": "front",
+   "group": "seat"
+  },
+  {
+   "id": "dc1sv",
+   "label": "dc1sv (picture reader)",
+   "kind": "box",
+   "x": 1180,
+   "y": 560,
+   "face": "front",
+   "group": "seat"
+  },
+  {
+   "id": "seatkeeper",
+   "label": "seatkeeper (skill)",
+   "kind": "box",
+   "x": 1040,
+   "y": 480,
+   "face": "front",
+   "groups": [
+    "seat",
+    "rack"
+   ]
+  },
+  {
+   "id": "mentatskill",
+   "label": "mentat-skill",
+   "kind": "box",
+   "x": 1120,
+   "y": 120,
+   "face": "front",
+   "group": "rack"
+  },
+  {
+   "id": "colortheory",
+   "label": "color-theory (contrast math)",
+   "kind": "box",
+   "x": 1300,
+   "y": 120,
+   "face": "front",
+   "group": "rack"
+  },
+  {
+   "id": "skilltank",
+   "label": "skilltank",
+   "kind": "box",
+   "x": 1300,
+   "y": 240,
+   "face": "front",
+   "group": "rack"
+  },
+  {
+   "id": "em",
+   "label": "ethicsminions (concurs)",
+   "kind": "box",
+   "x": 1560,
+   "y": 120,
+   "face": "front",
+   "group": "rack"
+  },
+  {
+   "id": "enhance",
+   "label": "ENHANCE → reauthor",
+   "kind": "node",
+   "x": 1560,
+   "y": 420,
+   "face": "front",
+   "groups": [
+    "rack",
+    "forge"
+   ]
+  },
+  {
+   "id": "poly",
+   "label": "polygram forge",
+   "kind": "box",
+   "x": 1520,
+   "y": 560,
+   "face": "front",
+   "group": "forge"
+  },
+  {
+   "id": "mint",
+   "label": "skills-mint 2026-09-04 (unsigned)",
+   "kind": "note",
+   "x": 1440,
+   "y": 660,
+   "face": "front",
+   "group": "forge"
+  },
+  {
+   "id": "install",
+   "label": "sign + install",
+   "kind": "node",
+   "x": 1640,
+   "y": 780,
+   "face": "front",
+   "groups": [
+    "forge",
+    "keeper"
+   ]
+  },
+  {
+   "id": "corwin",
+   "label": "Corwin (keeper)",
+   "kind": "actor",
+   "x": 1100,
+   "y": 860,
+   "face": "front",
+   "groups": [
+    "seat",
+    "keeper"
+   ]
+  },
+  {
+   "id": "hostrun",
+   "label": "ms1dg on the host (reader 2)",
+   "kind": "box",
+   "x": 1360,
+   "y": 880,
+   "face": "front",
+   "group": "keeper"
+  },
+  {
+   "id": "pub",
+   "label": "pub/ shelf (clearsign in place)",
+   "kind": "box",
+   "x": 1360,
+   "y": 980,
+   "face": "front",
+   "group": "keeper"
+  },
+  {
+   "id": "amd",
+   "label": "autoMemoryDirectory → seat? (untested)",
+   "kind": "note",
+   "x": 1640,
+   "y": 1080,
+   "face": "front",
+   "group": "keeper"
+  },
+  {
+   "id": "dial",
+   "label": "ceremony dial · 1 2 4 9 17 · per store, keeper's pick",
+   "kind": "box",
+   "x": 1640,
+   "y": 960,
+   "face": "front",
+   "group": "keeper"
+  }
+ ],
+ "edges": [
+  {
+   "from": "sstart",
+   "to": "storeA",
+   "label": "reads index",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#534AB7",
+   "fromCP": "w",
+   "toCP": "e"
+  },
+  {
+   "from": "filetool",
+   "to": "storeA",
+   "label": "Write (+stamp)",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#534AB7",
+   "fromCP": "e",
+   "toCP": "w"
+  },
+  {
+   "from": "bash",
+   "to": "storeA",
+   "label": "cannot see",
+   "nib": {
+    "b": "open"
+   },
+   "color": "#534AB7",
+   "style": {
+    "dash": true
+   },
+   "fromCP": "n",
+   "toCP": "s"
+  },
+  {
+   "from": "bash",
+   "to": "seatB",
+   "label": "rw · no rm · index locked",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#534AB7",
+   "fromCP": "s",
+   "toCP": "w"
+  },
+  {
+   "from": "mentat",
+   "to": "storeA",
+   "label": "notes",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#534AB7",
+   "fromCP": "e",
+   "toCP": "e"
+  },
+  {
+   "from": "compact",
+   "to": "mentat",
+   "label": "survives: addresses + hashes",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#534AB7",
+   "fromCP": "s",
+   "toCP": "n"
+  },
+  {
+   "from": "mentat",
+   "to": "astage",
+   "label": "stages",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#0F6E56",
+   "fromCP": "s",
+   "toCP": "w"
+  },
+  {
+   "from": "ms1dg",
+   "to": "seatB",
+   "label": "gauges G1–G7",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#0F6E56",
+   "fromCP": "w",
+   "toCP": "e"
+  },
+  {
+   "from": "astage",
+   "to": "ms1dg",
+   "label": "G8 diff",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#0F6E56",
+   "fromCP": "e",
+   "toCP": "w"
+  },
+  {
+   "from": "ms1dg",
+   "to": "corwin",
+   "label": "cards",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#0F6E56",
+   "fromCP": "e",
+   "toCP": "n"
+  },
+  {
+   "from": "ms1dg",
+   "to": "hostrun",
+   "label": "same script, reader 2",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#993C1D",
+   "fromCP": "e",
+   "toCP": "w"
+  },
+  {
+   "from": "hostrun",
+   "to": "indexB",
+   "label": "G4: lock owner?",
+   "nib": {
+    "b": "open"
+   },
+   "color": "#993C1D",
+   "style": {
+    "dash": true
+   },
+   "fromCP": "w",
+   "toCP": "e"
+  },
+  {
+   "from": "seatkeeper",
+   "to": "seatB",
+   "label": "reseat: new files only",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#185FA5",
+   "fromCP": "w",
+   "toCP": "n"
+  },
+  {
+   "from": "sandboxer",
+   "to": "ms1dg",
+   "label": "canary",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#185FA5",
+   "fromCP": "s",
+   "toCP": "n"
+  },
+  {
+   "from": "sandboxer",
+   "to": "bash",
+   "label": "fingerprints",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#185FA5",
+   "fromCP": "w",
+   "toCP": "n"
+  },
+  {
+   "from": "skilltank",
+   "to": "enhance",
+   "label": "NEW / ENHANCE",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#185FA5",
+   "fromCP": "s",
+   "toCP": "n"
+  },
+  {
+   "from": "mentatskill",
+   "to": "mentat",
+   "label": "mutations 1–8",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#185FA5",
+   "fromCP": "s",
+   "toCP": "e"
+  },
+  {
+   "from": "enhance",
+   "to": "poly",
+   "label": "reauthor",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#5F5E5A",
+   "fromCP": "s",
+   "toCP": "n"
+  },
+  {
+   "from": "poly",
+   "to": "mint",
+   "label": "mints",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#5F5E5A",
+   "fromCP": "s",
+   "toCP": "n"
+  },
+  {
+   "from": "mint",
+   "to": "install",
+   "label": "awaits",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#5F5E5A",
+   "fromCP": "s",
+   "toCP": "n"
+  },
+  {
+   "from": "install",
+   "to": "seatkeeper",
+   "label": "live skill",
+   "nib": {
+    "b": "open"
+   },
+   "color": "#5F5E5A",
+   "style": {
+    "dash": true
+   },
+   "fromCP": "w",
+   "toCP": "s"
+  },
+  {
+   "from": "corwin",
+   "to": "pub",
+   "label": "clearsigns (pub/ = 17)",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#993C1D",
+   "fromCP": "s",
+   "toCP": "w"
+  },
+  {
+   "from": "corwin",
+   "to": "indexB",
+   "label": "24 + 37 lines by hand",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#993C1D",
+   "fromCP": "w",
+   "toCP": "s"
+  },
+  {
+   "from": "amd",
+   "to": "storeA",
+   "label": "if honored: A = seat",
+   "nib": {
+    "b": "open"
+   },
+   "color": "#993C1D",
+   "style": {
+    "dash": true
+   },
+   "fromCP": "e",
+   "toCP": "n"
+  },
+  {
+   "from": "bank",
+   "to": "dc1sv",
+   "label": "diagram doc",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#0F6E56",
+   "fromCP": "n",
+   "toCP": "s"
+  },
+  {
+   "from": "dial",
+   "to": "pub",
+   "label": "17 GRAND: shelf + vouch map",
+   "nib": {
+    "b": "arrow"
+   },
+   "color": "#993C1D",
+   "fromCP": "s",
+   "toCP": "s"
+  }
+ ],
+ "systems": {
+  "harness": {
+   "_label": "HARNESS · Cowork (the reader that sees A)",
+   "color": "#534AB7",
+   "text": "#3C3489",
+   "line": "dotted"
+  },
+  "seat": {
+   "_label": "SEAT · C4 shop (the reader bash sees)",
+   "color": "#0F6E56",
+   "text": "#085041",
+   "line": "dotted"
+  },
+  "rack": {
+   "_label": "RACK · installed skills (read-only to me)",
+   "color": "#185FA5",
+   "text": "#0C447C",
+   "line": "dotted"
+  },
+  "forge": {
+   "_label": "FORGE · polygram",
+   "color": "#5F5E5A",
+   "text": "#444441",
+   "line": "dotted"
+  },
+  "keeper": {
+   "_label": "KEEPER · host (sees everything)",
+   "color": "#993C1D",
+   "text": "#712B13",
+   "line": "dotted"
+  }
+ }
+}

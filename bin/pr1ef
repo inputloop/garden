@@ -1,0 +1,173 @@
+#!/bin/sh
+# pr1ef -- PREFERENCES 1 READ: the preferences file mentcached's pref_set / pref_unset write, read
+# with awk, so what the server applies can be checked in a second language (Corwin's rule,
+# 2026-09-14). prefs.py has promised this reader since 2026-09-23; it is written 2026-10-10.
+#
+# THE NAME, declared as my reading (a guess, marked): PR preferences · 1 run-level 1 (reads; never
+# writes) · EF the file.
+#
+# usage: sh bin/pr1ef [--file FILE] [--source PREFS_PY] [--skills DIRS] [--tsv]
+#   --file FILE       the TSV (default: $MENTCACHED_PREFS, else ~/.mentcached/prefs.tsv)
+#   --source FILE     the prefs.py whose KNOWN table names the keys that have a reader
+#                     (default: ../polygram/mcp/prefs.py beside this script)
+#   --skills DIRS     colon-separated folders of <skill>/SKILL.md whose front matter declares keys
+#                     (preferences:); first folder wins a name. Default, as softskills.py looks:
+#                     the softskills.roots row in the file, else $SOFT_SKILLS, else
+#                     ~/.mentcached/SOFT-SKILLS (and beside $MENTCACHED_SEAT); then SOFT-SKILLS/ and
+#                     skills/ beside this script
+#   --tsv             one line per data row: line<TAB>key<TAB>status -- the same shape as
+#                     `python3 -m polygram.mcp.prefs --classify FILE`
+#
+# THE RULE (the same as prefs.py's, written again here, sharing no code): a row is reported or
+# applied, never dropped. Each data row is applied (the last row for a key with a reader),
+# superseded (an earlier row for that key) or ignored (no reader, or fewer than three fields).
+# A value of "(unset)" means the key is back to its default. The human view says each in words.
+# A key has a reader when prefs.py's KNOWN table has it, when a skill declares it (preferences: in
+# its SKILL.md), or under a prefix: person.<name>.<key> (name = the keeper, $MENTCACHED_KEEPER or
+# corwin, or one people.named lists; written on that person's turn, the keeper's turn, or with a
+# consent id -- columns 6 and 7), room.<tavern>.<key>, skill.<skill>.<key> (that skill declares it).
+# A skill.seatkeeper.<hash> row's value is "no: <path>" or "(unset)".
+# Exit: 0 · 1 the file or the source is unreadable · 2 usage.
+#
+# Authored by Mentat (for Corwin; claude-opus-5-5).
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+# SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later
+set -u
+LC_ALL=C; export LC_ALL
+me=${0##*/}
+here=$(cd "$(dirname "$0")/.." && pwd)
+FILE=${MENTCACHED_PREFS:-$HOME/.mentcached/prefs.tsv}
+case $FILE in '$'*|*'${'*) FILE=$HOME/.mentcached/prefs.tsv ;; esac
+SRC=$here/polygram/mcp/prefs.py TSV=0 SKILLS=
+KEEPER=$(printf %s "${MENTCACHED_KEEPER:-corwin}" | tr 'A-Z' 'a-z')
+case $KEEPER in '$'*|*%*|'') KEEPER=corwin ;; esac
+while [ $# -gt 0 ]; do
+  case $1 in
+    --file) [ $# -ge 2 ] || { echo "$me: --file needs a file" >&2; exit 2; }; FILE=$2; shift ;;
+    --source) [ $# -ge 2 ] || { echo "$me: --source needs a file" >&2; exit 2; }; SRC=$2; shift ;;
+    --skills) [ $# -ge 2 ] || { echo "$me: --skills needs folders" >&2; exit 2; }; SKILLS=$2; shift ;;
+    --tsv) TSV=1 ;;
+    -h|--help) sed -n '/^# usage:/,/^# Exit/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) echo "$me: unknown option: $1" >&2; exit 2 ;;
+  esac
+  shift
+done
+[ -r "$SRC" ] || { echo "$me: cannot read $SRC (the KNOWN table)" >&2; exit 1; }
+[ -f "$FILE" ] || { echo "$me: no preferences file at $FILE (nothing set yet; every key is at its default)"; exit 0; }
+
+if [ -z "$SKILLS" ]; then   # the folders softskills.py would look in, in its order
+  pref=$(awk -F'\t' '$2=="softskills.roots" && NF>=3 { v=$3 } END { if (v!="(unset)") print v }' "$FILE")
+  if [ -n "$pref" ]; then SKILLS=$pref
+  elif [ -n "${SOFT_SKILLS:-}" ] && case $SOFT_SKILLS in *'${'*) false ;; *) true ;; esac; then SKILLS=$SOFT_SKILLS
+  else
+    SKILLS=$HOME/.mentcached/SOFT-SKILLS
+    case ${MENTCACHED_SEAT:-} in ''|*'${'*) ;; *) SKILLS=$SKILLS:$(dirname "$MENTCACHED_SEAT")/SOFT-SKILLS ;; esac
+  fi
+  SKILLS=$SKILLS:$here/SOFT-SKILLS:$here/skills
+fi
+tmp=${TMPDIR:-/tmp}/pr1ef.$$; trap 'rm -f "$tmp"' EXIT INT TERM
+: > "$tmp"
+seen=' '
+oldifs=$IFS; IFS=:
+for d in $SKILLS; do   # one "skill<TAB>key" line per declared key, "skill<TAB>" for a skill with none
+  IFS=$oldifs
+  [ -d "$d" ] || continue
+  for sk in "$d"/*/SKILL.md; do
+    [ -f "$sk" ] || continue
+    n=${sk%/SKILL.md}; n=${n##*/}
+    case $seen in *" $n "*) continue ;; esac
+    seen="$seen$n "
+    awk -v n="$n" '
+      NR==1 { if ($0 !~ /^---[ \t]*$/) exit; printf "%s\t\n", n; next }
+      /^---[ \t]*$/ { exit }
+      blk && /^[ \t]+-[ \t]*[^ \t]/ { v=$0; sub(/^[ \t]+-[ \t]*/, "", v); sub(/[ \t].*/, "", v); gsub(/["\047]/, "", v); printf "%s\t%s\n", n, v; next }
+      blk && /^[ \t]*$/ { next }
+      { blk=0 }
+      /^preferences:/ { v=$0; sub(/^preferences:[ \t]*/, "", v); sub(/[ \t]+$/, "", v)
+        if (v=="") { blk=1; next }
+        if (v ~ /^\[.*\]$/) { v=substr(v,2,length(v)-2); m=split(v, it, ",")
+          for (i=1;i<=m;i++) { x=it[i]; sub(/^[ \t]+/, "", x); if (x=="") continue; sub(/[ \t].*/, "", x); gsub(/["\047]/, "", x); printf "%s\t%s\n", n, x } }
+        else { sub(/[ \t].*/, "", v); gsub(/["\047]/, "", v); printf "%s\t%s\n", n, v } }
+    ' "$sk" >> "$tmp"
+  done
+  IFS=:
+done
+IFS=$oldifs
+
+awk -F'\t' -v tsv="$TSV" -v src="$SRC" -v keeper="$KEEPER" -v decl="$tmp" '
+  BEGIN {   # the keys that have a reader: the KNOWN table in prefs.py, read as text
+    inknown = 0
+    while ((getline ln < src) > 0) {
+      if (ln ~ /^KNOWN[:a-z\[\], ]*= *\{/) { inknown = 1; continue }
+      if (inknown && ln ~ /^\}/) inknown = 0
+      if (inknown && ln ~ /^    "[^"]+": *\(/) { k = ln; sub(/^    "/, "", k); sub(/".*/, "", k); known[k] = 1 }
+    }
+    close(src)
+    while ((getline ln < decl) > 0) {   # skill<TAB>pattern, as softskills.declared() finds them
+      split(ln, dp, "\t"); hasskill[dp[1]] = 1
+      if (dp[2] != "") { nd++; dskill[nd] = dp[1]; drx[nd] = pat(dp[2]) }
+    }
+    close(decl)
+  }
+  function pat(p,   out, i, c) {   # a declared key -> an anchored regex; <anything> = one dot-free segment
+    out = ""
+    for (i = 1; i <= length(p); i++) {
+      c = substr(p, i, 1)
+      if (c == "<") { while (i <= length(p) && substr(p, i, 1) != ">") i++; out = out "[^.]+"; continue }
+      if (c ~ /[][\\.^$*+?(){}|\/]/) out = out "\\" c; else out = out c
+    }
+    return "^" out "$"
+  }
+  function declares(s, k,   i) { for (i = 1; i <= nd; i++) if ((s == "" || dskill[i] == s) && k ~ drx[i]) return dskill[i]; return "" }
+  function reader(k,   pfx, rest, name, s) {
+    why_not = ""
+    if (k in known) return "this server"
+    pfx = ""
+    if (index(k, "person.") == 1) pfx = "person."; else if (index(k, "room.") == 1) pfx = "room."; else if (index(k, "skill.") == 1) pfx = "skill."
+    if (pfx != "") {
+      rest = substr(k, length(pfx) + 1); name = rest; sub(/\..*/, "", name)
+      rest = (index(rest, ".") ? substr(rest, index(rest, ".") + 1) : "")
+      if (name !~ /^[a-z0-9][a-z0-9_-]*$/ || rest !~ /^[A-Za-z0-9_][A-Za-z0-9_.-]*$/) { why_not = "not the shape " pfx "<name>.<key>"; return "" }
+      if (pfx == "person.") { if (!(name in people)) { why_not = name " is not a person this server keeps rows for (people.named)"; return "" }; return "the session-open quote" }
+      if (pfx == "room.") return "the session-open quote"
+      if (!(name in hasskill)) { why_not = "no skill named " name " is loadable"; return "" }
+      if (declares(name, k) != "") return "the skill " name
+      why_not = "the skill " name " does not declare it"; return ""
+    }
+    s = declares("", k); if (s != "") return "the skill " s
+    why_not = "no reader: not a known key, and no skill declares it"; return ""
+  }
+  function writer(k, turn, consent,   name) {   # the person writer rule; "" when allowed
+    turn = tolower(turn)
+    if (k == "people.named" && turn != keeper) return "people.named is changed only on the keeper turn"
+    if (index(k, "person.") != 1) return ""
+    name = substr(k, 8); sub(/\..*/, "", name)
+    if (turn == name || (turn == keeper && (name in people)) || consent != "") return ""
+    return "a person." name " row is written only on " name "s own turn, the keeper turn, or with a consent id"
+  }
+  FNR==1 { pass++ }
+  pass==1 { if ($2 == "people.named" && NF >= 3 && tolower($6) == keeper) pn = $3; next }   # first pass: who is named
+  pass==2 && !setup { setup = 1; if (pn == "" || pn == "(unset)") pn = "corwin"
+    m = split(tolower(pn), nm, /[, \t]+/); for (i = 1; i <= m; i++) if (nm[i] != "") people[nm[i]] = 1; people[keeper] = 1 }
+  FNR==1 && $1=="ts" { next }
+  $0 ~ /^[ \t]*$/ { next }
+  {
+    n++; line[n] = FNR; key[n] = $2; val[n] = $3; by[n] = $4
+    if (NF < 3) { st[n] = "ignored"; why[n] = "not a whole row: fewer than three fields"; next }
+    if (reader($2) == "") { st[n] = "ignored"; why[n] = why_not; next }
+    w = writer($2, $6, $7)
+    if (w == "" && index($2, "skill.seatkeeper.") == 1 && $3 != "(unset)" && !($3 ~ /^no: / && length($3) > 4)) w = "a seatkeeper value is no: <path>"
+    if (w != "") { st[n] = "ignored"; why[n] = w; next }
+    st[n] = "applied"; why[n] = ""
+    if ($2 in lastrow) { st[lastrow[$2]] = "superseded"; why[lastrow[$2]] = "a later row (line " FNR ") sets this key" }
+    lastrow[$2] = n
+  }
+  END {
+    for (i = 1; i <= n; i++) {
+      if (tsv) { printf "%d\t%s\t%s\n", line[i], key[i], st[i]; continue }
+      if (st[i] == "applied") printf "applied     line %-4d %s = %s%s\n", line[i], key[i], (val[i] == "(unset)" ? "(unset: back to its default)" : val[i]), (by[i] != "" ? "  (by " by[i] ")" : "")
+      else if (st[i] == "superseded") printf "superseded  line %-4d %s -- %s\n", line[i], key[i], why[i]
+      else { ign++; printf "ignored     line %-4d %s -- %s\n", line[i], (key[i] == "" ? "(no key)" : key[i]), why[i] }
+    }
+    if (!tsv) printf "-- %d row(s): every one is listed above; %d ignored\n", n, ign + 0
+  }' "$FILE" "$FILE"

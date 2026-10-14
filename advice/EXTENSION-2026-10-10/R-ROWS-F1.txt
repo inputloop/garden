@@ -1,0 +1,32 @@
+# R-ROWS from fix lane F1 (pass 2, 2026-10-10), for the conductor to fold into
+# polygram/mcp/__main__.py's --prove-red, inside the same `with tempfile... as td` scope where
+# `want` exists. Words line first, then the code. Both rows were run in a scratch harness against
+# this tree: PASS as written; both FAIL with their plants (R25: CONFIDENCE="" in Frame._row;
+# R26: the #guard:room line made `if True:`).
+#
+# R25  the frame writes a question row qg1ck can read: KEY question, LABEL, CONFIDENCE, NOTE filled,
+#      and "17%" is the same confidence as 0.17 (P6 O4/O5, card 14 and 13).
+# R26  a room.<tavern> row is written only by the keeper or a named participant in that room
+#      (P5 O5/J4, card 06).
+
+        # R25 -- the frame has a writer for question rows (fix lane F1, pass 2).
+        from polygram.mcp import spans as _sp25
+        _r25 = _sp25.Frame("r25")._row("gauge", "s", None, key="question", value="two", label="q1",
+                                       likelihood="medium", confidence="17%", note="go on?").split("\t")
+        _c25 = dict(zip(_sp25.FRAME_COLUMNS, _r25))
+        want("the frame writes a question row qg1ck can read",
+             (_c25["KEY"], _c25["LABEL"], _c25["CONFIDENCE"], _c25["NOTE"]) == ("question", "q1", "17%", "go on?")
+             and _sp25.confidence_value("17%") == _sp25.confidence_value("0.17") == 0.17,
+             f"row {_c25}")
+
+        # R26 -- a room rule is not anyone's to write (fix lane F1, pass 2).
+        from polygram.mcp import prefs as _pf26
+        _w26 = _pf26.writer("room.garden.quiet", "stranger", "", names=["corwin", "bryant"], room="garden")
+        _k26 = _pf26.writer("room.garden.quiet", _pf26.keeper(), "", names=["corwin", "bryant"])
+        _b26 = _pf26.writer("room.garden.quiet", "bryant", "", names=["corwin", "bryant"], room="garden")
+        want("a room.<tavern> row is written only by the keeper or a named participant in that room",
+             bool(_w26) and _k26 == "" and _b26 == "", f"stranger={_w26!r} keeper={_k26!r} bryant={_b26!r}")
+
+# Authored by Mentat (for Corwin; claude-opus-5-5).
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+# SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later

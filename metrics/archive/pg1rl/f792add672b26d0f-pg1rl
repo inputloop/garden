@@ -1,0 +1,511 @@
+#!/usr/bin/env python3
+# pg1rl -- PERSONA GRID 1 ROLL. Builds, lints, rolls and draws Corwin's persona-traits grid of grids
+#          (modelthisbook/news/PERSONA-TRAITS-GRID.md): 144 sourced traits as 24 tables (6 domain rows x
+#          4 deep), each 6x6 = 6 traits x 6 levels; a JUMBLED twin (same cells, seeded shuffle, no
+#          good-roll/bad-roll affinity); the NEWS BIAS generator carried forward from Roll for Bias
+#          1.0.90; and an INDEX table you roll into first (24 numbered cells + the doubles-and-seven
+#          diagonal stripes). The markdown is the canonical document; C4 comment markers
+#          (<!-- C4:... -->) let this tool extract every table without guessing at prose.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st>
+# This program is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.  See <https://www.gnu.org/licenses/>.
+# The grid it reads is CC BY 4.0 (Corwin Brust; lab partners Bryant Frankford and Bridget). Marked, as
+# the methods are marked: *for fiction or analysis -- no ship dates or licensing or publication dates
+# specifically defined.*
+#
+# THE NAME (the AS4CE pattern, run-level in the slot): P PERSONA · G GRID · 1 reads one spec, writes one
+#   result · R ROLL · L LOOKUP (a roll is a lookup with dice).
+#
+# usage: pg1rl --build TRAITS.tsv NEWS.tsv TEMPLATE.md --seed N  > GRID.md    fill the template's C4 regions
+#        pg1rl --sources TRAITS.tsv > PERSONA-TRAITS-SOURCES.md                the bibliography, from the record
+#        pg1rl --lint  GRID.md                                                  parse + constraints (exit 1 on FAULT)
+#        pg1rl --roll  GRID.md --seed N [--traits K] [--jumbled]                a persona roll, as a text trace
+#        pg1rl --json  GRID.md                                                  the parsed spec as data
+#        pg1rl --html  GRID.md > viewer.html                                    tabbed viewer, graph paper, highlighter, live dice
+#        pg1rl --artifact GRID.md > body.html                                   the same, body-only, for a hosted artifact
+#        pg1rl --prove-red                                                      a grid whose index lacks a number must FAULT
+#
+# THE RULES (also printed in the spec; the JS roller in --html is a port of roll() below, same seed = same dice):
+#   INDEX: 2d6 -> (row a, col b). A numbered cell -> that table. DOUBLES (a==b) = the BIAS stripe: roll the
+#     news-bias generator (a source + a fate word) and roll the index again. SEVENS (a+b==7) = the
+#     INTERSECTION stripe: roll the index twice more (numbered cells only -- stripes re-roll) and take BOTH traits as a pair to
+#     reconcile; high-first sevens (6-1, 5-2, 4-3) are high-stakes, low-first (1-6, 2-5, 3-4) low-stakes.
+#   TRAIT TABLE: 2d6 -> (trait row a, level col b). DOUBLES bump to a neighbour: high doubles (4-4, 5-5,
+#     6-6) go to the NEXT row at level a+1 (amp); low doubles (1-1, 2-2, 3-3) go to the PREVIOUS row at
+#     level a-1 (damp); 6-6 also escalates -- roll again on the next-deeper table of the same domain (depth
+#     4 -> back to the index) at high intensity. SEVENS stay on the trait: high-first -> level +1 and the
+#     trait is LOAD-BEARING; low-first -> level -1 and the trait is BACKGROUND. Levels clamp to 1..6.
+#   JUMBLED: 2d6 -> the cell; no bumps, no stripes -- the totally randomized selection.
+# Authored by Fable (Mentat/Vibrobeast) 2026-09-06 for the first deep revision pass of the news methods.
+import sys, re, json, random, html
+
+VERSION = "1.0"
+LEVELS = ["1 · faint", "2 · low", "3 · moderate-low", "4 · moderate-high", "5 · high", "6 · extreme"]
+TABLE_NAMES = {"A1": "Activity & drive", "A2": "Sociability & expression", "A3": "Emotional reactivity", "A4": "Positive affect & resilience",
+               "B1": "Curiosity", "B2": "Cognitive style", "B3": "Creativity & unconventionality", "B4": "Wisdom",
+               "C1": "Conscientiousness core", "C2": "Self-regulation", "C3": "Agency & drive", "C4": "Risk & sensation",
+               "D1": "Warmth & compassion", "D2": "Trust & cooperation", "D3": "Social bonding", "D4": "Interpersonal stance",
+               "E1": "Identity", "E2": "Dark traits", "E3": "Integrity & honesty", "E4": "Regulation of self",
+               "F1": "Personal-focus values", "F2": "Social-focus values", "F3": "Moral foundations & justice", "F4": "Vocation & interests"}
+DOMAINS = {"A": "Temperament & energy", "B": "Mind & openness", "C": "Will & work",
+           "D": "Heart & others", "E": "Self & shadow", "F": "Values & world"}
+# highlighter (his palette): pink=scary · blue=chill · green=hip · yellow=worrisome · purple=wild
+HILITE = {"pink": "#f8b4d9", "blue": "#a9d6f5", "green": "#b8e6a0", "yellow": "#fff2a8", "purple": "#d9c2f0"}
+
+def die(m, c=2): sys.stderr.write("pg1rl: %s\n" % m); sys.exit(c)
+
+# ---------------------------------------------------------------- data in
+def read_tsv(path):
+    rows = []
+    with open(path, encoding="utf-8") as f:
+        hdr = None
+        for line in f:
+            line = line.rstrip("\n")
+            if not line or line.startswith("#"): continue
+            parts = line.split("\t")
+            if hdr is None: hdr = parts; continue
+            rows.append(dict(zip(hdr, parts)))
+    return rows
+
+def read_news(path):
+    items, rand = [], None
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.rstrip("\n")
+            if line.startswith("# randomized matrix rows"):
+                rand = [[int(x) for x in r.split()] for r in line.split(":", 1)[1].split(";")]
+            elif not line or line.startswith("#") or line.startswith("n\t"): continue
+            else:
+                n, item, side = line.split("\t")[:3]; items.append((int(n), item, side))
+    return items, rand
+
+# ---------------------------------------------------------------- build
+def table_num(dom, depth): return (ord(dom) - 65) * 4 + depth          # A1=1 ... F4=24
+
+def build_index():
+    """6x6: 24 numbered cells in reading order; doubles = BIAS stripe; sevens = INTERSECTION stripe."""
+    n = 1; grid = []
+    for a in range(1, 7):
+        row = []
+        for b in range(1, 7):
+            if a == b: row.append("BIAS")
+            elif a + b == 7: row.append("X")
+            else: row.append(str(n)); n += 1
+        grid.append(row)
+    assert n == 25
+    return grid
+
+def md_table(header, rows):
+    out = ["| " + " | ".join(header) + " |", "|" + "---|" * len(header)]
+    for r in rows: out.append("| " + " | ".join(r) + " |")
+    return "\n".join(out)
+
+def build(traits_tsv, news_tsv, template, seed):
+    rows = read_tsv(traits_tsv); items, rand = read_news(news_tsv)
+    by = {}
+    for r in rows: by.setdefault((r["col"], int(r["table"])), []).append(r)
+    for k in by: by[k].sort(key=lambda r: int(r["row"]))
+    tables = []
+    for dom in "ABCDEF":
+        for depth in (1, 2, 3, 4):
+            tr = by.get((dom, depth), [])
+            if len(tr) != 6: die("table %s%d has %d traits, need 6" % (dom, depth, len(tr)))
+            tables.append((dom, depth, tr))
+    rng = random.Random(seed)
+    out = []
+    # straight tables
+    out.append("<!-- C4:pg1rl v%s kind=grid tables=24 seed=%d -->" % (VERSION, seed))
+    for dom, depth, tr in tables:
+        n = table_num(dom, depth); name = TABLE_NAMES.get("%s%d" % (dom, depth), "%s%d" % (dom, depth))
+        out.append('\n<!-- C4:table id=%s%d n=%d domain=%s depth=%d kind=traits name="%s" -->' % (dom, depth, n, dom, depth, name))
+        out.append("#### Table %d · %s%d — %s (%s)" % (n, dom, depth, name, DOMAINS[dom]))
+        out.append(md_table(["trait (row = first die)"] + ["L%d %s" % (i + 1, LEVELS[i].split(" · ")[1]) for i in range(6)],
+                            [[r["trait"]] + [r["L%d" % i] for i in range(1, 7)] for r in tr]))
+        out.append("<!-- C4:end -->")
+    # jumbled twin: every table's 36 (trait, level) cells shuffled by the seeded RNG
+    out.append("\n<!-- C4:pg1rl kind=jumbled tables=24 seed=%d -->" % seed)
+    for dom, depth, tr in tables:
+        n = table_num(dom, depth)
+        cells = [(r["trait"], i + 1, r["L%d" % (i + 1)]) for r in tr for i in range(6)]
+        rng.shuffle(cells)
+        out.append('\n<!-- C4:table id=J%s%d n=%d domain=%s depth=%d kind=jumbled -->' % (dom, depth, n, dom, depth))
+        out.append("#### Jumbled %d · %s%d" % (n, dom, depth))
+        grid = [cells[r * 6:(r + 1) * 6] for r in range(6)]
+        out.append(md_table(["row \\ col"] + [str(i) for i in range(1, 7)],
+                            [[str(a + 1)] + ["%s · L%d · %s" % c for c in grid[a]] for a in range(6)]))
+        out.append("<!-- C4:end -->")
+    # news bias generator, carried forward
+    out.append("\n<!-- C4:news kind=items n=36 source='Roll for Bias 1.0.90 (signed)' -->")
+    out.append(md_table(["n", "source", "half"], [[str(n), it, side] for n, it, side in items]))
+    out.append("<!-- C4:end -->")
+    out.append("\n<!-- C4:news kind=ordered -->")
+    out.append(md_table(["row \\ col"] + [str(i) for i in range(1, 7)], [[str(a + 1)] + [str(a * 6 + b + 1) for b in range(6)] for a in range(6)]))
+    out.append("<!-- C4:end -->")
+    out.append("\n<!-- C4:news kind=randomized -->")
+    out.append(md_table(["row \\ col"] + [str(i) for i in range(1, 7)], [[str(a + 1)] + [str(x) for x in rand[a]] for a in range(6)]))
+    out.append("<!-- C4:end -->")
+    # index
+    out.append("\n<!-- C4:index kind=index -->")
+    out.append(md_table(["row \\ col"] + [str(i) for i in range(1, 7)], [[str(a + 1)] + r for a, r in enumerate(build_index())]))
+    out.append("<!-- C4:end -->")
+    body = "\n".join(out)
+    tmpl = open(template, encoding="utf-8").read()
+    if "<!-- C4:generated -->" not in tmpl: die("template lacks the <!-- C4:generated --> slot")
+    return tmpl.replace("<!-- C4:generated -->", body)
+
+def sources_md(traits_tsv):
+    """the bibliography: every trait's formal + flair sources with verification state; unique list at the end."""
+    rows = read_tsv(traits_tsv); out = ["# Persona Traits Grid — sources (generated by `bin/pg1rl --sources` from PERSONA-TRAITS.tsv)", "",
+        "*Every trait: at least three formal sources (one trait-specific) and one or two flair sources. Verification states: VERIFIED-2 = two independent readers (PubMed + a second route), VERIFIED-1 = one reader, UNVERIFIED = kept, said so. Credit at the idea: the sources are cited, not reproduced. CC BY 4.0. Marked: for fiction or analysis — no ship dates or licensing or publication dates specifically defined.*", ""]
+    counts = {"VERIFIED-2": 0, "VERIFIED-1": 0, "UNVERIFIED": 0, "flair VERIFIED-1": 0, "flair UNVERIFIED": 0}; uniq = {}
+    for r in rows:
+        out.append("## %s%s.%s · %s" % (r["col"], r["table"], r["row"], r["trait"]))
+        out.append("*%s* — poles: %s ↔ %s · taxonomy: %s · neighbours: %s" % (r["definition"], r["low_pole"], r["high_pole"], r["taxonomy"], r["neighbors"]))
+        for k in ("formal_1", "formal_2", "formal_3"):
+            if r[k]:
+                st = "VERIFIED-2" if "VERIFIED-2" in r[k] else "VERIFIED-1" if "VERIFIED-1" in r[k] else "UNVERIFIED"; counts[st] += 1
+                out.append("- formal: %s" % r[k]); uniq.setdefault(r[k].split(" [")[0], st)
+        for k in ("flair_1", "flair_2"):
+            if r[k]:
+                st = "flair VERIFIED-1" if "VERIFIED-1" in r[k] else "flair UNVERIFIED"; counts[st] += 1
+                out.append("- flair: %s" % r[k])
+        if r.get("notes"): out.append("- notes: %s" % r["notes"])
+        out.append("- readers run: %s" % r.get("verify", ""))
+        out.append("")
+    out.insert(3, "**Counts (observed from the record):** %d traits · formal slots %d (VERIFIED-2 %d · VERIFIED-1 %d · UNVERIFIED %d) · flair slots %d (VERIFIED-1 %d · UNVERIFIED %d) · %d unique formal sources." % (
+        len(rows), counts["VERIFIED-2"] + counts["VERIFIED-1"] + counts["UNVERIFIED"], counts["VERIFIED-2"], counts["VERIFIED-1"], counts["UNVERIFIED"],
+        counts["flair VERIFIED-1"] + counts["flair UNVERIFIED"], counts["flair VERIFIED-1"], counts["flair UNVERIFIED"], len(uniq)))
+    out.append("## Unique formal sources (%d)" % len(uniq))
+    for k in sorted(uniq): out.append("- %s [%s]" % (k, uniq[k]))
+    return "\n".join(out) + "\n"
+
+# ---------------------------------------------------------------- parse (from the markdown, by markers)
+def parse(md):
+    spec = {"tables": {}, "jumbled": {}, "news": {"items": [], "ordered": None, "randomized": None}, "index": None,
+            "sections": [], "title": None}
+    m = re.search(r"^# (.+)$", md, re.M); spec["title"] = m.group(1).strip() if m else "persona grid"
+    for m in re.finditer(r'<!-- C4:section id=([\w-]+) tab="([^"]+)" -->\n(.*?)<!-- C4:end -->', md, re.S):
+        spec["sections"].append({"id": m.group(1), "tab": m.group(2), "md": m.group(3).strip()})
+    def cells(block):
+        rows = [l for l in block.strip().split("\n") if l.startswith("|")][2:]
+        return [[c.strip() for c in r.strip().strip("|").split("|")] for r in rows]
+    for m in re.finditer(r"<!-- C4:table id=(\w+) n=(\d+) domain=(\w) depth=(\d) kind=(\w+)(?: name=\"([^\"]*)\")? -->\n(.*?)<!-- C4:end -->", md, re.S):
+        tid, n, dom, depth, kind, name, block = m.groups(); rows = cells(block)
+        if kind == "traits":
+            spec["tables"][int(n)] = {"id": tid, "n": int(n), "domain": dom, "depth": int(depth), "name": name or tid,
+                                      "traits": [r[0] for r in rows], "levels": [r[1:7] for r in rows]}
+        else:
+            spec["jumbled"][int(n)] = {"id": tid, "n": int(n), "domain": dom, "depth": int(depth), "cells": [r[1:7] for r in rows]}
+    for m in re.finditer(r"<!-- C4:news kind=(\w+)[^>]*-->\n(.*?)<!-- C4:end -->", md, re.S):
+        kind, block = m.groups(); rows = cells(block)
+        if kind == "items": spec["news"]["items"] = [(int(r[0]), r[1], r[2]) for r in rows]
+        else: spec["news"][kind] = [[int(x) for x in r[1:7]] for r in rows]
+    m = re.search(r"<!-- C4:index kind=index -->\n(.*?)<!-- C4:end -->", md, re.S)
+    if m: spec["index"] = [r[1:7] for r in cells(m.group(1))]
+    return spec
+
+def lint(spec):
+    f = []
+    if len(spec["tables"]) != 24: f.append("tables: %d, need 24" % len(spec["tables"]))
+    for n, t in spec["tables"].items():
+        if len(t["traits"]) != 6 or any(len(l) != 6 for l in t["levels"]): f.append("table %d not 6x6" % n)
+        if len(set(t["traits"])) != 6: f.append("table %d repeats a trait" % n)
+        if table_num(t["domain"], t["depth"]) != n: f.append("table %d numbered against its domain/depth" % n)
+    names = [tr for t in spec["tables"].values() for tr in t["traits"]]
+    dup = sorted({x for x in names if names.count(x) > 1})
+    if dup: f.append("duplicate traits across tables: %s" % ", ".join(dup))
+    if len(spec["jumbled"]) != 24: f.append("jumbled: %d, need 24" % len(spec["jumbled"]))
+    for n, j in spec["jumbled"].items():
+        t = spec["tables"].get(n)
+        if not t: continue
+        want = sorted("%s · L%d · %s" % (t["traits"][r], c + 1, t["levels"][r][c]) for r in range(6) for c in range(6))
+        got = sorted(x for row in j["cells"] for x in row)
+        if want != got: f.append("jumbled %d is not a permutation of table %d" % (n, n))
+    idx = spec["index"]
+    if not idx or len(idx) != 6 or any(len(r) != 6 for r in idx): f.append("index not 6x6")
+    else:
+        nums = sorted(int(x) for r in idx for x in r if x.isdigit())
+        if nums != list(range(1, 25)): f.append("index numbers are not 1..24 exactly once (%s)" % nums)
+        for a in range(6):
+            for b in range(6):
+                if a == b and idx[a][b] != "BIAS": f.append("index (%d,%d) should be the BIAS stripe" % (a + 1, b + 1))
+                if a + b == 5 and idx[a][b] != "X": f.append("index (%d,%d) should be the intersection stripe" % (a + 1, b + 1))
+    nw = spec["news"]
+    if len(nw["items"]) != 36: f.append("news items: %d, need 36" % len(nw["items"]))
+    if nw["randomized"] and sorted(x for r in nw["randomized"] for x in r) != list(range(1, 37)): f.append("news randomized matrix does not hold 1..36 once")
+    if not spec["sections"]: f.append("no C4:section tabs found (the viewer needs the top matter marked)")
+    return f
+
+# ---------------------------------------------------------------- roll
+def d6(rng): return rng.randint(1, 6)
+
+def roll_table(spec, n, rng, trace, jumbled=False):
+    a, b = d6(rng), d6(rng)
+    if jumbled:
+        j = spec["jumbled"][n]; cell = j["cells"][a - 1][b - 1]
+        trace.append({"step": "jumbled", "table": n, "dice": [a, b], "cell": cell, "color": "green"})
+        return {"table": n, "cell": cell, "stakes": "random"}
+    t = spec["tables"][n]; stakes = "ordinary"; color = "green"; note = ""
+    row, lvl = a, b
+    if a == b:
+        if a >= 4: row, lvl, note, color, stakes = (a % 6) + 1, min(6, a + 1), "high doubles: bump to the next trait, amp up", "pink", "amped"
+        else:      row, lvl, note, color, stakes = ((a - 2) % 6) + 1, max(1, a - 1), "low doubles: bump to the previous trait, damp", "blue", "damped"
+    elif a + b == 7:
+        if a >= 4: lvl, note, color, stakes = min(6, b + 1), "high-first seven: level +1, LOAD-BEARING", "yellow", "load-bearing"
+        else:      lvl, note, color, stakes = max(1, b - 1), "low-first seven: level -1, BACKGROUND", "yellow", "background"
+    elif lvl in (1, 6): color = "yellow"
+    trait = t["traits"][row - 1]; word = t["levels"][row - 1][lvl - 1]
+    trace.append({"step": "table", "table": n, "id": t["id"], "dice": [a, b], "trait": trait, "level": lvl, "word": word,
+                  "note": note, "color": color, "stakes": stakes})
+    res = {"table": n, "trait": trait, "level": lvl, "word": word, "stakes": stakes}
+    if a == b == 6:
+        nxt = n + 1 if t["depth"] < 4 else None
+        trace.append({"step": "escalate", "from": n, "to": nxt if nxt else "index", "color": "pink",
+                      "note": "6-6: roll again on the next-deeper table at high intensity" if nxt else "6-6 at depth 4: back to the index, high intensity"})
+        if nxt: res["escalation"] = roll_table(spec, nxt, rng, trace)
+        else: res["escalation"] = roll_index(spec, rng, trace)
+    return res
+
+def roll_news(spec, rng, trace):
+    a, b = d6(rng), d6(rng); num = spec["news"]["randomized"][a - 1][b - 1]
+    item = next((it for it in spec["news"]["items"] if it[0] == num), (num, "?", "?"))
+    fa, fb = d6(rng), d6(rng); s = fa + fb
+    fate = "villain" if fa == fb and fa in (1, 6) else "badguy" if fa == fb or s == 3 else "malcontent" if s == 7 else "ne'er-do-well"
+    trace.append({"step": "news", "dice": [a, b], "n": num, "source": item[1], "half": item[2], "fate_dice": [fa, fb], "fate": fate,
+                  "color": "pink" if fate in ("villain", "badguy") else "purple"})
+    return {"source": item[1], "half": item[2], "fate": fate, "fate_dice": [fa, fb]}
+
+def roll_index(spec, rng, trace, depth=0, numbered_only=False):
+    if depth > 8: die("index recursion runaway (a spec whose index is all stripes?)", 1)
+    a, b = d6(rng), d6(rng); cell = spec["index"][a - 1][b - 1]
+    while numbered_only and not cell.isdigit():      # inside an intersection: numbered cells only (re-roll, say so)
+        trace.append({"step": "index", "dice": [a, b], "cell": cell, "color": "purple", "note": "stripe inside an intersection: numbered cells only, re-roll"})
+        a, b = d6(rng), d6(rng); cell = spec["index"][a - 1][b - 1]
+    if cell == "BIAS":
+        trace.append({"step": "index", "dice": [a, b], "cell": "BIAS", "color": "purple", "note": "doubles: the bias stripe -> news-bias generator, then roll again"})
+        bias = roll_news(spec, rng, trace); r = roll_index(spec, rng, trace, depth + 1); r["bias"] = bias; return r
+    if cell == "X":
+        hi = a >= 4
+        trace.append({"step": "index", "dice": [a, b], "cell": "X", "color": "purple",
+                      "note": "seven: the intersection stripe -> two traits to reconcile (%s-stakes)" % ("high" if hi else "low")})
+        pair = [roll_index(spec, rng, trace, depth + 1, numbered_only=True) for _ in range(2)]
+        return {"intersection": pair, "stakes": "high" if hi else "low"}
+    n = int(cell)
+    trace.append({"step": "index", "dice": [a, b], "cell": n, "color": "green", "note": "-> table %d (%s)" % (n, spec["tables"][n]["id"])})
+    return roll_table(spec, n, rng, trace)
+
+def roll(spec, seed, k=4, jumbled=False):
+    rng = random.Random(seed); trace = []; results = []
+    for i in range(k):
+        trace.append({"step": "begin", "trait_no": i + 1})
+        if jumbled:
+            n = rng.randint(1, 24); trace.append({"step": "pick", "table": n, "color": "green", "note": "jumbled mode: table by d24"})
+            results.append(roll_table(spec, n, rng, trace, jumbled=True))
+        else:
+            results.append(roll_index(spec, rng, trace))
+    return {"seed": seed, "traits_requested": k, "jumbled": jumbled, "results": results, "trace": trace,
+            "mark": "for fiction or analysis -- no ship dates or licensing or publication dates specifically defined"}
+
+def trace_text(r):
+    out = ["# pg1rl roll -- seed %d -- %d trait(s)%s" % (r["seed"], r["traits_requested"], " -- JUMBLED" if r["jumbled"] else "")]
+    for t in r["trace"]:
+        s = t["step"]
+        if s == "begin": out.append("\n## trait %d" % t["trait_no"])
+        elif s == "index": out.append("index %d+%d -> %s  [%s] %s" % (t["dice"][0], t["dice"][1], t["cell"], t["color"], t.get("note", "")))
+        elif s == "table": out.append("table %d (%s) %d+%d -> %s · L%d · %s  [%s] %s (%s)" % (t["table"], t["id"], t["dice"][0], t["dice"][1], t["trait"], t["level"], t["word"], t["color"], t["note"], t["stakes"]))
+        elif s == "jumbled": out.append("jumbled %d %d+%d -> %s  [%s]" % (t["table"], t["dice"][0], t["dice"][1], t["cell"], t["color"]))
+        elif s == "news": out.append("news %d+%d -> #%d %s (%s); fate %d+%d -> %s  [%s]" % (t["dice"][0], t["dice"][1], t["n"], t["source"], t["half"], t["fate_dice"][0], t["fate_dice"][1], t["fate"], t["color"]))
+        elif s == "escalate": out.append("escalate %s -> %s  [%s] %s" % (t["from"], t["to"], t["color"], t["note"]))
+        elif s == "pick": out.append("pick table %d  [%s] %s" % (t["table"], t["color"], t["note"]))
+    out.append("\n*Marked: %s.*" % r["mark"]); return "\n".join(out)
+
+# ---------------------------------------------------------------- html viewer
+def md_to_html(md):
+    """a small, honest markdown subset: headings, paragraphs, lists, tables, code spans, bold/italic, links."""
+    out = []; lines = md.split("\n"); i = 0
+    def inline(s):
+        s = html.escape(s)
+        s = re.sub(r"`([^`]+)`", r"<code>\1</code>", s)
+        s = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", s)
+        s = re.sub(r"\*([^*]+)\*", r"<em>\1</em>", s)
+        s = re.sub(r"\[([^\]]+)\]\((https?://[^)]+)\)", r'<a href="\2">\1</a>', s)
+        return s
+    while i < len(lines):
+        l = lines[i]
+        if l.startswith("<!--"):
+            while i < len(lines) and "-->" not in lines[i]: i += 1
+            i += 1; continue
+        m = re.match(r"^(#{1,6})\s+(.*)", l)
+        if m: out.append("<h%d>%s</h%d>" % (len(m.group(1)) + 1, inline(m.group(2)), len(m.group(1)) + 1)); i += 1; continue
+        if l.startswith("|"):
+            rows = []
+            while i < len(lines) and lines[i].startswith("|"): rows.append(lines[i]); i += 1
+            cells = [[c.strip() for c in r.strip().strip("|").split("|")] for r in rows]
+            if len(cells) >= 2 and set(cells[1][0]) <= set("-: "): cells.pop(1)
+            t = ['<div class="tw"><table><thead><tr>' + "".join("<th>%s</th>" % inline(c) for c in cells[0]) + "</tr></thead><tbody>"]
+            for r in cells[1:]: t.append("<tr>" + "".join("<td>%s</td>" % inline(c) for c in r) + "</tr>")
+            out.append("".join(t) + "</tbody></table></div>"); continue
+        if re.match(r"^\s*[-*] ", l):
+            items = []
+            while i < len(lines) and re.match(r"^\s*[-*] ", lines[i]): items.append(re.sub(r"^\s*[-*] ", "", lines[i])); i += 1
+            out.append("<ul>" + "".join("<li>%s</li>" % inline(x) for x in items) + "</ul>"); continue
+        if re.match(r"^\s*\d+\. ", l):
+            items = []
+            while i < len(lines) and re.match(r"^\s*\d+\. ", lines[i]): items.append(re.sub(r"^\s*\d+\. ", "", lines[i])); i += 1
+            out.append("<ol>" + "".join("<li>%s</li>" % inline(x) for x in items) + "</ol>"); continue
+        if l.startswith(">"):
+            q = []
+            while i < len(lines) and lines[i].startswith(">"): q.append(lines[i][1:].strip()); i += 1
+            out.append("<blockquote>%s</blockquote>" % inline(" ".join(q))); continue
+        if l.strip() == "": i += 1; continue
+        p = []
+        while i < len(lines) and lines[i].strip() and not lines[i].startswith(("|", "#", "<!--", ">")) and not re.match(r"^\s*([-*]|\d+\.) ", lines[i]): p.append(lines[i]); i += 1
+        out.append("<p>%s</p>" % inline(" ".join(p)))
+    return "\n".join(out)
+
+def html_view(spec, md, artifact=False):
+    tabs = [(s["id"], s["tab"], md_to_html(s["md"])) for s in spec["sections"]]
+    # the grid of grids: 6 domain rows x 4 deep, each a 6x6 with trait rows
+    def grid_html(tables, jumbled=False):
+        rows = []
+        for dom in "ABCDEF":
+            cellsh = []
+            for depth in (1, 2, 3, 4):
+                n = table_num(dom, depth); t = tables.get(n)
+                if not t: cellsh.append("<div class=tbl>missing %d</div>"); continue
+                h = ['<div class="tbl" id="%s%d" data-n="%d"><div class="tt">%d · %s%d%s</div><table class="g">' % ("J" if jumbled else "T", n, n, n, dom, depth, "" if jumbled else " · " + html.escape(t.get("name", "")))]
+                h.append("<tr><th></th>" + "".join("<th>%d</th>" % c for c in range(1, 7)) + "</tr>")
+                for r in range(6):
+                    if jumbled: cells = ['<td data-r="%d" data-c="%d" title="%s">%s</td>' % (r + 1, c + 1, html.escape(t["cells"][r][c]), html.escape(t["cells"][r][c].split(" · ")[0][:10])) for c in range(6)]
+                    else: cells = ['<td data-r="%d" data-c="%d" title="%s">%s</td>' % (r + 1, c + 1, html.escape(t["levels"][r][c]), html.escape(t["levels"][r][c][:14])) for c in range(6)]
+                    h.append('<tr><th class="rn" title="%s">%d %s</th>%s</tr>' % (html.escape(t["traits"][r] if not jumbled else ""), r + 1, html.escape((t["traits"][r] if not jumbled else "")[:16]), "".join(cells)))
+                h.append("</table></div>"); cellsh.append("".join(h))
+            rows.append('<div class="grow"><div class="dl">%s<br><small>%s</small></div>%s</div>' % (dom, html.escape(DOMAINS[dom]), "".join(cellsh)))
+        return '<div class="paper">%s</div>' % "".join(rows)
+    idx = spec["index"]
+    index_html = '<div class="paper one"><div class="tbl big" id="INDEX"><div class="tt">INDEX — first die = row, second = column</div><table class="g"><tr><th></th>' + "".join("<th>%d</th>" % c for c in range(1, 7)) + "</tr>" + "".join(
+        '<tr><th class="rn">%d</th>%s</tr>' % (a + 1, "".join('<td data-r="%d" data-c="%d" class="%s">%s</td>' % (a + 1, b + 1, "stripe" if not idx[a][b].isdigit() else "", idx[a][b]) for b in range(6))) for a in range(6)) + "</table></div></div>"
+    news = spec["news"]
+    news_html = '<div class="paper one"><div class="tbl big" id="NEWS"><div class="tt">NEWS BIAS — randomized matrix (Roll for Bias 1.0.90)</div><table class="g"><tr><th></th>' + "".join("<th>%d</th>" % c for c in range(1, 7)) + "</tr>" + "".join(
+        '<tr><th class="rn">%d</th>%s</tr>' % (a + 1, "".join('<td data-r="%d" data-c="%d">%d</td>' % (a + 1, b + 1, news["randomized"][a][b]) for b in range(6))) for a in range(6)) + "</table></div>" + \
+        '<div class="tw"><table><tr><th>n</th><th>source</th><th>half</th></tr>' + "".join("<tr><td>%d</td><td>%s</td><td>%s</td></tr>" % (n, html.escape(it), html.escape(h)) for n, it, h in news["items"]) + "</table></div></div>"
+    data = json.dumps({"tables": spec["tables"], "jumbled": spec["jumbled"], "news": spec["news"], "index": spec["index"]}, ensure_ascii=False)
+    css = """
+:root{--paper:#fbfdff;--grid:#dbe5ee;--grid5:#a9bccd;--ink:#1f2a33;--ink-2:#4b5865;--ground:#f3efe6;--ground-2:#e9e3d6;--bar:#2b2f36;--bar-ink:#efe9dc;--card:#ffffff;--line:#c7c2b6;--accent:#8a4b1f;--focus:#2f6fd6;
+ --hl-pink:%(pink)s;--hl-blue:%(blue)s;--hl-green:%(green)s;--hl-yellow:%(yellow)s;--hl-purple:%(purple)s;--stripe:#efe9f8;--stripe-ink:#3c3489;
+ --display:'Fraunces',Georgia,'Times New Roman',serif;--body:'Source Serif 4',Georgia,serif;--mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ground:#1d1f24;--ground-2:#262931;--ink:#ece6da;--ink-2:#b5ad9f;--bar:#0f1114;--bar-ink:#ece6da;--card:#262931;--line:#4a4f58;--accent:#e0a56a;--focus:#7fb0ff}}
+:root[data-theme="dark"]{--ground:#1d1f24;--ground-2:#262931;--ink:#ece6da;--ink-2:#b5ad9f;--bar:#0f1114;--bar-ink:#ece6da;--card:#262931;--line:#4a4f58;--accent:#e0a56a;--focus:#7fb0ff}
+body{margin:0;font-family:var(--body);font-size:16px;line-height:1.6;background:var(--ground);color:var(--ink)}
+.bar{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px;background:var(--bar);position:sticky;top:0;z-index:5;align-items:center}
+.bar .brand{font-family:var(--display);font-weight:600;color:var(--bar-ink);font-size:15px;margin-right:10px;letter-spacing:.01em}
+.bar button{background:transparent;color:var(--bar-ink);border:1px solid transparent;border-radius:4px;padding:6px 12px;cursor:pointer;font:500 13px var(--body);letter-spacing:.02em}
+.bar button:hover{border-color:var(--bar-ink)}.bar button[aria-selected=true]{background:var(--bar-ink);color:var(--bar)}.bar button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.pane{display:none;padding:18px 22px 40px;max-width:1520px;margin:0 auto}.pane[data-on]{display:block}
+.pane.prose{max-width:76ch}
+h2,h3,h4{font-family:var(--display);font-weight:600;text-wrap:balance;line-height:1.25}h2{font-size:26px;margin:.4em 0 .5em}h3{font-size:19px;margin:1.2em 0 .4em}h4{font-size:15px;margin:1em 0 .3em}
+p,li{max-width:76ch}blockquote{border-left:3px solid var(--accent);margin:1em 0;padding:.2em 1em;color:var(--ink-2)}code{font-family:var(--mono);font-size:.88em;background:var(--ground-2);padding:1px 4px;border-radius:3px}
+.tw{overflow-x:auto;margin:.6em 0 1em}.tw table{border-collapse:collapse;font-size:14px;background:var(--card)}.tw th,.tw td{border:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}.tw th{font-family:var(--display);font-weight:600}
+.paper{color:#1f2a33;background:var(--paper);background-image:linear-gradient(var(--grid5) 1px,transparent 1px),linear-gradient(90deg,var(--grid5) 1px,transparent 1px),linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:100px 100px,100px 100px,20px 20px,20px 20px;padding:20px;border:1px solid #c9d6e2;border-radius:4px;overflow-x:auto}
+.grow{display:flex;gap:16px;margin-bottom:18px;align-items:flex-start}.dl{width:96px;flex:none;font-family:var(--display);font-weight:700;font-size:24px;color:#534ab7;padding-top:6px;line-height:1.1}.dl small{display:block;font-family:var(--body);font-weight:400;font-size:11px;color:#4b5865;margin-top:4px;line-height:1.3}
+.tbl{background:rgba(255,255,255,.93);border:1px solid #888780;border-radius:3px;padding:6px 8px;font-size:11px;min-width:300px;flex:none}.tbl.big{font-size:14px;min-width:420px}.tt{font-family:var(--display);font-weight:600;margin-bottom:4px;font-size:12px}.big .tt{font-size:14px}
+table.g{border-collapse:collapse}table.g th,table.g td{border:1px solid #b4b2a9;padding:2px 5px;text-align:center;font-family:var(--mono);white-space:nowrap;font-variant-numeric:tabular-nums}
+table.g th.rn{text-align:left;font-weight:500;max-width:120px;overflow:hidden;text-overflow:ellipsis;font-family:var(--body)}
+table.g td.stripe{background:var(--stripe);color:var(--stripe-ink);font-weight:700}
+td.hl-pink{background:var(--hl-pink)!important}td.hl-blue{background:var(--hl-blue)!important}td.hl-green{background:var(--hl-green)!important}td.hl-yellow{background:var(--hl-yellow)!important}td.hl-purple{background:var(--hl-purple)!important}
+.legend{display:flex;flex-wrap:wrap;gap:6px}.legend span{display:inline-block;padding:2px 9px;border-radius:2px;font:12px var(--mono);border:1px solid #888;color:#1f2a33}
+.roller{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0 10px;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:4px}.roller label{font-size:13px;color:var(--ink-2)}.roller input[type=number]{width:110px;padding:5px 6px;font:14px var(--mono);border:1px solid var(--line);border-radius:3px;background:var(--ground);color:var(--ink)}
+.roller button{padding:7px 16px;cursor:pointer;font:600 14px var(--display);background:var(--accent);color:#fff;border:0;border-radius:3px}.roller button:focus-visible,.roller input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+pre.trace{background:var(--card);border:1px solid var(--line);padding:10px 12px;font:12px/1.5 var(--mono);white-space:pre-wrap;max-height:340px;overflow:auto;color:var(--ink);margin:0 0 14px}
+.one{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}.one .tw table{font-size:12px}
+.mark{font-size:12px;color:var(--ink-2);font-style:italic;margin-top:24px}
+@media (prefers-reduced-motion: no-preference){td[class*=hl-]{transition:background .25s}}
+""" % HILITE
+    js = r"""
+const SPEC=__DATA__;const LEG={pink:'scary',blue:'chill',green:'hip',yellow:'worrisome',purple:'wild'};
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let rng=null;const d6=()=>1+Math.floor(rng()*6);
+function tnum(dom,depth){return (dom.charCodeAt(0)-65)*4+depth}
+function hl(sel,color){const el=document.querySelector(sel);if(el){el.classList.add('hl-'+color);el.scrollIntoView({block:'nearest'})}}
+function clearHl(){document.querySelectorAll('[class*=hl-]').forEach(e=>e.className=e.className.replace(/hl-\w+/g,''))}
+function rollTable(n,trace,jumbled){const a=d6(),b=d6();
+ if(jumbled){const j=SPEC.jumbled[n];const cell=j.cells[a-1][b-1];trace.push(`jumbled ${n} ${a}+${b} -> ${cell}  [green]`);hl(`#J${n} td[data-r="${a}"][data-c="${b}"]`,'green');return {table:n,cell}}
+ const t=SPEC.tables[n];let row=a,lvl=b,note='',color='green',stakes='ordinary';
+ if(a===b){if(a>=4){row=(a%6)+1;lvl=Math.min(6,a+1);note='high doubles: bump to the next trait, amp up';color='pink';stakes='amped'}else{row=((a-2+6)%6)+1;lvl=Math.max(1,a-1);note='low doubles: bump to the previous trait, damp';color='blue';stakes='damped'}}
+ else if(a+b===7){if(a>=4){lvl=Math.min(6,b+1);note='high-first seven: level +1, LOAD-BEARING';color='yellow';stakes='load-bearing'}else{lvl=Math.max(1,b-1);note='low-first seven: level -1, BACKGROUND';color='yellow';stakes='background'}}
+ else if(lvl===1||lvl===6)color='yellow';
+ const trait=t.traits[row-1],word=t.levels[row-1][lvl-1];
+ trace.push(`table ${n} (${t.id}) ${a}+${b} -> ${trait} · L${lvl} · ${word}  [${color}] ${note} (${stakes})`);
+ hl(`#T${n} td[data-r="${a}"][data-c="${b}"]`,color);if(row!==a||lvl!==b)hl(`#T${n} td[data-r="${row}"][data-c="${lvl}"]`,color);
+ const res={table:n,trait,level:lvl,word,stakes};
+ if(a===6&&b===6){const nxt=t.depth<4?n+1:null;trace.push(`escalate ${n} -> ${nxt||'index'}  [pink] 6-6: high intensity`);res.escalation=nxt?rollTable(nxt,trace,false):rollIndex(trace,0)}
+ return res}
+function rollNews(trace){const a=d6(),b=d6();const num=SPEC.news.randomized[a-1][b-1];const it=SPEC.news.items.find(x=>x[0]===num)||[num,'?','?'];const fa=d6(),fb=d6(),s=fa+fb;
+ const fate=(fa===fb&&(fa===1||fa===6))?'villain':(fa===fb||s===3)?'badguy':(s===7)?'malcontent':"ne'er-do-well";const color=(fate==='villain'||fate==='badguy')?'pink':'purple';
+ trace.push(`news ${a}+${b} -> #${num} ${it[1]} (${it[2]}); fate ${fa}+${fb} -> ${fate}  [${color}]`);hl(`#NEWS td[data-r="${a}"][data-c="${b}"]`,color);return {source:it[1],half:it[2],fate}}
+function rollIndex(trace,depth,numberedOnly){if(depth>8)return {error:'runaway'};let a=d6(),b=d6();let cell=SPEC.index[a-1][b-1];
+ while(numberedOnly&&!/^\d+$/.test(cell)){trace.push(`index ${a}+${b} -> ${cell}  [purple] stripe inside an intersection: numbered cells only, re-roll`);a=d6();b=d6();cell=SPEC.index[a-1][b-1]}
+ if(cell==='BIAS'){trace.push(`index ${a}+${b} -> BIAS  [purple] doubles: news-bias generator, then roll again`);hl(`#INDEX td[data-r="${a}"][data-c="${b}"]`,'purple');const bias=rollNews(trace);const r=rollIndex(trace,depth+1);r.bias=bias;return r}
+ if(cell==='X'){const hi=a>=4;trace.push(`index ${a}+${b} -> X  [purple] seven: intersection, two traits to reconcile (${hi?'high':'low'}-stakes)`);hl(`#INDEX td[data-r="${a}"][data-c="${b}"]`,'purple');return {intersection:[rollIndex(trace,depth+1,true),rollIndex(trace,depth+1,true)],stakes:hi?'high':'low'}}
+ const n=parseInt(cell);trace.push(`index ${a}+${b} -> ${n} (${SPEC.tables[n].id})  [green]`);hl(`#INDEX td[data-r="${a}"][data-c="${b}"]`,'green');return rollTable(n,trace,false)}
+function doRoll(){clearHl();const seed=parseInt(document.getElementById('seed').value)||1;const k=parseInt(document.getElementById('k').value)||4;const jumbled=document.getElementById('jumbled').checked;rng=mulberry32(seed);const trace=[`# roll -- seed ${seed} -- ${k} trait(s)${jumbled?' -- JUMBLED':''} (JS dice: mulberry32; the Python tool uses its own seeded RNG -- same rules, different dice; both print the seed)`];
+ for(let i=1;i<=k;i++){trace.push(`\n## trait ${i}`);if(jumbled){const n=1+Math.floor(rng()*24);trace.push(`pick table ${n}  [green] jumbled mode: d24`);rollTable(n,trace,true)}else rollIndex(trace,0)}
+ trace.push("\n*Marked: for fiction or analysis -- no ship dates or licensing or publication dates specifically defined.*");document.getElementById('trace').textContent=trace.join('\n')}
+function showTab(id){document.querySelectorAll('.pane').forEach(p=>p.removeAttribute('data-on'));document.querySelectorAll('.bar button').forEach(b=>b.setAttribute('aria-selected','false'));document.getElementById('pane-'+id).setAttribute('data-on','1');document.getElementById('tab-'+id).setAttribute('aria-selected','true');try{localStorage.setItem('pg1rl-tab',id)}catch(e){}}
+window.addEventListener('DOMContentLoaded',()=>{let t='instructions';try{t=localStorage.getItem('pg1rl-tab')||t}catch(e){};if(!document.getElementById('pane-'+t))t=document.querySelector('.pane').id.slice(5);showTab(t)});
+"""
+    legend = '<div class="legend">' + "".join('<span style="background:%s">%s = %s</span>' % (HILITE[k], k, LEG) for k, LEG in (("pink", "scary"), ("blue", "chill"), ("green", "hip"), ("yellow", "worrisome"), ("purple", "wild"))) + "</div>"
+    roller = ('<div class="roller"><label>seed <input id="seed" type="number" value="20260906"></label><label>traits <input id="k" type="number" value="4" min="1" max="17"></label>'
+              '<label><input id="jumbled" type="checkbox"> jumbled (no affinity)</label><button onclick="doRoll()">Roll</button> %s</div><pre class="trace" id="trace">(roll to see the trace; cells light up in highlighter)</pre>' % legend)
+    panes = []
+    for tid, tab, body in tabs: panes.append((tid, tab, body))
+    panes += [("tables", "Tables (grid of grids)", roller + grid_html(spec["tables"])),
+              ("jumbled", "Jumbled twin", roller.replace('id="seed"', 'id="seed2"').replace('id="k"', 'id="k2"').replace('id="jumbled"', 'id="jumbled2"').replace('id="trace"', 'id="trace2"').replace("doRoll()", "document.getElementById('jumbled').checked=true;document.getElementById('seed').value=document.getElementById('seed2').value;document.getElementById('k').value=document.getElementById('k2').value;doRoll();document.getElementById('trace2').textContent=document.getElementById('trace').textContent") + grid_html(spec["jumbled"], jumbled=True)),
+              ("index", "Index", index_html), ("news", "News bias", news_html)]
+    bar = '<span class="brand">Persona Traits Grid</span>' + "".join('<button id="tab-%s" role="tab" onclick="showTab(\'%s\')">%s</button>' % (tid, tid, html.escape(tab)) for tid, tab, _ in panes)
+    prose = {tid for tid, _, _ in tabs}
+    body = "".join('<section class="pane%s" id="pane-%s" role="tabpanel">%s</section>' % (" prose" if tid in prose else "", tid, b) for tid, _, b in panes)
+    fonts = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">'
+    inner = "<title>Persona Traits Grid</title>%s<style>%s</style><div class='bar' role='tablist'>%s</div>%s<script>%s</script>" % (fonts, css, bar, body, js.replace("__DATA__", data))
+    if artifact: return inner
+    return "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width'>%s</head><body>%s</body></html>" % ("", inner)
+
+# ---------------------------------------------------------------- main
+def main(argv):
+    if not argv or argv[0] in ("-h", "--help"): die("usage: pg1rl --build TRAITS.tsv NEWS.tsv TEMPLATE.md --seed N | --sources TRAITS.tsv | --lint GRID.md | --roll GRID.md --seed N [--traits K] [--jumbled] | --json GRID.md | --html GRID.md | --prove-red")
+    cmd = argv[0]
+    if cmd == "--prove-red":
+        bad = {"tables": {}, "jumbled": {}, "news": {"items": [], "ordered": None, "randomized": None}, "index": [["BIAS"] * 6 for _ in range(6)], "sections": []}
+        f = lint(bad); print("PASS: pg1rl FAULTs a grid whose index carries no numbers (%d faults)" % len(f) if f else "FAIL: no fault on an empty grid"); sys.exit(0 if f else 1)
+    if cmd == "--sources":
+        if len(argv) < 2: die("--sources TRAITS.tsv")
+        sys.stdout.write(sources_md(argv[1])); return
+    if cmd == "--build":
+        if len(argv) < 6 or argv[4] != "--seed": die("--build TRAITS.tsv NEWS.tsv TEMPLATE.md --seed N")
+        sys.stdout.write(build(argv[1], argv[2], argv[3], int(argv[5]))); return
+    if len(argv) < 2: die("need GRID.md")
+    spec = parse(open(argv[1], encoding="utf-8").read())
+    if cmd == "--lint":
+        f = lint(spec)
+        for x in f: print("FAULT  %s" % x)
+        print("pg1rl lint: %d table(s), %d jumbled, %d news items, index %s, %d tab(s) -- %s" % (len(spec["tables"]), len(spec["jumbled"]), len(spec["news"]["items"]), "ok" if spec["index"] else "MISSING", len(spec["sections"]), "FAULT %d" % len(f) if f else "OK"))
+        sys.exit(1 if f else 0)
+    if cmd == "--json": print(json.dumps(spec, indent=1, ensure_ascii=False)); return
+    if cmd == "--roll":
+        seed = None; k = 4; jumbled = False; i = 2
+        while i < len(argv):
+            if argv[i] == "--seed": seed = int(argv[i + 1]); i += 2
+            elif argv[i] == "--traits": k = int(argv[i + 1]); i += 2
+            elif argv[i] == "--jumbled": jumbled = True; i += 1
+            else: die("unknown arg %s" % argv[i])
+        if seed is None: die("--seed is required (a roll without a printed seed cannot be re-read)")
+        if lint(spec): die("spec has FAULTs; run --lint first", 1)
+        print(trace_text(roll(spec, seed, k, jumbled))); return
+    if cmd == "--html": sys.stdout.write(html_view(spec, open(argv[1], encoding="utf-8").read())); return
+    if cmd == "--artifact": sys.stdout.write(html_view(spec, open(argv[1], encoding="utf-8").read(), artifact=True)); return
+    die("unknown command %s" % cmd)
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

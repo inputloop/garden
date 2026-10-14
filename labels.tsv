@@ -1,0 +1,14 @@
+label	meaning	owner	consumer	since
+:SKILL:	operator flag on a memory note; surfaces the candidate without scoring (lands HOLD if thin)	Corwin/Mentat	polygram memory.candidates + gate	2026-06-26
+PASS	gate verdict: synthesize	gate	polygram synth; advice ledger (terminal: un-rejects)	2026-06-26
+HOLD	gate verdict: park for review; NOT terminal, never overrides the ledger	gate	polygram review; humans	2026-06-26
+REJECT	gate verdict: drop; DURABLE — latest-terminal-wins in advice; only review --promote (a later PASS) clears it	gate/operator	gate.past_rejects → gate/synth/review demotion	2026-07-04
+:CLAUD_QA_HOLD:	parks a prepared change at the approval desk; box pops Apply/Hold/Reject; decision dated to advice/	Corwin (decides), Mentat (parks)	CLAUD_QA_HOLD.md table + desk ritual	2026-06-29
+QA-n	desk item id; row in CLAUD_QA_HOLD.md Open/Resolved tables	desk	CLAUD_QA_HOLD.md; advice/	2026-06-29
+NOSIG	README-vouched unsigned .md on the pub shelf (listed reason required)	Corwin	publish audit (awk over README.md)	2026-07-02
+FURNITURE	README-vouched non-.md shelf file; vouches EXISTENCE not content (content sigs = v0.1)	Corwin	publish audit	2026-07-02
+.gate	dotfile sign-post: policy/reason/since (+embargo); nearest wins; silence != consent; fails closed	Corwin	polygram gatefile.check	2026-07-02
+AI_GUARD_*_CLAUDE	naming convention for ethical guards with provenance (mine/shared/Corwin's)	Mentat/minions	ethicsminions references (AI_GUARD_PROVENANCE_CLAUDE.md)	2026-07-01
+.skill-manifest	whole-tree sha256 manifest inside a skill; what .signature.asc actually signs	skill-sign	skill-sign.sh sign/verify	2026-07-04
+attestations	expected principle lines pinned for the minions drift check	Corwin (canon: SAVANNAH)	check_principles.py --expect	2026-07-04
+NO4C / N04C	message marker: NO network/local-boundary crossing (SEMAPHORES.md registry governs). Bearer messages intended outward (e.g. WIRE) are DROPPED and FLAGGED, in or out; to transact, wrap in an additional cons layer (comment/example/source/proposal). Lift-gate mechanics 2026-07-08: RAISED (line-anchored/active envelope) parks, MENTIONED notes, CARRIED disarms via NO4C-CARRIED rename	Corwin	Avalon bin/lift.sh PARK/NOTE; wire handling; SEMAPHORES.md registry	2026-07-08

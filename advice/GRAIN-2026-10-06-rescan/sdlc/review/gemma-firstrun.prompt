@@ -1,0 +1,163 @@
+You are reviewing two first-run pages, X and Y, for a GNU/Linux USB stick handed to newcomers in a volunteer organizing group. The page is the first thing a newcomer sees: one window, plain choices, usable with a mouse alone.
+Score each page 1 to 5 on: (a) plain language a newcomer understands; (b) usable with a mouse alone and with a keyboard alone; (c) accessibility: follows the system light/dark setting, readable contrast, semantic HTML, labels; (d) honesty: it does not promise things it cannot do; (e) simplicity: no heavy framework, small.
+Then say which page you would hand a newcomer, and the single most important fix for each.
+Answer in JSON only: {"X":{"a":n,"b":n,"c":n,"d":n,"e":n,"fix":"..."},"Y":{...},"prefer":"X or Y","why":"one sentence"}
+
+=== X ===
+<!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<title>Welcome</title>
+<style>
+/* Light is the complete default. Dark follows the computer unless the person chose light;
+   a person who chose dark gets it either way. The two dark sets must stay identical (lr1ck checks).
+   Each colour names the Modus theme value it copies (lr1ck reads Emacs' own copy and compares). */
+:root{
+  --bg:#ffffff;     /* modus:bg-main */
+  --card:#f0f0f0;   /* modus:bg-alt */
+  --fg:#000000;     /* modus:fg-main */
+  --muted:#505050;  /* modus:fg-alt */
+  --accent:#0031a9; /* modus:blue */
+  --line:#56576d;   /* modus:fg-unfocused */
+  --focus:#0031a9;  /* modus:blue */
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#000000;     /* modus:bg-main */
+    --card:#191a1b;   /* modus:bg-alt */
+    --fg:#ffffff;     /* modus:fg-main */
+    --muted:#a8a8a8;  /* modus:fg-alt */
+    --accent:#2fafff; /* modus:blue */
+    --line:#93959b;   /* modus:fg-unfocused */
+    --focus:#2fafff;  /* modus:blue */
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#000000;     /* modus:bg-main */
+  --card:#191a1b;   /* modus:bg-alt */
+  --fg:#ffffff;     /* modus:fg-main */
+  --muted:#a8a8a8;  /* modus:fg-alt */
+  --accent:#2fafff; /* modus:blue */
+  --line:#93959b;   /* modus:fg-unfocused */
+  --focus:#2fafff;  /* modus:blue */
+}
+html{color-scheme:light dark}
+body{margin:0;background:var(--bg);color:var(--fg);font:1.125rem/1.5 system-ui,"Segoe UI","DejaVu Sans",sans-serif}
+main{max-width:44rem;margin:0 auto;padding:1.25rem}
+h1{font-size:2rem;margin:.5rem 0}
+h2{font-size:1.4rem;margin:1.5rem 0 .5rem}
+ul{list-style:none;margin:0;padding:0;display:grid;gap:.75rem}
+[hidden]{display:none!important}
+body:not([data-edition="author"]) .author-only{display:none}
+.choice{display:block;min-height:4.5rem;padding:1rem 1.25rem;border:2px solid var(--line);border-radius:.75rem;background:var(--card);color:var(--fg);text-decoration:none}
+.choice:hover{border-color:var(--accent)}
+.choice:focus-visible,button:focus-visible{outline:4px solid var(--focus);outline-offset:3px}
+.label{display:block;font-size:1.35rem;font-weight:700;color:var(--accent)}
+.plain{display:block}
+.theme{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.5rem 0 0}
+button{min-height:3rem;padding:.5rem 1rem;border:2px solid var(--line);border-radius:.5rem;background:var(--card);color:var(--fg);font:inherit;cursor:pointer}
+button[aria-pressed="true"]{border-color:var(--accent);font-weight:700}
+footer{margin-top:1.5rem;color:var(--muted)}
+</style>
+</head>
+<body data-profile="desktop" data-edition="base">
+<main>
+<h1>Welcome</h1>
+<p>Pick one. You can come back to this page whenever you like.</p>
+<ul id="choices">
+<li data-edition-only="base" data-profiles="*"><a class="choice" href="larder:try" data-choice="try"><span class="label">Look around first</span><span class="plain">Nothing you do here is kept when you turn the computer off.</span></a></li>
+<li data-edition-only="base" data-profiles="*"><a class="choice" href="larder:private" data-choice="private"><span class="label">Make my private space</span><span class="plain">You choose a PIN. Your files stay on this stick, locked.</span></a></li>
+<li data-edition-only="base" data-profiles="*"><a class="choice" href="larder:chapter" data-choice="chapter"><span class="label">Join my group</span><span class="plain">Connect to your group's server, using the file a facilitator gave you.</span></a></li>
+<li data-edition-only="base" data-profiles="desktop hardened fullsink"><a class="choice" href="larder:library" data-choice="library"><span class="label">Open the library</span><span class="plain">Read books and guides without the internet.</span></a></li>
+<li data-edition-only="base" data-profiles="desktop hardened fullsink"><a class="choice" href="larder:write" data-choice="write"><span class="label">Write a document</span><span class="plain">Open a word processor.</span></a></li>
+<li data-edition-only="base" data-profiles="*"><a class="choice" href="larder:help" data-choice="help"><span class="label">Ask for help</span><span class="plain">Someone you trust can see your screen, only while you allow it. You can stop at any time.</span></a></li>
+</ul>
+<section class="author-only">
+<h2>Books and stories</h2>
+<ul id="author-choices">
+<li data-edition-only="author" data-profiles="desktop fullsink"><a class="choice" href="larder:read" data-choice="read"><span class="label">Read a book</span><span class="plain">Open the book reader.</span></a></li>
+<li data-edition-only="author" data-profiles="desktop fullsink"><a class="choice" href="larder:listen" data-choice="listen"><span class="label">Listen to a book</span><span class="plain">Play an audiobook from this stick.</span></a></li>
+<li data-edition-only="author" data-profiles="desktop fullsink"><a class="choice" href="larder:fanwork" data-choice="fanwork"><span class="label">Write a fan work</span><span class="plain">Start a new story in this world.</span></a></li>
+<li data-edition-only="author" data-profiles="desktop fullsink"><a class="choice" href="larder:stamp" data-choice="stamp"><span class="label">Mark my story by permission</span><span class="plain">Adds the notice's mark to a finished story. It refuses until the author has signed the notice.</span></a></li>
+<li data-edition-only="author" data-profiles="desktop fullsink"><a class="choice" href="larder:notice" data-choice="notice"><span class="label">Read the permission notice</span><span class="plain">What you may and may not do with these stories.</span></a></li>
+</ul>
+</section>
+<div class="theme" role="group" aria-label="Colours">
+<button type="button" data-theme-choice="system">Follow my computer</button>
+<button type="button" data-theme-choice="light">Light</button>
+<button type="button" data-theme-choice="dark">Dark</button>
+</div>
+<footer><p>Edition: <span id="edition-name">desktop</span>. This page does not contact the internet.</p></footer>
+</main>
+<script>
+(function () {
+  var b = document.body, p = b.dataset.profile, e = b.dataset.edition, r = document.documentElement;
+  var each = function (list, f) { Array.prototype.forEach.call(list, f); };
+  document.getElementById("edition-name").textContent = p + (e === "author" ? " (author edition)" : "");
+  each(document.querySelectorAll("li[data-profiles]"), function (li) {
+    var d = li.dataset.profiles;
+    if (d !== "*" && d.split(" ").indexOf(p) < 0) { li.hidden = true; }
+    if (li.dataset.editionOnly === "author" && e !== "author") { li.hidden = true; }
+  });
+  var btns = document.querySelectorAll("[data-theme-choice]");
+  function show(v) {
+    if (v === "system") { r.removeAttribute("data-theme"); } else { r.setAttribute("data-theme", v); }
+    each(btns, function (x) { x.setAttribute("aria-pressed", String(x.dataset.themeChoice === v)); });
+  }
+  each(btns, function (x) { x.addEventListener("click", function () { show(x.dataset.themeChoice); }); });
+  show("system");
+})();
+</script>
+</body>
+</html>
+
+
+=== Y ===
+<!DOCTYPE html>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Copyright (C) 2026 the Larder software contributors. Template: gen.sh fills the list below. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Larder: start here</title>
+<style>
+:root {
+--bg: #fffdf5;
+--fg: #1b1b1b;
+--help: #3a3a3a;
+--btn-bg: #124a2a;
+--btn-fg: #ffffff;
+}
+body { margin: 0; padding: 2rem; background: var(--bg); color: var(--fg); font: 1.15rem/1.5 sans-serif; }
+h1 { margin: 0 0 0.5rem; }
+ul { list-style: none; margin: 1.5rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); gap: 1rem; }
+li { display: flex; flex-direction: column; gap: 0.25rem; }
+a.btn { display: block; padding: 1rem 1.25rem; background: var(--btn-bg); color: var(--btn-fg); text-decoration: none; font-weight: bold; font-size: 1.3rem; border-radius: 0.4rem; }
+a.btn:hover, a.btn:focus { outline: 0.25rem solid var(--fg); }
+.help { color: var(--help); }
+.meta { margin-top: 2rem; color: var(--help); font-size: 0.9rem; }
+</style>
+</head>
+<body>
+<h1>Welcome to Larder</h1>
+<p>This stick keeps your files. Click a button to begin. If this is your first time, click the first one.</p>
+<ul>
+<li><a class="btn" href="larder://setup">Set up this stick</a><span class="help">Choose a name and a PIN. Do this first.</span></li>
+<li><a class="btn" href="larder://guide">Read the short guide</a><span class="help">Five minutes, plain words.</span></li>
+<li><a class="btn" href="larder://network">Connect to a network</a><span class="help">Wifi or a cable.</span></li>
+<li><a class="btn" href="larder://chat">Message other organizers</a><span class="help">Over the mesh radio or over the internet.</span></li>
+<li><a class="btn" href="larder://docs">Write &amp; edit documents</a><span class="help">Letters, flyers and spreadsheets.</span></li>
+<li><a class="btn" href="larder://library">Open the offline library</a><span class="help">Books, first aid, food safety. No internet needed.</span></li>
+<li><a class="btn" href="larder://files">Sync files with your chapter</a><span class="help">Needs your chapter's server and the internet.</span></li>
+<li><a class="btn" href="larder://editions">Books &amp; extras on this stick</a><span class="help">Extra editions this stick carries.</span></li>
+<li><a class="btn" href="larder://close">Close this and use the laptop</a><span class="help">Nothing is lost.</span></li>
+<li><a class="btn" href="larder://shutdown">Lock and shut down</a><span class="help">Your files stay safe on the stick.</span></li>
+</ul>
+<p class="meta">Profile: desktop. Every button here works with the mouse alone.</p>
+</body>
+</html>

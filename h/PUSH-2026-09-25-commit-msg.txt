@@ -1,0 +1,33 @@
+polygram 0.8.50: release pipeline, persona shelf, terms per build
+
+Folds 0.7.1 through 0.7.14 into one cut, and makes the cut itself work.
+
+Releasing
+- make dist RELEASE=X.Y.Z names the version (bin/rl2bp start --to);
+  anything not greater than the current version is refused.
+- bin/release: the "artifacts postdate HEAD" timestamp gate is replaced
+  by a content gate (MANIFEST names the version, both archives carry
+  it, every workspace row matches the committed file). make dist writes
+  tracked files, so the old gate could never pass in the real order.
+  tests/release-gates-tests.sh.
+- polygram dist moves bundles of skills no longer in the rack to
+  dist/.retired-bundles/ instead of leaving them installable.
+
+Servers and skills
+- persona: serves the sheets already written, by one rule (with an awk
+  second reader); a name: line renames without moving a file (gw7 is
+  now gh7); SPLIT is reported when a stale twin serves an old name; a
+  sheet with no heading takes its first H1 as title.
+- plugin_freshness reads its preference; PMO roster gains homes;
+  eclipse-pass reads the roster.
+- Terms of Service and Privacy Policy minted per build (bin/tp2mt) from
+  claims checked against the server source; every filter named.
+- session-rotate: whole-token version bump, "prior vN" follows it, no
+  clobber on repeated rolls, --no-bump for c4; the
+  named snapshot is the one written. tests/session-rotate-tests.sh.
+- shell-tooling and project-memory stubs retired (removal pass D-1,
+  D-2) with REJECT rows; synth no longer writes "Draft ... Edit me".
+- GPL notices in the standard "(at your option) any later version"
+  wording throughout.
+
+Tests: 413 unit tests OK; every tests/*.sh green, each with --prove-red.

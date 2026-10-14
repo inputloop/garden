@@ -1,0 +1,10 @@
+# NET-NOTES.tsv — lane (b): best-effort notes of observed/declared net behavior.
+# Append-only; latest-terminal-wins per tool. NEVER a gate — an optimization and a
+# seam-preventer among stakeholders. (a)-upgrade: when a tool's net use becomes real,
+# it earns a CERT row here naming the owned claude<->net relationship.
+# date	tool	behavior	how-seen	status
+2026-08-17	wheel-tail-relay	local disk only (F:->G: ferry via Task Scheduler); no net	keeper-built this sitting; observed append->ferry from sandbox	NOTE
+2026-08-17	wire (AETHERNET connector)	was net (relay POST/GET to keeper domains); REMOVED by keeper 2026-08-17	keeper statement in-session; wire skills unworn	NOTE
+2026-08-17	gpg (sandbox)	local keyring only as used here; no keyserver calls made	observed: --import from file, --verify local	NOTE
+2026-08-17	workspace sandbox	allowlisted egress exists (web_fetch/WebSearch tools); bash-side net not independently observable	platform documentation + this session's usage	NOTE
+2026-08-17	alto (regrowing)	writes one line to mounted log; no net	by construction, this sitting	NOTE

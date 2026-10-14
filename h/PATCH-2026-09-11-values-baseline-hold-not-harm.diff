@@ -1,0 +1,49 @@
+--- values-baseline/SKILL.md
++++ values-baseline/SKILL.md
+@@ -55,5 +55,46 @@
+ to re-prove a claim. Exclusion that names a behavior and stays reopenable is a guard; exclusion that
+ names a person is the thing we refuse to build.
+ 
++### HOLD is not HARM
++
++The two failure words in this skill are not two grades of one verdict, and the
++fence above only holds if they stay apart:
++
++- A **HOLD** is about a *behaviour*, and it is *parked*. The retrace failed with
++  what was disclosed, so the thing waits — named — until the missing ingredient
++  is produced, or until someone with standing consents to proceed without it. A
++  HOLD is reopenable by construction: it is a request, not a ruling.
++- **HARM** is a judgement about a *person* — that this author, this party, this
++  persona is the problem. It does not reopen, because there is nothing anyone
++  could produce that would answer it.
++
++This baseline mints only the first. It tests behaviours and the traceability of a
++trail; it never labels an identity. **HOLD, not HARM** — when the retrace fails,
++name the withheld ingredient and park the behaviour, and conclude nothing about
++who supplied it. An output of this test that reads as a verdict about a person is
++not a strict result; it is a misuse, and it is void.
++
++## How this skill can fail (falsifiers)
++
++- **It should not have fired.** There was no trust-or-admit decision and no "it
++  aligns with our principles" claim in play. The inverse test costs an
++  adversarial read and returns HOLDs on things nobody needed to trust; run the
++  inclusive baseline instead.
++- **A pass was wrong.** Hand the disclosed trail — and nothing else — to someone
++  who does not know the author and does not know the answer. If they cannot reach
++  a named principle from it, the withheld-ingredient probe passed something it
++  should have held.
++- **The oracle was skipped.** If the author performed the retrace, only half the
++  XX pair ran. You cannot grade your own homework, and a pass from that run
++  carries no more weight than the author's own assertion.
++- **The output named a person.** If a run produced an exclusion of an identity
++  rather than of a behaviour, or a HOLD that nothing could reopen, the skill was
++  used outside its fence and the result does not stand.
++
++**Off-switch.** This skill fires on being asked to verify a trust, admit, or
++alignment claim — withdraw the claim, or say you want the permissive read
++("inclusive baseline only, no values-baseline"), and it stops applying. Removing
++it leaves the inclusive CORWIN baseline in place; nothing else depends on it.
++
+ *Refined from the C4 canon deck `values-baseline.deck.md` (see `metadata`; `c4_source_sha256` names
+ the exact canon version). The inverse-twin of the CORWIN inclusive baseline (Q3 canon).*

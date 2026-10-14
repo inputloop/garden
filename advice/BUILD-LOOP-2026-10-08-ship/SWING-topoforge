@@ -1,0 +1,22 @@
+# SWING -- one build task's loop (sw1ng v3), written down so it does not have to be remembered.
+# Read it with: sh /sessions/rcw-01vf7a3ympvsjks8swy1tywk/mnt/AS4CE0001/skills/build-loop/scripts/sw1ng state     Ask it what to do with: sh /sessions/rcw-01vf7a3ympvsjks8swy1tywk/mnt/AS4CE0001/skills/build-loop/scripts/sw1ng next
+task: topoforge
+design: AS4CE0001/advice/BUILD-LOOP-2026-10-08-ship/DESIGN-topoforge.md
+qaplan: AS4CE0001/advice/BUILD-LOOP-2026-10-08-ship/QAPLAN-topoforge.md
+qaplan-sha: 50d028044968d6e25bceca1b9a4cdd8bec4663d6724c7572ecbeb3d8a692df57
+qa-max: 3
+cycle: 1
+swing: 3
+corrections: 2
+opportunity-used: no
+qa-redesign-indicator: NO
+redesigns: 0
+last-issues: 0
+last-warnings: 0
+final: not-taken
+baseline: -
+state: QA
+# 2026-10-08T08:34Z  opened; design and QA plan named before any build; QA counter 0; redesign indicator NO; max 3
+# 2026-10-08T09:16Z  QA pass 1 of 3 in cycle 1: 3 issue(s), 2 warning(s)
+# 2026-10-08T16:42Z  QA pass 2 of 3 in cycle 1: 1 issue(s), 3 warning(s)
+# 2026-10-08T17:05Z  QA pass 3 of 3 in cycle 1: 0 issue(s), 0 warning(s)

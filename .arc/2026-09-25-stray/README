@@ -1,0 +1,2 @@
+An empty probe file left by a write test on 2026-09-25 (no delete permission this session). Safe to delete.
+- polygram/__init__.py.tmp.5, tests/gb1md-tests.sh.new: temp files an in-sandbox write left when its rm was refused (the mount had no delete right); found by the 0.8.50 release rehearsal. Safe to delete.

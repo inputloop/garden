@@ -1,0 +1,39 @@
+2026-10-10  Mentat (for Corwin; claude-opus-5-5)  <corwin@bru.st>
+
+	Lane D of the extension edition: four new tools.
+
+	* bin/br1in: New.  The Bryant drop intake, read-only (D4, enlarged at
+	Corwin's ask).  Checks every SHA256SUMS beside and inside the drop;
+	reads each signature's issuer against the pinned key (verifies only
+	with --keyring); hashes every file; unpacks every .zip and .skill into
+	scratch outside the mounts; finds each skill's prior copy in the
+	earlier dated drops and notes copies in externs/claude-bryant and the
+	Bryant folder; says NEW, UNCHANGED, CHANGED or DROPPED with a one-line
+	summary (version, SKILL.md bytes, description, headings, files); maps
+	each to our counterpart; extracts modes of work, marked extracted, not
+	judged; lists mechanical open questions; writes a words report, a TSV
+	and an ACK of hashes and a verdict.  Refuses an --out inside a drop
+	(exit 3); never reads under a fenced path; never runs his code.
+	* conventions/bryant-counterparts.tsv: New.  34 rows seeded from study
+	S1 sections 1-5.
+	* bin/rd1ck: New.  The roads checker (D2): walks conventions/ROADS.md
+	and prints READ, NOT REACHED or FENCED per road, never "absent"; a NOT
+	REACHED row names the seat, the parent it listed and the request.
+	--tsv mints the tool TSV from the Markdown.
+	* conventions/ROADS.md: New.  Eleven stores, W's roads less the fenced
+	one, with T's per-class Tavern drop marks.
+	* bin/qg1ck: New.  The question gauge (D3): a two-question frame above
+	the 0.17 bar, or with no number, is a fault; counts unglossed GRAMMARY
+	terms in logged questions and pref mirror rows; only reads.
+	* bin/st1dt: New.  The seating detector (D1): the nearest .gate, the
+	markers, one grain, one question, a remembered "no"; secret-class
+	entries as a count only; never writes; ends with a words read-back.
+	* tests/br1in-tests.sh, tests/br1in-noedit-spec.rb,
+	tests/br1in-real-tests.sh, tests/fixtures/lane-d/br1in/mkdrops.sh: New.
+	* tests/rd1ck-spec.rb, tests/rd1ck-tests.sh,
+	tests/fixtures/lane-d/roads/: New.
+	* tests/qg1ck-spec.tcl, tests/qg1ck-tests.sh,
+	tests/fixtures/lane-d/qg1ck/GRAMMARY.md: New.
+	* tests/st1dt-tests.sh: New.
+	* tests/lane-d-SPEC.txt: The SPEC lines ST1-ST6, RD1-RD5, QG1-QG3,
+	BR1-BR8, written before the tests.

@@ -1,0 +1,26 @@
+prove-red: firing every refusal on purpose
+  PASS  JAILED write refused
+  PASS  allowed JAILED write is stamped
+  PASS  JAILED is in the bytes forever
+  PASS  unsourced note refused
+  PASS  unfalsifiable note refused
+  PASS  bare host path FAULTs
+  PASS  schemed + wiki links pass
+  PASS  silent semaphore lower refused
+  PASS  absent persona is a FAULT, not a mint
+  PASS  no sheet was created
+  PASS  storyless-evidence mutation refused
+  PASS  skillx refuses to offer
+  PASS  modeless result refused
+  PASS  stop with nothing open refused
+  PASS  second stop refused
+  PASS  freshness refuses a non-plugin shelf
+  PASS  unknown preference refused
+  PASS  loader refuses a path outside the skill
+  PASS  initialize answers
+
+prove-red PASS: every refusal fired on purpose
+
+real	0m1.624s
+user	0m0.155s
+sys	0m0.058s

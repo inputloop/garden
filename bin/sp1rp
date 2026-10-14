@@ -1,0 +1,122 @@
+#!/bin/sh
+# sp1rp -- SPANS 1 REPORT.  Read the span ledger that mentcached's span_start / span_mark /
+# span_stop write, and report time and tokens per span, per label, and in all.
+#
+# THE NAME, declared as my reading (a guess, marked): SP spans · 1 run-level 1 (reads; never
+# writes) · RP report.
+#
+# usage: sh bin/sp1rp [--ledger FILE] [--open] [--label LABEL] [--since YYYY-MM-DD] [--tsv]
+#        sh bin/sp1rp --prove-red
+#
+#   --ledger FILE   the TSV (default: $MENTCACHED_STATS, else ~/.mentcached/stats/spans.tsv)
+#   --open          only spans with no stop row
+#   --label L       only spans labelled exactly L
+#   --since D       only spans started on or after D (YYYY-MM-DD)
+#   --tsv           one machine line per span: span label started stopped seconds tokens open
+#
+# THE LEDGER (written by polygram/mcp/spans.py, one row per EVENT, never rewritten):
+#     ts  event  span  label  tokens_left  by  note        event: start | mark | stop
+# This reader is the second implementation -- awk, not python -- so the MCP report can be
+# checked in another language against the same bytes (Corwin's rule, 2026-09-14). It shares
+# no code with the server; if the two disagree, one of them is wrong and the file says which.
+# Open spans are timed to NOW (UTC); tokens = the sum of the FALLING legs between rows that
+# carry a figure; a span without both ends says "time only".
+# RESETS (spec S-R1, 2026-10-10): a rising token figure is a reset, never a negative count. The
+# leg that rose is left out of the tokens and counted as a reset; the human view says "N resets
+# seen" in words. tests/spans-reset-spec.tcl checks this reader and the server on the same bytes.
+# Exit: 0 · 1 the ledger is unreadable · 2 usage.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st> -- GPLv3-or-later. Authored by Mentat (for Corwin).
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+# This file is part of polygram.  polygram is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later version.  It is
+# distributed WITHOUT ANY WARRANTY; see <https://www.gnu.org/licenses/>.
+set -u
+LC_ALL=C; export LC_ALL
+me=${0##*/}
+LEDGER=${MENTCACHED_STATS:-$HOME/.mentcached/stats/spans.tsv}
+OPEN=0 LABEL= SINCE= TSV=0 PROVE=0
+while [ $# -gt 0 ]; do
+  case $1 in
+    --ledger) [ $# -ge 2 ] || { echo "$me: --ledger needs a file" >&2; exit 2; }; LEDGER=$2; shift ;;
+    --open) OPEN=1 ;; --tsv) TSV=1 ;;
+    --label) [ $# -ge 2 ] || { echo "$me: --label needs a value" >&2; exit 2; }; LABEL=$2; shift ;;
+    --since) [ $# -ge 2 ] || { echo "$me: --since needs YYYY-MM-DD" >&2; exit 2; }; SINCE=$2; shift ;;
+    --prove-red) PROVE=1 ;;
+    -h|--help) sed -n '/^# usage:/,/^# Exit/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) echo "$me: unknown option: $1" >&2; exit 2 ;;
+  esac
+  shift
+done
+
+report() {   # FILE -> the report, on stdout
+  NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+  awk -F'\t' -v now="$NOW" -v open_only="$OPEN" -v want_label="$LABEL" -v since="$SINCE" -v tsv="$TSV" '
+    function secs(ts,   y,M,d,h,m,s) {   # ISO UTC -> epoch, without mktime (POSIX awk has none)
+      y=substr(ts,1,4)+0; M=substr(ts,6,2)+0; d=substr(ts,9,2)+0
+      h=substr(ts,12,2)+0; m=substr(ts,15,2)+0; s=substr(ts,18,2)+0
+      if (M<3) { M+=12; y-- }
+      return (365*y + int(y/4) - int(y/100) + int(y/400) + int((153*(M-3)+2)/5) + d - 719469)*86400 + h*3600 + m*60 + s
+    }
+    function hms(t,  h,m,s) { h=int(t/3600); m=int((t%3600)/60); s=t%60
+      return h ? sprintf("%dh%02dm%02ds",h,m,s) : (m ? sprintf("%dm%02ds",m,s) : sprintf("%ds",s)) }
+    NR==1 && $1=="ts" { next }
+    NF<7 || ($2!="start" && $2!="mark" && $2!="stop") { next }
+    function leg(id, f) {   # one figure: a rise is a reset (S-R1), a fall is spend
+      if (f=="") return
+      if (last[id]!="" && f+0 > last[id]+0) resets[id]++
+      else if (last[id]!="") used[id]+=last[id]-f
+      last[id]=f; seen[id]++
+    }
+    $2=="start" { id=$3; if (!(id in started)) { order[++n]=id; started[id]=$1; label[id]=$4; tstart[id]=$5; last[id]=$5; stopped[id]="" ; marks[id]=0; used[id]=0; resets[id]=0; seen[id]=0 }; next }
+    !($3 in started) { next }
+    $2=="mark" { marks[$3]++; leg($3, $5); next }
+    $2=="stop" && stopped[$3]=="" { stopped[$3]=$1; leg($3, $5); next }
+    END {
+      for (i=1;i<=n;i++) { id=order[i]
+        if (open_only && stopped[id]!="") continue
+        if (want_label!="" && label[id]!=want_label) continue
+        if (since!="" && substr(started[id],1,10) < since) continue
+        end = stopped[id]=="" ? now : stopped[id]
+        sec = secs(end) - secs(started[id]); if (sec<0) sec=0
+        tok = (tstart[id]!="" && seen[id]>0) ? used[id] : ""
+        tres+=resets[id]
+        isopen = stopped[id]=="" ? 1 : 0
+        cnt++; tsec+=sec; if (tok!="") { ttok+=tok; nknown++ }
+        L[label[id]]++; Lsec[label[id]]+=sec; if (tok!="") Ltok[label[id]]+=tok
+        if (tsv) { printf "%s\t%s\t%s\t%s\t%d\t%s\t%d\n", id, label[id], started[id], stopped[id], sec, tok, isopen; continue }
+        printf "%-8s %-24s %-22s %10s  %s%s\n", (isopen ? "OPEN" : "done"), substr(label[id],1,24), id, hms(sec),
+               (tok=="" ? "time only" : sprintf("%d tokens", tok)), (marks[id] ? sprintf("  (%d mark%s)", marks[id], marks[id]==1?"":"s") : "") (resets[id] ? sprintf("  (%d reset%s seen)", resets[id], resets[id]==1?"":"s") : "")
+      }
+      if (tsv) exit
+      if (!cnt) { print "no spans"; exit }
+      print "-- by label:"
+      for (l in L) printf "   %-24s %3d span(s)  %10s  %s\n", substr(l,1,24), L[l], hms(Lsec[l]), (l in Ltok ? sprintf("%d tokens", Ltok[l]) : "time only")
+      printf "-- %d span(s), %s in all", cnt, hms(tsec)
+      if (nknown) printf ", %d tokens across the %d with figures", ttok, nknown; else printf ", no token figures"
+      printf "\n"
+      if (tres) printf "-- %d reset%s seen, so %d new prompt%s (counted from resets; the app'"'"'s own housekeeping can add a reset, so this count may run high); the legs across a reset are left out of the totals\n", tres, tres==1?"":"s", tres, tres==1?"":"s"
+    }' "$1"
+}
+
+if [ $PROVE -eq 1 ]; then
+  t=$(mktemp -d 2>/dev/null) || { t=${TMPDIR:-/tmp}/sp1rp.$$; mkdir -p "$t"; }
+  trap 'rm -rf "$t"' EXIT INT TERM
+  # A planted ledger with KNOWN arithmetic: 100->40 tokens over exactly 90s, plus an open span.
+  printf 'ts\tevent\tspan\tlabel\ttokens_left\tby\tnote\n' > "$t/l.tsv"
+  printf '2026-01-01T00:00:00Z\tstart\tS1\tbuild\t100\tme\t\n2026-01-01T00:00:30Z\tmark\tS1\tbuild\t70\tme\thalf\n2026-01-01T00:01:30Z\tstop\tS1\tbuild\t40\tme\tdone\n' >> "$t/l.tsv"
+  printf '2026-01-01T01:00:00Z\tstart\tS2\tthink\t\tme\t\n' >> "$t/l.tsv"
+  out=$(OPEN=0 LABEL= SINCE= TSV=1 report "$t/l.tsv")
+  red=0
+  printf '%s\n' "$out" | grep -q '^S1	build	2026-01-01T00:00:00Z	2026-01-01T00:01:30Z	90	60	0$' && red=$((red+1)) || echo "FAIL: S1 arithmetic wrong: $(printf '%s\n' "$out" | head -1)"
+  printf '%s\n' "$out" | grep -q '^S2	think	.*		[0-9]*		1$' && red=$((red+1)) || echo "FAIL: S2 not reported open/time-only: $(printf '%s\n' "$out" | sed -n 2p)"
+  # the harness must go red on a wrong expectation: 61 tokens is not 60
+  printf '%s\n' "$out" | grep -q '	61	0$' && { echo "FAIL: a wrong expectation was accepted"; exit 1; }
+  [ $red -eq 2 ] && { echo "PASS: sp1rp read 90s/60 tokens off a planted ledger and left the open span open; the wrong figure was refused"; exit 0; }
+  echo "FAIL: sp1rp prove-red $red/2"; exit 1
+fi
+
+[ -f "$LEDGER" ] || { echo "$me: no ledger at $LEDGER (nothing started yet, or MENTCACHED_STATS points elsewhere)" >&2; exit 1; }
+report "$LEDGER"

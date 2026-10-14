@@ -1,0 +1,64 @@
+#!/bin/sh
+# sb1rn -- SECRETS BOUNDARY 1, RUN. The one to call at a boundary. Picks one of the two checkers at
+#   random (sb1aw in awk, sb1pl in Perl; neither favored), and when the one picked finds a hit, runs
+#   the other too and compares: the same answer is printed once; a different answer is a SEAM.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st>.  Authored by Mentat (for Corwin).
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU
+# General Public License as published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.  SPDX-License-Identifier: GPL-3.0-or-later
+#
+# usage: sb1rn [--both] [--] PATH...
+#   SB_PICK=aw|pl|both   force the pick (default: random)
+#   exit: 0 clean - 1 hits (both agree) - 2 NOT checked - 3 SEAM (the two checkers disagree)
+#   Exit 2 means the answer is not "clean": a usage error, no checker beside me, or (AMENDED
+#   2026-09-27) a file or folder that could not be read (its "UNREAD path" line -- "path/" for a
+#   folder -- and the summary go to stdout).
+#   The reason is always the last "sb1rn:" line on stderr.
+# Spec: h/DESIGN-2026-09-26-secrets-at-the-boundary.md.  It reads; the caller decides what a hit stops.
+set -u
+here=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd) || exit 2
+pick=${SB_PICK:-}
+[ "${1:-}" = --both ] && { pick=both; shift; }
+[ "${1:-}" = -- ] && shift
+case ${1:-} in ''|-h|--help) sed -n '2,/^set -u/p' "$0" | sed '$d; s/^# \{0,1\}//' >&2; exit 2 ;; esac
+
+have_aw=; have_pl=
+[ -f "$here/sb1aw" ] && have_aw=1
+[ -f "$here/sb1pl" ] && command -v perl >/dev/null 2>&1 && have_pl=1
+run_aw() { sh "$here/sb1aw" -- "$@"; }
+run_pl() { perl "$here/sb1pl" -- "$@"; }
+
+if [ -z "$have_aw$have_pl" ]; then echo "sb1rn: neither checker is present beside me" >&2; exit 2; fi
+if [ -z "$have_aw" ] || [ -z "$have_pl" ]; then
+  one=aw; [ -n "$have_pl" ] && one=pl
+  echo "sb1rn: only sb1$one is present; one reader, not two" >&2
+  run_$one "$@"; exit $?
+fi
+case $pick in
+  aw|pl|both) ;;
+  *) n=$(od -An -N1 -tu1 /dev/urandom 2>/dev/null | tr -d ' ')
+     [ -n "$n" ] || n=$(awk -v p=$$ 'BEGIN { srand(); print int(rand() * 256) + p }')
+     if [ $(( n % 2 )) -eq 0 ]; then pick=aw; else pick=pl; fi ;;
+esac
+
+t=$(mktemp -d) || exit 2; trap 'rm -rf "$t"' EXIT INT TERM
+if [ "$pick" = both ]; then first=aw; else first=$pick; fi
+other=pl; [ "$first" = pl ] && other=aw
+echo "sb1rn: reading with sb1$first" >&2
+run_$first "$@" > "$t/$first" 2> "$t/$first.err"; rc1=$?
+if [ "$rc1" -eq 2 ]; then
+  cat "$t/$first"; cat "$t/$first.err" >&2
+  nu=$(grep -c '^UNREAD ' "$t/$first")
+  if [ "$nu" -gt 0 ]; then echo "sb1rn: $nu file(s) or folder(s) could not be read; they were NOT checked" >&2
+  else echo "sb1rn: sb1$first stopped (usage, or a path that does not exist); nothing was checked" >&2; fi
+  exit 2
+fi
+if [ "$rc1" -eq 0 ] && [ "$pick" != both ]; then cat "$t/$first"; exit 0; fi
+
+echo "sb1rn: second reading with sb1$other" >&2
+run_$other "$@" > "$t/$other" 2> "$t/$other.err"; rc2=$?
+if [ "$rc1" -eq "$rc2" ] && cmp -s "$t/$first" "$t/$other"; then cat "$t/$first"; exit "$rc1"; fi
+echo "SEAM: the two checkers disagree"
+for k in $first $other; do echo "--- sb1$k"; cat "$t/$k"; done
+exit 3

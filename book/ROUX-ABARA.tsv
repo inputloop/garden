@@ -1,0 +1,21 @@
+# CHARACTER TSV — Delphine Roux-Abara (author, The Flagged Book); dungeon-mode shape; double-entry: every row names its source
+table	key	count	value	treatment	source
+cs-intrinsics	name		Delphine Roux-Abara	identity	book/ROUX-ABARA.md s0
+cs-intrinsics	shortname		Roux-Abara	lineage	book/games/BOOK-3 byline
+cs-intrinsics	class		author (game master, fifteen years)	tier	book/ROUX-ABARA.md s0
+cs-intrinsics	actor		fiction	kind	book/ROUX-ABARA.md header
+cs-intrinsics	gold		unstated; she photographs other people's marginalia at conventions	economy	book/ROUX-ABARA.md s0
+cs-intrinsics	special		shipped the lookup solution inside the book instead of on her own copy	specialness	book/ROUX-ABARA.md s6
+cs-intrinsics	fairness	2	bends rules for gain (damped, low doubles)	trait	pg1rl roll seed 17
+cs-intrinsics	impulsivity	6	reckless (amped, high doubles; 6-6 escalated one table deeper)	trait	pg1rl roll seed 17
+cs-intrinsics	autonomy	6	refuses all direction	trait	pg1rl roll seed 17
+cs-intrinsics	orderliness	2	untidy, improvises	trait	pg1rl roll seed 17
+cs-intrinsics	competitiveness	4	likes to win (LOAD-BEARING, high-first seven)	trait	pg1rl roll seed 17
+cs-skills	shut-book-test	1	find a table by feel in two seconds, book closed	practice	book/ROUX-ABARA.md s3
+cs-skills	return-lines	1	every table header names where it sends you	practice	book/games/BOOK-3 reading-a-header
+cs-skills	errata-beside-the-error	1	print the correction next to the mistake	practice	book/ROUX-ABARA.md s4
+cs-skills	seasonal-pull	1	acquired gen 1; one flag a season, blind, read cold	practice	book/ROUX-ABARA.md s9 gen 1
+cs-posessions	twelve-flags	12	cut, folded, taped; numbered by moment of play	tool	book/games/BOOK-3 the-flags
+cs-posessions	the-page-she-could-not-find	1	eleven pages from where she looked; the character died	burden	book/ROUX-ABARA.md s5 founding
+cs-posessions	d66	1	first die tens; one throw picks a sub-table and a row	mechanic	book/games/BOOK-3 the-two-throws
+cs-posessions	four-dead-ends	4	shipped in draft 1; printed in the errata, not hidden	debt	book/ROUX-ABARA.md s9 gen 1

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" width="1934" height="766" viewBox="0 0 1934 766" font-family="var(--c4-font, monospace)" font-size="12">
+<title>ENHANCE tree 2026-09-05 — the queue reclassed by route, after Floor R of the skills-focus model</title><desc>Rendered by dc1sv from the canonical diagram document; 35 shapes, 6 edges, 5 systems. Groups are drawn as labelled rectangles; every status is a word, never a hue alone.</desc>
+<style>rect.box{fill:var(--c4-box,#fffdf5);stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}polygon.decision{fill:var(--c4-decision,#f1efe8);stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}circle.node{fill:var(--c4-node,#ffffff);stroke:var(--c4-ink,#1a1a1a);stroke-width:2}rect.note{fill:none;stroke:var(--c4-muted,#888780);stroke-dasharray:3 3;stroke-width:1}text{fill:var(--c4-ink,#1a1a1a)}text.note{fill:var(--c4-muted,#5f5e5a);font-style:italic}path.edge{fill:none;stroke:var(--c4-ink,#1a1a1a);stroke-width:1.5}path.dash{stroke-dasharray:6 4}rect.sys{fill:var(--c4-sys,rgba(120,120,200,0.06));stroke:var(--c4-sysline,#6a67b8);stroke-width:1.5;stroke-dasharray:8 4}rect.sys.core{fill:var(--c4-core,rgba(240,200,0,0.10));stroke:var(--c4-coreline,#b08800);stroke-dasharray:none}text.sys{fill:var(--c4-sysline,#6a67b8);font-size:11px;font-weight:bold}</style>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--c4-ink,#1a1a1a)"/></marker><marker id="open" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10" fill="none" stroke="var(--c4-ink,#1a1a1a)"/></marker><marker id="circle" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7"><circle cx="5" cy="5" r="4" fill="var(--c4-ink,#1a1a1a)"/></marker><marker id="diamond" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,5 L5,0 L10,5 L5,10 z" fill="var(--c4-ink,#1a1a1a)"/></marker></defs>
+<rect class="sys forge" x="8" y="100" width="408" height="525" rx="6" style="stroke:var(--c4-sys-forge,#6a67b8);stroke-dasharray:2 4;fill:none"/>
+<text class="sys" x="16" y="617" style="fill:var(--c4-systext-forge,#6a67b8)">RESURRECTED (12 of 18 Floor-R rows incl. 2 discuss) + Q14 Q16</text>
+<rect class="sys hands" x="1533" y="100" width="363" height="389" rx="6" style="stroke:var(--c4-sys-hands,#6a67b8);stroke-dasharray:2 4;fill:none"/>
+<text class="sys" x="1541" y="114" style="fill:var(--c4-systext-hands,#6a67b8)">KEEPER HANDS</text>
+<rect class="sys discuss" x="428" y="100" width="370" height="253" rx="6" style="stroke:var(--c4-sys-discuss,#6a67b8);stroke-dasharray:2 4;fill:none"/>
+<text class="sys" x="436" y="114" style="fill:var(--c4-systext-discuss,#6a67b8)">DISCUSS</text>
+<rect class="sys hold" x="803" y="100" width="349" height="185" rx="6" style="stroke:var(--c4-sys-hold,#6a67b8);stroke-dasharray:2 4;fill:none"/>
+<text class="sys" x="811" y="114" style="fill:var(--c4-systext-hold,#6a67b8)">HOLD</text>
+<rect class="sys tabled" x="1168" y="100" width="349" height="151" rx="6" style="stroke:var(--c4-sys-tabled,#6a67b8);stroke-dasharray:2 4;fill:none"/>
+<text class="sys" x="1176" y="114" style="fill:var(--c4-systext-tabled,#6a67b8)">TABLED</text>
+<path class="edge" d="M 1266,43 L 1345,48" marker-end="url(#circle)"/>
+<path class="edge" d="M 958,66 L 958,98 L 212,98 L 212,130" marker-end="url(#arrow)"/>
+<path class="edge" d="M 958,66 L 958,98 L 608,98 L 608,130" marker-end="url(#arrow)"/>
+<path class="edge" d="M 958,66 L 958,130" marker-end="url(#arrow)"/>
+<path class="edge" d="M 958,66 L 958,98 L 1320,98 L 1320,130" marker-end="url(#arrow)"/>
+<path class="edge" d="M 958,66 L 958,98 L 1681,98 L 1681,130" marker-end="url(#arrow)"/>
+<rect class="box" x="650" y="20" width="616" height="46" rx="3"/><text x="958" y="47" text-anchor="middle">ENHANCE TREE 2026-09-05 · most users · most composability · no risk I cannot explain</text>
+<rect class="note" x="1345" y="36" width="292" height="24"/><text class="note" x="1351" y="52">Q9 LEAVE-AS-MEMORY · done · Mentat holds</text>
+<rect class="box" x="30" y="130" width="364" height="46" rx="3"/><text x="212" y="157" text-anchor="middle">RESURRECTED → skill-creator (reauthor via forge)</text>
+<rect class="note" x="36" y="205" width="236" height="24"/><text class="note" x="42" y="221">Q1 seatkeeper move 1 · FIRST · S</text>
+<rect class="note" x="36" y="239" width="264" height="24"/><text class="note" x="42" y="255">Q2 rolls kind + card generator · T+S</text>
+<rect class="note" x="36" y="273" width="257" height="24"/><text class="note" x="42" y="289">Q3 skilltank: name mapped skill · T</text>
+<rect class="note" x="36" y="307" width="285" height="24"/><text class="note" x="42" y="323">Q4+Q5+Q6 sandboxer·posix·verify-say · P</text>
+<rect class="note" x="36" y="341" width="278" height="24"/><text class="note" x="42" y="357">Q11 mentat 1–8 ⇄ palace #1 · merge · S</text>
+<rect class="note" x="36" y="375" width="236" height="24"/><text class="note" x="42" y="391">Q12 lens.py reader-sha check · T</text>
+<rect class="note" x="36" y="409" width="278" height="24"/><text class="note" x="42" y="425">Q13 balanced-pair linter (ex-HOLD) · T</text>
+<rect class="note" x="36" y="443" width="257" height="24"/><text class="note" x="42" y="459">pocket-mentat · P|S|signed · palace</text>
+<rect class="note" x="36" y="477" width="243" height="24"/><text class="note" x="42" y="493">fortress-palace · 2nd use met · P</text>
+<rect class="note" x="36" y="511" width="299" height="24"/><text class="note" x="42" y="527">countable-gauge·seams†·prove-1-move · P+T</text>
+<rect class="box" x="450" y="130" width="315" height="46" rx="3"/><text x="608" y="157" text-anchor="middle">DISCUSS → keeper (ceremony / gate choice)</text>
+<rect class="note" x="456" y="205" width="292" height="24"/><text class="note" x="462" y="221">COPYING thread: ccspt gap = C4 tombstone</text>
+<rect class="note" x="456" y="239" width="313" height="24"/><text class="note" x="462" y="255">Q166 four buildables: pick a gate or retire</text>
+<rect class="note" x="456" y="273" width="292" height="24"/><text class="note" x="462" y="289">Q10 c4prime 7th fault · UNSET in Floor R</text>
+<rect class="box" x="825" y="130" width="266" height="46" rx="3"/><text x="958" y="157" text-anchor="middle">HOLD · reading room (gate 2 unmet)</text>
+<rect class="note" x="831" y="205" width="187" height="24"/><text class="note" x="837" y="221">Q8 seatexp · run once · T</text>
+<rect class="note" x="831" y="239" width="299" height="24"/><text class="note" x="837" y="255">agents-rules-for-life as-model · own LENS</text>
+<rect class="box" x="1190" y="130" width="259" height="46" rx="3"/><text x="1320" y="157" text-anchor="middle">TABLED · risk not yet explainable</text>
+<rect class="note" x="456" y="307" width="320" height="24"/><text class="note" x="462" y="323">Q7 boundscheck · ex-TABLED: transcript found</text>
+<rect class="note" x="1196" y="205" width="299" height="24"/><text class="note" x="1202" y="221">A14 isolation·SAVANNAH·seams · his answer</text>
+<rect class="box" x="1555" y="130" width="252" height="46" rx="3"/><text x="1681" y="157" text-anchor="middle">KEEPER HANDS · not composability</text>
+<rect class="note" x="1561" y="205" width="278" height="24"/><text class="note" x="1567" y="221">pencil-your-own · minted, awaits bless</text>
+<rect class="note" x="1561" y="239" width="236" height="24"/><text class="note" x="1567" y="255">CARD 1 seat index lines (locked)</text>
+<rect class="note" x="1561" y="273" width="278" height="24"/><text class="note" x="1567" y="289">CARD 2 rm .probe-renamed · __pycache__</text>
+<rect class="note" x="1561" y="307" width="173" height="24"/><text class="note" x="1567" y="323">CARD 3 gw7 persona pull</text>
+<rect class="note" x="1561" y="341" width="299" height="24"/><text class="note" x="1567" y="357">CARD 5 clearsign shelf piece + SIGN: line</text>
+<rect class="note" x="30" y="702" width="635" height="24"/><text class="note" x="36" y="718">tier: P paste-in · S skill · T tool · L ledger — lowest tier that still carries the check</text>
+<rect class="note" x="36" y="545" width="292" height="24"/><text class="note" x="42" y="561">Q14 sandboxer: memory-stores section · P</text>
+<rect class="note" x="36" y="579" width="292" height="24"/><text class="note" x="42" y="595">Q16 color-theory audit skips #-lines · T</text>
+<rect class="note" x="1561" y="375" width="313" height="24"/><text class="note" x="1567" y="391">Q15 ms1dg · built, 23/23 · awaits bless · T</text>
+<rect class="note" x="1561" y="409" width="229" height="24"/><text class="note" x="1567" y="425">CARD 6 autoMemoryDirectory test</text>
+<rect class="note" x="1561" y="443" width="208" height="24"/><text class="note" x="1567" y="459">CARD 7 ms1dg host run + diff</text>
+<!-- tally shapes 35 edges 6 groups 5 -->
+</svg>

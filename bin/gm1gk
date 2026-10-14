@@ -1,0 +1,106 @@
+#!/bin/sh
+# gm1gk -- GRAMMARY 1 GAUGE: counts what GRAMMARY.md holds and what it lacks.  Never fails.
+#
+# usage: gm1gk [GRAMMARY.md] [TREE-WORDS.md]      the counts (defaults: ./GRAMMARY.md and
+#                                                  conventions/TREE-WORDS.md beside this bin/)
+#        gm1gk --words [GRAMMARY.md]              the word list minted from GRAMMARY: one headword
+#                                                  a line (for word_register aliases or a spelling list)
+# Prints, in words:
+#   - entries: a "### " heading, or a "- **term**" bullet at the start of a line outside a heading
+#     entry (inside one, "- **What it is:**" and the like are its labelled lines, not entries);
+#   - entries with no "Whose word" line: a heading entry needs its own; a bullet is covered by a
+#     "*Whose word: ...*" line under its section heading (the 2026-07 seed is marked that way);
+#   - tree words missing from GRAMMARY: a word in TREE-WORDS.md that is no heading word and no bold
+#     term in GRAMMARY.md (any one of its " / " spellings counts);
+#   - spelling (SPEC G6, F1 pass 2, P6 O7): when python3 can import `spellchecker` (pyspellchecker),
+#     the lower-case words it does not know, BY NAME, per file read (GRAMMARY.md and TREE-WORDS.md),
+#     leaving out a word list minted from GRAMMARY's headwords and bold terms and labels.tsv's
+#     first column; else "spelling NOT CHECKED" with the one line that installs it. GM1GK_PYTHON
+#     names another python3.
+#   - LOOK (SPEC G5): when any count above is not zero, one line starting "LOOK:" says which. The
+#     kit (bin/gd1ck) runs `gm1gk --kit`, which exits 1 after a LOOK line: in the kit a gauge's 1 is
+#     LOOK (for a person to decide), never FAIL.
+# A gauge: it counts and says, and exits 0 whatever it finds -- never FAIL (2 only when GRAMMARY.md
+# is not there, said as NOT CHECKED).  Spec: tests/gm1gk-tests.sh and tests/gm1gk-spec.tcl.
+#
+# Authored by Mentat (for Corwin; claude-opus-5-5).
+# Copyright (C) 2026 Corwin Brust <corwin@bru.st> and Contributors.
+# SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later
+here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+words=0
+kit=0
+case ${1:-} in
+  -h|--help) sed -n '2,27p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  --words) words=1; shift ;;
+  --kit) kit=1; shift ;;     # for bin/gd1ck's gauge leg: exit 1 when a LOOK line was printed
+esac
+g=${1:-GRAMMARY.md}
+tw=${2:-$here/../conventions/TREE-WORDS.md}
+[ -f "$g" ] || { printf 'gm1gk: NOT CHECKED: %s is not there\n' "$g"; exit 2; }
+heads() { # every headword, one a line, lower-cased: heading parts and bold bullet terms
+  awk '
+    /^## / { inh = 0 }
+    /^### / { inh = 1; h = substr($0, 5); sub(/ \(.*/, "", h); n = split(h, p, /, | \/ |\//); for (i = 1; i <= n; i++) { w = p[i]; sub(/ \(.*/, "", w); print tolower(w) } next }
+    !inh && /^- \*\*[^*]+\*\*/ { w = $0; sub(/^- \*\*/, "", w); sub(/\*\*.*/, "", w); print tolower(w) }' "$1"; }
+if [ "$words" -eq 1 ]; then heads "$g" | sort -u; exit 0; fi
+counts=$(awk '
+  function close_entry() { if (open && !has) { miss++; missing = missing (missing == "" ? "" : ", ") name } open = 0 }
+  /^## / { close_entry(); sec_whose = 0; inh = 0; next }
+  /^### / { close_entry(); n++; open = 1; inh = 1; has = 0; name = substr($0, 5); next }
+  !inh && /^- \*\*[^*]+\*\*/ { close_entry(); n++; open = 1; has = sec_whose; name = $0; sub(/^- \*\*/, "", name); sub(/\*\*.*/, "", name); next }
+  /^[*_]?\*?Whose word:/ && !open { sec_whose = 1 }
+  /[Ww]hose word/ && open { has = 1 }
+  END { close_entry(); printf "%d\t%d\t%s\n", n, miss + 0, missing }' "$g")
+n=$(printf '%s' "$counts" | cut -f1); miss=$(printf '%s' "$counts" | cut -f2); missing=$(printf '%s' "$counts" | cut -f3)
+printf 'gm1gk: %s entries in %s; %s with no "Whose word" line%s\n' "$n" "${g##*/}" "$miss" "${missing:+ ($missing)}"
+if [ -f "$tw" ]; then
+  t=${TMPDIR:-/tmp}/gm1gk.$$; trap 'rm -f "$t"' EXIT INT TERM
+  { heads "$g"; awk '{ s = $0; while (match(s, /\*\*[^*]+\*\*/)) { print tolower(substr(s, RSTART + 2, RLENGTH - 4)); s = substr(s, RSTART + RLENGTH) } }' "$g"; } | sort -u > "$t"
+  res=$(awk -v known="$t" '
+    BEGIN { while ((getline w < known) > 0) k[w] = 1 }
+    /^- \*\*/ { line = $0; total++; found = 0; first = ""
+      while (match(line, /\*\*[^*]+\*\*/)) { w = substr(line, RSTART + 2, RLENGTH - 4); if (first == "") first = w; if (tolower(w) in k) found = 1; line = substr(line, RSTART + RLENGTH) }
+      if (!found) { gone++; list = list (list == "" ? "" : ", ") first } }
+    END { printf "%d\t%d\t%s\n", total, gone + 0, list }' "$tw")
+  printf 'gm1gk: %s of %s tree words (%s) have no entry in GRAMMARY%s\n' "$(printf '%s' "$res" | cut -f2)" \
+    "$(printf '%s' "$res" | cut -f1)" "${tw##*/}" "$(printf '%s' "$res" | cut -f3 | sed 's/^./: &/')"
+else
+  printf 'gm1gk: tree words NOT CHECKED: %s is not there\n' "$tw"
+fi
+gone=$( [ -f "$tw" ] && printf '%s' "$res" | cut -f2 || echo 0)
+PY=${GM1GK_PYTHON:-python3}
+unk=0
+if "$PY" -c 'import spellchecker' >/dev/null 2>&1; then
+  lab=$(dirname "$g")/labels.tsv; [ -f "$lab" ] || lab=$here/../labels.tsv
+  wl=${TMPDIR:-/tmp}/gm1gk.wl.$$; trap 'rm -f "${t:-}" "$wl"' EXIT INT TERM
+  { heads "$g"; [ -n "${t:-}" ] && cat "$t"; [ -f "$lab" ] && awk -F'\t' 'NR > 1 { print tolower($1) }' "$lab"; } > "$wl"
+  for f in "$g" "$tw"; do
+    [ -f "$f" ] || continue
+    out=$("$PY" - "$f" "$wl" <<'PY'
+import re, sys
+from spellchecker import SpellChecker
+text = open(sys.argv[1], encoding="utf-8", errors="replace").read()
+text = re.sub(r"```.*?```", " ", text, flags=re.S)          # code fences
+text = re.sub(r"`[^`\n]*`", " ", text)                      # code spans
+text = re.sub(r"https?://\S+|\S+@\S+|\S*[/\\]\S*", " ", text)  # links, addresses, paths
+known = set()
+for ln in open(sys.argv[2], encoding="utf-8", errors="replace"):
+    known.update(re.findall(r"[a-z]+", ln.lower()))
+words = {w for w in re.findall(r"(?<![A-Za-z0-9_'-])[a-z]+(?![A-Za-z0-9_'-])", text) if len(w) > 2}
+bad = sorted(SpellChecker().unknown(words - known))
+print(f"{len(bad)}\t{', '.join(bad)}")
+PY
+)
+    n=$(printf '%s' "$out" | cut -f1); [ -n "$n" ] || n=0
+    unk=$((unk + n))
+    printf 'gm1gk: spelling (pyspellchecker): %s lower-case word(s) in %s it does not know (GRAMMARY words and labels.tsv left out)%s\n' \
+      "$n" "${f##*/}" "$(printf '%s' "$out" | cut -f2 | sed 's/^./: &/')"
+  done
+else
+  printf 'gm1gk: spelling NOT CHECKED: %s cannot import spellchecker (python3 -m pip install pyspellchecker); the word list from --words is ready\n' "$PY"
+fi
+if [ "${miss:-0}" -gt 0 ] || [ "${gone:-0}" -gt 0 ] || [ "$unk" -gt 0 ]; then #guard:look
+  printf 'LOOK: %s entr(ies) with no "Whose word" line, %s tree word(s) with no entry, %s spelling word(s) to read (a gauge: for a person to decide, never a failure)\n' "${miss:-0}" "${gone:-0}" "$unk"
+  [ "$kit" -eq 1 ] && exit 1
+fi
+exit 0

@@ -1,0 +1,22 @@
+# PATCH · rolls SKILL.md: add the report-card kind (2026-09-11)
+# Against the INSTALLED rolls (Claude Desktop synced copy, 9228 B, sha256 cd913ad2fc69672e…),
+# whose source is not on the mounted folders (c4/skills-mint/2026-08-10/rolls is the older 6.7KB seed;
+# that seed already carries this row). Apply where the installed rolls lives:
+#   patch -p0 < PATCH-2026-09-11-rolls-report-card-kind.diff   (from the dir holding rolls/SKILL.md)
+# Falsifier: after applying, `grep -c "report card (QA)" rolls/SKILL.md` prints 1.
+--- rolls/SKILL.md
++++ rolls/SKILL.md
+@@ -113,6 +113,13 @@
+ | intake | what *arrived*, what does it claim, what does it ask of us? | by artifact class |
+ | situation | where do things stand right now? | by open question |
+ | dashboard | what should I look at first? | by urgency |
++| report card (QA) | is this thing someone made sound, and what exactly did I check? | files under review (sha/bytes), then OBSERVED apart from JUDGED |
++
++The report-card kind has a generator: `c4/bin/et1cd FINDINGS.tsv` (columns by name from
++`c4/d/qa`; `--template` for an empty sheet, `--prove-red` for its mutants). Added 2026-09-11 after
++the same card was hand-set three times on 2026-09-04 (`AS4CE0001/h/QA-2026-09-04-*.md`). It keeps
++the four guards mechanically: GRADE is copied never filled, UNSET and NOT-ATTEMPTED are counted,
++the files table prints the command it ran, and a `[MINE]` row graded `block` is refused.
+ 
+ Worked example (guard 3 + 4 together): a session-close report over a signed shelf says, per file,
+ one of `SIGN` / `DETACH` / `NOSIG` / `FURNITURE` — never a bare "signed" — with the word rendered

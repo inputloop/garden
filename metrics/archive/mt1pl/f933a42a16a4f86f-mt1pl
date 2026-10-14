@@ -1,0 +1,153 @@
+#!/bin/sh
+# mt1pl — the persona link: find the character sheet a THIRD instruction layer declared, and report
+#         what Mentat owes it. Resolves; never mints, never writes a sheet, never picks a persona.
+#
+# usage: sh bin/mt1pl [--root DIR] [--seat DIR] [--explain] [--byline] [--prove-red] [-h]
+#
+#   --root DIR   project root to search for a declaration (default: .)
+#   --seat DIR   memory store to search as the last-but-one source (default: <root>/memory)
+#   --explain    print every source tried, in order, and why it did or did not answer
+#   --byline     print ONLY the byline line, for pasting into a file header
+#   --prove-red  self-test: the tool must FAULT on a declaration pointing at nothing
+#
+# RESOLUTION ORDER — first hit wins, and the winner is always named in the output:
+#   1  $MENTAT_PERSONA          an explicit path for this session
+#   2  Persona: <path>          a line in <root>/CLAUDE.md  (the shop door speaks for the shop)
+#   3  <root>/PERSONA.md        the exact-name file
+#   4  <root>/.persona          a file whose contents are a path
+#   5  persona: <path>          a line in <seat>/MEMORY.md  (store-level default)
+#   6  (none)                   Mentat is the voice. This is the documented default, not a failure.
+#
+# A thick client would add a zeroth source: a persona served globally over MCP. We are a literate
+# wrapper, so the file sources are what we implement and the MCP source is named, not faked.
+#
+# WHAT MENTAT OWES A LINKED SHEET (reported, not enforced by this tool):
+#   byline on anything it authors, copyright vesting in the principal, the labour-split line when the
+#   principal owns the content, a founding journal entry if the sheet has none, and the use-count the
+#   affix rule reads. See h/PERSONA-LINK-2026-09-13.md.
+#
+# REFUSALS: this tool never creates a sheet, never edits one, and never chooses a persona when no
+# layer declared one. A declaration pointing at a file that does not exist is a FAULT, never a cue
+# to write that file.
+#
+# Copyright 2026 Corwin Brust <corwin@bru.st> — GPLv3-or-later. Authored by Mentat (for Corwin).
+set -u
+
+ROOT="."; SEAT=""; EXPLAIN=0; ONLY_BYLINE=0; PROVE=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --root) ROOT=${2:?}; shift 2;;
+    --seat) SEAT=${2:?}; shift 2;;
+    --explain) EXPLAIN=1; shift;;
+    --byline) ONLY_BYLINE=1; shift;;
+    --prove-red) PROVE=1; shift;;
+    -h|--help) sed -n '2,32p' "$0"; exit 2;;
+    *) echo "mt1pl: unknown argument: $1" >&2; exit 2;;
+  esac
+done
+[ -n "$SEAT" ] || SEAT="$ROOT/memory"
+
+FAULTS=0
+note() { [ "$ONLY_BYLINE" = 1 ] || printf '%s\n' "$*"; }
+trace() { [ "$EXPLAIN" = 1 ] && [ "$ONLY_BYLINE" = 0 ] && printf '  tried %-28s %s\n' "$1" "$2"; return 0; }
+fault() { FAULTS=$((FAULTS+1)); printf 'FAULT  %s\n' "$*"; }
+
+# ---- field readers (frontmatter or body; first match wins; never writes) --------------------------
+field() { # field FILE KEY
+  sed -n "s/^[#;+ ]*$2:[ ]*//p" "$1" 2>/dev/null | sed 's/^"//; s/"$//' | head -1
+}
+
+# ---- resolve ---------------------------------------------------------------------------------------
+SRC=""; SHEET=""
+if [ -n "${MENTAT_PERSONA:-}" ]; then SRC="env MENTAT_PERSONA"; SHEET="$MENTAT_PERSONA"
+  trace "\$MENTAT_PERSONA" "set -> $SHEET"
+else trace "\$MENTAT_PERSONA" "unset"; fi
+
+if [ -z "$SHEET" ] && [ -f "$ROOT/CLAUDE.md" ]; then
+  p=$(field "$ROOT/CLAUDE.md" Persona)
+  if [ -n "$p" ]; then SRC="door $ROOT/CLAUDE.md"; SHEET="$p"; trace "$ROOT/CLAUDE.md" "Persona: $p"
+  else trace "$ROOT/CLAUDE.md" "present, no Persona: line"; fi
+elif [ -z "$SHEET" ]; then trace "$ROOT/CLAUDE.md" "absent"; fi
+
+if [ -z "$SHEET" ]; then
+  if [ -f "$ROOT/PERSONA.md" ]; then SRC="exact-name file"; SHEET="$ROOT/PERSONA.md"; trace "$ROOT/PERSONA.md" "present"
+  else trace "$ROOT/PERSONA.md" "absent"; fi
+fi
+
+if [ -z "$SHEET" ]; then
+  if [ -f "$ROOT/.persona" ]; then
+    p=$(sed -n '1p' "$ROOT/.persona" | sed 's/[[:space:]]*$//')
+    SRC="pointer $ROOT/.persona"; SHEET="$p"; trace "$ROOT/.persona" "-> $p"
+  else trace "$ROOT/.persona" "absent"; fi
+fi
+
+if [ -z "$SHEET" ] && [ -f "$SEAT/MEMORY.md" ]; then
+  p=$(field "$SEAT/MEMORY.md" persona)
+  if [ -n "$p" ]; then SRC="store $SEAT/MEMORY.md"; SHEET="$p"; trace "$SEAT/MEMORY.md" "persona: $p"
+  else trace "$SEAT/MEMORY.md" "present, no persona: line"; fi
+elif [ -z "$SHEET" ]; then trace "$SEAT/MEMORY.md" "absent"; fi
+
+# ---- the documented default -------------------------------------------------------------------------
+if [ -z "$SHEET" ]; then
+  if [ "$ONLY_BYLINE" = 1 ]; then echo "Author: Mentat (for Corwin)"; exit 0; fi
+  note "LINK   none — no instruction layer declared a persona."
+  note "VOICE  Mentat. This is the documented default, not a gap; nothing to fix."
+  note "BYLINE Author: Mentat (for Corwin)"
+  exit 0
+fi
+
+# a relative declaration resolves against the root that declared it
+case "$SHEET" in /*) ;; *) [ -f "$SHEET" ] || SHEET="$ROOT/$SHEET";; esac
+
+if [ ! -f "$SHEET" ]; then
+  fault "$SRC declares a persona sheet that is not on disk: $SHEET"
+  note  "CARD   put the sheet there, or remove the declaration. This tool will not write one:"
+  note  "       a persona Mentat minted for itself is exactly the thing the link exists to prevent."
+  exit 1
+fi
+
+# ---- read the sheet ---------------------------------------------------------------------------------
+NAME=$(field "$SHEET" name);      [ -n "$NAME" ] || NAME=$(sed -n 's/^#[ ]*//p' "$SHEET" | head -1)
+PRINCIPAL=$(field "$SHEET" principal); [ -n "$PRINCIPAL" ] || PRINCIPAL="Corwin"
+ACTOR=$(field "$SHEET" actor);    [ -n "$ACTOR" ] || ACTOR="person"
+OWNS=$(field "$SHEET" owns)
+WIRED=$(field "$SHEET" wired)
+CONTRACT=$(field "$SHEET" watcher-contract)
+
+[ -n "$NAME" ] || fault "sheet has no name: field and no leading '# Title' — nothing to sign with"
+
+BYLINE="Author: $NAME (for $PRINCIPAL)"
+[ -n "$OWNS" ] && SPLIT="$PRINCIPAL ($OWNS), transcribed & formalized by $NAME" || SPLIT=""
+
+if [ "$ONLY_BYLINE" = 1 ]; then printf '%s\n' "$BYLINE"; exit 0; fi
+
+note "LINK   $SRC -> $SHEET"
+note "NAME   $NAME"
+note "ACTOR  $ACTOR"
+note "BYLINE $BYLINE"
+[ -n "$SPLIT" ] && note "SPLIT  $SPLIT"
+note "RIGHTS copyright vests in $PRINCIPAL; the persona is the writer, never the rights-holder"
+
+# ---- the founding journal entry (reported; the persona writes it, not this tool) ---------------------
+if grep -qi '^#*[ ]*.*founding' "$SHEET" 2>/dev/null; then note "FOUND  founding journal entry present"
+else note "CARD   sheet has no founding journal entry; the persona writes it, no tool drafts it"; fi
+
+# ---- the wired interlock (from the 2026-09-12 governance lift) ----------------------------------------
+case "$WIRED" in
+  yes|true|Yes|YES)
+    if [ -z "$CONTRACT" ]; then fault "sheet says wired: yes with no watcher-contract: naming a file"
+    elif [ ! -f "$CONTRACT" ] && [ ! -f "$ROOT/$CONTRACT" ]; then fault "watcher-contract: $CONTRACT is not on disk"
+    else note "WIRED  yes — watcher contract $CONTRACT; weathering is OFF for this sheet"; fi;;
+  *) note "WIRED  no — an ordinary sheet; weathering applies";;
+esac
+
+# ---- prove-red ----------------------------------------------------------------------------------------
+if [ "$PROVE" = 1 ]; then
+  t=${TMPDIR:-/tmp}/mt1pl-red.$$; mkdir -p "$t"
+  printf 'Persona: no-such-sheet.md\n' > "$t/CLAUDE.md"
+  if sh "$0" --root "$t" >/dev/null 2>&1; then rm -rf "$t"; echo "FAIL: a declaration pointing at nothing did not FAULT"; exit 1
+  else rm -rf "$t"; echo "PASS: mt1pl FAULTs on a declaration that points at nothing (and writes no sheet)"; exit 0; fi
+fi
+
+[ "$FAULTS" -eq 0 ] || exit 1
+exit 0

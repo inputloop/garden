@@ -1,0 +1,279 @@
+polygram NEWS — user-visible changes
+
+Version 0.8.90 (unreleased)
+Everything since the 0.8.50 release commit, carried by the builds 0.8.51-0.8.58 and cut as 0.8.90,
+is listed here; the 0.8.50 section below is as it was released.
+
+- A build can carry the keeper's word: `make dist RELEASE=0.8.90 NOTE="why"` writes a `note` line
+  into releases/0.8.90 and, when Mentat's seat can be reached, the same note into the seat (seam
+  polygram-releases) through the seat's own store code -- a shell cannot speak MCP and does not
+  need to. The seat is found the way the plugin's server finds it, including the desktop app's
+  home as msys2 sees it, and is never created. `python3 -m polygram.mcp.seatnote --where` says
+  which seat it would use. tests/release-note-tests.sh.
+- The secrets checkers name a FOLDER they cannot read (`UNREAD path/`) as they already named a
+  file, and read a FILE named .git (a worktree or submodule pointer) where one of them used to
+  skip it. cl1ck counts "not checked" apart from a disagreement between the checkers.
+- Seven garden scripts that had no check now have one that can go red: the release verifier,
+  sig-fresh, the sandboxer validators, the ethicsminions guards, the rolls vocabulary sync, the
+  posix lint and the shared shell library. The sandboxer validator no longer leaves a Python cache
+  beside the file it checks; the rolls vocabulary check matches whole words and runs on Python
+  older than 3.10.
+- consent-gate's freshness check (G2) parses dates without GNU `date -d`, so it can pass on BSD
+  and macOS. seat_append's refusal explains the field that is actually missing.
+- Two detached signatures that read BAD against their files (sandboxer's sig-fresh.sh.asc,
+  instrument-panel's tests/selftest.sh.asc) no longer ship; they are kept in each skill's .arc.
+
+- Named editions now import: other names are added as "Also known as ..." (no colon) inside a plain,
+  quoted or block (>- |) description, and the .plugin uses forward slashes on Windows too.
+  mentat-skill and session-rotate descriptions were not strict YAML; now folded blocks.
+- skill-sign leaves a current signature alone: ours, verifying, and newer than every file it covers
+  (or covering the same bytes) means no key and no passphrase prompt. Naming one skill says so; a
+  sweep reports one count (SKILL_SIGN_VERBOSE=1 for every line). make dist signs in one sweep.
+  tests/test_skill_sign_noop.py.
+- Secrets are checked at every way out: bin/release (tracked files, before the tests gate) and
+  `skill-sign.sh bundle` stop on a secret-shaped line, naming file, line and kind, never the secret.
+  They call C4's bin/sb1rn, which picks one of two checkers written apart (awk, Perl) at random and
+  has the other confirm a hit. `make dist` does the same as its first command, before the version
+  bump (applied 2026-09-27). A line that must show an example: add sb:allow.
+  tests/test_boundary_secrets.rb (Ruby, 17 checks).
+- New skill garden-usage: says what anything in the garden is, in one sentence, then how to use it
+  (scripts/whatis.sh NAME, --json, --list). Reads C4's four-name and tool registers and entity first
+  lines when present; answers from the installed skills alone on a simple install. Two meanings are
+  reported as a SEAM. tests/test_garden_usage.py.
+- lens keeps reruns. A reading is now (subject, model, view, run): a second reading by the same model
+  is kept as the next run instead of replacing the first, and `--run N` corrects run N. `converge`
+  prints a within-model verdict beside the cross-model one: SPLIT-WITHIN (a model disagreed with
+  itself), STEADY (every model that reran agreed with itself) or ONE-RUN. Before this, a model that
+  said A then B, beside a second model saying B, printed CONVERGE. `lens.py selftest` (17 checks) and
+  `selftest --prove-red`. SKILL.md gains "Two parties in the room, and when the answer is a choice":
+  the two-readers four (b.A, b.B, b.AB) kept apart by name from (a)-(d), and "a persona shows
+  reasons, not decisions". eclipse-pass move 3: rerun a diverging bias before calling a claim unstable.
+- lens gains an optional doubled-nine mode and its kit, scripts/doubled_nine.py (draw, method, judge,
+  measure, permute): the four-view pass run cold and with a persona, several times per arm, read against
+  the rerun floor, including how often a decision flips within an arm versus across arms. Grown from the
+  2026-09-27 experiment's arms/ and checked against it: every recorded distance, rank and decision count
+  reproduces. `selftest` (12) and `selftest --prove-red`.
+- skilltank reads C4's facts/: a note is a .md file or an extensionless text file, and the scan says
+  how many it read and what it skipped (it read 10 of 155 in c4/facts before). New `--titles` clusters
+  on what a note is called rather than its body, for prose facts named by their question. `fact` and
+  `facts` join the container words in references/stopwords. `--selftest` (16) and `--prove-red`.
+- writing-forms: a fifth technique, "his words": the record keeps his words verbatim, new wording
+  sits beside it as a labelled reading, new writing may smooth his wording, and personal writing goes
+  under a persona distinct from his.
+- Hardening for a second garden (2026-09-27, four audits and their fixes):
+  * Bundling a skill refuses symlinks and never ships .git, .arc or __pycache__ (a linked file or a
+    git config could travel unscanned). A bundle now passes unbundle-and-verify; the check.sh and
+    SAYS-SO it adds are reported as helpers the signature does not cover, and fail if they differ
+    from the verifier's own copy. Signing no longer calls a changed skill "current" because its
+    files carry old timestamps. verify says "key not in keyring" and names the key file.
+  * No secrets checker is treated like a hit: bin/release and bundling stop unless a reason is given
+    on the record. The two checkers are vendored in bin/ (sb1aw, sb1pl, sb1rn;
+    tests/sb-vendored-tests.sh keeps them equal to C4's), so a garden with no C4 tree still scans,
+    and `make dist` refuses to mint when it finds no checker at all.
+  * The checkers name a file they cannot read (UNREAD, exit 2) instead of calling it clean.
+    secret-sweep no longer reports "0 HIGH" when it read nothing, and never needs grep -Z. pb1ck and
+    intake name the binary files they did not read. The tools work where only shasum is installed.
+  * bin/release signs the installable dist/vibrobeast.plugin with the archives (servers and
+    plugin.json included), and refuses a plugin that names another version.
+  * The .plugin keeps its scripts' run bit (Unix zip entries, 0755 for "#!" files). Canon skills
+    in it carry an express manifest. The pet edition is its own plugin (vibrobeast-pet), with fresh
+    hash-only manifests and no signatures it cannot verify.
+  * The plugin README is written for a stranger: Install, Verify (key fingerprint), and what it
+    reads and writes; no author paths. INSTALL gives the source, the first-run order, a Verify step
+    and what each tool is needed for. The docs use `sh bin/...` and no longer pin a version.
+  * polygram doctor passes on a fresh clone (an extern never fetched is a note). Suites that cannot
+    run here exit 77 and gd1ck shows them as SKIPPED; the Ruby secrets spec runs in the kit.
+  * Skills that travel: boundscheck and run-card ship the tools they run (scripts/ot1rd,
+    scripts/rc1rn); wf-check --prove-red works without C4; keeper paths are named by role with his
+    path as the example; 26 skills gained "How this skill can fail"; the candor gate no longer holds
+    every skill on its licence footer and has a --prove-red.
+  * consent-gate: G3 now hashes the payload without its own payload_sha256 line. Before, a filled
+    record could never pass G3. verify_consent.sh gained a licence header and --prove-red.
+
+Version 0.8.50 (2026-09-25)
+The first release cut through the whole pipeline since 0.7.0: fourteen z-builds (0.7.1-0.7.14)
+folded into one, plus the first C4 publication tooling and licensing defaults beside it.
+* Releasing -- `make dist RELEASE=X.Y.Z` names the version instead of z+1 (bin/rl2bp start --to;
+  it refuses anything not greater than the current version). bin/release now checks that the
+  artifacts were BUILT FROM this tree: the MANIFEST names the version, both archives carry that
+  same MANIFEST, and every workspace row's sha256 matches the committed file. This replaces the
+  "artifacts postdate HEAD" timestamp gate, which could never pass in the real order (make dist
+  writes tracked files, so the commit that cleans the tree always lands after the mint). Tests:
+  tests/release-gates-tests.sh. `polygram dist` now moves the bundles of skills no longer in the
+  rack to dist/.retired-bundles/ instead of leaving them installable beside the live ones.
+  `--push` now resumes after `--apply` (it used to die on "tag exists", so a release could never
+  be published in two runs), and publishing is the signed tag pushed upstream.
+  bin/gtmode picks the way: FORGEJO_TOKEN unset -> SSH with your key, exactly as git is set up
+  (core.sshCommand honoured; no BatchMode); FORGEJO_TOKEN set -> HTTPS with the token for that run
+  only, SSH switched off so nothing falls back to it, the token never in a file, URL or argument.
+  With a token the Forgejo release page is made too; if that fails after the tag is up, the release
+  is reported published with a retry line. tests/gtmode-tests.sh.
+  The release's test gate says it is running, keeps the whole output in .git/polygram-release-tests.log,
+  and names what failed. --accept-red="why" (or RELEASE_ACCEPT_RED) releases over red tests on the
+  record: the reason and the failing tests go into the tag message. gt1sp shows each test as it runs
+  and keeps their output in .git/gt1sp-tests.log; its check-first report lists files without arguing.
+- Terms of Service and Privacy now reach the installed plugin: bin/tp2mt enters the pair in the plugin
+  tree's MANIFEST and carries it in vibrobeast.plugin (both were missed, so the tree's check.sh failed).
+- Named editions: `make dist` mints dist/vibrobeast-<flavor>/ and its .plugin beside the signed one
+  when your preferred flavor is persona, standard or pet (C4's bin/nm1fl and c/skillnames; four names
+  per skill). The preference is read from --flavor, $POLYGRAM_FLAVOR, ./.c4/flavor, then
+  ~/.config/polygram/flavor. `rl2bp start --to` the current, untagged version re-mints in place
+  (recorded as `remint`). gt1sp's h/TRANSPORT.log is git-ignored: written after the commit, it left
+  the tree dirty and the release gate refused.
+* bin/gd1ck -- the whole-garden test and benchmark kit. One command runs every suite
+  it can find in this repo and the C4 tree (and each suite's --prove-red twin), lints
+  and sizes every skill, checks the minted plugin's bytes and gauges the garden.
+  `make kit` / `make kit-quick`. Legs run under your own locale; --c-locale probes C.
+* skill-metrics (new skill) -- a time series of interesting events per shipped item:
+  metrics/log (ITEM STATE CUR LAST DATE NOTE), metrics/skill-metrics/<item> holding
+  the last STATE, content-keyed archives. POSIX sh; reads model POSIX grep. The
+  implementation lives in the skill (scripts/sk2mt, scripts/sh1lib.sh); bin/sk2mt is
+  a shim. SPEC.md + a second reader in Python.
+* persona server -- serves the sheets already written, read-only, where they lie (no copy,
+  no install). A file is a sheet by what its own first lines say: an `actor:` line, a
+  CHARACTER/ITEM SHEET or PERSONA heading, or front matter naming a persona or model. Roots from
+  the new `persona.sheets` preference, else $PERSONA_SHEETS, else guessed from softskills.roots
+  and words.root. Copies in other folders are reported as agreeing or differing, never merged.
+  A second reader of the rule in awk: tests/persona-shelf-tests.sh. (0.7.8)
+* plugin_freshness -- reads the `freshness.shelf` preference itself, as the session-open check
+  already did; a plain call no longer answers UNKNOWN. (0.7.8)
+* persona server -- a sheet and its mutation journal no longer compete for a name: reading a
+  sheet returns it with its journal beside it. The mode word reads SEATED when the server's own
+  store is reachable but not yet written. (0.7.10)
+* eclipse-pass -- `--from pmo/projects.tsv` reads the roster (keys from column 1, header skipped)
+  and prints where each pick lives; the documented example now uses the roster, not a folder
+  listing that also offered non-projects. (0.7.10)
+* pmo -- `projects.tsv` gains a `home` column; `pmo-roster` lists keys, resolves homes and names
+  roster gaps; `pmo-report` gains an Opportunities section. (0.7.10)
+* Terms of Service and Privacy Policy -- `make dist` now mints both for that build (bin/tp2mt),
+  stamped with its version. Every sentence about what the servers do is first checked against
+  their source (no network, where each store lives, the SECRET rule, skillx refusing). A claim
+  that no longer holds stops the build. Every filter is named, and the same Words block appears in
+  both. Tests: tests/tp2mt-tests.sh. (0.8.50)
+* persona server -- a sheet may say its own name with a `name:` line (outside front matter), so a
+  persona can be renamed without moving its file: gw7's sheet now serves as gh7. The awk second
+  reader in tests/persona-shelf-tests.sh checks the same rule. (0.8.50)
+* persona_list -- reports a SPLIT when one file name serves under two names (a stale copy of a
+  renamed sheet), and a sheet with no heading takes its first H1 as its title. (0.8.50)
+* session-rotate -- the version bump replaces vN only as a whole token, moves "prior vN" along with
+  it, and names the snapshot actually written. Rolling more than once a day (or a second) no longer
+  overwrites an earlier roll's snapshot or archived continuity files: each takes the next free name.
+  --no-bump rotates a model that declares no session-close step (c4) without touching its version.
+  tests/session-rotate-tests.sh, which rolls three times in a row. (0.8.50)
+* shell-tooling and project-memory, two unauthored stubs, are retired from the rack (receipts D-1
+  and D-2 of the 2026-08-17 removal pass), with REJECT rows so the gate does not re-mint them. The
+  C4 canon drops its two gf-02-* duplicates, and guarded-visibility gets a real trigger. (0.8.50)
+* No more "draft" labels from the tools: polygram's synth no longer writes "Draft skill ... Edit me"
+  (it says the steps are not written yet), and c4cs mints with c4_status minted-from-canon and a
+  trigger that says where it came from. The environment has no settled meaning for draft yet, and
+  the label read later as the author's own terms. (0.8.50)
+* Licensing notices -- every GPL notice in the tree now uses the standard wording, "either version 3
+  of the License, or (at your option) any later version". (0.8.50)
+
+Version 0.7.0 (2026-07-13)
+* Add universal doctrine: Interweave talent, raise aspect, mediate.
+  (*seams*) This kicked it literally faster than I could apply it.
+  Note, YMMV: tests/results stem from the environment where I
+  experienced them; this approch is most effective when driven by
+  local, organically sourced wights, measures, and weather/climate.
+* (sandboxer) observe indirect uses of untrustworthy (read) paths.
+  Stop using mtime as tiebreaker; use agreement-branch + sentinel.
+  define "fresh reader" as being the hosts file tool or the host.
+  add HEAD-IS-YOURS check before any resotre
+  writes-vs-reads: (hint) bash never lies about the disc.
+  widen triggers, note bash trust (write=yes, reade=no); improve
+  guards against unsafe tool run/tool gen.
+* consent-gate: the door opens too
+  Strip the urgency and ask again -- urgency is pressure when it substitutes for
+  verification, substantiated when the gates clear without it. And classify
+  before you ceremonialize: a change is credential-class iff it touches a
+  secret's value, scope, lifetime, or audience; plumbing is a tool change. Both
+  rules exist to stop gate-inflation, which is how a discipline becomes a
+  superstition and gets routed around. NO4C folded: raised parks, mentioned
+  notes, carried disarms
+* kill-sign: signature form follows artifact class
+  Detach runnables and machine-parsed files (clearsign breaks YAML fences and
+  shebangs, and its round-trip is not byte-idempotent); clearsign prose. A BAD
+  over bytes that still match a signed manifest is a stale signature artifact,
+  not tampering -- diagnose before you alarm.
+Tools and records
+  * bin/thread.sh -- renders a message thread to one static HTML page (sh+awk,
+    escape-first, unknown flags rejected loudly). The signed page regenerates
+    byte-true from the signed generator; that reproducibility is the point.
+  * journal/ -- Grader's Tales, the instrument's narrative log, plus the thread
+    convention (filename order IS the thread). Charter: if a journal entry ever
+    becomes load-bearing, the ledgers failed.
+  * The losers are kept. This release ships its own refuted designs -- the
+    guard-registry counterexample, countersigned above its correction, and both
+    eclipse bias models. Mistakes are the resume of every tool-builder.
+
+Version 0.6.1 (2026-07-05)
+* Per-skill provenance: every curated skill tree now carries its own
+  signed whole-tree manifest (skill-sign, pinned key) — verification
+  works standing in skills/, per skill, not only per release. 13/13
+  signed and 2/2 verified (keeper bench + instrument).
+* Repairs 0.6.0's skilltank bundle, which shipped stale pre-release
+  bytes (a mint-time stale-reader fault, not tampering). Rule pinned:
+  mint and certify from git-true bytes, never through the bash mount.
+
+Version 0.6.0 (2026-07-04)
+* Armed AI provenance gates: polygram can cross-check supplied facts
+  against seeded, hashed memory attestations bound to PRINCIPLES canon
+  (the minions --expect drift check, live) to frustrate spoofing and
+  tampering — and selectively apply skill ("flavor") accordingly.
+* Durable REJECT: the advice history is now a ledger the gate consults;
+  a rejected candidate stays rejected until review --promote records a
+  later PASS. Labels formalized in labels.tsv ("no consumer, no label").
+* skill-sign (new, Haiku lineage): whole-tree manifest signing for skill
+  directories and .skill bundles; verification pins Corwin's key.
+* security-digest (new): stand-alone, Mentat-aware, schedulable SRE
+  advisory digest — "Report, never act."
+
+Version 0.5.4 (2026-07-02)
+* dist gained a temp-file stray filter: sed -i mkstemp siblings (the
+  sedx44W4d residue that rode into the signed 0.5.3 mint — sha-identical
+  to its source, nothing leaked), vim swaps, and emacs lockfiles can no
+  longer be staged. Respin release; 0.5.3 artifacts retired.
+* `polygram dist --version X` now works as an alias for --dist-version
+  (argparse scopes it to the subcommand; bare `polygram --version` still
+  prints the tool version).
+* dist now mints correctly under mingw/msys Python (mixed path
+  separators no longer crash manifest staging).
+
+Version 0.5.3 (2026-07-02)
+* Curation-only release: PRINCIPLES v1.0 — the frozen six-clause blessed
+  statement (SAVANNAH remains canon) — joins the aggregate as
+  skills/principles. ethicsminions description spelling fixed (trigger
+  surface). No code changes.
+
+Version 0.5.2 (2026-06-27)
+* dist reads installed skill sources from $POLYGRAM_SKILLS_SOURCE when
+  --skills-source is omitted, so `polygram dist` needs no flag once set.
+
+Version 0.5.1 (2026-06-27)
+* Externs feed candidates ONLY via their own memory/ notes, not arbitrary
+  repo docs (closes a supply-chain noise vector).
+* Added a hex-token noise guard so colour codes like ffcc00 cannot surface
+  as skill candidates.
+
+Version 0.5.0 (2026-06-27)
+* dist mints per-skill installable .skill bundles (folder-rooted zips) via
+  --format skill/all, with a shared editor/build-cruft filter. Replaces the
+  hand-rolled packaging Makefile.
+* Real local skills folded into skills/ as the curation of record.
+
+Version 0.4.0 (2026-06-27)
+* New `dist` subcommand: mints .tar.gz and .zip of curated skills with a
+  SHA-256 MANIFEST and a dist advice record.
+* Externs gained a "local" kind (hand-authored snapshots) that `doctor` no
+  longer mis-flags as broken clones.
+
+Version 0.3.0 (2026-06-27)
+* Manifest integrity hardening: actionable errors on corrupt externs.json,
+  doctor reconciliation, atomic verified saves. 25 tests.
+
+Version 0.2.0 (2026-06-26)
+* HOLD review queue (promote/reject) and frozen externs.
+
+Version 0.1.0 (2026-06-26)
+* First release: memory -> candidates -> gate -> advice -> skeleton synthesis.

@@ -1,0 +1,159 @@
+#+TITLE: Pack, unpack, leak check — the recipe for the pub surface
+#+SUBTITLE: <H>:/pub/ · how material gets in, how a release gets out, what is checked first
+#+AUTHOR: Corwin (savannah: carlc · corwin@bru.st)
+#+DATE: 2026-09-11
+#+OPTIONS: toc:2 num:t
+
+* What this is
+
+The front-door instructions for =<H>:/pub/=. The =.seed= says what the surface *is*; this
+file says what you *do* — lift material in (PACK), cut something a stranger can hold
+(UNPACK/RELEASE), keep copies current (JANITORIAL), and check before anything travels that
+it does not name your machine (LEAK CHECK).
+
+A note on spelling: the surface is written =<H>:/pub/=, the =.seed='s own notation, and
+example paths elide the drive letter the same way (=<drive>:\lab\notes.org=). A real drive
+letter is what the check hunts for, so the recipe does not write one.
+
+* The surface, in his words
+
+From =.seed=: =/= (the pub root) is the "finished publications stage, instructions"; each
+=<item>/= sub-folder is "for publication stage, may be a work surface". Working materials are
+"protected via dot folder, gate/tunnel or otherwise safe for general use/reuse" — in practice
+the =.c4/= dot-folder inside each item. An item not ready for branding "may so indicate with a
+'tombstone' (zero byte) COPYING or by creating that file with whatever informational context
+is needed to scope these contexts".
+
+And the rule this whole recipe serves, his: do not leak "details of my systems
+unnecessarily with these materials in publication apparatus (nor content proper, obviously,
+unless such detail happens to form some material record and so we shrug at leaving whatever
+path showing for that reason)".
+
+*Unnecessarily* is the load-bearing word. No tool can tell a leak from a record. The tool
+points; you decide.
+
+* PACK — lifting formed material into an item
+
+Formed material is anything already made in the lab that the publication needs: an org or
+markdown note, a fact, a deck, a runnable script, a tool.
+
+1. *Copy it in, do not reference it.* The lifted copy lands in =<item>/.c4/sources/=, byte for
+   byte. The standing rule, from =motive-inversion/README.org=: "*Self-contained is the rule.*
+   … no 'also attach the lab', no 'the file is over in c4'".
+2. *Give it a PROVENANCE row.* One line in =<item>/.c4/PROVENANCE.tsv=, tab separated:
+   =local_copy=, =lab_origin=, =sha256_16_at_lift=, =lifted=, =note=. Get the hash with
+   =sha256sum <file> | cut -c1-16=. The header of that file states why duplication is fine:
+   "Duplication is fine because this file tells its story (Corwin's rule); a silent clone is
+   the only sin."
+3. *=lab_origin= is TREE-relative, always.* Write =c4/h/LENS-….md= or =c4/facts/…=. Never a
+   drive letter, home directory, mount point, hostname or user name. The tree path says where
+   a thing lives in the work; the absolute path says where your machine keeps it, and only one
+   of those is anyone else's business. This file does not travel — but its contents get quoted
+   into READMEs, and then they do.
+4. *A file authored in the item takes =-= for the hash* and =(authored in this item)= for the
+   origin — there was no lift, so there is nothing to compare against.
+5. *Re-lift by re-hashing.* Per the PROVENANCE header: "On a re-lift, re-sha the lab origin;
+   a changed sha is the observable tear, not a surprise." Update the row; do not quietly
+   overwrite the copy and leave the old hash standing.
+
+** What counts as a material record
+
+Sometimes the path *is* the story: a pinned fact's location, a quoted session transcript, an
+archived receipt that means nothing without where it sat. His rule from =.seed=: "if
+instruments tell the story of the duplicates/mutated clones, then that is story and we keep
+it around -at least in journaled out or archived form- in case we want to tell it later."
+
+So a path stays when removing it would destroy the record, and goes when it is only
+scaffolding. Two live examples in =motive-inversion/README.org=: the surface-model pointer at
+line 48 is scaffolding (it could say "the pub seed"); the model pin at line 84 is arguably
+record — it names where the model was fixed. The check reports both and touches neither.
+Write the decision into the item's =.c4/= notes so the next release does not re-argue it.
+
+* UNPACK / RELEASE — cutting a distributable
+
+A release is what a comrade holds. Per =.seed=, the pub root carries "the set of latest
+distributable paired archive/sig (given I do signing) unless for I share as text with
+integrial sig, and then whatever packaging instructions and support mostly perhaps within
+README.org".
+
+1. *Run the leak check first.* =bin/pb1ck <item>= — before the archive, before the signature.
+   A signature over a leak is a signed leak.
+2. *=README.org= is the front door.* Built to be walked up to: what this is, the thesis or
+   product in one screen, status, and enough context that a reader need not hold the shop
+   vocabulary.
+3. *=COPYING= carries branding or a tombstone.* Either the real license and a dated copyright
+   line, or the informational tombstone scoping the pre-branding state. Branding is his
+   signing motion; key at https://savannah.gnu.org/u/carlc.
+4. *=.c4/= never travels* — that is what the dot-folder is for. The exception is explicit: the
+   item names travelling paths, one per line, in =.c4/travels=. Nothing else under =.c4/=
+   leaves, and the check enforces the same reading.
+5. *Cut the pair at the pub root*: the archive and its detached signature, side by side, named
+   for the item and the date. Text shared inline gets an integral (clearsigned) signature
+   instead.
+6. *Where a member might be held back*, prepare the share with =bin/sc3dm= first: it proves per
+   member, so dropping one does not break the proof on the rest. =sc3dm= asks whether a member
+   may travel; =pb1ck= asks whether what travels says too much.
+
+* JANITORIAL — a currency-pull, not a daemon
+
+The =.seed= gives automation the janitorial side: "C4 or other automation can have the
+janatorial side helping to sync common use tools out for these working-group and/or staging
+area stages." The shape of that sync is fixed by the PROVENANCE header, quoted whole:
+
+#+begin_quote
+SYNC MODEL (currency-pull, not a daemon): at the moment of inception of a mutation, pull a
+cloak of currency over the file (bring it current); that pull IS the only local lock.
+Reads always win the read-first battles. Write-races are governed by PRIORITY / value-
+weighting (C4's, or the personal lens "until on"), by Corwin's deliberation — never a mutex.
+There is no fixed source folder: currency is whatever pulled it last at a mutation; drift
+stays legible here so a race is a story, never a silent loss.
+#+end_quote
+
+Practically: nothing runs on a timer here. Right before you change a lifted copy, pull it
+current and re-hash its row. Between mutations, drift may exist and must stay legible.
+
+* LEAK CHECK — what is looked for, and the one line to run
+
+#+begin_src sh
+bin/pb1ck <item>
+#+end_src
+
+Exit 0 clean, 1 for any leak hit or CHANGED row, 2 for usage. It removes nothing and refuses
+nothing; it prints file, line, the pattern that fired, and the matched text with *nothing
+either side of it*.
+
+Ten patterns, over every file that would travel (everything outside =.c4/=, plus whatever
+=.c4/travels= names):
+
+- *drive-letter* and *unc-path* — a Windows path or a share name.
+- *session-path*, *home-path*, *home-var*, *mount-path* — =/sessions/=, =/home/<user>= or
+  =/Users/<user>=, =$HOME= and its Windows spellings, =/mnt/=.
+- *ip-v4* and *ip-v6ish* — an address that names a box on a network.
+- *email-undeclared* — any address that is not on the README's =#+AUTHOR:= or =#+EMAIL:=
+  line, or listed in =.c4/mail-ok=.
+- *leakword-N* — line N of =.c4/leakwords=, one string per line: your host names, user names,
+  machine names, internal project names. Nothing of yours is written into the tool; it knows
+  only what the item tells it. A hit reports the line number and *withholds the word*, because
+  a report that echoes it has re-leaked it.
+
+It also re-hashes every PROVENANCE row whose =local_copy= exists (MATCH, CHANGED — the
+observable tear — MISSING, or NOHASH), warns when a =lab_origin= is not tree-relative, and
+counts its findings twice, with grep and then with awk over the emitted report, printing
+AGREE or DISAGREE: an uncounted tally is an unchecked one.
+
+The report echoes matches, so the report is local. Do not put it in the item.
+
+* How this recipe can fail (falsifiers)
+
+- *A release goes out with a path that was nobody's business.* Check: run =pb1ck= on the
+  released item; any hit you cannot defend as record is this recipe failing.
+- *The check passes and the item still leaks.* Check: grep a cut archive for your own hostname
+  and user name. A pass with no =.c4/leakwords= file is the likeliest cause — the report prints
+  ABSENT in that case, and that line is the warning.
+- *A reader cannot re-derive a lifted copy.* Check: take any PROVENANCE row and run
+  =sha256sum <local_copy> | cut -c1-16=. If it does not reproduce the recorded value and no
+  re-lift was recorded, the instrument stopped telling the story.
+- *It fires where it should not.* This is for the pub surface only — lab work and private notes
+  are out of scope.
+- *Off-switch.* Say "no leak check on this item", or delete =bin/pb1ck=. Nothing here blocks,
+  and nothing else is wired to it.
